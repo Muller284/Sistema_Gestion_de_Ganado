@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: ganado_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USUARIO}
+      POSTGRES_PASSWORD: ${DB_CONTRASENA}
+      POSTGRES_DB: ${DB_NOMBRE}
+    ports:
+      - "${DB_PUERTO:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USUARIO}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  servidor:
+    build:
+      context: ./servidor
+    container_name: ganado_servidor
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${PUERTO_SERVIDOR:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./servidor:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+volumes:
+  postgres_data:
