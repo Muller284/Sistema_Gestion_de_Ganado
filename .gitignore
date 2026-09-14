@@ -1,0 +1,52 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Variables de entorno: nunca se suben, llevan contrasenas
+.env
+.env.local
+.env.*.local
+!.env.ejemplo
+
+# Compilados
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Registros
+*.log
+npm-debug.log*
+logs/
+
+# Datos de la base de datos levantada con Docker
+datos-postgres/
+pgdata/
+
+# Cobertura de pruebas
+coverage/
+.nyc_output/
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Archivos de respaldo que dejan los editores de texto
+*~
+*.bak
+*.orig
+
+# Trabajo local que no va al repositorio del equipo
+Claude outputs/
+ClaudeOutputs/
+GUIA_GITHUB.md
+
+# Sistema operativo
+Thumbs.db
+Desktop.ini
+.DS_Store
