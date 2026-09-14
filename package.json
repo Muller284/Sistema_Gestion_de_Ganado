@@ -1,0 +1,25 @@
+{
+  "name": "sistema_gestion_de_ganado",
+  "version": "1.0.0",
+  "description": "El sistema es una plataforma web y móvil para que los ganaderos lleven el control de su rancho: los animales, los corrales, la sanidad, el calendario de vacunación y el seguimiento de peso",
+  "main": "index.js",
+  "scripts": {
+    "migrate": "node servidor/migrar.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Muller284/Sistema_Gestion_de_Ganado.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Muller284/Sistema_Gestion_de_Ganado/issues"
+  },
+  "homepage": "https://github.com/Muller284/Sistema_Gestion_de_Ganado#readme",
+  "dependencies": {
+    "pg": "^8.11.0"
+  }
+}
