@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "migrate": "node migrar.js",
+    "seed": "node sembrar.js",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "test": "jest"
+    "test": "node pruebas/aislamiento.test.js",
+    "test:jest": "jest"
   },
   "repository": {
     "type": "git",
