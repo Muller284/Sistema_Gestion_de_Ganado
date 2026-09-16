@@ -59,10 +59,10 @@ A continuación se detallan las listas de comprobación (*checklists*) operativa
 
 | Check | Criterio de Aceptación | Cómo se comprueba | Estado |
 | :---: | :--- | :--- | :---: |
-| [ ] | **Protección de rama main:** La rama principal está protegida y solo se integra mediante revisión de otra persona. | Intentar un `git push origin main` directo desde una cuenta colaboradora; GitHub debe rechazarlo exigiendo Pull Request y aprobación. | Pendiente Favio |
-| [ ] | **Integración continua (CI):** Cada cambio dispara automáticamente las pruebas. | Abrir un PR en GitHub y comprobar que el workflow de GitHub Actions se dispara y ejecuta `npm test`. | Pendiente Favio |
-| [ ] | **Levantamiento con un solo comando:** El sistema completo se levanta desde cero. | Ejecutar `docker compose up` en una terminal limpia; deben iniciar los contenedores de la BD y la app sin pasos manuales adicionales. | Pendiente Favio |
-| [ ] | **Instrucciones claras:** El repositorio incluye instrucciones de instalación y ejecución. | Seguir el `README.md` paso a paso en una máquina limpia sin requerir soporte verbal. | Pendiente Favio |
+| [x] | **Protección de rama main:** La rama principal está protegida y solo se integra mediante revisión de otra persona. | Intentar un `git push origin main` directo desde una cuenta colaboradora; GitHub debe rechazarlo exigiendo Pull Request y aprobación. | **Cumplido** |
+| [ ] | **Integración continua (CI):** Cada cambio dispara automáticamente las pruebas. | Abrir un PR en GitHub y comprobar que el workflow de GitHub Actions se dispara y ejecuta `npm test`. | Pendiente Favio (falta `.github/workflows/ci.yml`) |
+| [ ] | **Levantamiento con un solo comando:** El sistema completo se levanta desde cero. | Ejecutar `docker compose up` en una terminal limpia; deben iniciar los contenedores de la BD y la app sin pasos manuales adicionales. | Incompleto (falta `servidor/Dockerfile`) |
+| [x] | **Instrucciones claras:** El repositorio incluye instrucciones de instalación y ejecución. | Seguir el `README.md` paso a paso en una máquina limpia sin requerir soporte verbal. | **Cumplido** |
 
 ---
 
@@ -73,10 +73,10 @@ A continuación se detallan las listas de comprobación (*checklists*) operativa
 
 | Check | Criterio de Aceptación | Cómo se comprueba | Estado |
 | :---: | :--- | :--- | :---: |
-| [ ] | **Tablas del modelo creadas:** Existen las tablas de la Fase 1 según modelo aprobado (11 tablas: `usuarios`, `ranchos`, `tipos_colaborador`, `permisos_tipo`, `permisos_usuario`, `paises`, `franjas_precio`, `modulos`, `tokens`, `sesiones`, `migraciones_aplicadas`). | Inspeccionar el esquema de PostgreSQL tras correr la migración y verificar la existencia de las tablas y sus llaves. | Verificado (SQL OK) |
-| [ ] | **Migraciones versionadas y ordenadas:** Se aplican en orden desde una base vacía. | Ejecutar `npm run migrate` sobre una BD vacía; debe ejecutar `001_fase1_esquema_inicial.sql` sin errores y registrarlo en `migraciones_aplicadas`. | Verificado |
-| [ ] | **Identificadores generados por cliente:** IDs son UUID, no autoincrementales. | Verificar que las tablas tienen columna `id UUID PRIMARY KEY` sin secuencias (`SERIAL`). | Verificado |
-| [ ] | **Auditoría y borrado lógico:** Toda tabla tiene `creado_en`, `modificado_en`, `creado_por`, `modificado_por` y `eliminado_en`. | Validar en el DDL y verificar que el trigger `fn_tocar_modificado_en()` actualiza `modificado_en` al hacer `UPDATE`. | Verificado |
+| [x] | **Tablas del modelo creadas:** Existen las tablas de la Fase 1 según modelo aprobado (11 tablas: `usuarios`, `ranchos`, `tipos_colaborador`, `permisos_tipo`, `permisos_usuario`, `paises`, `franjas_precio`, `modulos`, `tokens`, `sesiones`, `migraciones_aplicadas`). | Inspeccionar el esquema de PostgreSQL tras correr la migración y verificar la existencia de las tablas y sus llaves. | **Cumplido** |
+| [x] | **Migraciones versionadas y ordenadas:** Se aplican en orden desde una base vacía. | Ejecutar `npm run migrate` sobre una BD vacía; debe ejecutar `001_fase1_esquema_inicial.sql` sin errores y registrarlo en `migraciones_aplicadas`. | **Cumplido** |
+| [x] | **Identificadores generados por cliente:** IDs son UUID, no autoincrementales. | Verificar que las tablas tienen columna `id UUID PRIMARY KEY` sin secuencias (`SERIAL`). | **Cumplido** |
+| [x] | **Auditoría y borrado lógico:** Toda tabla tiene `creado_en`, `modificado_en`, `creado_por`, `modificado_por` y `eliminado_en`. | Validar en el DDL y verificar que el trigger `fn_tocar_modificado_en()` actualiza `modificado_en` al hacer `UPDATE`. | **Cumplido** |
 
 ---
 
