@@ -2,15 +2,15 @@
   "name": "sistema_gestion_de_ganado",
   "version": "1.0.0",
   "description": "El sistema es una plataforma web y móvil para que los ganaderos lleven el control de su rancho: los animales, los corrales, la sanidad, el calendario de vacunación y el seguimiento de peso",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
-    "migrate": "node migrar.js",
-    "seed": "node sembrar.js",
-    "build": "nest build",
-    "start": "nest start",
+    "migrar": "node migrar.js",
+    "sembrar": "node sembrar.js",
+    "construir": "nest build",
+    "iniciar": "nest start",
     "start:dev": "nest start --watch",
     "test": "node pruebas/aislamiento.test.js",
-    "test:jest": "jest"
+    "probar": "node pruebas/aislamiento.test.js"
   },
   "repository": {
     "type": "git",
@@ -43,6 +43,7 @@
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
     "@types/supertest": "^7.0.0",
     "jest": "^30.0.0",
     "oxlint": "^1.58.0",

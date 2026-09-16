@@ -1,3 +1,4 @@
+require('./cargar-entorno').cargarEntorno();
 const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
@@ -7,7 +8,19 @@ const pool = new Pool({
 });
 
 async function ejecutarSemillas() {
-  const client = await pool.connect();
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (error) {
+    console.error('No se pudo conectar a la base de datos:', error.message);
+    console.error(
+      'Revisa que la base este levantada (docker compose up -d postgres) y que DATABASE_URL en el .env sea correcta.',
+    );
+    process.exitCode = 1;
+    await pool.end();
+    return;
+  }
+
   try {
     console.log('Iniciando carga de semillas de datos de prueba (HU-04)...');
     const dirSemillas = path.join(__dirname, 'semillas');
@@ -25,8 +38,8 @@ async function ejecutarSemillas() {
 
     console.log('Todas las semillas de prueba fueron cargadas correctamente.');
   } catch (error) {
-    console.error('Error al sembrar datos de prueba:', error);
-    process.exit(1);
+    console.error('Error al sembrar datos de prueba:', error.message);
+    process.exitCode = 1;
   } finally {
     client.release();
     await pool.end();
