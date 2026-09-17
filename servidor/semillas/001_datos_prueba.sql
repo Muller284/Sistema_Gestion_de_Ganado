@@ -26,7 +26,7 @@ DELETE FROM sesiones WHERE usuario_id IN (
     'a1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000006',
     'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000002',
     'b1000000-0000-4000-8000-000000000003', 'b1000000-0000-4000-8000-000000000004',
-    'f0000000-0000-4000-8000-000000000001'
+    'f0000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001'
 );
 
 DELETE FROM tokens WHERE usuario_id IN (
@@ -35,14 +35,20 @@ DELETE FROM tokens WHERE usuario_id IN (
     'a1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000006',
     'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000002',
     'b1000000-0000-4000-8000-000000000003', 'b1000000-0000-4000-8000-000000000004',
-    'f0000000-0000-4000-8000-000000000001'
+    'f0000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001'
 );
+
+-- El rancho que se haya creado durante la demostracion de HU-15
+UPDATE usuarios SET rancho_id = NULL WHERE id = 'c1000000-0000-4000-8000-000000000001';
+DELETE FROM ranchos WHERE propietario_id = 'c1000000-0000-4000-8000-000000000001';
 
 -- Romper temporalmente la FK circular para limpiar en re-ejecuciones
 UPDATE usuarios SET rancho_id = NULL WHERE rancho_id IN (
     'a0000000-0000-4000-8000-000000000001',
     'b0000000-0000-4000-8000-000000000002'
 );
+
+DELETE FROM usuarios WHERE id = 'c1000000-0000-4000-8000-000000000001';
 
 DELETE FROM usuarios WHERE id IN (
     'a1000000-0000-4000-8000-000000000002', 'a1000000-0000-4000-8000-000000000003',
@@ -238,6 +244,31 @@ INSERT INTO usuarios (
     NULL,
     'f0000000-0000-4000-8000-000000000001',
     'f0000000-0000-4000-8000-000000000001'
+);
+
+-- ============================================================================
+--  4. PROPIETARIO RECIEN REGISTRADO, TODAVIA SIN RANCHO (HU-06 -> HU-15)
+--     Sin este usuario no se puede demostrar la creacion del rancho: los dos
+--     propietarios de arriba ya tienen el suyo, y una cuenta maneja uno solo.
+--     Es el estado real de alguien que acaba de registrarse y aun no creo su
+--     rancho, asi que su rancho_id es NULO a proposito.
+-- ============================================================================
+INSERT INTO usuarios (
+    id, nombre, correo, contrasena_hash, correo_verificado, debe_cambiar_contrasena,
+    estado, rancho_id, rol, tipo_colaborador_id, creado_por, modificado_por
+) VALUES (
+    'c1000000-0000-4000-8000-000000000001',
+    'Ariel Camacho Peredo',
+    'ariel.camacho@correo.bo',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    TRUE,
+    FALSE,
+    'activo',
+    NULL,
+    'propietario',
+    NULL,
+    'c1000000-0000-4000-8000-000000000001',
+    'c1000000-0000-4000-8000-000000000001'
 );
 
 COMMIT;

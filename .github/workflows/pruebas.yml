@@ -1,17 +1,34 @@
+# Corre las pruebas en cada solicitud de integracion y en cada cambio de main.
+# Segundo criterio de aceptacion de HU-01.
 name: Pruebas
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
+  pull_request:
 
 jobs:
   pruebas-servidor:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./servidor
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: ganado_usuario
+          POSTGRES_PASSWORD: clave_de_prueba
+          POSTGRES_DB: gestion_ganado
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ganado_usuario:clave_de_prueba@localhost:5432/gestion_ganado
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,16 +39,27 @@ jobs:
           cache-dependency-path: servidor/package-lock.json
 
       - name: Instalar dependencias
+        working-directory: servidor
         run: npm ci
 
-      - name: Correr pruebas
+      - name: Compilar
+        working-directory: servidor
+        run: npm run construir
+
+      - name: Aplicar migraciones desde una base vacia
+        working-directory: servidor
+        run: npm run migrar
+
+      - name: Cargar datos de prueba
+        working-directory: servidor
+        run: npm run sembrar
+
+      - name: Pruebas de aislamiento entre ranchos
+        working-directory: servidor
         run: npm test
 
   pruebas-cliente:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./cliente
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +70,9 @@ jobs:
           cache-dependency-path: cliente/package-lock.json
 
       - name: Instalar dependencias
+        working-directory: cliente
         run: npm ci
 
-      - name: Correr pruebas
-        run: npm test
+      - name: Compilar
+        working-directory: cliente
+        run: npm run build
