@@ -1,0 +1,17 @@
+/* ============================================================================
+ * SISTEMA DE GESTION DE GANADO
+ * HU-05 · Sistema de diseño. Punto de entrada.
+ * ----------------------------------------------------------------------------
+ * Este es el unico archivo de estilos que se importa desde el codigo, y se
+ * importa una sola vez, en main.tsx. Ninguna pantalla importa un .css propio.
+ *
+ *   tokens.css       los valores. Colores, tipografias, espaciado, radio.
+ *   base.css         puesta a cero y estilo de los elementos sueltos.
+ *   componentes.css  boton, campo, tarjeta, insignia, estado vacio y alerta.
+ *
+ * El orden importa: los tokens tienen que existir antes de que alguien los use.
+ * ==========================================================================*/
+
+@import './tokens.css';
+@import './base.css';
+@import './componentes.css';

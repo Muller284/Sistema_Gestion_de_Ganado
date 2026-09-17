@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react';
 import {
+  Alerta,
+  Boton,
+  CampoLista,
+  CampoTexto,
+  Cargando,
+  Dato,
+  Datos,
+  EstadoVacio,
+  Insignia,
+  Tarjeta,
+} from '../../componentes';
+import {
   api,
   cambiarUsuario,
   usuarioActual,
@@ -11,9 +23,10 @@ import {
 /**
  * HU-15, Creacion del rancho. Pantalla unica con el CRUD completo.
  *
- * Deliberadamente sin estilos del sistema de diseño: HU-05 todavia no esta
- * hecha y aca lo que importa es que las cuatro operaciones funcionen.
- * Cuando exista estilos.css, esta pantalla se reviste sin tocar su logica.
+ * Revestida con el sistema de diseño de HU-05. La logica no cambio: son los
+ * mismos estados, las mismas llamadas y las mismas reglas que cuando la
+ * pantalla no tenia estilos. Lo unico que cambio es que ya no hay un solo
+ * color ni un solo tamaño escrito a mano; todo sale de los componentes.
  */
 
 const VACIO = {
@@ -37,14 +50,27 @@ export function PaginaRancho() {
   const [cargando, setCargando] = useState(true);
   const [usuario, setUsuario] = useState(usuarioActual());
 
+  /** Lo que se le pide al servidor para dibujar la pantalla. */
+  async function pedirDatos() {
+    const [datos, listaPaises] = await Promise.all([api.miRancho(), api.paises()]);
+    return { datos, listaPaises };
+  }
+
+  function aplicarDatos({
+    datos,
+    listaPaises,
+  }: Awaited<ReturnType<typeof pedirDatos>>) {
+    setEstado(datos);
+    setPaises(listaPaises);
+    if (datos.rancho) volcarEnFormulario(datos.rancho);
+  }
+
+  /** Se llama despues de guardar o de dar de baja, nunca desde un efecto. */
   async function recargar() {
     setCargando(true);
     setError('');
     try {
-      const [datos, listaPaises] = await Promise.all([api.miRancho(), api.paises()]);
-      setEstado(datos);
-      setPaises(listaPaises);
-      if (datos.rancho) volcarEnFormulario(datos.rancho);
+      aplicarDatos(await pedirDatos());
     } catch (e) {
       setError((e as Error).message);
       setEstado(null);
@@ -66,8 +92,27 @@ export function PaginaRancho() {
     });
   }
 
+  // La primera carga y el cambio de usuario. No se toca el estado antes del
+  // primer await: hacerlo dentro de un efecto encadena renderizados.
   useEffect(() => {
-    void recargar();
+    let vigente = true;
+    void (async () => {
+      try {
+        const resultado = await pedirDatos();
+        if (!vigente) return;
+        setError('');
+        aplicarDatos(resultado);
+      } catch (e) {
+        if (!vigente) return;
+        setError((e as Error).message);
+        setEstado(null);
+      } finally {
+        if (vigente) setCargando(false);
+      }
+    })();
+    return () => {
+      vigente = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usuario]);
 
@@ -127,122 +172,155 @@ export function PaginaRancho() {
   const esPropietario = estado?.usuario.rol === 'propietario';
 
   return (
-    <main style={{ maxWidth: 680, margin: '0 auto', padding: 24, fontFamily: 'system-ui, sans-serif' }}>
-      <h1 style={{ fontSize: 22 }}>Mi rancho</h1>
-      <p style={{ color: '#666', fontSize: 13 }}>
-        HU-15 · Creación del rancho. Sin estilos todavía: HU-05 está pendiente.
-      </p>
-
-      <fieldset style={{ margin: '16px 0', padding: 12, border: '1px solid #ddd' }}>
-        <legend style={{ fontSize: 12, color: '#666' }}>
-          Usuario (provisional, hasta que exista el inicio de sesión)
-        </legend>
-        <input
-          style={{ width: '100%', padding: 6, fontFamily: 'monospace', fontSize: 12 }}
-          value={usuario}
-          onChange={(e) => {
-            cambiarUsuario(e.target.value);
-            setUsuario(e.target.value);
-          }}
-          placeholder="identificador del usuario"
-        />
-        {estado && (
-          <p style={{ fontSize: 13, margin: '8px 0 0' }}>
-            {estado.usuario.nombre} — {estado.usuario.rol}
-          </p>
-        )}
-      </fieldset>
-
-      {cargando && <p>Cargando…</p>}
-      {error && <p style={{ color: '#b02a2a' }}>{error}</p>}
-      {aviso && <p style={{ color: '#2f8f52' }}>{aviso}</p>}
-
-      {!cargando && rancho && !editando && (
-        <section style={{ border: '1px solid #ddd', padding: 16, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 18, marginTop: 0 }}>{rancho.nombre}</h2>
-          <p style={{ margin: '4px 0' }}>
-            {rancho.localidad}, {rancho.departamento} ({rancho.pais_codigo})
-          </p>
-          <p style={{ margin: '4px 0' }}>
-            {Number(rancho.superficie)} ha · producción de {rancho.tipo_produccion}
-          </p>
-          <p style={{ margin: '4px 0', color: '#666', fontSize: 13 }}>
-            {rancho.latitud ? `Ubicación: ${Number(rancho.latitud)}, ${Number(rancho.longitud)}` : 'Sin ubicación cargada'}
-          </p>
-          {esPropietario && (
-            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-              <button onClick={() => setEditando(true)}>Editar</button>
-              <button onClick={darDeBaja}>Dar de baja</button>
-            </div>
-          )}
-        </section>
-      )}
-
-      {!cargando && !rancho && !error && (
-        <p style={{ background: '#fdece0', padding: 12 }}>
-          Todavía no tienes un rancho. Créalo para poder usar el sistema.
+    <main className="pagina pagina-angosta">
+      <header className="encabezado-pagina">
+        <h1>Mi rancho</h1>
+        <p className="cuerpo c-600">
+          HU-15 · Creación del rancho. Una cuenta maneja un solo rancho.
         </p>
-      )}
+      </header>
 
-      {!cargando && mostrarFormulario && esPropietario && (
-        <form onSubmit={guardar} style={{ display: 'grid', gap: 10 }}>
-          <label>
-            Nombre<br />
-            <input required style={{ width: '100%', padding: 6 }} {...campo('nombre')} />
-          </label>
-          <label>
-            Departamento<br />
-            <input required style={{ width: '100%', padding: 6 }} {...campo('departamento')} />
-          </label>
-          <label>
-            Localidad<br />
-            <input required style={{ width: '100%', padding: 6 }} {...campo('localidad')} />
-          </label>
-          <label>
-            Superficie (hectáreas)<br />
-            <input required type="number" step="0.01" min="0.01" style={{ width: '100%', padding: 6 }} {...campo('superficie')} />
-          </label>
-          <label>
-            Tipo de producción<br />
-            <select style={{ width: '100%', padding: 6 }} {...campo('tipo_produccion')}>
-              <option value="carne">Carne</option>
-              <option value="leche">Leche</option>
-              <option value="mixto">Mixto</option>
-            </select>
-          </label>
-          <label>
-            País<br />
-            <select style={{ width: '100%', padding: 6 }} {...campo('pais_codigo')}>
-              {paises.map((p) => (
-                <option key={p.codigo} value={p.codigo}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
-          <fieldset style={{ border: '1px solid #eee', padding: 10 }}>
-            <legend style={{ fontSize: 12, color: '#666' }}>Ubicación (opcional)</legend>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input placeholder="latitud" style={{ flex: 1, padding: 6 }} {...campo('latitud')} />
-              <input placeholder="longitud" style={{ flex: 1, padding: 6 }} {...campo('longitud')} />
-            </div>
-          </fieldset>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button type="submit">{rancho ? 'Guardar cambios' : 'Crear rancho'}</button>
-            {rancho && (
-              <button type="button" onClick={() => { setEditando(false); volcarEnFormulario(rancho); }}>
-                Cancelar
-              </button>
+      <div className="col g16">
+        {/* Provisional: desaparece cuando existan HU-08 y HU-12. */}
+        <Tarjeta
+          titulo="Usuario"
+          accion={<Insignia variante="adv">Provisional</Insignia>}
+        >
+          <div className="col g16">
+            <CampoTexto
+              etiqueta="Identificador del usuario"
+              ayuda="Se reemplaza por el inicio de sesión cuando esté HU-08."
+              mono
+              value={usuario}
+              onChange={(e) => {
+                setCargando(true);
+                cambiarUsuario(e.target.value);
+                setUsuario(e.target.value);
+              }}
+            />
+            {estado && (
+              <p className="cuerpo c-600">
+                {estado.usuario.nombre} — {estado.usuario.rol}
+              </p>
             )}
           </div>
-        </form>
-      )}
+        </Tarjeta>
 
-      {!cargando && !esPropietario && estado && (
-        <p style={{ color: '#666' }}>
-          Solo el propietario puede crear o editar el rancho.
-        </p>
-      )}
+        {cargando && <Cargando />}
+        {error && <Alerta variante="error">{error}</Alerta>}
+        {aviso && <Alerta variante="exito">{aviso}</Alerta>}
+
+        {!cargando && rancho && !editando && (
+          <Tarjeta
+            titulo={rancho.nombre}
+            accion={
+              <Insignia variante="exito">
+                Producción de {rancho.tipo_produccion}
+              </Insignia>
+            }
+            pie={
+              esPropietario ? (
+                <>
+                  <Boton variante="secundario" onClick={() => setEditando(true)}>
+                    Editar
+                  </Boton>
+                  <Boton variante="destructivo" onClick={darDeBaja}>
+                    Dar de baja
+                  </Boton>
+                </>
+              ) : undefined
+            }
+          >
+            <Datos>
+              <Dato nombre="Ubicación">
+                {rancho.localidad}, {rancho.departamento} ({rancho.pais_codigo})
+              </Dato>
+              <Dato nombre="Superficie">{Number(rancho.superficie)} ha</Dato>
+              <Dato nombre="Coordenadas">
+                {rancho.latitud ? (
+                  <span className="dato">
+                    {Number(rancho.latitud)}, {Number(rancho.longitud)}
+                  </span>
+                ) : (
+                  <span className="pie c-500">Sin ubicación cargada</span>
+                )}
+              </Dato>
+            </Datos>
+          </Tarjeta>
+        )}
+
+        {!cargando && !rancho && !error && !esPropietario && (
+          <EstadoVacio
+            titulo="Todavía no hay rancho"
+            texto="Este usuario no pertenece a ningún rancho. El propietario es quien lo crea."
+          />
+        )}
+
+        {!cargando && mostrarFormulario && esPropietario && (
+          <Tarjeta titulo={rancho ? 'Editar rancho' : 'Crear mi rancho'}>
+            <form onSubmit={guardar} className="col g16">
+              <CampoTexto etiqueta="Nombre" obligatorio {...campo('nombre')} />
+              <div className="par">
+                <CampoTexto etiqueta="Departamento" obligatorio {...campo('departamento')} />
+                <CampoTexto etiqueta="Localidad" obligatorio {...campo('localidad')} />
+              </div>
+              <div className="par">
+                <CampoTexto
+                  etiqueta="Superficie"
+                  ayuda="En hectáreas."
+                  obligatorio
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  {...campo('superficie')}
+                />
+                <CampoLista etiqueta="Tipo de producción" obligatorio {...campo('tipo_produccion')}>
+                  <option value="carne">Carne</option>
+                  <option value="leche">Leche</option>
+                  <option value="mixto">Mixto</option>
+                </CampoLista>
+              </div>
+              <CampoLista etiqueta="País" obligatorio {...campo('pais_codigo')}>
+                {paises.map((p) => (
+                  <option key={p.codigo} value={p.codigo}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </CampoLista>
+              <div className="par">
+                <CampoTexto
+                  etiqueta="Latitud"
+                  ayuda="Opcional. Si cargas una, carga las dos."
+                  {...campo('latitud')}
+                />
+                <CampoTexto etiqueta="Longitud" ayuda="Opcional." {...campo('longitud')} />
+              </div>
+              <div className="fila centro g8">
+                <Boton type="submit" variante="primario">
+                  {rancho ? 'Guardar cambios' : 'Crear rancho'}
+                </Boton>
+                {rancho && (
+                  <Boton
+                    variante="fantasma"
+                    onClick={() => {
+                      setEditando(false);
+                      volcarEnFormulario(rancho);
+                    }}
+                  >
+                    Cancelar
+                  </Boton>
+                )}
+              </div>
+            </form>
+          </Tarjeta>
+        )}
+
+        {!cargando && !esPropietario && rancho && (
+          <Alerta variante="info">
+            Solo el propietario puede crear o editar el rancho.
+          </Alerta>
+        )}
+      </div>
     </main>
   );
 }

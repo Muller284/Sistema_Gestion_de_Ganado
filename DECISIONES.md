@@ -273,3 +273,102 @@ escritos a mano dentro de los componentes.
 **Lo que no se toca.** Ningún valor cambia. Los colores, las tipografías y los
 radios son los mismos que están en Figma y son los mismos que van a las
 pantallas. Esto es solo exponerlos como variables.
+
+---
+
+## 12. Cómo quedó armado el sistema de diseño en el proyecto
+
+**Fecha:** 16 de septiembre · **Decidió:** Aaron · **Estado:** hecho en HU-05
+
+El `estilos.css` que salió de los mockups se llevó al proyecto **sin cambiar un
+solo valor**, y se partió en tres archivos dentro de `cliente/src/estilos/`,
+con un cuarto que los une:
+
+| Archivo | Qué contiene |
+|---|---|
+| `tokens.css` | Los valores: color, tipografía, espaciado, radio, sombra, medidas |
+| `base.css` | Puesta a cero, clases de tipografía y utilidades |
+| `componentes.css` | Las clases de los componentes |
+| `estilos.css` | El punto de entrada: importa los tres anteriores, en orden |
+
+Se importa una sola vez, desde `main.tsx`. Ninguna pantalla importa un `.css`
+propio.
+
+**Por qué partido y no un solo archivo.** Porque el criterio de aceptación dice
+que ninguna pantalla define colores ni tamaños por fuera del sistema, y esa
+regla solo se puede revisar si hay un único archivo donde mirar. Hoy
+`tokens.css` es el único lugar del cliente donde aparece un valor escrito a
+mano. Cualquier otro archivo con un `#` de color o un `px` es un error que se
+ve de inmediato.
+
+**Los nombres de las clases y de las variables no cambiaron.** Siguen siendo
+`--corral-600`, `--arena-100`, `--r-md`, `.btn-primario`, `.campo`, `.tarjeta`,
+`.insignia`, `.aviso`, `.vacio`. Es lo que permite que una pantalla armada como
+mockup se traiga al proyecto sin reescribirle las clases.
+
+**Lo que se agregó, que es lo que faltaba de la decisión 11.** El espaciado
+ahora son variables (`--e-4` … `--e-48`), y también los tamaños e interlineados
+de texto (`--t-cuerpo`, `--lh-cuerpo`, …) y el alto de los controles
+(`--alto-control`, `--alto-control-movil`). Los valores son exactamente los que
+ya estaban escritos a mano dentro de cada componente y en las utilidades
+`.g4 … .g48`; lo único nuevo es que ahora tienen nombre.
+
+**Lo que no se trajo.** `.pantalla-web` y `.pantalla-movil` son marcos de ancho
+fijo, 1440 y 390 píxeles, que sirven para el archivo de mockups. La aplicación
+de verdad es fluida, así que en su lugar hay un contenedor `.pagina` con el
+mismo aire pero sin ancho fijo. Tampoco se trajo `.rotulo`, que es el letrero
+que identifica cada mockup.
+
+**Se agregaron dos componentes que no estaban en la lista del criterio.** El
+aviso (`.aviso`), que ya venía en el archivo de estilos y que toda pantalla
+necesita para mostrar un error o una confirmación: sin él cada uno pinta su
+propio rojo a mano, que es justo lo que HU-05 impide. Y el esqueleto de carga
+(`.esqueleto`), porque el inventario de pantallas pide esqueletos con la forma
+del contenido y no una rueda girando.
+
+**Insignias con nombre semántico.** Las cinco de los mockups son de dominio:
+activo, vendido, muerto, archivado y plan. Se agregaron las mismas con nombre
+general (`ins-exito`, `ins-info`, `ins-neutro`, `ins-adv`, `ins-error`), porque
+una insignia que dice "Sin verificar" no es un animal archivado. Los colores
+son los mismos.
+
+**El dorado caravana tiene dos usos y ninguno más.** El botón `.btn-plan` y la
+insignia `.ins-plan`. Es la regla del inventario de pantallas y es lo que se
+revisa en la revisión cruzada.
+
+**Componentes de React sobre las clases.** En `cliente/src/componentes/` hay un
+componente por cada uno: `Boton`, `Campo` con `CampoTexto` y `CampoLista`,
+`Tarjeta`, `Insignia`, `EstadoVacio`, `Alerta` y `Cargando`. Las pantallas usan
+el componente, no la clase. Así la etiqueta queda siempre unida a su control,
+que es lo que permite completar un formulario con el teclado, y nadie tiene que
+acordarse de qué clase va con cuál.
+
+**Catálogo dentro del proyecto.** Se agregó la pantalla `#/sistema-diseno`, que
+muestra todos los tokens y todos los componentes funcionando. Es el equivalente
+de la página 00 de Figma, pero dentro del código. Sirve para que nadie invente
+un componente que ya existe, para ver de un vistazo si un cambio en los tokens
+rompió algo, y para demostrar HU-05, que de otro modo no tiene nada que mostrar.
+
+**Navegación provisional.** No se instaló un enrutador: la regla del equipo es
+que las dependencias las instala Favio, y con dos pantallas no hace falta.
+`App.tsx` mira la dirección del navegador (`#/` y `#/sistema-diseno`). Cuando
+existan las pantallas de acceso se reemplaza por un enrutador de verdad y
+ninguna pantalla se entera.
+
+**Tipografías.** El `@import` de Google Fonts que traía el archivo de estilos se
+movió a `index.html`, con `preconnect`. Es el mismo pedido, pero el navegador lo
+empieza antes en lugar de esperar a que termine de descargar el CSS. Las
+familias alternativas quedan declaradas en `tokens.css`, así que sin conexión la
+pantalla sigue siendo legible aunque cambie la letra.
+
+**Se borraron `App.css` e `index.css`.** Eran la plantilla de Vite: definían
+colores y tamaños por fuera del sistema, que es justo lo que el tercer criterio
+prohíbe.
+
+**El `estilos.css` de la raíz queda como fuente de los mockups.** Ya no lo usa
+el proyecto. Conviene moverlo a `documentos/` para que nadie lo edite pensando
+que está cambiando la aplicación.
+
+**La pantalla de HU-15 se revistió sin tocar su lógica.** Son las mismas
+llamadas, los mismos estados y las mismas reglas. Lo único que cambió es que ya
+no queda un solo color ni un solo tamaño escrito a mano en la pantalla.
