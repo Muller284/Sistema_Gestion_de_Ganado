@@ -1,0 +1,269 @@
+/* ============================================================================
+ * HU-05 · Estilos base
+ * ----------------------------------------------------------------------------
+ * La puesta a cero, la tipografia y las utilidades del archivo estilos.css de
+ * los mockups, con los valores escritos a mano reemplazados por las variables
+ * de tokens.css. Los valores no cambiaron.
+ *
+ * Lo que NO se trajo de los mockups:
+ *   .pantalla-web / .pantalla-movil   son marcos de ancho fijo (1440 y 390 px)
+ *                                     para el archivo de mockups. La aplicacion
+ *                                     de verdad es fluida.
+ *   .rotulo                           el letrero que identifica cada mockup.
+ * ==========================================================================*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--f-cuerpo);
+  color: var(--arena-800);
+  background: var(--arena-100);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+/* El anillo de foco es el mismo en todo el sistema y no se quita en ningun
+ * lado: es lo unico que permite usar el sistema con el teclado. */
+:focus-visible {
+  outline: 2px solid var(--corral-400);
+  outline-offset: 2px;
+}
+
+/* ---------- Tipografía ---------- */
+
+.display {
+  font-family: var(--f-titulo);
+  font-size: var(--t-display);
+  line-height: var(--lh-display);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-display);
+  margin: 0;
+}
+
+.h1,
+h1 {
+  font-family: var(--f-titulo);
+  font-size: var(--t-h1);
+  line-height: var(--lh-h1);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-h1);
+  margin: 0;
+}
+
+.h2,
+h2 {
+  font-family: var(--f-titulo);
+  font-size: var(--t-h2);
+  line-height: var(--lh-h2);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-h2);
+  margin: 0;
+}
+
+.h3,
+h3 {
+  font-family: var(--f-titulo);
+  font-size: var(--t-h3);
+  line-height: var(--lh-h3);
+  font-weight: var(--peso-fuerte);
+  margin: 0;
+}
+
+.cuerpo-g {
+  font-size: var(--t-cuerpo-g);
+  line-height: var(--lh-cuerpo-g);
+  margin: 0;
+}
+
+.cuerpo,
+p {
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  margin: 0;
+}
+
+.cuerpo-m {
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  font-weight: var(--peso-medio);
+  margin: 0;
+}
+
+.etiqueta {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--ls-etiqueta);
+  margin: 0;
+}
+
+.pie {
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  letter-spacing: var(--ls-pie);
+  margin: 0;
+}
+
+.dato {
+  font-family: var(--f-dato);
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  font-weight: var(--peso-medio);
+}
+
+a {
+  color: var(--corral-600);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--corral-700);
+}
+
+/* ---------- Color del texto ---------- */
+
+.c-900 { color: var(--arena-900); }
+.c-800 { color: var(--arena-800); }
+.c-700 { color: var(--arena-700); }
+.c-600 { color: var(--arena-600); }
+.c-500 { color: var(--arena-500); }
+.c-400 { color: var(--arena-400); }
+.c-blanco { color: var(--arena-0); }
+.c-corral { color: var(--corral-600); }
+.c-corral-100 { color: var(--corral-100); }
+.c-corral-200 { color: var(--corral-200); }
+.c-corral-300 { color: var(--corral-300); }
+
+/* ---------- Utilidades ---------- */
+
+.col { display: flex; flex-direction: column; }
+.fila { display: flex; flex-direction: row; flex-wrap: wrap; }
+.centro { align-items: center; }
+.entre { justify-content: space-between; }
+.medio { justify-content: center; }
+.flex1 { flex: 1; }
+.ico { flex-shrink: 0; stroke-width: 1.5; }
+
+.g4  { gap: var(--e-4); }
+.g6  { gap: var(--e-6); }
+.g8  { gap: var(--e-8); }
+.g10 { gap: var(--e-10); }
+.g12 { gap: var(--e-12); }
+.g14 { gap: var(--e-14); }
+.g16 { gap: var(--e-16); }
+.g20 { gap: var(--e-20); }
+.g24 { gap: var(--e-24); }
+.g32 { gap: var(--e-32); }
+.g40 { gap: var(--e-40); }
+.g48 { gap: var(--e-48); }
+
+/* Texto visible solo para lectores de pantalla. */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Contenedor de pagina (agregado en HU-05) ----------
+ * Reemplaza a .pantalla-web de los mockups: mismo aire, pero fluido. */
+
+.pagina {
+  width: 100%;
+  max-width: var(--ancho-contenido);
+  margin: 0 auto;
+  padding: var(--e-32) var(--e-24) var(--e-48);
+}
+
+.pagina-angosta {
+  max-width: var(--ancho-formulario);
+}
+
+.encabezado-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  margin-bottom: var(--e-24);
+}
+
+.rejilla-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+  gap: var(--e-16);
+}
+
+.par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--e-12);
+}
+
+@media (max-width: 480px) {
+  .par {
+    grid-template-columns: 1fr;
+  }
+}
+
+.separado {
+  margin-bottom: var(--e-16);
+}
+
+/* Barra de navegacion provisional, hasta que exista el menu lateral. */
+.barra-nav {
+  display: flex;
+  gap: var(--e-16);
+  padding: var(--e-12) var(--e-24);
+  background: var(--arena-0);
+  border-bottom: var(--borde) solid var(--arena-200);
+}
+
+.barra-nav a {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+}
+
+.barra-nav a:hover {
+  text-decoration: underline;
+}
+
+/* Catalogo del sistema de diseño. */
+.muestra {
+  height: var(--e-48);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-md);
+}
+
+.centrado {
+  text-align: center;
+}
+
+.rotulo-token {
+  display: block;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+}

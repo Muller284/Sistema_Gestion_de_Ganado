@@ -52,11 +52,18 @@ cd servidor
 npm run migrar
 ```
 
+Cargar los datos de prueba (dos ranchos y usuarios de los cuatro roles):
+
+```bash
+cd servidor
+npm run sembrar
+```
+
 ## Pruebas
 
 ```bash
-cd servidor && npm test
-cd cliente && npm test
+cd servidor && npm test     # aislamiento entre ranchos, contra la base real
+cd cliente && npm run build
 ```
 
 ## Estructura del repositorio

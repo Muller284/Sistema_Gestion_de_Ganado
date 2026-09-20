@@ -18,7 +18,7 @@
 --  posterior entra como 002_*.sql.
 -- ============================================================================
 
-BEGIN;
+BEGIN; 
 
 -- ----------------------------------------------------------------------------
 --  Funcion de apoyo: mantiene modificado_en al dia en cada UPDATE.

@@ -26,7 +26,8 @@ DELETE FROM sesiones WHERE usuario_id IN (
     'a1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000006',
     'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000002',
     'b1000000-0000-4000-8000-000000000003', 'b1000000-0000-4000-8000-000000000004',
-    'f0000000-0000-4000-8000-000000000001'
+    'f0000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001',
+    'c1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000003'
 );
 
 DELETE FROM tokens WHERE usuario_id IN (
@@ -35,13 +36,24 @@ DELETE FROM tokens WHERE usuario_id IN (
     'a1000000-0000-4000-8000-000000000005', 'a1000000-0000-4000-8000-000000000006',
     'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000002',
     'b1000000-0000-4000-8000-000000000003', 'b1000000-0000-4000-8000-000000000004',
-    'f0000000-0000-4000-8000-000000000001'
+    'f0000000-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001',
+    'c1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000003'
 );
+
+-- El rancho que se haya creado durante la demostracion de HU-15
+UPDATE usuarios SET rancho_id = NULL WHERE id = 'c1000000-0000-4000-8000-000000000001';
+DELETE FROM ranchos WHERE propietario_id = 'c1000000-0000-4000-8000-000000000001';
 
 -- Romper temporalmente la FK circular para limpiar en re-ejecuciones
 UPDATE usuarios SET rancho_id = NULL WHERE rancho_id IN (
     'a0000000-0000-4000-8000-000000000001',
     'b0000000-0000-4000-8000-000000000002'
+);
+
+DELETE FROM usuarios WHERE id IN (
+    'c1000000-0000-4000-8000-000000000001',
+    'c1000000-0000-4000-8000-000000000002',
+    'c1000000-0000-4000-8000-000000000003'
 );
 
 DELETE FROM usuarios WHERE id IN (
@@ -238,6 +250,84 @@ INSERT INTO usuarios (
     NULL,
     'f0000000-0000-4000-8000-000000000001',
     'f0000000-0000-4000-8000-000000000001'
+);
+
+-- ============================================================================
+--  4. PROPIETARIO RECIEN REGISTRADO, TODAVIA SIN RANCHO (HU-06 -> HU-15)
+--     Sin este usuario no se puede demostrar la creacion del rancho: los dos
+--     propietarios de arriba ya tienen el suyo, y una cuenta maneja uno solo.
+--     Es el estado real de alguien que acaba de registrarse y aun no creo su
+--     rancho, asi que su rancho_id es NULO a proposito.
+-- ============================================================================
+INSERT INTO usuarios (
+    id, nombre, correo, contrasena_hash, correo_verificado, debe_cambiar_contrasena,
+    estado, rancho_id, rol, tipo_colaborador_id, creado_por, modificado_por
+) VALUES (
+    'c1000000-0000-4000-8000-000000000001',
+    'Ariel Camacho Peredo',
+    'ariel.camacho@correo.bo',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    TRUE,
+    FALSE,
+    'activo',
+    NULL,
+    'propietario',
+    NULL,
+    'c1000000-0000-4000-8000-000000000001',
+    'c1000000-0000-4000-8000-000000000001'
+);
+
+-- ============================================================================
+--  5. DOS CUENTAS PARA DEMOSTRAR HU-07 Y HU-10
+--     Responsable: Aaron
+--
+--     Sin estas dos no se pueden mostrar las dos historias: todas las cuentas
+--     de arriba ya tienen el correo confirmado y ninguna debe cambiar su
+--     contraseña, que es justamente el estado que las dos historias bloquean.
+--
+--     Contraseñas: Ganado2026 la primera, Temporal2026 la segunda.
+--     Los hashes son scrypt, como los que genera el sistema (HU-06).
+-- ============================================================================
+
+-- HU-07. Se registro y todavia no confirmo el correo. El sistema no la deja
+-- entrar a ninguna pantalla hasta que lo haga.
+INSERT INTO usuarios (
+    id, nombre, correo, contrasena_hash, correo_verificado, debe_cambiar_contrasena,
+    estado, rancho_id, rol, tipo_colaborador_id, creado_por, modificado_por
+) VALUES (
+    'c1000000-0000-4000-8000-000000000002',
+    'Lucia Mendez Soliz',
+    'lucia.mendez@correo.bo',
+    'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=',
+    FALSE,
+    FALSE,
+    'activo',
+    NULL,
+    'propietario',
+    NULL,
+    'c1000000-0000-4000-8000-000000000002',
+    'c1000000-0000-4000-8000-000000000002'
+);
+
+-- HU-10. Colaborador del Rancho El Cerrito dado de alta por el propietario,
+-- con una clave temporal que todavia no cambio. El sistema no lo deja pasar
+-- de la pantalla de cambio de contraseña.
+INSERT INTO usuarios (
+    id, nombre, correo, contrasena_hash, correo_verificado, debe_cambiar_contrasena,
+    estado, rancho_id, rol, tipo_colaborador_id, creado_por, modificado_por
+) VALUES (
+    'c1000000-0000-4000-8000-000000000003',
+    'Ruben Quispe Mamani',
+    'ruben.quispe@elcerrito.bo',
+    'scrypt$16384$8$1$BC9d4mFQrtZ0nYkACIKRyw==$5/wJKm80OOXZWPd+yeeUet5biHEBEEjXa7HikSDAkrM=',
+    TRUE,
+    TRUE,
+    'activo',
+    'a0000000-0000-4000-8000-000000000001',
+    'colaborador',
+    '11111111-1111-4111-8111-000000000002',
+    'a1000000-0000-4000-8000-000000000001',
+    'a1000000-0000-4000-8000-000000000001'
 );
 
 COMMIT;

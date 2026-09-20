@@ -1,0 +1,853 @@
+/* ============================================================================
+ * HU-05 · Componentes base
+ * ----------------------------------------------------------------------------
+ * Boton, campo, tarjeta, insignia y estado vacio: los cinco que pide el
+ * criterio de aceptacion. Son los mismos del archivo estilos.css de los
+ * mockups, con los px reemplazados por las variables de tokens.css.
+ *
+ * Cada uno tiene su componente de React en cliente/src/componentes. Las
+ * pantallas usan el componente, no la clase.
+ * ==========================================================================*/
+
+/* ============================================================================
+ * BOTON
+ * ==========================================================================*/
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-8);
+  height: var(--alto-control);
+  padding: 0 var(--e-20);
+  border-radius: var(--r-md);
+  border: var(--borde) solid transparent;
+  cursor: pointer;
+  font-family: var(--f-cuerpo);
+  font-size: var(--t-cuerpo);
+  font-weight: var(--peso-medio);
+  line-height: var(--lh-cuerpo);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primario { background: var(--corral-600); color: var(--arena-0); }
+.btn-primario:hover { background: var(--corral-700); }
+
+.btn-secundario {
+  background: var(--arena-0);
+  color: var(--arena-800);
+  border-color: var(--arena-300);
+}
+.btn-secundario:hover { background: var(--arena-50); }
+
+.btn-fantasma { background: transparent; color: var(--corral-600); }
+.btn-fantasma:hover { background: var(--corral-50); }
+
+.btn-destructivo { background: var(--error-base); color: var(--arena-0); }
+
+/* Unico boton que usa el dorado: planes y suscripcion. */
+.btn-plan { background: var(--caravana-500); color: var(--arena-900); }
+.btn-plan:hover { background: var(--caravana-600); }
+
+.btn:focus-visible { outline: 2px solid var(--corral-400); outline-offset: 2px; }
+.btn[disabled], .btn.desactivado { opacity: .4; pointer-events: none; }
+.btn-bloque { width: 100%; }
+.btn-movil { height: var(--alto-control-movil); font-size: var(--t-cuerpo-g); border-radius: var(--r-md); }
+.btn-campo { height: 56px; font-size: var(--t-cuerpo-g); font-weight: var(--peso-medio); }
+
+/* ============================================================================
+ * CAMPO
+ * ==========================================================================*/
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-6);
+}
+
+.campo > label {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--peso-medio);
+  color: var(--arena-700);
+}
+
+.campo input,
+.campo select {
+  height: var(--alto-control);
+  padding: 0 var(--e-12);
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-sm);
+  background: var(--arena-0);
+  font-family: var(--f-cuerpo);
+  font-size: var(--t-cuerpo);
+  color: var(--arena-800);
+  width: 100%;
+}
+
+.campo input::placeholder { color: var(--arena-500); }
+
+/* El borde pasa a 2 px al enfocar, asi que el relleno baja 1 px para que el
+ * texto no se mueva. Viene asi de los mockups. */
+.campo input:focus,
+.campo select:focus {
+  outline: none;
+  border: 2px solid var(--corral-600);
+  padding: 0 11px;
+}
+
+.campo.error input,
+.campo.error select { border-color: var(--error-base); }
+
+.campo .msg-error {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--error-texto);
+}
+
+.campo .ayuda {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--arena-600);
+}
+
+.campo input:disabled,
+.campo select:disabled {
+  background: var(--arena-100);
+  color: var(--arena-500);
+  cursor: not-allowed;
+}
+
+/* Agregado en HU-05: los identificadores van siempre en monoespaciada. */
+.campo input.dato { font-family: var(--f-dato); }
+
+.campo-movil input,
+.campo-movil select { height: var(--alto-control-movil); font-size: var(--t-cuerpo-g); }
+.campo-movil > label { font-size: var(--t-cuerpo); line-height: var(--lh-cuerpo); }
+
+/* ============================================================================
+ * TARJETA
+ * ==========================================================================*/
+
+.tarjeta {
+  background: var(--arena-0);
+  border-radius: var(--r-lg);
+  box-shadow: var(--s-sm);
+  padding: var(--e-20);
+}
+
+.tarjeta-borde {
+  background: var(--arena-0);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-lg);
+  padding: var(--e-24);
+}
+
+/* Agregado en HU-05: encabezado, cuerpo y pie, para las tarjetas que llevan
+ * titulo y botones. El relleno lo ponen las partes, no la tarjeta. */
+.tarjeta-partes { padding: 0; overflow: hidden; }
+
+.tarjeta-partes .cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12);
+  padding: var(--e-16) var(--e-24);
+  border-bottom: var(--borde) solid var(--arena-200);
+}
+
+.tarjeta-partes .contenido { padding: var(--e-24); }
+
+.tarjeta-partes .pie-tarjeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+  padding: var(--e-16) var(--e-24);
+  border-top: var(--borde) solid var(--arena-200);
+  background: var(--arena-50);
+}
+
+/* Lista de dato y valor para las fichas. */
+.datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--e-8) var(--e-24);
+  margin: 0;
+}
+
+.datos dt {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--arena-600);
+}
+
+.datos dd {
+  margin: 0;
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+}
+
+@media (max-width: 480px) {
+  .datos { grid-template-columns: 1fr; gap: var(--e-4) 0; }
+  .datos dd { margin-bottom: var(--e-8); }
+}
+
+/* ============================================================================
+ * INSIGNIA
+ * Las cinco de los mockups son de dominio (activo, vendido, muerto,
+ * archivado, plan). Se agregan las mismas con nombre semantico, porque una
+ * insignia que dice "Sin verificar" no es un animal archivado.
+ * ==========================================================================*/
+
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  height: var(--alto-insignia);
+  padding: 0 var(--e-10);
+  border-radius: var(--r-full);
+  font-size: var(--t-etiqueta);
+  font-weight: var(--peso-medio);
+  line-height: var(--lh-etiqueta);
+}
+
+.ins-activo    { background: var(--exito-bg); color: var(--exito-texto); }
+.ins-vendido   { background: var(--info-bg);  color: var(--info-texto); }
+.ins-muerto    { background: var(--arena-200); color: var(--arena-700); }
+.ins-archivado { background: var(--adv-bg);   color: var(--adv-texto); }
+.ins-plan      { background: var(--caravana-500); color: var(--arena-900); }
+
+.ins-exito   { background: var(--exito-bg);  color: var(--exito-texto); }
+.ins-info    { background: var(--info-bg);   color: var(--info-texto); }
+.ins-neutro  { background: var(--arena-200); color: var(--arena-700); }
+.ins-adv     { background: var(--adv-bg);    color: var(--adv-texto); }
+.ins-error   { background: var(--error-bg);  color: var(--error-texto); }
+
+/* ============================================================================
+ * AVISO
+ * ==========================================================================*/
+
+.aviso {
+  display: flex;
+  gap: var(--e-12);
+  padding: var(--e-14) var(--e-16);
+  border-radius: var(--r-md);
+  border: var(--borde) solid transparent;
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+}
+
+.aviso p { margin: 0; font-size: inherit; line-height: inherit; color: inherit; }
+
+/* El icono se alinea con la primera linea del texto y no se encoge cuando el
+   mensaje es largo. Hereda el color del aviso, que ya distingue cada variante. */
+.aviso > .ico { flex-shrink: 0; margin-top: 1px; }
+
+.aviso-info  { background: var(--info-bg);  border-color: var(--info-borde);  color: var(--info-texto); }
+.aviso-exito { background: var(--exito-bg); border-color: var(--exito-borde); color: var(--exito-texto); }
+.aviso-adv   { background: var(--adv-bg);   border-color: var(--adv-borde);   color: var(--adv-texto); }
+.aviso-error { background: var(--error-bg); border-color: var(--error-borde); color: var(--error-texto); }
+.aviso-plan  { background: var(--caravana-100); border-color: var(--caravana-300); color: var(--caravana-700); }
+
+/* ============================================================================
+ * ESTADO VACIO
+ * ==========================================================================*/
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--e-12);
+  padding: var(--e-48) var(--e-32);
+  background: var(--arena-0);
+  border-radius: var(--r-lg);
+}
+
+.vacio .ico-grande {
+  width: var(--e-48);
+  height: var(--e-48);
+  color: var(--arena-400);
+}
+
+/* ============================================================================
+ * ESTADO DE CARGA (agregado en HU-05)
+ * Esqueletos con la forma del contenido. El inventario de pantallas lo pide
+ * textual: "Nunca una rueda girando sola".
+ * ==========================================================================*/
+
+.esqueleto {
+  background: var(--arena-200);
+  border-radius: var(--r-xs);
+  animation: latido 1.4s ease-in-out infinite;
+}
+
+.esqueleto-linea { height: var(--e-16); }
+.esqueleto-titulo { height: var(--e-24); width: 40%; }
+
+@keyframes latido {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto { animation: none; }
+}
+
+/* ============================================================================
+ * ESTRUCTURA DE PANTALLA
+ * Menu lateral, barra superior, navegacion inferior de movil e indicador de
+ * conexion. Vienen de los mockups y todavia no los usa ninguna pantalla: van a
+ * hacer falta en cuanto exista el inicio de sesion y el menu.
+ * ==========================================================================*/
+
+.lateral {
+  width: var(--ancho-lateral);
+  background: var(--corral-800);
+  color: var(--corral-100);
+  padding: var(--e-20) var(--e-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  flex-shrink: 0;
+}
+
+.lateral .marca {
+  display: flex;
+  align-items: center;
+  gap: var(--e-10);
+  padding: var(--e-4) var(--e-8) var(--e-20);
+  color: var(--arena-0);
+}
+
+.lateral .item {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-10) var(--e-12);
+  border-radius: var(--r-md);
+  color: var(--corral-100);
+  font-size: var(--t-cuerpo);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+}
+
+.lateral .item.activo { background: var(--corral-600); color: var(--arena-0); }
+.lateral .espaciador { flex: 1; }
+.lateral .usuario { display: flex; align-items: center; gap: var(--e-10); padding: var(--e-12) var(--e-12) var(--e-4); }
+.lateral .avatar { width: var(--e-32); height: var(--e-32); border-radius: var(--r-full); background: var(--corral-500); flex-shrink: 0; }
+
+.barra-sup {
+  height: var(--alto-barra);
+  background: var(--arena-0);
+  border-bottom: var(--borde) solid var(--arena-200);
+  display: flex;
+  align-items: center;
+  gap: var(--e-16);
+  padding: 0 var(--e-32);
+  flex-shrink: 0;
+}
+
+.nav-inf {
+  height: var(--alto-barra);
+  background: var(--arena-0);
+  border-top: var(--borde) solid var(--arena-200);
+  display: flex;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.nav-inf a {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-4);
+  text-decoration: none;
+  color: var(--arena-500);
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+}
+
+.nav-inf a.activo { color: var(--corral-600); }
+
+.conexion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+  height: 28px;
+  padding: 0 var(--e-14);
+  border-radius: var(--r-full);
+  color: var(--arena-0);
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+}
+
+.conexion .punto { width: var(--e-8); height: var(--e-8); border-radius: var(--r-full); background: var(--arena-0); }
+.con-sin { background: var(--con-sin); }
+.con-sincronizando { background: var(--con-sincronizando); }
+.con-sincronizado { background: var(--con-sincronizado); }
+.con-conflicto { background: var(--con-conflicto); }
+
+/* ============================================================================
+ * ESTRUCTURA DE ACCESO
+ * La pantalla partida en dos de los mockups: a la izquierda el panel verde con
+ * la marca y el titular, a la derecha el formulario. Es el marco de la landing,
+ * el registro, el ingreso, la verificacion y el cambio de contraseña.
+ * ==========================================================================*/
+
+.acceso {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  min-height: 100vh;
+}
+
+.acceso__panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--e-40);
+  padding: var(--e-40) var(--e-32);
+  background: var(--corral-900);
+  color: var(--arena-0);
+}
+
+.acceso__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--e-10);
+  font-family: var(--f-titulo);
+  font-size: var(--t-cuerpo-g);
+  font-weight: var(--peso-fuerte);
+  color: var(--arena-0);
+  text-decoration: none;
+}
+
+.acceso__titular {
+  font-family: var(--f-titulo);
+  font-size: var(--t-h1);
+  line-height: var(--lh-h1);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-h1);
+  color: var(--arena-0);
+  margin: 0 0 var(--e-16);
+}
+
+.acceso__bajada {
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo-g);
+  color: var(--corral-200);
+  margin: 0;
+  max-width: 30ch;
+}
+
+.acceso__pie {
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  color: var(--corral-300);
+}
+
+.acceso__contenido {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--e-40) var(--e-24);
+  background: var(--arena-0);
+}
+
+.acceso__columna {
+  width: 100%;
+  max-width: 336px;
+}
+
+/* Emblema redondo arriba del titulo: dice de que se trata la pantalla antes
+   de leerla. Es el mismo recurso que usan los mockups en el registro. */
+.acceso__emblema {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-48);
+  height: var(--e-48);
+  margin-bottom: var(--e-16);
+  border-radius: var(--r-full);
+  background: var(--corral-50);
+  color: var(--corral-700);
+}
+
+.acceso__titulo {
+  font-family: var(--f-titulo);
+  font-size: var(--t-h1);
+  line-height: var(--lh-h1);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-h1);
+  margin: 0 0 var(--e-6);
+}
+
+.acceso__subtitulo {
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  color: var(--arena-600);
+  margin: 0 0 var(--e-24);
+}
+
+.acceso__nota {
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  color: var(--arena-500);
+  text-align: center;
+  margin: var(--e-16) 0 0;
+}
+
+/* En pantalla chica el panel verde pasa a ser una franja arriba. */
+@media (max-width: 860px) {
+  .acceso {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .acceso__panel {
+    padding: var(--e-20) var(--e-24) var(--e-24);
+    gap: var(--e-20);
+  }
+  .acceso__titular {
+    font-size: var(--t-h2);
+    line-height: var(--lh-h2);
+  }
+  .acceso__pie {
+    display: none;
+  }
+}
+
+/* ============================================================================
+ * ESTRUCTURA DE LA APLICACION
+ * Menu lateral fijo, barra superior y el contenido. Es el marco de todas las
+ * pantallas internas.
+ * ==========================================================================*/
+
+.app {
+  display: grid;
+  grid-template-columns: var(--ancho-lateral) 1fr;
+  min-height: 100vh;
+}
+
+.app__panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.app__cuerpo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app__contenido {
+  flex: 1;
+  padding: var(--e-32);
+  background: var(--arena-100);
+}
+
+.app__ancho {
+  max-width: var(--ancho-contenido);
+  margin: 0 auto;
+}
+
+/* La marca, dentro del menu lateral. */
+.lateral .marca .nombre {
+  font-family: var(--f-titulo);
+  font-size: var(--t-cuerpo-g);
+  font-weight: var(--peso-fuerte);
+  color: var(--arena-0);
+  line-height: var(--lh-cuerpo);
+}
+
+.lateral .marca .rancho {
+  display: block;
+  font-family: var(--f-cuerpo);
+  font-size: var(--t-pie);
+  font-weight: var(--peso-normal);
+  color: var(--corral-300);
+}
+
+/* La casilla del icono en el menu lateral. Es del mismo ancho en todos los
+   modulos, asi los nombres arrancan alineados aunque el icono sea mas angosto. */
+.lateral .item .casilla-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-24);
+  height: var(--e-24);
+  flex-shrink: 0;
+  color: var(--corral-200);
+}
+
+.lateral .item.activo .casilla-icono { color: var(--arena-0); }
+.lateral .item:hover:not(.activo) .casilla-icono { color: var(--arena-0); }
+
+.lateral .item:hover:not(.activo) {
+  background: var(--corral-700);
+  color: var(--arena-0);
+}
+
+.lateral .item.desactivado {
+  color: var(--corral-300);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.lateral .bloque-cuenta {
+  padding: var(--e-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-6);
+}
+
+.lateral .bloque-cuenta .titulo {
+  font-size: var(--t-pie);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  color: var(--corral-300);
+}
+
+.lateral .bloque-cuenta .plan {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  font-size: var(--t-cuerpo);
+  font-weight: var(--peso-medio);
+  color: var(--arena-0);
+}
+
+/* La corona es lo unico dorado del menu: el dorado es de los planes. */
+.lateral .bloque-cuenta .plan .ico { color: var(--caravana-400); }
+
+.lateral .medidor {
+  height: var(--e-4);
+  background: var(--corral-700);
+  border-radius: var(--r-full);
+  overflow: hidden;
+}
+
+.lateral .medidor span {
+  display: block;
+  height: 100%;
+  background: var(--corral-300);
+}
+
+.lateral .detalle {
+  font-size: var(--t-pie);
+  color: var(--corral-300);
+}
+
+.lateral .usuario .nombre {
+  font-size: var(--t-cuerpo);
+  font-weight: var(--peso-medio);
+  color: var(--arena-0);
+}
+
+.lateral .usuario .rol {
+  display: block;
+  font-size: var(--t-pie);
+  color: var(--corral-300);
+}
+
+/* Avatar con la inicial. */
+.avatar-inicial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-32);
+  height: var(--e-32);
+  border-radius: var(--r-full);
+  background: var(--corral-100);
+  color: var(--corral-700);
+  font-size: var(--t-etiqueta);
+  font-weight: var(--peso-fuerte);
+  flex-shrink: 0;
+}
+
+.barra-sup .ico-ruta { color: var(--arena-400); margin-right: calc(var(--e-16) * -1 + var(--e-8)); }
+
+.barra-sup .ruta {
+  font-size: var(--t-etiqueta);
+  font-weight: var(--peso-medio);
+  color: var(--arena-700);
+}
+
+.barra-sup .ruta .separador {
+  color: var(--arena-400);
+  margin: 0 var(--e-6);
+}
+
+/* Encabezado de una pantalla interna: rotulo, titulo y acciones. */
+.encabezado-seccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e-16);
+  margin-bottom: var(--e-24);
+}
+
+.encabezado-seccion .rotulo {
+  font-size: var(--t-pie);
+  letter-spacing: var(--ls-pie);
+  color: var(--arena-500);
+  margin: 0 0 var(--e-4);
+}
+
+.encabezado-seccion h1 {
+  font-size: var(--t-h2);
+  line-height: var(--lh-h2);
+}
+
+/* Rejilla de tarjetas de cifra. */
+.rejilla-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--e-16);
+}
+
+.cifra .rotulo {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  font-size: var(--t-etiqueta);
+  color: var(--arena-600);
+  margin: 0 0 var(--e-6);
+}
+
+/* El icono de la cifra es de apoyo: el dato es el numero, no el dibujo. */
+.cifra .rotulo .ico { color: var(--arena-400); }
+
+.cifra .valor {
+  font-family: var(--f-titulo);
+  font-size: var(--t-h2);
+  line-height: var(--lh-h2);
+  font-weight: var(--peso-fuerte);
+  color: var(--arena-900);
+  margin: 0;
+}
+
+.cifra .detalle {
+  font-size: var(--t-pie);
+  color: var(--arena-500);
+  margin: var(--e-6) 0 0;
+}
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+  .app__panel {
+    display: none;
+  }
+  .app__contenido {
+    padding: var(--e-20) var(--e-16) var(--e-32);
+  }
+}
+
+/* ============================================================================
+ * BARRA DE DEMOSTRACION
+ * Provisional. Se borra junto con el componente cuando exista HU-08.
+ * ==========================================================================*/
+
+.barra-demo {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--e-10);
+  padding: var(--e-6) var(--e-16);
+  background: var(--arena-900);
+  color: var(--arena-300);
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+}
+
+.barra-demo .etiqueta-demo {
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  color: var(--caravana-300);
+}
+
+.barra-demo select {
+  height: var(--e-24);
+  padding: 0 var(--e-6);
+  background: var(--arena-800);
+  color: var(--arena-100);
+  border: var(--borde) solid var(--arena-700);
+  border-radius: var(--r-xs);
+  font-family: var(--f-cuerpo);
+  font-size: var(--t-pie);
+}
+
+/* Para que la barra no tape el final de la pagina. */
+body:has(.barra-demo) .app__contenido,
+body:has(.barra-demo) .acceso__contenido,
+body:has(.barra-demo) .lateral,
+body:has(.barra-demo) .acceso__panel {
+  padding-bottom: var(--e-48);
+}
+
+/* ============================================================================
+ * LISTA DE PASOS
+ * La guia de configuracion de HU-16: lo hecho con su tilde, lo que falta con
+ * el circulo punteado. El icono dice el estado sin tener que leer la linea.
+ * ==========================================================================*/
+
+.pasos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pasos li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-10);
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  color: var(--arena-600);
+}
+
+.pasos li > .ico { flex-shrink: 0; margin-top: 2px; color: var(--arena-400); }
+.pasos li.hecho { color: var(--arena-900); }
+.pasos li.hecho > .ico { color: var(--exito-texto); }
+
+/* ============================================================================
+ * REJILLA DE ICONOS
+ * Solo para el catalogo del sistema de diseño: muestra cada icono con el
+ * nombre con el que se pide.
+ * ==========================================================================*/
+
+.rejilla-iconos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--e-12);
+}
+
+.muestra-icono {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e-8);
+  padding: var(--e-12) var(--e-8);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-md);
+  color: var(--arena-700);
+  text-align: center;
+}

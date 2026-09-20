@@ -10,7 +10,11 @@ services:
     ports:
       - "${DB_PUERTO:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # OJO: en postgres:18 el volumen va en /var/lib/postgresql, NO en
+      # /var/lib/postgresql/data como en las versiones anteriores. La imagen
+      # 18+ guarda los datos en un subdirectorio por version mayor y se niega
+      # a arrancar si encuentra datos directamente en /data.
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USUARIO}"]
       interval: 5s
@@ -24,6 +28,11 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      # Dentro de la red de Docker la base no esta en localhost sino en el
+      # servicio 'postgres'. Sin esto, el servidor levantado con docker compose
+      # usaba el DATABASE_URL del .env, que apunta a localhost, y no conectaba.
+      DATABASE_URL: postgresql://${DB_USUARIO}:${DB_CONTRASENA}@postgres:5432/${DB_NOMBRE}
     ports:
       - "${PUERTO_SERVIDOR:-3000}:3000"
     depends_on:

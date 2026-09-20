@@ -1,17 +1,47 @@
+# ============================================================================
+#
+# Que cambia y por que:
+#   npm test ya no corre solo aislamiento.test.js. Ahora corre tambien
+#   registro.test.js y cuenta.test.js, y esas dos hablan con el servidor por
+#   HTTP, no solo con la base. Sin levantar el servidor, la integracion
+#   continua se va a poner en rojo apenas suba este commit.
+#
+#   Se agrega un paso que levanta el servidor en segundo plano y espera a que
+#   responda antes de correr las pruebas. Si no responde en 30 segundos, el
+#   paso falla y dice por que, en lugar de dejar 30 pruebas fallando sin
+#   explicacion.
+# ============================================================================
+
+# Corre las pruebas en cada solicitud de integracion y en cada cambio de main.
 name: Pruebas
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
+  pull_request:
 
 jobs:
   pruebas-servidor:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./servidor
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: ganado_usuario
+          POSTGRES_PASSWORD: clave_de_prueba
+          POSTGRES_DB: gestion_ganado
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ganado_usuario:clave_de_prueba@localhost:5432/gestion_ganado
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,16 +52,42 @@ jobs:
           cache-dependency-path: servidor/package-lock.json
 
       - name: Instalar dependencias
+        working-directory: servidor
         run: npm ci
 
-      - name: Correr pruebas
+      - name: Compilar
+        working-directory: servidor
+        run: npm run construir
+
+      - name: Aplicar migraciones desde una base vacia
+        working-directory: servidor
+        run: npm run migrar
+
+      - name: Cargar datos de prueba
+        working-directory: servidor
+        run: npm run sembrar
+
+      - name: Levantar el servidor
+        working-directory: servidor
+        run: |
+          node dist/main.js > servidor.log 2>&1 &
+          for intento in $(seq 1 30); do
+            if curl -sf http://localhost:3000/paises > /dev/null; then
+              echo "El servidor responde."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "El servidor no respondio en 30 segundos. Su salida:"
+          cat servidor.log
+          exit 1
+
+      - name: Pruebas del servidor
+        working-directory: servidor
         run: npm test
 
   pruebas-cliente:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./cliente
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +98,13 @@ jobs:
           cache-dependency-path: cliente/package-lock.json
 
       - name: Instalar dependencias
+        working-directory: cliente
         run: npm ci
 
-      - name: Correr pruebas
-        run: npm test
+      - name: Revisar el estilo del codigo
+        working-directory: cliente
+        run: npm run lint
+
+      - name: Compilar
+        working-directory: cliente
+        run: npm run build
