@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ModuloBaseDatos } from './comun/modulo-base-datos';
+import { ModuloCorreo } from './comun/servicio-correo';
 import { ModuloRancho } from './modulos/ranchos/modulo-rancho';
 import { ModuloPais } from './modulos/paises/modulo-pais';
+import { ModuloUsuario } from './modulos/usuarios/modulo-usuario';
 
 @Module({
   imports: [
@@ -24,8 +26,10 @@ import { ModuloPais } from './modulos/paises/modulo-pais';
       }),
     }),
     ModuloBaseDatos,
+    ModuloCorreo,
     ModuloRancho,
     ModuloPais,
+    ModuloUsuario,
   ],
 })
 export class AppModule {}

@@ -39,11 +39,6 @@ async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   return cuerpo as T;
 }
 
-export interface Pais {
-  codigo: string;
-  nombre: string;
-}
-
 export interface Rancho {
   id: string;
   nombre: string;
@@ -57,6 +52,42 @@ export interface Rancho {
   propietario_id: string;
 }
 
+export interface Pais {
+  codigo: string;
+  nombre: string;
+  idioma?: string;
+  moneda?: string;
+}
+
+export interface UsuarioRegistrado {
+  id: string;
+  nombre: string;
+  correo: string;
+  rol: string;
+  pais_codigo: string;
+  correo_verificado: boolean;
+}
+
+export interface RespuestaRegistro {
+  usuario: UsuarioRegistrado;
+  siguiente: string;
+  mensaje: string;
+  /** Solo mientras el correo se "envia" por consola. Ver HU-07. */
+  enlace_verificacion: string | null;
+}
+
+/** Lo que el cliente consulta para saber si la cuenta esta lista (HU-07, HU-10). */
+export interface EstadoCuenta {
+  id: string;
+  nombre: string;
+  correo: string;
+  rol: string;
+  rancho_id: string | null;
+  correo_verificado: boolean;
+  debe_cambiar_contrasena: boolean;
+  pendiente: 'verificar_correo' | 'cambiar_contrasena' | null;
+}
+
 export interface EstadoRancho {
   usuario: { id: string; nombre: string; rol: string };
   tieneRancho: boolean;
@@ -65,6 +96,38 @@ export interface EstadoRancho {
 
 export const api = {
   paises: () => pedir<Pais[]>('/paises'),
+  // HU-06. Es la unica llamada que no necesita usuario: quien se registra
+  // todavia no tiene cuenta.
+  registrar: (datos: Record<string, unknown>) =>
+    pedir<RespuestaRegistro>('/usuarios/registro', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
+  // HU-07
+  yo: () => pedir<EstadoCuenta>('/usuarios/yo'),
+  verificarCorreo: (token: string) =>
+    pedir<{ mensaje: string }>('/usuarios/verificacion', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    }),
+  reenviarVerificacion: (correo: string) =>
+    pedir<{ mensaje: string; enlace: string | null }>('/usuarios/verificacion/reenvio', {
+      method: 'POST',
+      body: JSON.stringify({ correo }),
+    }),
+
+  // HU-10
+  cambiarMiContrasena: (actual: string, nueva: string) =>
+    pedir<{ mensaje: string }>('/usuarios/mi-contrasena', {
+      method: 'POST',
+      body: JSON.stringify({ contrasena_actual: actual, contrasena_nueva: nueva }),
+    }),
+  restablecerContrasena: (usuarioId: string) =>
+    pedir<{ mensaje: string; aviso: string }>(
+      `/usuarios/${usuarioId}/restablecer-contrasena`,
+      { method: 'POST' },
+    ),
   miRancho: () => pedir<EstadoRancho>('/ranchos/mio'),
   crear: (datos: Record<string, unknown>) =>
     pedir<Rancho>('/ranchos', { method: 'POST', body: JSON.stringify(datos) }),

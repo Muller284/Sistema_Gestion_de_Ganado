@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Icono, type NombreIcono } from './Iconos';
 
 /**
  * HU-05 · Estado vacio.
@@ -13,39 +14,19 @@ interface PropiedadesEstadoVacio {
   texto: string;
   /** El boton que resuelve el vacio. Opcional: a veces no hay nada que hacer. */
   accion?: ReactNode;
-  /** Por defecto es un corral. Se puede pasar otro. */
-  icono?: ReactNode;
-}
-
-function IconoCorral() {
-  return (
-    <svg
-      className="ico ico-grande"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 8h18" />
-      <path d="M3 14h18" />
-      <path d="M6 4v16" />
-      <path d="M12 4v16" />
-      <path d="M18 4v16" />
-    </svg>
-  );
+  /** Por defecto es un corral. Se puede pasar otro de los del sistema. */
+  icono?: NombreIcono;
 }
 
 export function EstadoVacio({
   titulo,
   texto,
   accion,
-  icono,
+  icono = 'corral',
 }: PropiedadesEstadoVacio) {
   return (
     <div className="vacio">
-      {icono ?? <IconoCorral />}
+      <Icono nombre={icono} tamano={48} className="ico-grande" />
       <h3 className="h3">{titulo}</h3>
       <p className="cuerpo c-600">{texto}</p>
       {accion}

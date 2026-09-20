@@ -7,7 +7,9 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { GuardiaCuentaLista } from '../../comun/guardia-cuenta-lista';
 import { ServicioRancho } from './servicio-rancho';
 import { RepositorioUsuarioActual } from '../../comun/repositorio-usuario-actual';
 
@@ -23,7 +25,11 @@ import { RepositorioUsuarioActual } from '../../comun/repositorio-usuario-actual
  *
  * El usuario se indica por ahora con la cabecera x-usuario-id.
  * Ver el comentario de repositorio-usuario-actual.ts.
+ *
+ * GuardiaCuentaLista bloquea todo esto mientras el correo no este confirmado
+ * (HU-07) o quede pendiente el cambio de la contraseña temporal (HU-10).
  */
+@UseGuards(GuardiaCuentaLista)
 @Controller('ranchos')
 export class ControladorRancho {
   constructor(

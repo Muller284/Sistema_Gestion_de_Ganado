@@ -17,8 +17,13 @@ import { POOL_BD } from './modulo-base-datos';
 export interface UsuarioActual {
   id: string;
   nombre: string;
+  correo: string;
   rol: string;
   ranchoId: string | null;
+  /** HU-07. Sin esto en verdadero, el sistema no deja hacer nada mas. */
+  correoVerificado: boolean;
+  /** HU-10. Con esto en verdadero, tampoco. */
+  debeCambiarContrasena: boolean;
 }
 
 @Injectable()
@@ -34,7 +39,8 @@ export class RepositorioUsuarioActual {
     }
 
     const resultado = await this.bd.query(
-      `SELECT id, nombre, rol, rancho_id
+      `SELECT id, nombre, correo, rol, rancho_id,
+              correo_verificado, debe_cambiar_contrasena
          FROM usuarios
         WHERE id = $1 AND eliminado_en IS NULL AND estado = 'activo'`,
       [id],
@@ -47,8 +53,11 @@ export class RepositorioUsuarioActual {
     return {
       id: fila.id,
       nombre: fila.nombre,
+      correo: fila.correo,
       rol: fila.rol,
       ranchoId: fila.rancho_id,
+      correoVerificado: fila.correo_verificado,
+      debeCambiarContrasena: fila.debe_cambiar_contrasena,
     };
   }
 }

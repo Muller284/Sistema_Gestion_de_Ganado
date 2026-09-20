@@ -5,28 +5,30 @@ import {
   CampoLista,
   CampoTexto,
   Cargando,
+  Cifra,
   Dato,
   Datos,
+  DisenoApp,
   EstadoVacio,
+  Icono,
   Insignia,
   Tarjeta,
 } from '../../componentes';
 import {
   api,
-  cambiarUsuario,
-  usuarioActual,
   type EstadoRancho,
   type Pais,
   type Rancho,
 } from '../../servicios/api';
 
 /**
- * HU-15, Creacion del rancho. Pantalla unica con el CRUD completo.
+ * HU-15, Creacion del rancho. La pantalla principal del propietario.
  *
- * Revestida con el sistema de diseño de HU-05. La logica no cambio: son los
- * mismos estados, las mismas llamadas y las mismas reglas que cuando la
- * pantalla no tenia estilos. Lo unico que cambio es que ya no hay un solo
- * color ni un solo tamaño escrito a mano; todo sale de los componentes.
+ * El marco es el de los mockups: menu lateral, barra superior y el contenido
+ * sobre el fondo arena. Las cifras de arriba son las del panel del propietario;
+ * las que dependen de modulos de la fase 2 se muestran con un guion, porque el
+ * dato todavia no existe. Es la misma idea de HU-16: dejar visible lo que
+ * viene, en lugar de esconderlo y que la pantalla crezca de golpe.
  */
 
 const VACIO = {
@@ -40,6 +42,12 @@ const VACIO = {
   longitud: '',
 };
 
+const TIPOS: Record<string, string> = {
+  carne: 'Carne',
+  leche: 'Leche',
+  mixto: 'Mixto',
+};
+
 export function PaginaRancho() {
   const [estado, setEstado] = useState<EstadoRancho | null>(null);
   const [paises, setPaises] = useState<Pais[]>([]);
@@ -48,7 +56,6 @@ export function PaginaRancho() {
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
   const [cargando, setCargando] = useState(true);
-  const [usuario, setUsuario] = useState(usuarioActual());
 
   /** Lo que se le pide al servidor para dibujar la pantalla. */
   async function pedirDatos() {
@@ -92,8 +99,8 @@ export function PaginaRancho() {
     });
   }
 
-  // La primera carga y el cambio de usuario. No se toca el estado antes del
-  // primer await: hacerlo dentro de un efecto encadena renderizados.
+  // La primera carga. No se toca el estado antes del primer await: hacerlo
+  // dentro de un efecto encadena renderizados.
   useEffect(() => {
     let vigente = true;
     void (async () => {
@@ -114,7 +121,7 @@ export function PaginaRancho() {
       vigente = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usuario]);
+  }, []);
 
   function campo(nombre: keyof typeof VACIO) {
     return {
@@ -168,98 +175,142 @@ export function PaginaRancho() {
   }
 
   const rancho = estado?.rancho ?? null;
-  const mostrarFormulario = !rancho || editando;
   const esPropietario = estado?.usuario.rol === 'propietario';
+  const mostrarFormulario = esPropietario && (!rancho || editando);
+
+  const usuario = estado?.usuario ?? { nombre: 'Invitado', rol: '—' };
 
   return (
-    <main className="pagina pagina-angosta">
-      <header className="encabezado-pagina">
-        <h1>Mi rancho</h1>
-        <p className="cuerpo c-600">
-          HU-15 · Creación del rancho. Una cuenta maneja un solo rancho.
-        </p>
-      </header>
-
-      <div className="col g16">
-        {/* Provisional: desaparece cuando existan HU-08 y HU-12. */}
-        <Tarjeta
-          titulo="Usuario"
-          accion={<Insignia variante="adv">Provisional</Insignia>}
-        >
-          <div className="col g16">
-            <CampoTexto
-              etiqueta="Identificador del usuario"
-              ayuda="Se reemplaza por el inicio de sesión cuando esté HU-08."
-              mono
-              value={usuario}
-              onChange={(e) => {
-                setCargando(true);
-                cambiarUsuario(e.target.value);
-                setUsuario(e.target.value);
-              }}
-            />
-            {estado && (
-              <p className="cuerpo c-600">
-                {estado.usuario.nombre} — {estado.usuario.rol}
-              </p>
-            )}
-          </div>
-        </Tarjeta>
-
+    <DisenoApp
+      ruta={['Mi rancho', capitalizar(usuario.rol)]}
+      usuario={usuario}
+      rancho={rancho?.nombre ?? null}
+      rotulo="Resumen del rancho"
+      titulo={rancho ? rancho.nombre : 'Mi rancho'}
+      acciones={
+        rancho && !editando && esPropietario ? (
+          <>
+            <Boton variante="secundario" onClick={() => setEditando(true)}>
+              <Icono nombre="lapiz" tamano={18} />
+              Editar
+            </Boton>
+            <Boton variante="destructivo" onClick={darDeBaja}>
+              <Icono nombre="archivar" tamano={18} />
+              Dar de baja
+            </Boton>
+          </>
+        ) : undefined
+      }
+    >
+      <div className="col g24">
         {cargando && <Cargando />}
         {error && <Alerta variante="error">{error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
 
         {!cargando && rancho && !editando && (
-          <Tarjeta
-            titulo={rancho.nombre}
-            accion={
-              <Insignia variante="exito">
-                Producción de {rancho.tipo_produccion}
-              </Insignia>
-            }
-            pie={
-              esPropietario ? (
-                <>
-                  <Boton variante="secundario" onClick={() => setEditando(true)}>
-                    Editar
-                  </Boton>
-                  <Boton variante="destructivo" onClick={darDeBaja}>
-                    Dar de baja
-                  </Boton>
-                </>
-              ) : undefined
-            }
-          >
-            <Datos>
-              <Dato nombre="Ubicación">
-                {rancho.localidad}, {rancho.departamento} ({rancho.pais_codigo})
-              </Dato>
-              <Dato nombre="Superficie">{Number(rancho.superficie)} ha</Dato>
-              <Dato nombre="Coordenadas">
-                {rancho.latitud ? (
-                  <span className="dato">
-                    {Number(rancho.latitud)}, {Number(rancho.longitud)}
-                  </span>
-                ) : (
-                  <span className="pie c-500">Sin ubicación cargada</span>
-                )}
-              </Dato>
-            </Datos>
-          </Tarjeta>
+          <>
+            <div className="rejilla-cifras">
+              <Cifra
+                rotulo="Superficie"
+                icono="regla"
+                valor={`${Number(rancho.superficie)} ha`}
+                detalle={`${rancho.localidad}, ${rancho.departamento}`}
+              />
+              <Cifra
+                rotulo="Tipo de producción"
+                icono="produccion"
+                valor={TIPOS[rancho.tipo_produccion] ?? rancho.tipo_produccion}
+                detalle={`País ${rancho.pais_codigo}`}
+              />
+              <Cifra
+                rotulo="Existencias totales"
+                icono="animal"
+                valor="—"
+                detalle="Llega en la fase 2"
+              />
+              <Cifra
+                rotulo="Corrales"
+                icono="corral"
+                valor="—"
+                detalle="Llega en la fase 2"
+              />
+            </div>
+
+            <div className="par">
+              <Tarjeta
+                titulo="Datos del rancho"
+                accion={
+                  <Insignia variante="exito">
+                    Producción de {rancho.tipo_produccion}
+                  </Insignia>
+                }
+              >
+                <Datos>
+                  <Dato nombre="Departamento">{rancho.departamento}</Dato>
+                  <Dato nombre="Localidad">{rancho.localidad}</Dato>
+                  <Dato nombre="Superficie">{Number(rancho.superficie)} ha</Dato>
+                  <Dato nombre="Coordenadas">
+                    {rancho.latitud ? (
+                      <span className="dato fila centro g6">
+                        <Icono nombre="ubicacion" tamano={16} />
+                        {Number(rancho.latitud)}, {Number(rancho.longitud)}
+                      </span>
+                    ) : (
+                      <span className="c-500">Sin ubicación cargada</span>
+                    )}
+                  </Dato>
+                </Datos>
+              </Tarjeta>
+
+              <Tarjeta titulo="Siguientes pasos">
+                <ol className="pasos">
+                  <li className="hecho">
+                    <Icono nombre="exito" tamano={18} />
+                    <span>
+                      <strong>Rancho creado.</strong>{' '}
+                      <span className="c-600">Listo.</span>
+                    </span>
+                  </li>
+                  <li>
+                    <Icono nombre="pendiente" tamano={18} />
+                    <span>
+                      Cargar los animales · <span className="pie">fase 2</span>
+                    </span>
+                  </li>
+                  <li>
+                    <Icono nombre="pendiente" tamano={18} />
+                    <span>
+                      Crear los corrales · <span className="pie">fase 2</span>
+                    </span>
+                  </li>
+                  <li>
+                    <Icono nombre="pendiente" tamano={18} />
+                    <span>
+                      Invitar al equipo · <span className="pie">fase 2</span>
+                    </span>
+                  </li>
+                </ol>
+              </Tarjeta>
+            </div>
+          </>
         )}
 
-        {!cargando && !rancho && !error && !esPropietario && (
+        {!cargando && !rancho && !esPropietario && estado && (
           <EstadoVacio
             titulo="Todavía no hay rancho"
             texto="Este usuario no pertenece a ningún rancho. El propietario es quien lo crea."
           />
         )}
 
-        {!cargando && mostrarFormulario && esPropietario && (
+        {!cargando && mostrarFormulario && (
           <Tarjeta titulo={rancho ? 'Editar rancho' : 'Crear mi rancho'}>
             <form onSubmit={guardar} className="col g16">
-              <CampoTexto etiqueta="Nombre" obligatorio {...campo('nombre')} />
+              <CampoTexto
+                etiqueta="Nombre"
+                obligatorio
+                placeholder="Ej. Rancho El Cerrito"
+                {...campo('nombre')}
+              />
               <div className="par">
                 <CampoTexto etiqueta="Departamento" obligatorio {...campo('departamento')} />
                 <CampoTexto etiqueta="Localidad" obligatorio {...campo('localidad')} />
@@ -297,6 +348,7 @@ export function PaginaRancho() {
               </div>
               <div className="fila centro g8">
                 <Boton type="submit" variante="primario">
+                  <Icono nombre={rancho ? 'exito' : 'mas'} tamano={18} />
                   {rancho ? 'Guardar cambios' : 'Crear rancho'}
                 </Boton>
                 {rancho && (
@@ -321,6 +373,10 @@ export function PaginaRancho() {
           </Alerta>
         )}
       </div>
-    </main>
+    </DisenoApp>
   );
+}
+
+function capitalizar(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
 }

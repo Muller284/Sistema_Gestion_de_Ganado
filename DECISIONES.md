@@ -276,99 +276,254 @@ pantallas. Esto es solo exponerlos como variables.
 
 ---
 
-## 12. Cómo quedó armado el sistema de diseño en el proyecto
+## 13. El correo se "envía" por consola hasta que el equipo decida cómo enviarlo
 
-**Fecha:** 16 de septiembre · **Decidió:** Aaron · **Estado:** hecho en HU-05
+**Fecha:** 20 de septiembre · **Decidió:** Aaron · **Estado:** hecho en HU-07
 
-El `estilos.css` que salió de los mockups se llevó al proyecto **sin cambiar un
-solo valor**, y se partió en tres archivos dentro de `cliente/src/estilos/`,
-con un cuarto que los une:
+HU-07 necesita mandar un correo y el equipo todavía no cerró con qué. Esperar
+esa decisión habría dejado la historia parada, así que se resolvió con una
+capa: `servidor/src/comun/servicio-correo.ts` define la interfaz
+`TransporteCorreo` y trae una sola implementación, la de consola, que escribe
+el mensaje completo con su enlace en la salida del servidor.
 
-| Archivo | Qué contiene |
+**No finge que el correo se envió.** El mensaje dice, en la propia consola, que
+no se envió nada. Y la respuesta del registro devuelve el enlace solo mientras
+el transporte sea el de consola: con un servidor de correo de verdad ese campo
+llega nulo y el enlace existe únicamente en el correo.
+
+**Cómo se conecta el correo real.** Se agrega una clase que implemente
+`TransporteCorreo` y se la elige con la variable `CORREO_TRANSPORTE`. No hay
+que tocar ningún otro archivo: ni el servicio de verificación, ni el de
+contraseñas, ni los controladores. Si se pone una variable con un valor que no
+existe, el servidor no arranca y dice por qué, en lugar de quedarse callado
+sin mandar correos.
+
+Esto también deja resuelto HU-09, que es de Brian: la recuperación de
+contraseña usa la misma capa y la misma tabla de tokens.
+
+---
+
+## 14. El enlace del correo apunta al cliente, no al servidor
+
+**Fecha:** 20 de septiembre · **Decidió:** Aaron · **Estado:** hecho en HU-07
+
+El enlace de verificación es `<cliente>/#/verificar?token=...`, y la pantalla
+del cliente manda el token al servidor por POST.
+
+Lo normal sería que el enlace apuntara directo al servidor. Se hizo al revés
+por una razón: un token que sirve para activar una cuenta viaja en la
+dirección, y las direcciones quedan escritas en los registros de acceso de
+todos los servidores por los que pasa la petición. Yendo al cliente, el token
+viaja una sola vez, dentro del cuerpo de un POST.
+
+El token tampoco se guarda en la base: se guarda su huella SHA-256. Si alguien
+leyera la tabla `tokens`, no podría reconstruir ningún enlace.
+
+---
+
+## 15. Un solo portero para dos historias
+
+**Fecha:** 20 de septiembre · **Decidió:** Aaron · **Estado:** hecho en HU-07 y HU-10
+
+Dos criterios de aceptación de historias distintas son la misma regla:
+
+- HU-07: "Sin confirmar el correo no se puede usar el sistema."
+- HU-10: "No puedo llegar a ninguna otra pantalla antes de cambiarla."
+
+Los dos los impone `GuardiaCuentaLista`, en `servidor/src/comun/`. Se pone en
+los controladores que manejan datos del rancho y devuelve un 403 con un campo
+`motivo`, para que el cliente sepa a qué pantalla mandar al usuario sin tener
+que interpretar el texto del mensaje.
+
+**No se pone en el controlador de usuarios**, a propósito: ahí viven las dos
+salidas, confirmar el correo y cambiar la contraseña. Un portero que también
+cerrara la salida dejaría la cuenta encerrada para siempre.
+
+El cliente hace lo mismo desde `App.tsx`, preguntando por `GET /usuarios/yo`.
+Eso es comodidad, no seguridad: cualquiera puede llamar al servidor sin pasar
+por la pantalla. Si la regla no está en el servidor, no está.
+
+---
+
+## 16. El propietario nunca ve la contraseña que restablece
+
+**Fecha:** 20 de septiembre · **Decidió:** Aaron · **Estado:** hecho en HU-10
+
+`POST /usuarios/:id/restablecer-contrasena` genera una clave temporal, la
+guarda cifrada, deja al usuario obligado a cambiarla y **se la manda por correo
+a su dueño**. La respuesta que ve el propietario dice que se envió y nada más.
+
+No es un detalle de forma. Si el propietario pudiera ver la contraseña de su
+colaborador, podría entrar como él, y entonces el "creado por" de HU-23 no
+probaría nada. El registro de autoría vale exactamente lo que valga esta regla.
+
+Las contraseñas temporales se generan sin caracteres que se confundan al
+dictarlas: sin O ni 0, sin l ni 1.
+
+---
+
+## 17. Dos cuentas nuevas en las semillas
+
+**Fecha:** 20 de septiembre · **Decidió:** Aaron · **Estado:** hecho
+
+Todas las cuentas de prueba tenían el correo confirmado y ninguna debía
+cambiar su contraseña, que es justo el estado que HU-07 y HU-10 bloquean: sin
+tocar las semillas, ninguna de las dos historias se podía demostrar.
+
+Se agregaron dos, con el mismo criterio de datos verosímiles que usó Romina:
+
+| Cuenta | Para qué | Contraseña |
+|---|---|---|
+| Lucía Méndez Solíz, propietaria | Se registró y no confirmó el correo (HU-07) | `Ganado2026` |
+| Rubén Quispe Mamani, colaborador | Tiene clave temporal sin cambiar (HU-10) | `Temporal2026` |
+
+Las semillas son de Romina. Que revise si le parecen bien; son dos INSERT al
+final del archivo y no tocan nada de lo que ya estaba.
+
+---
+
+## 18. El correo se envía con Brevo, por HTTP y sin dependencias
+
+**Fecha:** 20 de septiembre · **Decidió:** Aaron · **Estado:** hecho
+
+El transporte de consola se queda como el de por defecto, para desarrollo y
+para las pruebas. Al lado queda uno que envía de verdad, con la API de Brevo.
+
+**Por qué Brevo y no nodemailer con Gmail**, en orden de peso:
+
+1. **No agrega dependencias.** Brevo se usa con una petición HTTP normal, y
+   Node ya trae `fetch`. `nodemailer` habría sido un paquete nuevo.
+2. **No usa SMTP.** Muchas redes universitarias y varios servicios de hosting
+   bloquean los puertos de SMTP; el 443 no lo bloquea nadie. Una contraseña de
+   aplicación de Gmail además obliga a tener la verificación en dos pasos
+   activada en esa cuenta.
+3. **300 correos por día gratis, sin tarjeta**, y se le puede enviar a
+   cualquier destinatario, no solo a uno mismo. Para un proyecto de materia
+   sobra.
+
+**Cómo se configura**, una sola vez y lo puede hacer cualquiera:
+
+1. Crear una cuenta en brevo.com.
+2. Agregar el correo del remitente y confirmarlo con el código de seis dígitos
+   que llega a esa dirección.
+3. Sacar una clave de API y ponerla en el `.env`:
+
+```
+CORREO_TRANSPORTE=brevo
+BREVO_API_KEY=...
+CORREO_REMITENTE=el.correo.confirmado@gmail.com
+CORREO_REMITENTE_NOMBRE=Sistema de Gestión de Ganado
+```
+
+Si la variable está en `brevo` y falta la clave o el remitente, **el servidor
+no arranca y dice por qué**. Es a propósito: es mejor que no levante a que
+levante y los correos se pierdan en silencio. Lo mismo si Brevo rechaza un
+envío: el error sube, no se traga.
+
+**Advertencia honesta.** Enviando desde un correo gratuito el mensaje llega,
+pero tiene más probabilidad de caer en la carpeta de no deseados, porque un
+dominio gratuito no se puede autenticar. Para el producto de verdad hace falta
+un dominio propio. Para la materia alcanza; solo hay que mirar esa carpeta si
+no aparece.
+
+El correo va con los colores del sistema de diseño y con los estilos escritos
+dentro de cada etiqueta, porque los programas de correo descartan las hojas de
+estilo. Es el único lugar del proyecto donde se escriben colores a mano, y los
+valores son los mismos de `tokens.css`.
+
+---
+
+## 19. Las pantallas se llevaron al diseño de los mockups
+
+**Fecha:** 20 de septiembre · **Decidió:** Aaron · **Estado:** hecho
+
+Hasta ahora las pantallas usaban el sistema de diseño pero no su estructura.
+Ahora están como en el Figma, con dos marcos:
+
+**`DisenoAcceso`** — la pantalla partida en dos de los mockups de acceso: a la
+izquierda el panel verde con la marca, el titular y el pie; a la derecha una
+columna de 336 px con el formulario. Lo usan el registro, la verificación del
+correo y el cambio de contraseña. En pantalla chica el panel pasa a ser una
+franja arriba.
+
+**`DisenoApp`** — menú lateral verde oscuro, barra superior blanca y el
+contenido sobre el fondo arena. Lo usa la pantalla del rancho, y lo van a usar
+todas las pantallas internas.
+
+**Tres cosas que se cambiaron respecto del Figma, a propósito:**
+
+1. **Los textos pasan a español estándar.** El Figma dice "Creá tu cuenta",
+   "Usá", "lo podés cambiar". La convención del equipo es español estándar, así
+   que en el código dice "Crea tu cuenta", "Usa", "lo puedes cambiar". **Hay
+   que corregirlo también en el Figma**, o van a quedar distintos y eso se nota
+   en la evaluación.
+2. **Los módulos que todavía no existen se ven, apagados y con su fase.**
+   Animales, corrales, sanidad, pesajes y equipo aparecen en el menú lateral
+   pero no se pueden abrir. Es la misma idea que HU-16 pide para la guía de
+   configuración: dejar visible lo que viene, en lugar de un menú que crece de
+   golpe y no se entiende. En el Figma el menú está completo sin distinguir qué
+   funciona.
+3. **Las cifras que dependen de la fase 2 muestran un guion**, no un número
+   inventado. El panel del Figma muestra 128 animales y 374 kg de peso
+   promedio; esos datos no existen todavía y poner números falsos en algo que
+   se demuestra en vivo es pedir que pregunten de dónde salieron.
+
+**La barra de demostración.** Abajo de todo, en letra chica, hay una barra
+negra para cambiar de usuario y mostrar el sistema desde cada rol sin abrir la
+consola del navegador. No forma parte del producto: está en un solo archivo,
+`componentes/BarraDemostracion.tsx`, y cuando exista HU-08 se borra ese archivo
+y su uso en `App.tsx`, y no hay que tocar nada más.
+
+---
+
+## 20. Los iconos son de Lucide, copiados a mano, no instalados
+
+**Fecha:** 20 de septiembre de 2026
+**Historia:** HU-05
+**Quién:** Rafael Taborga
+
+**De dónde salen.** De **Lucide** (<https://lucide.dev>), versión 1.47.0. Es la
+librería de iconos que continúa a Feather; es la que usa, entre otros,
+shadcn/ui. Licencia **ISC**: se pueden usar, copiar y modificar en cualquier
+proyecto, comercial o no, sin pedir permiso y sin tener que mostrar el crédito
+en la pantalla. Aun así queda escrito acá y en la cabecera de
+`cliente/src/componentes/Iconos.tsx`, porque el dibujo es de ellos.
+
+**Por qué copiados y no instalados.** Las dependencias las instala Favio: es la
+regla del equipo. Copiar los trazos de los veinticuatro iconos que usamos no
+agrega ninguna dependencia, no suma peso al paquete final —entra solo lo que se
+usa— y deja el icono a la vista para leerlo y corregirlo. Si más adelante hacen
+falta muchos más, se instala `lucide-react` y este archivo se borra.
+
+**Cómo se usan.** `<Icono nombre="corral" />`. Todos son de 24 × 24, sin
+relleno, con el trazo del color del texto que los rodea (`currentColor`) y el
+grosor que fija la clase `.ico` en `base.css`. Ninguno lleva color propio: el
+color lo decide la pantalla.
+
+**Dónde se pusieron.**
+
+| Lugar | Icono |
 |---|---|
-| `tokens.css` | Los valores: color, tipografía, espaciado, radio, sombra, medidas |
-| `base.css` | Puesta a cero, clases de tipografía y utilidades |
-| `componentes.css` | Las clases de los componentes |
-| `estilos.css` | El punto de entrada: importa los tres anteriores, en orden |
+| Menú lateral | casa, animal (res), corral (cerco), sanidad (jeringa), balanza, equipo |
+| Barra superior | el del módulo abierto |
+| Bloque de cuenta | corona, en dorado. Es lo único dorado del menú: el dorado es de los planes |
+| Avisos | tilde, cruz, triángulo, información, corona |
+| Cifras del panel | regla, brote, res, cerco |
+| Siguientes pasos | tilde para lo hecho, círculo punteado para lo que falta |
+| Botones | lápiz, caja, más, sobre, avión, flecha de entrada |
+| Pantallas de acceso | emblema redondo arriba del título: sobre, llave, tilde, persona |
+| Marca | la caravana (la etiqueta del animal) |
 
-Se importa una sola vez, desde `main.tsx`. Ninguna pantalla importa un `.css`
-propio.
+**Por qué el aviso lleva icono.** No es adorno. El color solo no alcanza para
+quien no distingue el rojo del verde; la forma del icono sí se distingue. Por
+eso el icono nunca va solo: siempre acompaña al texto.
 
-**Por qué partido y no un solo archivo.** Porque el criterio de aceptación dice
-que ninguna pantalla define colores ni tamaños por fuera del sistema, y esa
-regla solo se puede revisar si hay un único archivo donde mirar. Hoy
-`tokens.css` es el único lugar del cliente donde aparece un valor escrito a
-mano. Cualquier otro archivo con un `#` de color o un `px` es un error que se
-ve de inmediato.
+**Dónde verlos todos.** En `#/sistema-diseno` hay una tarjeta "Iconos" con los
+veinticuatro y el nombre con el que se piden. Si alguien necesita uno que no
+está, se agrega ahí primero, copiando el trazo de lucide.dev/icons, y no se
+dibuja a mano en la pantalla.
 
-**Los nombres de las clases y de las variables no cambiaron.** Siguen siendo
-`--corral-600`, `--arena-100`, `--r-md`, `.btn-primario`, `.campo`, `.tarjeta`,
-`.insignia`, `.aviso`, `.vacio`. Es lo que permite que una pantalla armada como
-mockup se traiga al proyecto sin reescribirle las clases.
-
-**Lo que se agregó, que es lo que faltaba de la decisión 11.** El espaciado
-ahora son variables (`--e-4` … `--e-48`), y también los tamaños e interlineados
-de texto (`--t-cuerpo`, `--lh-cuerpo`, …) y el alto de los controles
-(`--alto-control`, `--alto-control-movil`). Los valores son exactamente los que
-ya estaban escritos a mano dentro de cada componente y en las utilidades
-`.g4 … .g48`; lo único nuevo es que ahora tienen nombre.
-
-**Lo que no se trajo.** `.pantalla-web` y `.pantalla-movil` son marcos de ancho
-fijo, 1440 y 390 píxeles, que sirven para el archivo de mockups. La aplicación
-de verdad es fluida, así que en su lugar hay un contenedor `.pagina` con el
-mismo aire pero sin ancho fijo. Tampoco se trajo `.rotulo`, que es el letrero
-que identifica cada mockup.
-
-**Se agregaron dos componentes que no estaban en la lista del criterio.** El
-aviso (`.aviso`), que ya venía en el archivo de estilos y que toda pantalla
-necesita para mostrar un error o una confirmación: sin él cada uno pinta su
-propio rojo a mano, que es justo lo que HU-05 impide. Y el esqueleto de carga
-(`.esqueleto`), porque el inventario de pantallas pide esqueletos con la forma
-del contenido y no una rueda girando.
-
-**Insignias con nombre semántico.** Las cinco de los mockups son de dominio:
-activo, vendido, muerto, archivado y plan. Se agregaron las mismas con nombre
-general (`ins-exito`, `ins-info`, `ins-neutro`, `ins-adv`, `ins-error`), porque
-una insignia que dice "Sin verificar" no es un animal archivado. Los colores
-son los mismos.
-
-**El dorado caravana tiene dos usos y ninguno más.** El botón `.btn-plan` y la
-insignia `.ins-plan`. Es la regla del inventario de pantallas y es lo que se
-revisa en la revisión cruzada.
-
-**Componentes de React sobre las clases.** En `cliente/src/componentes/` hay un
-componente por cada uno: `Boton`, `Campo` con `CampoTexto` y `CampoLista`,
-`Tarjeta`, `Insignia`, `EstadoVacio`, `Alerta` y `Cargando`. Las pantallas usan
-el componente, no la clase. Así la etiqueta queda siempre unida a su control,
-que es lo que permite completar un formulario con el teclado, y nadie tiene que
-acordarse de qué clase va con cuál.
-
-**Catálogo dentro del proyecto.** Se agregó la pantalla `#/sistema-diseno`, que
-muestra todos los tokens y todos los componentes funcionando. Es el equivalente
-de la página 00 de Figma, pero dentro del código. Sirve para que nadie invente
-un componente que ya existe, para ver de un vistazo si un cambio en los tokens
-rompió algo, y para demostrar HU-05, que de otro modo no tiene nada que mostrar.
-
-**Navegación provisional.** No se instaló un enrutador: la regla del equipo es
-que las dependencias las instala Favio, y con dos pantallas no hace falta.
-`App.tsx` mira la dirección del navegador (`#/` y `#/sistema-diseno`). Cuando
-existan las pantallas de acceso se reemplaza por un enrutador de verdad y
-ninguna pantalla se entera.
-
-**Tipografías.** El `@import` de Google Fonts que traía el archivo de estilos se
-movió a `index.html`, con `preconnect`. Es el mismo pedido, pero el navegador lo
-empieza antes en lugar de esperar a que termine de descargar el CSS. Las
-familias alternativas quedan declaradas en `tokens.css`, así que sin conexión la
-pantalla sigue siendo legible aunque cambie la letra.
-
-**Se borraron `App.css` e `index.css`.** Eran la plantilla de Vite: definían
-colores y tamaños por fuera del sistema, que es justo lo que el tercer criterio
-prohíbe.
-
-**El `estilos.css` de la raíz queda como fuente de los mockups.** Ya no lo usa
-el proyecto. Conviene moverlo a `documentos/` para que nadie lo edite pensando
-que está cambiando la aplicación.
-
-**La pantalla de HU-15 se revistió sin tocar su lógica.** Son las mismas
-llamadas, los mismos estados y las mismas reglas. Lo único que cambió es que ya
-no queda un solo color ni un solo tamaño escrito a mano en la pantalla.
+**Lo que se borró.** Los círculos vacíos del menú lateral (`.punto`), que
+estaban de relleno, y los dos iconos que yo había dibujado a mano
+(`IconoMarca` y `IconoCorral`). Los dibujados a mano quedaban parecidos a
+Lucide pero no iguales, y esa diferencia se nota cuando están al lado.

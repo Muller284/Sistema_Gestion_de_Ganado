@@ -7,7 +7,9 @@ import {
   Dato,
   Datos,
   EstadoVacio,
+  Icono,
   Insignia,
+  type NombreIcono,
   Tarjeta,
 } from '../../componentes';
 
@@ -38,6 +40,34 @@ const COLORES: { nombre: string; variable: string }[] = [
   { nombre: 'Advertencia', variable: '--adv-base' },
   { nombre: 'Error', variable: '--error-base' },
   { nombre: 'Información', variable: '--info-base' },
+];
+
+/** Todos los iconos del sistema, en el orden en que aparecen en Iconos.tsx. */
+const ICONOS: NombreIcono[] = [
+  'caravana',
+  'casa',
+  'animal',
+  'corral',
+  'sanidad',
+  'balanza',
+  'equipo',
+  'plan',
+  'info',
+  'exito',
+  'advertencia',
+  'error',
+  'pendiente',
+  'lapiz',
+  'archivar',
+  'mas',
+  'correo',
+  'llave',
+  'regla',
+  'ubicacion',
+  'produccion',
+  'entrar',
+  'enviar',
+  'persona-mas',
 ];
 
 function Muestra({ nombre, variable }: { nombre: string; variable: string }) {
@@ -167,6 +197,27 @@ export function PaginaSistemaDiseno() {
           </div>
         </Tarjeta>
 
+        <Tarjeta titulo="Iconos">
+          <div className="col g16">
+            <p className="cuerpo c-600">
+              Son de <a href="https://lucide.dev">Lucide</a>, con licencia ISC.
+              Los trazos están copiados en{' '}
+              <span className="dato">componentes/Iconos.tsx</span>: no hay
+              ninguna dependencia instalada. Se usan con{' '}
+              <span className="dato">&lt;Icono nombre="corral" /&gt;</span> y
+              toman el color del texto que los rodea.
+            </p>
+            <div className="rejilla-iconos">
+              {ICONOS.map((nombre) => (
+                <div key={nombre} className="muestra-icono">
+                  <Icono nombre={nombre} tamano={24} />
+                  <span className="dato">{nombre}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Tarjeta>
+
         <Tarjeta titulo="Alertas">
           <div className="col g16">
             <Alerta variante="exito">Rancho creado.</Alerta>
@@ -184,6 +235,7 @@ export function PaginaSistemaDiseno() {
 
         <Tarjeta titulo="Estado vacío">
           <EstadoVacio
+            icono="animal"
             titulo="Todavía no tienes animales"
             texto="Registra el primero o impórtalos desde un archivo de Excel."
             accion={<Boton variante="primario">Registrar animal</Boton>}

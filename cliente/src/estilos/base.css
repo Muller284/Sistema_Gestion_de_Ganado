@@ -1,5 +1,15 @@
 /* ============================================================================
  * HU-05 · Estilos base
+ * ----------------------------------------------------------------------------
+ * La puesta a cero, la tipografia y las utilidades del archivo estilos.css de
+ * los mockups, con los valores escritos a mano reemplazados por las variables
+ * de tokens.css. Los valores no cambiaron.
+ *
+ * Lo que NO se trajo de los mockups:
+ *   .pantalla-web / .pantalla-movil   son marcos de ancho fijo (1440 y 390 px)
+ *                                     para el archivo de mockups. La aplicacion
+ *                                     de verdad es fluida.
+ *   .rotulo                           el letrero que identifica cada mockup.
  * ==========================================================================*/
 
 *,
@@ -245,6 +255,10 @@ a:hover {
   height: var(--e-48);
   border: var(--borde) solid var(--arena-200);
   border-radius: var(--r-md);
+}
+
+.centrado {
+  text-align: center;
 }
 
 .rotulo-token {

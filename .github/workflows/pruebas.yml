@@ -1,5 +1,18 @@
+# ============================================================================
+#
+# Que cambia y por que:
+#   npm test ya no corre solo aislamiento.test.js. Ahora corre tambien
+#   registro.test.js y cuenta.test.js, y esas dos hablan con el servidor por
+#   HTTP, no solo con la base. Sin levantar el servidor, la integracion
+#   continua se va a poner en rojo apenas suba este commit.
+#
+#   Se agrega un paso que levanta el servidor en segundo plano y espera a que
+#   responda antes de correr las pruebas. Si no responde en 30 segundos, el
+#   paso falla y dice por que, en lugar de dejar 30 pruebas fallando sin
+#   explicacion.
+# ============================================================================
+
 # Corre las pruebas en cada solicitud de integracion y en cada cambio de main.
-# Segundo criterio de aceptacion de HU-01.
 name: Pruebas
 
 on:
@@ -54,7 +67,22 @@ jobs:
         working-directory: servidor
         run: npm run sembrar
 
-      - name: Pruebas de aislamiento entre ranchos
+      - name: Levantar el servidor
+        working-directory: servidor
+        run: |
+          node dist/main.js > servidor.log 2>&1 &
+          for intento in $(seq 1 30); do
+            if curl -sf http://localhost:3000/paises > /dev/null; then
+              echo "El servidor responde."
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "El servidor no respondio en 30 segundos. Su salida:"
+          cat servidor.log
+          exit 1
+
+      - name: Pruebas del servidor
         working-directory: servidor
         run: npm test
 
@@ -72,6 +100,10 @@ jobs:
       - name: Instalar dependencias
         working-directory: cliente
         run: npm ci
+
+      - name: Revisar el estilo del codigo
+        working-directory: cliente
+        run: npm run lint
 
       - name: Compilar
         working-directory: cliente
