@@ -527,3 +527,52 @@ dibuja a mano en la pantalla.
 estaban de relleno, y los dos iconos que yo había dibujado a mano
 (`IconoMarca` y `IconoCorral`). Los dibujados a mano quedaban parecidos a
 Lucide pero no iguales, y esa diferencia se nota cuando están al lado.
+
+---
+
+## 21. El alta es un recorrido, no tres pantallas sueltas
+
+**Fecha:** 22 de septiembre de 2026
+**Historias:** HU-06, HU-07, HU-15
+**Quién:** Rafael Taborga
+
+**El problema.** Las tres pantallas del alta funcionaban y cada una cumplía su
+criterio, pero se sentían como pantallas acomodadas y no como un sistema. Dos
+razones concretas, las dos arregladas acá:
+
+1. **La pantalla de "revisa tu correo" era un callejón sin salida.** El correo
+   se abre en otra pestaña o en el celular. Quien se quedaba en la primera
+   pantalla no tenía forma de enterarse de que ya había confirmado, salvo
+   recargar a mano. Un sistema que no reacciona parece muerto aunque por
+   debajo esté todo bien.
+2. **No se veía el recorrido.** Tres pantallas seguidas sin nada que dijera de
+   dónde se venía ni qué faltaba.
+
+**Lo que se hizo.**
+
+`componentes/EsperaDeCorreo.tsx` le pregunta al servidor cada cuatro segundos
+si la cuenta sigue esperando algo (`GET /usuarios/yo`). En cuanto deja de
+esperar, la pantalla avanza sola. Se corta a los cinco minutos: una pestaña
+olvidada abierta toda la tarde no tiene por qué seguir preguntando.
+
+Se eligió preguntar cada tanto y no algo más elaborado porque no agrega
+ninguna dependencia, funciona igual entre pestañas distintas y entre
+dispositivos distintos, y son veinte líneas que cualquiera del equipo puede
+leer. Cuando exista HU-12 se puede reemplazar por lo que traiga el manejo de
+sesión, y solo cambia este archivo.
+
+`componentes/PasosDeAlta.tsx` es el hilo "Cuenta · Correo · Rancho" que va
+arriba de las tres pantallas, incluida la de crear el rancho, que vive en el
+otro marco. Es un indicador, no un menú: no navega, porque no se puede
+confirmar un correo antes de tener cuenta.
+
+En el panel, la tarjeta "Siguientes pasos" pasó a ser **"Tu recorrido"** y
+muestra lo hecho con tilde y lo que falta con su fase. Antes decía "Rancho
+creado. Listo." escrito a mano, que era verdad por casualidad: esa tarjeta solo
+aparece cuando el rancho existe.
+
+**Lo que NO se hizo, a propósito.** No hay cierre de sesión en el producto: eso
+es HU-12 y es de Favio. La barra de demostración ganó un "Empezar de cero" que
+olvida el usuario y vuelve al registro, para poder recorrer el alta entera sin
+borrar el almacenamiento del navegador a mano. Vive en la barra provisional y
+se borra con ella.

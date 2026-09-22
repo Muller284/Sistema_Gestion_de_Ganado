@@ -851,3 +851,115 @@ body:has(.barra-demo) .acceso__panel {
   color: var(--arena-700);
   text-align: center;
 }
+
+/* ============================================================================
+ * HILO DE PASOS DEL ALTA
+ * Une el registro, la confirmacion del correo y la creacion del rancho. Sin
+ * esto las tres pantallas se leen como tres cosas sueltas.
+ * ==========================================================================*/
+
+.pasos-alta {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  margin: 0 0 var(--e-24);
+  padding: 0;
+  list-style: none;
+}
+
+.pasos-alta li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-6);
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  color: var(--arena-400);
+  white-space: nowrap;
+}
+
+/* La rayita que separa un paso del siguiente. */
+.pasos-alta li + li::before {
+  content: '';
+  width: var(--e-16);
+  height: var(--borde);
+  background: var(--arena-200);
+  margin-right: var(--e-6);
+}
+
+.pasos-alta .marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-20);
+  height: var(--e-20);
+  border-radius: var(--r-full);
+  border: var(--borde) solid var(--arena-200);
+  font-size: var(--t-etiqueta);
+  font-weight: var(--peso-fuerte);
+  flex-shrink: 0;
+}
+
+.pasos-alta .hecho { color: var(--exito-texto); }
+.pasos-alta .hecho .marca {
+  border-color: var(--exito-borde);
+  background: var(--exito-bg);
+}
+
+.pasos-alta .actual { color: var(--corral-700); font-weight: var(--peso-medio); }
+.pasos-alta .actual .marca {
+  border-color: var(--corral-600);
+  background: var(--corral-600);
+  color: var(--arena-0);
+}
+
+/* Dentro del panel el hilo va sobre el fondo arena, no sobre el blanco. */
+.app__ancho .pasos-alta { margin-bottom: 0; }
+
+/* ============================================================================
+ * ESPERA VIVA
+ * El aviso de que la pantalla se va a mover sola. El punto late para que se
+ * entienda que algo esta pasando aunque no se vea nada.
+ * ==========================================================================*/
+
+.espera {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  margin: 0;
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  color: var(--arena-500);
+}
+
+.espera-detenida { color: var(--adv-texto); }
+
+.latido {
+  width: var(--e-8);
+  height: var(--e-8);
+  border-radius: var(--r-full);
+  background: var(--corral-500);
+  flex-shrink: 0;
+  animation: latido 1.6s ease-in-out infinite;
+}
+
+@keyframes latido {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+/* Quien pidio que no se muevan las cosas, no ve el latido moverse. */
+@media (prefers-reduced-motion: reduce) {
+  .latido { animation: none; }
+}
+
+/* El boton de la barra de demostracion. Se borra con ella. */
+.barra-demo .enlace-demo {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--corral-300);
+  font-family: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

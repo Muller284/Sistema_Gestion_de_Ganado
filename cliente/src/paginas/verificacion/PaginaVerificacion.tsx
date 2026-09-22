@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Alerta, Boton, CampoTexto, Cargando, DisenoAcceso, Icono } from '../../componentes';
+import {
+  Alerta,
+  Boton,
+  CampoTexto,
+  Cargando,
+  DisenoAcceso,
+  EsperaDeCorreo,
+  Icono,
+} from '../../componentes';
 import { api } from '../../servicios/api';
 
 /**
@@ -15,11 +23,17 @@ import { api } from '../../servicios/api';
  * El enlace del correo apunta a  #/verificar?token=...  y esta pantalla manda
  * el token al servidor por POST. Asi el token no queda escrito en los
  * registros de acceso de los servidores por los que pasa la peticion.
+ *
+ * Mientras esta pendiente, la pantalla se pregunta sola si la cuenta ya quedo
+ * confirmada. El correo se suele abrir en otra pestaña o en el celular, y sin
+ * eso esta se quedaria esperando para siempre a que alguien la recargue.
  */
 
 interface Propiedades {
   /** El correo de la cuenta, cuando se conoce. Evita tener que escribirlo. */
   correo?: string;
+  /** Se llama cuando la cuenta queda confirmada, para que App siga sola. */
+  alConfirmar?: () => void;
 }
 
 function tokenDeLaDireccion(): string {
@@ -31,7 +45,7 @@ function tokenDeLaDireccion(): string {
   return new URLSearchParams(hash.slice(signo + 1)).get('token') ?? '';
 }
 
-export function PaginaVerificacion({ correo = '' }: Propiedades) {
+export function PaginaVerificacion({ correo = '', alConfirmar }: Propiedades) {
   const token = tokenDeLaDireccion();
   const [estado, setEstado] = useState<'confirmando' | 'confirmado' | 'pendiente'>(
     token ? 'confirmando' : 'pendiente',
@@ -48,7 +62,10 @@ export function PaginaVerificacion({ correo = '' }: Propiedades) {
     void (async () => {
       try {
         await api.verificarCorreo(token);
-        if (vigente) setEstado('confirmado');
+        if (!vigente) return;
+        setEstado('confirmado');
+        // Se avisa hacia arriba para que App deje de creer que falta algo.
+        alConfirmar?.();
       } catch (e) {
         if (!vigente) return;
         setError((e as Error).message);
@@ -58,7 +75,18 @@ export function PaginaVerificacion({ correo = '' }: Propiedades) {
     return () => {
       vigente = false;
     };
+    // alConfirmar no entra como dependencia a proposito: cambia en cada
+    // renderizado de App y volveria a mandar el token una y otra vez.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  function entrar() {
+    // Quien navega es App: ademas de cambiar la direccion tiene que volver a
+    // preguntar por la cuenta, porque el token que se acaba de consumir
+    // cambio el estado en el servidor.
+    if (alConfirmar) alConfirmar();
+    else window.location.hash = '#/';
+  }
 
   async function reenviar() {
     setError('');
@@ -78,7 +106,12 @@ export function PaginaVerificacion({ correo = '' }: Propiedades) {
 
   if (estado === 'confirmando') {
     return (
-      <DisenoAcceso icono="correo" titulo="Confirmando tu correo" subtitulo="Un momento.">
+      <DisenoAcceso
+        paso={2}
+        icono="correo"
+        titulo="Confirmando tu correo"
+        subtitulo="Un momento."
+      >
         <Cargando lineas={2} />
       </DisenoAcceso>
     );
@@ -87,6 +120,7 @@ export function PaginaVerificacion({ correo = '' }: Propiedades) {
   if (estado === 'confirmado') {
     return (
       <DisenoAcceso
+        paso={3}
         icono="exito"
         titulo="Correo confirmado"
         subtitulo="Tu cuenta quedó activa."
@@ -94,10 +128,10 @@ export function PaginaVerificacion({ correo = '' }: Propiedades) {
       >
         <div className="col g16">
           <Alerta variante="exito">Listo. Ya puedes usar el sistema.</Alerta>
-          <a className="btn btn-primario btn-bloque" href="#/">
+          <Boton variante="primario" bloque onClick={entrar}>
             <Icono nombre="entrar" tamano={18} />
-            Entrar
-          </a>
+            Crear mi rancho
+          </Boton>
         </div>
       </DisenoAcceso>
     );
@@ -105,6 +139,7 @@ export function PaginaVerificacion({ correo = '' }: Propiedades) {
 
   return (
     <DisenoAcceso
+      paso={2}
       icono="correo"
       titulo="Confirma tu correo"
       subtitulo="Sin confirmarlo no se puede entrar al sistema."
@@ -139,6 +174,8 @@ export function PaginaVerificacion({ correo = '' }: Propiedades) {
             es el enlace: <a href={enlace}>ábrelo aquí</a>.
           </Alerta>
         )}
+
+        <EsperaDeCorreo alConfirmar={() => alConfirmar?.()} />
       </div>
     </DisenoAcceso>
   );
