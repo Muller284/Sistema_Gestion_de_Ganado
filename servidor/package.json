@@ -9,11 +9,12 @@
     "construir": "nest build",
     "iniciar": "nest start",
     "start:dev": "nest start --watch",
-    "test": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js",
-    "probar": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js",
+    "test": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js && node pruebas/bloqueo.test.js",
+    "probar": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js && node pruebas/bloqueo.test.js",
     "probar:aislamiento": "node pruebas/aislamiento.test.js",
     "probar:registro": "node pruebas/registro.test.js",
-    "probar:cuenta": "node pruebas/cuenta.test.js"
+    "probar:cuenta": "node pruebas/cuenta.test.js",
+    "probar:bloqueo": "node pruebas/bloqueo.test.js"
   },
   "repository": {
     "type": "git",
