@@ -158,4 +158,99 @@ export class RepositorioUsuario {
       [usuarioId, contrasenaHash, autorId],
     );
   }
+
+  /**
+   * HU-11. Registra un intento fallido de autenticación.
+   * Tras cinco intentos fallidos consecutivos, bloquea el acceso por 15 minutos.
+   */
+  async registrarIntentoFallido(correo: string): Promise<{
+    bloqueado: boolean;
+    bloqueadoHasta: Date | null;
+    intentos: number;
+  }> {
+    const usuario = await this.bd.query(
+      `SELECT id, intentos_fallidos, bloqueado_hasta
+         FROM usuarios
+        WHERE LOWER(correo) = LOWER($1) AND eliminado_en IS NULL`,
+      [correo],
+    );
+
+    if ((usuario.rowCount ?? 0) === 0) {
+      return { bloqueado: false, bloqueadoHasta: null, intentos: 0 };
+    }
+
+    const { id, intentos_fallidos } = usuario.rows[0];
+    const nuevosIntentos = (intentos_fallidos || 0) + 1;
+
+    if (nuevosIntentos >= 5) {
+      const resultado = await this.bd.query(
+        `UPDATE usuarios
+            SET intentos_fallidos = $2,
+                bloqueado_hasta = CURRENT_TIMESTAMP + INTERVAL '15 minutes',
+                modificado_en = CURRENT_TIMESTAMP
+          WHERE id = $1
+          RETURNING bloqueado_hasta`,
+        [id, nuevosIntentos],
+      );
+      return {
+        bloqueado: true,
+        bloqueadoHasta: resultado.rows[0].bloqueado_hasta,
+        intentos: nuevosIntentos,
+      };
+    }
+
+    await this.bd.query(
+      `UPDATE usuarios
+          SET intentos_fallidos = $2,
+              modificado_en = CURRENT_TIMESTAMP
+        WHERE id = $1`,
+      [id, nuevosIntentos],
+    );
+
+    return {
+      bloqueado: false,
+      bloqueadoHasta: null,
+      intentos: nuevosIntentos,
+    };
+  }
+
+  /**
+   * HU-11. Reinicia el contador de intentos fallidos y el bloqueo tras un ingreso exitoso.
+   */
+  async reiniciarIntentosFallidos(usuarioId: string): Promise<void> {
+    await this.bd.query(
+      `UPDATE usuarios
+          SET intentos_fallidos = 0,
+              bloqueado_hasta = NULL,
+              modificado_en = CURRENT_TIMESTAMP
+        WHERE id = $1`,
+      [usuarioId],
+    );
+  }
+
+  /**
+   * HU-11. Comprueba si una cuenta se encuentra actualmente bloqueada por intentos fallidos.
+   */
+  async estaBloqueado(correo: string): Promise<{
+    bloqueado: boolean;
+    bloqueadoHasta: Date | null;
+  }> {
+    const resultado = await this.bd.query(
+      `SELECT bloqueado_hasta,
+              (bloqueado_hasta IS NOT NULL AND bloqueado_hasta > CURRENT_TIMESTAMP) AS actualmente_bloqueado
+         FROM usuarios
+        WHERE LOWER(correo) = LOWER($1) AND eliminado_en IS NULL`,
+      [correo],
+    );
+
+    if ((resultado.rowCount ?? 0) === 0) {
+      return { bloqueado: false, bloqueadoHasta: null };
+    }
+
+    return {
+      bloqueado: Boolean(resultado.rows[0].actualmente_bloqueado),
+      bloqueadoHasta: resultado.rows[0].bloqueado_hasta,
+    };
+  }
 }
+
