@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Icono, type NombreIcono } from './Iconos';
 import { Marca } from './Marca';
+import { PasosDeAlta } from './PasosDeAlta';
 
 /**
  * El marco de las pantallas de acceso, tal como está en los mockups:
@@ -16,6 +17,8 @@ interface Propiedades {
   subtitulo?: string;
   /** Emblema redondo arriba del título: dice de qué se trata la pantalla. */
   icono?: NombreIcono;
+  /** En qué paso del alta está esta pantalla. Sin esto no se muestra el hilo. */
+  paso?: 1 | 2 | 3;
   /** Va debajo del formulario, en letra chica y centrado. */
   nota?: ReactNode;
   children: ReactNode;
@@ -25,6 +28,7 @@ export function DisenoAcceso({
   titulo,
   subtitulo,
   icono,
+  paso,
   nota,
   children,
 }: Propiedades) {
@@ -50,6 +54,7 @@ export function DisenoAcceso({
 
       <main className="acceso__contenido">
         <div className="acceso__columna">
+          {paso && <PasosDeAlta actual={paso} />}
           {icono && (
             <span className="acceso__emblema">
               <Icono nombre={icono} tamano={24} />

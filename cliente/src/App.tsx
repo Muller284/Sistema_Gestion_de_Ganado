@@ -54,6 +54,20 @@ function App() {
     setCargando(false);
   }, []);
 
+  /**
+   * El paso siguiente del alta, una vez confirmado el correo.
+   *
+   * Lo llaman el registro y la verificacion. Cambia la direccion Y vuelve a
+   * preguntar por la cuenta: sin lo segundo, App seguiria creyendo que falta
+   * confirmar el correo y el portero devolveria al usuario a la misma
+   * pantalla de la que acaba de salir.
+   */
+  const seguirAlRancho = useCallback(() => {
+    window.location.hash = '#/';
+    setCargando(true);
+    void preguntarPorLaCuenta();
+  }, [preguntarPorLaCuenta]);
+
   useEffect(() => {
     let vigente = true;
     void (async () => {
@@ -77,8 +91,12 @@ function App() {
 
   function elegirPantalla() {
     // Estas tres se ven siempre: son la salida de los bloqueos y el catalogo.
-    if (ruta === 'registro') return <PaginaRegistro />;
-    if (ruta === 'verificar') return <PaginaVerificacion correo={cuenta?.correo} />;
+    if (ruta === 'registro') return <PaginaRegistro alConfirmar={seguirAlRancho} />;
+    if (ruta === 'verificar') {
+      return (
+        <PaginaVerificacion correo={cuenta?.correo} alConfirmar={seguirAlRancho} />
+      );
+    }
     if (ruta === 'sistema-diseno') return <PaginaSistemaDiseno />;
 
     if (cargando) {
@@ -91,7 +109,9 @@ function App() {
 
     // El portero.
     if (cuenta?.pendiente === 'verificar_correo') {
-      return <PaginaVerificacion correo={cuenta.correo} />;
+      return (
+        <PaginaVerificacion correo={cuenta.correo} alConfirmar={seguirAlRancho} />
+      );
     }
     if (cuenta?.pendiente === 'cambiar_contrasena') {
       return (

@@ -12,6 +12,7 @@ import {
   EstadoVacio,
   Icono,
   Insignia,
+  PasosDeAlta,
   Tarjeta,
 } from '../../componentes';
 import {
@@ -262,33 +263,14 @@ export function PaginaRancho() {
                 </Datos>
               </Tarjeta>
 
-              <Tarjeta titulo="Siguientes pasos">
+              <Tarjeta titulo="Tu recorrido">
                 <ol className="pasos">
-                  <li className="hecho">
-                    <Icono nombre="exito" tamano={18} />
-                    <span>
-                      <strong>Rancho creado.</strong>{' '}
-                      <span className="c-600">Listo.</span>
-                    </span>
-                  </li>
-                  <li>
-                    <Icono nombre="pendiente" tamano={18} />
-                    <span>
-                      Cargar los animales · <span className="pie">fase 2</span>
-                    </span>
-                  </li>
-                  <li>
-                    <Icono nombre="pendiente" tamano={18} />
-                    <span>
-                      Crear los corrales · <span className="pie">fase 2</span>
-                    </span>
-                  </li>
-                  <li>
-                    <Icono nombre="pendiente" tamano={18} />
-                    <span>
-                      Invitar al equipo · <span className="pie">fase 2</span>
-                    </span>
-                  </li>
+                  <Paso hecho>Cuenta creada</Paso>
+                  <Paso hecho>Correo confirmado</Paso>
+                  <Paso hecho>Rancho creado</Paso>
+                  <Paso fase={2}>Cargar los animales</Paso>
+                  <Paso fase={2}>Crear los corrales</Paso>
+                  <Paso fase={2}>Invitar al equipo</Paso>
                 </ol>
               </Tarjeta>
             </div>
@@ -301,6 +283,8 @@ export function PaginaRancho() {
             texto="Este usuario no pertenece a ningún rancho. El propietario es quien lo crea."
           />
         )}
+
+        {!cargando && mostrarFormulario && !rancho && <PasosDeAlta actual={3} />}
 
         {!cargando && mostrarFormulario && (
           <Tarjeta titulo={rancho ? 'Editar rancho' : 'Crear mi rancho'}>
@@ -379,4 +363,28 @@ export function PaginaRancho() {
 
 function capitalizar(texto: string): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+/**
+ * Una linea del recorrido. Lo hecho lleva tilde; lo que falta, el circulo
+ * punteado y la fase en la que llega.
+ */
+function Paso({
+  hecho = false,
+  fase,
+  children,
+}: {
+  hecho?: boolean;
+  fase?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className={hecho ? 'hecho' : undefined}>
+      <Icono nombre={hecho ? 'exito' : 'pendiente'} tamano={18} />
+      <span>
+        {children}
+        {fase && <span className="pie"> · fase {fase}</span>}
+      </span>
+    </li>
+  );
 }

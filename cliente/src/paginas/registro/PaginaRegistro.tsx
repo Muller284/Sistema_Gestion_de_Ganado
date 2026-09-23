@@ -6,6 +6,7 @@ import {
   CampoTexto,
   Cargando,
   DisenoAcceso,
+  EsperaDeCorreo,
   Icono,
 } from '../../componentes';
 import { api, cambiarUsuario, type Pais, type RespuestaRegistro } from '../../servicios/api';
@@ -49,7 +50,12 @@ function enumerar(partes: string[]): string {
   return `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
 }
 
-export function PaginaRegistro() {
+interface Propiedades {
+  /** Se llama cuando la cuenta queda confirmada, para que App siga sola. */
+  alConfirmar?: () => void;
+}
+
+export function PaginaRegistro({ alConfirmar }: Propiedades) {
   const [formulario, setFormulario] = useState({ ...VACIO });
   const [paises, setPaises] = useState<Pais[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -121,6 +127,7 @@ export function PaginaRegistro() {
   if (listo) {
     return (
       <DisenoAcceso
+        paso={2}
         icono="correo"
         titulo="Revisa tu correo"
         subtitulo={`Le enviamos un enlace de confirmación a ${listo.usuario.correo}.`}
@@ -134,9 +141,9 @@ export function PaginaRegistro() {
             Confirma el correo para activar la cuenta. Hasta entonces no se
             puede entrar al sistema.
           </p>
-          <a className="btn btn-primario btn-bloque" href="#/verificar">
-            <Icono nombre="entrar" tamano={18} />
-            Ya lo confirmé, entrar
+          <a className="btn btn-secundario btn-bloque" href="#/verificar">
+            <Icono nombre="enviar" tamano={18} />
+            No me llegó, pedir otro
           </a>
           {listo.enlace_verificacion && (
             <Alerta variante="info">
@@ -145,6 +152,8 @@ export function PaginaRegistro() {
               <a href={listo.enlace_verificacion}>ábrelo aquí</a>.
             </Alerta>
           )}
+
+          <EsperaDeCorreo alConfirmar={() => alConfirmar?.()} />
         </div>
       </DisenoAcceso>
     );
@@ -152,6 +161,7 @@ export function PaginaRegistro() {
 
   return (
     <DisenoAcceso
+      paso={1}
       icono="persona-mas"
       titulo="Crea tu cuenta"
       subtitulo="10 días con todas las funciones. Sin tarjeta."
