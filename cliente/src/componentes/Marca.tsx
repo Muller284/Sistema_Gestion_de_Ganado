@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Icono } from './Iconos';
 
 /**
@@ -18,9 +19,9 @@ export function Marca({ como = 'span' }: { como?: 'span' | 'a' }) {
     </>
   );
   return como === 'a' ? (
-    <a className="acceso__marca" href="#/">
+    <Link className="acceso__marca" to="/">
       {contenido}
-    </a>
+    </Link>
   ) : (
     <span className="acceso__marca">{contenido}</span>
   );

@@ -12,6 +12,7 @@ import {
   EstadoVacio,
   Icono,
   Insignia,
+  MapaUbicacion,
   PasosDeAlta,
   Tarjeta,
 } from '../../componentes';
@@ -322,13 +323,32 @@ export function PaginaRancho() {
                   </option>
                 ))}
               </CampoLista>
+              <div className="col g8">
+                <span className="etiqueta-campo">Ubicación</span>
+                <MapaUbicacion
+                  latitud={formulario.latitud}
+                  longitud={formulario.longitud}
+                  alElegir={(latitud, longitud) =>
+                    setFormulario({
+                      ...formulario,
+                      latitud: String(latitud),
+                      longitud: String(longitud),
+                    })
+                  }
+                />
+              </div>
+
               <div className="par">
                 <CampoTexto
                   etiqueta="Latitud"
-                  ayuda="Opcional. Si cargas una, carga las dos."
+                  ayuda="Opcional. Se llena sola al marcar en el mapa."
                   {...campo('latitud')}
                 />
-                <CampoTexto etiqueta="Longitud" ayuda="Opcional." {...campo('longitud')} />
+                <CampoTexto
+                  etiqueta="Longitud"
+                  ayuda="Opcional. Si cargas una, carga las dos."
+                  {...campo('longitud')}
+                />
               </div>
               <div className="fila centro g8">
                 <Boton type="submit" variante="primario">

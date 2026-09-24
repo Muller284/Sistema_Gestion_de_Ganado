@@ -44,6 +44,22 @@
   /* Radios */
   --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-full:999px;
 
+  /* Alto de la barra de demostracion, que es fija y hay que descontar del
+     alto de las pantallas. Provisional: se borra con HU-08. */
+  --alto-barra-demo:44px;
+
+  /* Movimiento (agregado en HU-05).
+     Tres duraciones y dos curvas, y nada mas. Una animacion que no usa estos
+     valores se nota: va a una velocidad distinta del resto del sistema.
+       rapido  lo que responde al dedo: botones, enlaces, hover
+       med     lo que aparece: menus, avisos, chinchetas
+       lento   lo que entra al abrir una pantalla
+     La curva de salida arranca rapido y frena, que es como se lee mejor lo
+     que aparece. La normal es la de siempre, para ida y vuelta. */
+  --t-rapido:120ms; --t-med:220ms; --t-lento:380ms;
+  --curva:cubic-bezier(.4,0,.2,1);
+  --curva-salida:cubic-bezier(0,0,.2,1);
+
   /* Sombras */
   --s-sm:0 1px 2px rgba(28,26,23,.06);
   --s-md:0 2px 8px rgba(28,26,23,.08);

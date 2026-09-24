@@ -401,7 +401,7 @@
 .acceso {
   display: grid;
   grid-template-columns: 400px 1fr;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--alto-barra-demo));
 }
 
 .acceso__panel {
@@ -528,13 +528,17 @@
 .app {
   display: grid;
   grid-template-columns: var(--ancho-lateral) 1fr;
-  min-height: 100vh;
+  /* Se le resta el alto de la barra de demostracion, que es fija y si no
+     taparia el final de cada pantalla: el credito de OpenStreetMap del mapa
+     vive justo ahi y la licencia obliga a que se vea. Cuando HU-08 borre la
+     barra, esta resta se va con ella y vuelve a ser 100vh. */
+  min-height: calc(100vh - var(--alto-barra-demo));
 }
 
 .app__panel {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--alto-barra-demo));
   position: sticky;
   top: 0;
 }
@@ -757,6 +761,10 @@
  * Provisional. Se borra junto con el componente cuando exista HU-08.
  * ==========================================================================*/
 
+/* La barra es fija, asi que el documento necesita ese hueco al final o el
+   ultimo trozo de cada pantalla queda debajo de ella. Se borra con HU-08. */
+body { padding-bottom: var(--alto-barra-demo); }
+
 .barra-demo {
   position: fixed;
   left: 0;
@@ -963,3 +971,138 @@ body:has(.barra-demo) .acceso__panel {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ============================================================================
+ * MAPA DE UBICACION (HU-15)
+ * Leaflet trae lo suyo; aca solo se le da la forma del sistema de diseno y se
+ * arregla la chincheta, que es un icono nuestro y no la imagen de Leaflet.
+ * ==========================================================================*/
+
+.etiqueta-campo {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  font-weight: var(--peso-medio);
+  color: var(--arena-700);
+}
+
+.mapa { display: flex; flex-direction: column; gap: var(--e-8); }
+
+.mapa__lienzo {
+  height: 280px;
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-md);
+  background: var(--arena-100);
+  /* Leaflet pone sus controles en capas altas; esto lo mantiene por debajo
+     del menu de la cuenta, que se despliega encima. */
+  z-index: 0;
+}
+
+.mapa__chincheta {
+  color: var(--error-base);
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+  animation: chincheta-cae var(--t-med) var(--curva-salida);
+}
+
+@keyframes chincheta-cae {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Los controles de Leaflet, con el radio y la sombra del sistema. */
+.leaflet-touch .leaflet-bar,
+.leaflet-bar {
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-sm);
+  box-shadow: var(--s-sm);
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  color: var(--arena-900);
+  background: var(--arena-0);
+}
+
+.leaflet-bar a:hover { background: var(--arena-100); }
+
+.leaflet-container { font-family: var(--f-cuerpo); }
+.leaflet-control-attribution { font-size: 10px; }
+
+.mapa__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-12);
+}
+
+/* ============================================================================
+ * MENU DE LA CUENTA
+ * ==========================================================================*/
+
+.menu-usuario { position: relative; }
+
+.avatar-boton {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform var(--t-rapido) var(--curva), box-shadow var(--t-rapido) var(--curva);
+}
+
+.avatar-boton:hover { transform: scale(1.06); box-shadow: var(--s-sm); }
+.avatar-boton:active { transform: scale(0.97); }
+
+.menu-usuario__tarjeta {
+  position: absolute;
+  top: calc(100% + var(--e-8));
+  right: 0;
+  z-index: 20;
+  width: 260px;
+  padding: var(--e-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-10);
+  background: var(--arena-0);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-md);
+  box-shadow: var(--s-md);
+  animation: menu-aparece var(--t-rapido) var(--curva-salida);
+  transform-origin: top right;
+}
+
+@keyframes menu-aparece {
+  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.menu-usuario__quien { display: flex; align-items: center; gap: var(--e-10); }
+.menu-usuario__quien strong { display: block; font-size: var(--t-cuerpo); }
+.menu-usuario__quien .pie { display: block; }
+
+.menu-usuario__datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--e-4) var(--e-12);
+  margin: 0;
+  padding-top: var(--e-10);
+  border-top: var(--borde) solid var(--arena-200);
+  font-size: var(--t-pie);
+}
+
+.menu-usuario__datos dt { color: var(--arena-500); }
+.menu-usuario__datos dd { margin: 0; color: var(--arena-900); }
+
+.menu-usuario__accion {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  padding: var(--e-8);
+  margin: 0 calc(var(--e-8) * -1);
+  border-radius: var(--r-sm);
+  color: var(--arena-900);
+  font-size: var(--t-cuerpo);
+  text-decoration: none;
+  transition: background var(--t-rapido) var(--curva);
+}
+
+.menu-usuario__accion:hover:not(.desactivado) { background: var(--arena-100); }
+.menu-usuario__accion .pie { margin-left: auto; }
+.menu-usuario__accion.desactivado { color: var(--arena-400); cursor: default; }

@@ -16,6 +16,8 @@ export { EsperaDeCorreo } from './EsperaDeCorreo';
 export { EstadoVacio } from './EstadoVacio';
 export { Icono, type NombreIcono } from './Iconos';
 export { Insignia } from './Insignia';
+export { MapaUbicacion } from './MapaUbicacion';
+export { MenuUsuario } from './MenuUsuario';
 export { IconoMarca, Marca } from './Marca';
 export { PasosDeAlta } from './PasosDeAlta';
 export { Dato, Datos, Tarjeta } from './Tarjeta';

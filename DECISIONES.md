@@ -576,3 +576,136 @@ es HU-12 y es de Favio. La barra de demostración ganó un "Empezar de cero" que
 olvida el usuario y vuelve al registro, para poder recorrer el alta entera sin
 borrar el almacenamiento del navegador a mano. Vive en la barra provisional y
 se borra con ella.
+
+---
+
+## 22. El mapa: Leaflet y OpenStreetMap
+
+**Fecha:** 24 de septiembre de 2026
+**Historia:** HU-15
+**Quién:** Rafael Taborga
+
+Pidieron un mapa para no tener que escribir la latitud y la longitud a mano.
+
+**Primero se escribió a mano**, sin dependencias, porque la regla del equipo era
+que las instalaba Favio. Funcionaba: la proyección Web Mercator en
+`servicios/proyeccion.ts` con siete pruebas propias, y unas ciento cincuenta
+líneas de arrastre y teselas.
+
+**Después el equipo abrió la puerta a instalar dependencias y se cambió a
+Leaflet.** El motivo no es que lo de antes estuviera mal, sino lo que faltaba y
+no se ve en una demostración corta: acercar con la rueda, el pellizco en
+pantalla táctil, el teclado, el mundo que da la vuelta en los bordes y una
+docena de casos raros más. Eso ya está escrito y probado por mucha gente.
+
+Se borraron `proyeccion.ts` y sus pruebas. Código que no se usa es peor que
+código que no existe, aunque tenga pruebas en verde: el que venga detrás no
+sabe si puede tocarlo.
+
+**Lo que se instaló:** `leaflet` y `@types/leaflet`.
+
+**Las imágenes son de OpenStreetMap**, libre y gratuito. La licencia obliga a
+mostrar el crédito: Leaflet lo pone abajo a la derecha y no se quita. Se
+descubrió probando que la barra de demostración, que es fija, tapaba justo esa
+esquina; se arregló reservándole su alto al documento.
+
+**Dos cosas que se cambiaron respecto de lo que trae Leaflet:**
+
+1. **La chincheta es nuestra.** Leaflet trae una imagen propia que los
+   empaquetadores rompen y que no tiene nada que ver con el sistema de diseño.
+   Se usa el icono `ubicacion` metido en un `divIcon`, anclado por la punta.
+2. **La rueda del ratón no acerca.** El mapa vive dentro de un formulario
+   largo: quien baja por la página pasaría por encima del mapa y se acercaría
+   sin querer, perdiendo el sitio. Se acerca con los botones, con el teclado o
+   con la rueda manteniendo Ctrl.
+
+**El mapa es una ayuda, no el único camino.** Los campos de latitud y longitud
+siguen ahí y se pueden escribir a mano; la chincheta sigue lo que digan. Quien
+no tenga internet, use lector de pantalla o traiga las coordenadas de un GPS no
+depende del mapa, y si las teselas no cargan el formulario lo dice y sigue
+funcionando.
+
+---
+
+## 23. El círculo de la cuenta es un botón, pero no cierra sesión
+
+**Fecha:** 24 de septiembre de 2026
+**Historia:** HU-05
+**Quién:** Rafael Taborga
+
+El círculo con la inicial se veía pulsable y no lo era. Ahora abre una tarjeta
+con el nombre, el rol, el rancho y un atajo al panel. Se cierra con Escape, con
+un clic afuera y al elegir algo.
+
+**No tiene cerrar sesión.** Eso es HU-12 y es de Favio. Aparece apagado y con
+el número de la historia, igual que los módulos del menú lateral que llegan en
+otra fase. Poner un botón que no cierra nada sería peor que no ponerlo, y
+escribirlo yo sería hacer el trabajo de otro.
+
+---
+
+## 24. El movimiento del sistema
+
+**Fecha:** 24 de septiembre de 2026
+**Historia:** HU-05
+**Quién:** Rafael Taborga
+
+El sistema se veía correcto pero quieto: todo aparecía de golpe y nada
+respondía al puntero. Se agregó `cliente/src/estilos/movimiento.css`, un solo
+archivo que se puede borrar entero sin que nada deje de funcionar.
+
+Cuatro reglas, que están escritas también en la cabecera del archivo:
+
+1. **El movimiento explica algo.** Lo que aparece, aparece desde donde viene.
+   Lo que se puede tocar, responde al tocarlo. Nada se mueve de adorno.
+2. **Corto.** Entre 120 y 380 ms. Se agregaron a `tokens.css` tres duraciones y
+   dos curvas: una animación que no use esos valores va a otra velocidad que el
+   resto y se nota.
+3. **Nada bloquea.** Solo opacidad y transform, que el navegador dibuja sin
+   rehacer el diseño. Nunca alto, ancho ni márgenes.
+4. **Quien pidió que las cosas no se muevan, no ve nada moverse.** El bloque
+   `prefers-reduced-motion` del final lo apaga todo. No es cortesía: a algunas
+   personas el movimiento en pantalla les produce mareo de verdad.
+
+Lo único que no es CSS es el contador de las cifras del panel, que sube desde
+cero hasta su valor en medio segundo. Está en `DisenoApp.tsx`, respeta la misma
+preferencia y no cuenta si el valor no empieza por un número, así que "Carne" y
+el guion de las cifras de la fase 2 se escriben tal cual.
+
+Se agregó también el foco visible en todo el sistema. Un foco invisible deja el
+teclado inservible y es el error de accesibilidad más común que hay.
+
+---
+
+## 25. Enrutador de verdad: react-router-dom
+
+**Fecha:** 24 de septiembre de 2026
+**Historias:** HU-05, HU-15
+**Quién:** Rafael Taborga
+
+Hasta ahora la navegación era leer `window.location.hash` a mano en `App.tsx` y
+partir la cadena. Funcionaba para cuatro pantallas y se notaba: los módulos del
+menú lateral eran enlaces muertos, el token del correo se sacaba cortando texto
+después del signo de pregunta, y no había forma de que una dirección
+desconocida hiciera algo sensato.
+
+Se instaló **react-router-dom**. Lo que cambia:
+
+- El menú lateral navega de verdad, y el módulo abierto se marca solo. Los de
+  fases futuras dejaron de ser enlaces y pasaron a ser texto apagado: un enlace
+  que no lleva a ningún lado confunde, y el teclado se paraba en él.
+- El token del correo sale de `useSearchParams`, no de cortar la cadena.
+- Una dirección que no existe vuelve al principio en lugar de quedar en blanco.
+- Cuando exista HU-08, el inicio de sesión es una ruta más.
+
+**Se usa `HashRouter` y no `BrowserRouter`**, a propósito. Con direcciones
+normales, escribir `/verificar` en la barra del navegador le pide ese archivo al
+servidor, que no existe, y da 404; para que funcione hay que configurar el
+servidor donde se publique. Con la almohadilla no hace falta configurar nada, y
+los enlaces de verificación ya enviados siguen sirviendo, porque son de la forma
+`/#/verificar?token=...`. Si algún día se publica con un servidor configurado,
+se cambia esa única línea.
+
+**El portero no cambió de sitio.** Sigue preguntando `GET /usuarios/yo` antes de
+dejar ver el sistema, y lo que vale sigue siendo `GuardiaCuentaLista`, en el
+servidor.
