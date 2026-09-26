@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Icono, type NombreIcono } from './Iconos';
 import { IconoMarca } from './Marca';
+import { api } from '../servicios/api';
 
 /**
  * El marco de las pantallas internas, tal como está en los mockups: menú
@@ -145,6 +146,34 @@ export function DisenoApp({
           </span>
           <span className="flex1" />
           <span className="avatar-inicial">{inicial(usuario.nombre)}</span>
+          <button
+            type="button"
+            className="boton-cerrar-sesion"
+            title="Cerrar sesión (HU-12)"
+            onClick={() => {
+              void api.cerrarSesion().then(() => {
+                window.location.hash = '#/ingreso';
+                window.location.reload();
+              });
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--c-600, #555)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              marginLeft: '0.75rem',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              padding: '0.35rem 0.6rem',
+              borderRadius: 'var(--radio-md, 6px)',
+            }}
+          >
+            <Icono nombre="salir" tamano={18} />
+            <span>Salir</span>
+          </button>
         </header>
 
         <main className="app__contenido">

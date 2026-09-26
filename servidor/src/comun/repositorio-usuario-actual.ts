@@ -1,18 +1,14 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Pool } from 'pg';
 import { POOL_BD } from './modulo-base-datos';
+import { verificarTokenAcceso } from './tokens';
 
 /**
  * Quien es el usuario que esta haciendo la peticion.
  *
- * PROVISIONAL, A PROPOSITO. El inicio de sesion es HU-08 y el manejo de
- * sesion es HU-12, las dos de Favio, y ninguna entra en la demostracion del
- * miercoles. Hasta que existan, el usuario se indica con la cabecera
- * x-usuario-id, o se toma el de USUARIO_DEMO_ID del archivo .env.
- *
- * Cuando HU-08 y HU-12 esten listas, se reemplaza el cuerpo de este archivo
- * por la lectura del token y no hay que tocar nada mas: el resto del codigo
- * solo conoce la interfaz UsuarioActual.
+ * HU-08 y HU-12:
+ * Resuelve la identidad a partir de un token firmado de vida corta (Bearer token),
+ * o a través de la cabecera x-usuario-id / USUARIO_DEMO_ID (modo compatibilidad/desarrollo).
  */
 export interface UsuarioActual {
   id: string;
@@ -30,11 +26,31 @@ export interface UsuarioActual {
 export class RepositorioUsuarioActual {
   constructor(@Inject(POOL_BD) private readonly bd: Pool) {}
 
-  async resolver(idEnCabecera?: string): Promise<UsuarioActual> {
-    const id = idEnCabecera || process.env.USUARIO_DEMO_ID;
+  async resolver(credencialEnCabecera?: string): Promise<UsuarioActual> {
+    let id: string | undefined;
+
+    if (credencialEnCabecera) {
+      const valor = credencialEnCabecera.startsWith('Bearer ')
+        ? credencialEnCabecera.slice(7).trim()
+        : credencialEnCabecera.trim();
+
+      // Si contiene puntos, es un token firmado JWT (HU-12)
+      if (valor.includes('.')) {
+        const payload = verificarTokenAcceso(valor);
+        if (!payload) {
+          throw new UnauthorizedException('Token de acceso inválido o expirado.');
+        }
+        id = payload.sub;
+      } else {
+        id = valor;
+      }
+    } else {
+      id = process.env.USUARIO_DEMO_ID;
+    }
+
     if (!id) {
       throw new UnauthorizedException(
-        'No se indico el usuario. Envia la cabecera x-usuario-id o define USUARIO_DEMO_ID en el .env.',
+        'No se indicó credencial de autenticación. Inicia sesión o envía un token válido.',
       );
     }
 
@@ -47,7 +63,7 @@ export class RepositorioUsuarioActual {
     );
     const fila = resultado.rows[0];
     if (!fila) {
-      throw new UnauthorizedException('El usuario indicado no existe o no esta activo.');
+      throw new UnauthorizedException('El usuario indicado no existe o no está activo.');
     }
 
     return {
@@ -61,3 +77,4 @@ export class RepositorioUsuarioActual {
     };
   }
 }
+

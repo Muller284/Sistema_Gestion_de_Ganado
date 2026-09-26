@@ -576,3 +576,26 @@ es HU-12 y es de Favio. La barra de demostración ganó un "Empezar de cero" que
 olvida el usuario y vuelve al registro, para poder recorrer el alta entera sin
 borrar el almacenamiento del navegador a mano. Vive en la barra provisional y
 se borra con ella.
+
+---
+
+## 24. Implementación de inicio de sesión (HU-08) y manejo de sesión (HU-12)
+
+**Fecha:** 26 de septiembre de 2026 · **Responsable:** Favio · **Sprint:** 1
+
+**Qué se resolvió.**
+1. **HU-08: Inicio de sesión.**
+   - Endpoint `POST /usuarios/ingreso`.
+   - Verifica credenciales contra el hash scrypt almacenado en `usuarios.contrasena_hash`.
+   - Si las credenciales fallan, el error devuelto es genérico (`Correo o contraseña incorrectos.`), sin revelar si el dato incorrecto fue el correo o la clave (Criterio 2).
+   - Se integra con la lógica de HU-11: tras 5 intentos fallidos consecutivos, la cuenta se bloquea por 15 minutos. Un ingreso exitoso reinicia el contador de intentos.
+   - Pantalla de inicio de sesión `PaginaIngreso.tsx` dentro del sistema de diseño (`DisenoAcceso`).
+
+2. **HU-12: Manejo de sesión y cierre.**
+   - Se utiliza la tabla preexistente `sesiones`.
+   - El token de refresco revocable es una cadena criptográficamente aleatoria de 40 bytes. En la base de datos se almacena únicamente su huella SHA-256 (`token_refresco_hash`).
+   - La sesión tiene una vigencia de **30 días de inactividad**. Cada refresco o actividad exitosa extiende la ventana por 30 días más (`actualizarActividad`).
+   - El token de acceso es de vida corta (15 minutos), firmado con HMAC-SHA256 usando el módulo nativo `crypto` de Node (sin paquetes externos).
+   - Cierre de sesión manual (`POST /usuarios/cierre` y botón en la barra superior): invalida la sesión de inmediato marcando `revocada_en = CURRENT_TIMESTAMP` en la base de datos y limpiando el almacenamiento local.
+   - Si el token de acceso expira en el cliente, el servicio `api.ts` intenta automáticamente renovarlo de forma transparente con el token de refresco antes de rechazar la petición.
+

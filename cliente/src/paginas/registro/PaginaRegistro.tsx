@@ -227,6 +227,13 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
               <Icono nombre="persona-mas" tamano={18} />
               {enviando ? 'Creando…' : 'Crear cuenta'}
             </Boton>
+
+            <p className="pie c-500 centrado" style={{ marginTop: '1.25rem' }}>
+              ¿Ya tienes una cuenta?{' '}
+              <a href="#/ingreso" className="enlace" style={{ fontWeight: 600 }}>
+                Inicia sesión aquí
+              </a>
+            </p>
           </form>
         )}
       </div>

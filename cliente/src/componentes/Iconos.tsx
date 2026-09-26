@@ -51,6 +51,7 @@ export type NombreIcono =
   | 'ubicacion'
   | 'produccion'
   | 'entrar'
+  | 'salir'
   | 'enviar'
   | 'persona-mas';
 
@@ -258,6 +259,15 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="m10 17 5-5-5-5" />
       <path d="M15 12H3" />
       <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+    </>
+  ),
+
+  // log-out
+  salir: (
+    <>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" x2="9" y1="12" y2="12" />
     </>
   ),
 

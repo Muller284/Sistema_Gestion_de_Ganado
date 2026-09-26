@@ -107,6 +107,19 @@ export class RepositorioUsuario {
     return resultado.rows[0] ?? null;
   }
 
+  /** HU-08. Obtiene la ficha completa para autenticar credenciales con hash. */
+  async buscarParaAutenticar(correo: string): Promise<any | null> {
+    const resultado = await this.bd.query(
+      `SELECT id, nombre, correo, contrasena_hash, rol, rancho_id,
+              correo_verificado, debe_cambiar_contrasena, estado,
+              intentos_fallidos, bloqueado_hasta
+         FROM usuarios
+        WHERE LOWER(correo) = LOWER($1) AND eliminado_en IS NULL`,
+      [correo],
+    );
+    return resultado.rows[0] ?? null;
+  }
+
   /** HU-07. Solo lo llama el servicio de verificacion, con un token consumido. */
   async marcarCorreoVerificado(usuarioId: string): Promise<void> {
     await this.bd.query(

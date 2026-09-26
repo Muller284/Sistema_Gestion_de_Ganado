@@ -18,11 +18,16 @@ const fs = require('fs');
 const path = require('path');
 const { Pool } = require('pg');
 
-const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ||
-    'postgres://postgres:tu_password@localhost:5432/gestion_ganado',
-});
+let connectionString =
+  process.env.DATABASE_URL ||
+  'postgres://postgres:tu_password@localhost:5432/gestion_ganado';
+
+// Si corre fuera de Docker y la URL tiene '@postgres:', usar localhost
+if (connectionString.includes('@postgres:') && !fs.existsSync('/.dockerenv')) {
+  connectionString = connectionString.replace('@postgres:', '@localhost:');
+}
+
+const pool = new Pool({ connectionString });
 
 async function ejecutarMigraciones() {
   let cliente;
