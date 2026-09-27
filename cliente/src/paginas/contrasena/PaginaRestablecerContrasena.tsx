@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alerta, Boton, CampoTexto, DisenoAcceso, Icono } from '../../componentes';
+import { Alerta, Boton, CampoTexto, DisenoAcceso,  } from '../../componentes';
 import { api } from '../../servicios/api';
 
 function faltasDeContrasena(contrasena: string): string[] {
