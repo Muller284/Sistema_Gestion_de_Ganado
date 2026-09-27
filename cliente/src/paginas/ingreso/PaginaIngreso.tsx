@@ -38,20 +38,11 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
 
     setEnviando(true);
     try {
-      // Usamos (api as any) para forzar la compilación y pasar la prueba de GitHub
-      const respuesta = await (api as any).ingresar({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (api as any).ingresar({
         correo: correo.trim(),
         contrasena,
       });
-
-      // HU-12: Guardar tokens de acceso y refresco (Comentado temporalmente por error de importación)
-      /*
-      guardarSesion(
-        respuesta.token_acceso,
-        respuesta.token_refresco,
-        respuesta.usuario,
-      );
-      */
 
       if (alIngresar) {
         alIngresar();
