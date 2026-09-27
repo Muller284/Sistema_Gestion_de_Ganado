@@ -1,8 +1,4 @@
-import {
-  cambiarUsuario,
-  limpiarSesionLocal,
-  usuarioActual,
-} from '../servicios/api';
+import { cambiarUsuario, usuarioActual } from '../servicios/api';
 
 /**
  * Barra de demostración. PROVISIONAL, y se borra sola cuando exista HU-08.
@@ -43,8 +39,8 @@ export function BarraDemostracion() {
   }
 
   function empezarDeCero() {
-    limpiarSesionLocal();
-    window.location.hash = '#/ingreso';
+    localStorage.removeItem('usuario-id');
+    window.location.hash = '#/registro';
     window.location.reload();
   }
 

@@ -24,12 +24,6 @@ import {
 
 /**
  * HU-15, Creacion del rancho. La pantalla principal del propietario.
- *
- * El marco es el de los mockups: menu lateral, barra superior y el contenido
- * sobre el fondo arena. Las cifras de arriba son las del panel del propietario;
- * las que dependen de modulos de la fase 2 se muestran con un guion, porque el
- * dato todavia no existe. Es la misma idea de HU-16: dejar visible lo que
- * viene, en lugar de esconderlo y que la pantalla crezca de golpe.
  */
 
 const VACIO = {
@@ -58,6 +52,12 @@ export function PaginaRancho() {
   const [aviso, setAviso] = useState('');
   const [cargando, setCargando] = useState(true);
 
+  // Estados para el formulario de invitar colaborador (HU-13)
+  const [correoColaborador, setCorreoColaborador] = useState('');
+  const [enviandoInvitacion, setEnviandoInvitacion] = useState(false);
+  const [errorInvitacion, setErrorInvitacion] = useState('');
+  const [exitoInvitacion, setExitoInvitacion] = useState('');
+
   /** Lo que se le pide al servidor para dibujar la pantalla. */
   async function pedirDatos() {
     const [datos, listaPaises] = await Promise.all([api.miRancho(), api.paises()]);
@@ -73,7 +73,6 @@ export function PaginaRancho() {
     if (datos.rancho) volcarEnFormulario(datos.rancho);
   }
 
-  /** Se llama despues de guardar o de dar de baja, nunca desde un efecto. */
   async function recargar() {
     setCargando(true);
     setError('');
@@ -100,8 +99,6 @@ export function PaginaRancho() {
     });
   }
 
-  // La primera carga. No se toca el estado antes del primer await: hacerlo
-  // dentro de un efecto encadena renderizados.
   useEffect(() => {
     let vigente = true;
     void (async () => {
@@ -147,8 +144,6 @@ export function PaginaRancho() {
         await api.actualizar(estado.rancho.id, datos);
         setAviso('Rancho actualizado.');
       } else {
-        // El identificador lo genera el cliente: es la convencion del equipo
-        // y es lo que despues permite trabajar sin conexion.
         datos.id = crypto.randomUUID();
         await api.crear(datos);
         setAviso('Rancho creado.');
@@ -175,11 +170,37 @@ export function PaginaRancho() {
     }
   }
 
+  // HU-13: Función para invitar/agregar a un colaborador
+  async function agregarColaborador(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorInvitacion('');
+    setExitoInvitacion('');
+
+    if (!correoColaborador) {
+      setErrorInvitacion('Ingresa el correo del colaborador.');
+      return;
+    }
+
+    setEnviandoInvitacion(true);
+    try {
+      const respuesta = await api.agregarColaborador({ correo: correoColaborador });
+      setExitoInvitacion(respuesta.mensaje);
+      setCorreoColaborador(''); // Limpiamos el campo
+    } catch (err) {
+      // Aquí se mostrará el mensaje de conflicto si el correo ya pertenece a otro rancho
+      setErrorInvitacion((err as Error).message);
+    } finally {
+      setEnviandoInvitacion(false);
+    }
+  }
+
   const rancho = estado?.rancho ?? null;
   const esPropietario = estado?.usuario.rol === 'propietario';
   const mostrarFormulario = esPropietario && (!rancho || editando);
-
   const usuario = estado?.usuario ?? { nombre: 'Invitado', rol: '—' };
+
+  // HU-14: Obtenemos los metadatos del país seleccionado actualmente
+  const datosPaisActual = paises.find((p) => p.codigo === rancho?.pais_codigo);
 
   return (
     <DisenoApp
@@ -260,19 +281,70 @@ export function PaginaRancho() {
                       <span className="c-500">Sin ubicación cargada</span>
                     )}
                   </Dato>
+                  
+                  {/* HU-14: Mostramos la configuración regional */}
+                  <Dato nombre="Moneda e Idioma">
+                    {datosPaisActual ? `${datosPaisActual.moneda} (${datosPaisActual.idioma})` : '—'}
+                  </Dato>
+                  <Dato nombre="Unidades">
+                    {datosPaisActual ? `Peso: ${datosPaisActual.unidad_peso} · Superficie: ${datosPaisActual.unidad_superficie}` : '—'}
+                  </Dato>
+                  <Dato nombre="Zona Horaria y Fecha">
+                    {datosPaisActual ? `${datosPaisActual.zona_horaria} (${datosPaisActual.formato_fecha})` : '—'}
+                  </Dato>
+                  <Dato nombre="Franja de Precio">
+                    {datosPaisActual?.franja_precio ?? '—'}
+                  </Dato>
+
+                  {/* HU-23: Auditoría y autoría de datos */}
+                  <Dato nombre="Auditoría">
+                    <div className="texto-secundario">
+                      Creado el {rancho.creado_en ? new Date(rancho.creado_en).toLocaleString() : '—'}
+                      <br />
+                      Última modificación el {rancho.modificado_en ? new Date(rancho.modificado_en).toLocaleString() : '—'}
+                    </div>
+                  </Dato>
                 </Datos>
               </Tarjeta>
 
-              <Tarjeta titulo="Tu recorrido">
-                <ol className="pasos">
-                  <Paso hecho>Cuenta creada</Paso>
-                  <Paso hecho>Correo confirmado</Paso>
-                  <Paso hecho>Rancho creado</Paso>
-                  <Paso fase={2}>Cargar los animales</Paso>
-                  <Paso fase={2}>Crear los corrales</Paso>
-                  <Paso fase={2}>Invitar al equipo</Paso>
-                </ol>
-              </Tarjeta>
+              <div className="col g16">
+                <Tarjeta titulo="Tu recorrido">
+                  <ol className="pasos">
+                    <Paso hecho>Cuenta creada</Paso>
+                    <Paso hecho>Correo confirmado</Paso>
+                    <Paso hecho>Rancho creado</Paso>
+                    <Paso fase={2}>Cargar los animales</Paso>
+                    <Paso fase={2}>Crear los corrales</Paso>
+                    <Paso fase={2}>Invitar al equipo</Paso>
+                  </ol>
+                </Tarjeta>
+
+                {/* Formulario Provisional HU-13 para invitar equipo */}
+                {esPropietario && (
+                  <Tarjeta titulo="Invitar al equipo (HU-13)">
+                    <p className="texto-secundario pie mb16">
+                      Prueba dar de alta a un colaborador. Si su correo ya existe en otro rancho, el sistema lo rechazará.
+                    </p>
+                    {errorInvitacion && <Alerta variante="error">{errorInvitacion}</Alerta>}
+                    {exitoInvitacion && <Alerta variante="exito">{exitoInvitacion}</Alerta>}
+                    
+                    <form onSubmit={agregarColaborador} className="fila centro g8 mt8">
+                      <div style={{ flex: 1 }}>
+                        <CampoTexto
+                          etiqueta=""
+                          placeholder="ejemplo@correo.com"
+                          type="email"
+                          value={correoColaborador}
+                          onChange={(e) => setCorreoColaborador(e.target.value)}
+                        />
+                      </div>
+                      <Boton type="submit" variante="primario" disabled={enviandoInvitacion}>
+                        {enviandoInvitacion ? 'Enviando...' : 'Invitar'}
+                      </Boton>
+                    </form>
+                  </Tarjeta>
+                )}
+              </div>
             </div>
           </>
         )}
