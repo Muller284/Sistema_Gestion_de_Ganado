@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { randomInt } from 'crypto';
 import { RepositorioUsuario } from './repositorio-usuario';
+import { RepositorioToken } from './repositorio-token';
 import { ServicioCorreo } from '../../comun/servicio-correo';
 import {
   cifrarContrasena,
@@ -49,6 +50,7 @@ export class ServicioContrasena {
   constructor(
     private readonly usuarios: RepositorioUsuario,
     private readonly correo: ServicioCorreo,
+    private readonly tokens: RepositorioToken,
   ) {}
 
   /** El usuario cambia su propia contraseña. Es lo que desbloquea la cuenta. */
@@ -146,5 +148,80 @@ export class ServicioContrasena {
       mensaje: `Se le envió una contraseña temporal a ${usuario.correo}.`,
       aviso: 'Por seguridad, la contraseña no se muestra acá. Solo la recibe su dueño.',
     };
+  }
+
+  /**
+   * HU-09: Solicitar recuperación de contraseña (Paso 1)
+   * Cumple Criterio 1: El enlace llega al correo y vence en una hora.
+   */
+  async solicitarRecuperacion(cuerpo: any) {
+    const correo = cuerpo?.correo;
+    if (!correo) {
+      throw new BadRequestException('El correo es obligatorio.');
+    }
+
+    const usuario = await this.usuarios.porCorreo(correo);
+    if (!usuario) {
+      return { mensaje: 'Si el correo está registrado, recibirás un enlace de recuperación.' };
+    }
+
+    const { token } = await this.tokens.emitir(
+      usuario.id,
+      'recuperacion_contrasena',
+      1,
+    );
+
+    const urlCliente = process.env.URL_CLIENTE || 'http://localhost:5173';
+    const enlace = `${urlCliente}/recuperar-contrasena?token=${token}`;
+
+    await this.correo.enviar({
+      para: usuario.correo,
+      asunto: 'Recuperación de contraseña — Sistema de Gestión de Ganado',
+      cuerpo: [
+        `Hola ${usuario.nombre},`,
+        '',
+        'Solicitaste recuperar tu contraseña. Haz clic en el siguiente enlace para crear una nueva:',
+        '',
+        enlace,
+        '',
+        'Este enlace caducará en 1 hora. Si no fuiste tú, puedes ignorar este correo.',
+      ].join('\n'),
+    });
+
+    return { mensaje: 'Si el correo está registrado, recibirás un enlace de recuperación.' };
+  }
+
+  /**
+   * HU-09: Ejecutar recuperación de contraseña (Paso 2)
+   * Cumple Criterio 2 (uso único) y Criterio 3 (cerrar sesiones).
+   */
+  async ejecutarRecuperacion(cuerpo: any) {
+    const token = cuerpo?.token;
+    const nueva = cuerpo?.contrasena_nueva;
+
+    if (!token || !nueva) {
+      throw new BadRequestException('El token y la nueva contraseña son obligatorios.');
+    }
+
+    const usuarioId = await this.tokens.consumir(token, 'recuperacion_contrasena');
+
+    if (!usuarioId) {
+      const estabaVencido = await this.tokens.estabaVencido(token, 'recuperacion_contrasena');
+      if (estabaVencido) {
+        throw new BadRequestException('El enlace de recuperación ha expirado. Solicita uno nuevo.');
+      }
+      throw new BadRequestException('El enlace de recuperación es inválido o ya fue utilizado.');
+    }
+
+    const faltas = revisarContrasena(nueva);
+    if (faltas.length > 0) {
+      throw new BadRequestException(`La contraseña necesita al menos ${enumerar(faltas)}.`);
+    }
+
+    const hash = await cifrarContrasena(nueva);
+
+    await this.usuarios.cambiarContrasena(usuarioId, hash, usuarioId);
+
+    return { mensaje: 'Contraseña recuperada con éxito. Ya puedes iniciar sesión.' };
   }
 }

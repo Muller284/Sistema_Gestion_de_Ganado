@@ -2,24 +2,43 @@ import { useCallback, useEffect, useState } from 'react';
 import { BarraDemostracion, Cargando } from './componentes';
 import { PaginaRancho } from './paginas/ranchos/PaginaRancho';
 import { PaginaRegistro } from './paginas/registro/PaginaRegistro';
-import { PaginaIngreso } from './paginas/ingreso/PaginaIngreso';
 import { PaginaSistemaDiseno } from './paginas/sistema-diseno/PaginaSistemaDiseno';
 import { PaginaVerificacion } from './paginas/verificacion/PaginaVerificacion';
 import { PaginaCambioContrasena } from './paginas/contrasena/PaginaCambioContrasena';
+import { PaginaSolicitarRecuperacion } from './paginas/contrasena/PaginaSolicitarRecuperacion';
+import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestablecerContrasena';
 import { api, type EstadoCuenta } from './servicios/api';
 
 /**
- * Navegación y portero del cliente.
+ * Navegacion provisional por la direccion del navegador, y el portero del
+ * cliente.
  *
- * Rutas soportadas:
- *   #/                 el rancho (HU-15)
- *   #/ingreso          inicio de sesión (HU-08)
- *   #/registro         crear cuenta de propietario (HU-06)
- *   #/verificar        confirmar el correo (HU-07)
- *   #/sistema-diseno   catálogo del sistema de diseño (HU-05)
+ * EL PORTERO
+ * Antes de dejar ver cualquier pantalla se pregunta al servidor como esta la
+ * cuenta (GET /usuarios/yo). Si falta confirmar el correo (HU-07) o cambiar la
+ * contraseña temporal (HU-10), no se llega a ninguna otra pantalla: se muestra
+ * la que resuelve eso y nada mas.
+ *
+ * Esto es lo que se ve; lo que vale es GuardiaCuentaLista, en el servidor.
+ * Bloquear solo en el cliente no bloquea nada: cualquiera puede llamar al
+ * servidor sin pasar por la pantalla.
+ *
+ * No se instala un enrutador: la regla del equipo es que las dependencias las
+ * instala Favio. Cuando exista el inicio de sesion (HU-08) esto se reemplaza
+ * por un enrutador de verdad y ninguna pantalla se entera.
+ *
+ *   #/                el rancho (HU-15)
+ *   #/registro        crear cuenta de propietario (HU-06)
+ *   #/verificar       confirmar el correo (HU-07)
+ *   #/sistema-diseno  el catalogo del sistema de diseño (HU-05)
  */
 
 function rutaActual() {
+  // Mejora: Si el usuario entra directamente por la URL del correo, capturamos la ruta.
+  const rutaDirecta = window.location.pathname.replace(/^\/+/, '');
+  if (rutaDirecta === 'solicitar-recuperacion' || rutaDirecta === 'recuperar-contrasena') {
+    return rutaDirecta;
+  }
   return window.location.hash.replace(/^#\/?/, '').split('?')[0];
 }
 
@@ -34,12 +53,22 @@ function App() {
     return () => window.removeEventListener('hashchange', alCambiar);
   }, []);
 
+  // Se pregunta siempre, sin comprobar antes si hay usuario: si no lo hay, el
+  // servidor responde que no y se resuelve igual.
   const preguntarPorLaCuenta = useCallback(async () => {
     const estado = await api.yo().catch(() => null);
     setCuenta(estado);
     setCargando(false);
   }, []);
 
+  /**
+   * El paso siguiente del alta, una vez confirmado el correo.
+   *
+   * Lo llaman el registro y la verificacion. Cambia la direccion Y vuelve a
+   * preguntar por la cuenta: sin lo segundo, App seguiria creyendo que falta
+   * confirmar el correo y el portero devolveria al usuario a la misma
+   * pantalla de la que acaba de salir.
+   */
   const seguirAlRancho = useCallback(() => {
     window.location.hash = '#/';
     setCargando(true);
@@ -62,28 +91,22 @@ function App() {
   return (
     <>
       {elegirPantalla()}
-      {/* Barra de demostración para alternar roles sin desconectarse */}
+      {/* Provisional. Se borra junto con HU-08. */}
       <BarraDemostracion />
     </>
   );
 
   function elegirPantalla() {
-    // Rutas públicas directas
-    if (ruta === 'ingreso' || ruta === 'iniciar-sesion') {
-      return <PaginaIngreso alIngresar={seguirAlRancho} />;
-    }
-    if (ruta === 'registro') {
-      return <PaginaRegistro alConfirmar={seguirAlRancho} />;
-    }
+    // Estas se ven siempre: son la salida de los bloqueos, el catalogo y la recuperacion (HU-09).
+    if (ruta === 'registro') return <PaginaRegistro alConfirmar={seguirAlRancho} />;
     if (ruta === 'verificar') {
       return (
-        <PaginaVerificacion
-          correo={cuenta?.correo}
-          alConfirmar={seguirAlRancho}
-        />
+        <PaginaVerificacion correo={cuenta?.correo} alConfirmar={seguirAlRancho} />
       );
     }
     if (ruta === 'sistema-diseno') return <PaginaSistemaDiseno />;
+    if (ruta === 'solicitar-recuperacion') return <PaginaSolicitarRecuperacion />;
+    if (ruta === 'recuperar-contrasena') return <PaginaRestablecerContrasena />;
 
     if (cargando) {
       return (
@@ -93,21 +116,13 @@ function App() {
       );
     }
 
-    // Si no hay cuenta autenticada ni usuario demo seleccionado, ir a inicio de sesión
-    if (!cuenta) {
-      return <PaginaIngreso alIngresar={seguirAlRancho} />;
-    }
-
-    // El portero de seguridad
-    if (cuenta.pendiente === 'verificar_correo') {
+    // El portero.
+    if (cuenta?.pendiente === 'verificar_correo') {
       return (
-        <PaginaVerificacion
-          correo={cuenta.correo}
-          alConfirmar={seguirAlRancho}
-        />
+        <PaginaVerificacion correo={cuenta.correo} alConfirmar={seguirAlRancho} />
       );
     }
-    if (cuenta.pendiente === 'cambiar_contrasena') {
+    if (cuenta?.pendiente === 'cambiar_contrasena') {
       return (
         <PaginaCambioContrasena
           nombre={cuenta.nombre}

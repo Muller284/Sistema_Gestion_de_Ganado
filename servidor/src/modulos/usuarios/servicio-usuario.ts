@@ -1,12 +1,14 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { RepositorioUsuario } from './repositorio-usuario';
 import { ServicioVerificacion } from './servicio-verificacion';
 import { cifrarContrasena, enumerar, revisarContrasena } from '../../comun/contrasenas';
+import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 
 /**
  * HU-06 · Registro de propietario.
@@ -16,16 +18,10 @@ import { cifrarContrasena, enumerar, revisarContrasena } from '../../comun/contr
  *   2. La contraseña exige ocho caracteres, una mayuscula y un numero.
  *   3. No se permite registrar dos veces el mismo correo.
  *   4. Al registrarse queda automaticamente como propietario.
- *
- * La validacion esta escrita a mano y no con una biblioteca de validacion,
- * por la misma razon que en HU-15: agregar una dependencia es decision de
- * Favio, y esto son cuatro reglas.
  */
 
 const LARGO_NOMBRE = 150;
 const LARGO_CORREO = 150;
-
-/** Suficiente para un formulario: algo@algo.algo, sin espacios. */
 const FORMA_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 @Injectable()
@@ -73,16 +69,13 @@ export class ServicioUsuario {
       throw new BadRequestException('El país indicado no existe.');
     }
 
-    // Tercer criterio. El correo es unico en toda la plataforma, no por rancho:
-    // una persona pertenece a un solo rancho (HU-13).
+    // Tercer criterio de HU-06. 
     if (await this.repositorio.existeCorreo(correo)) {
       throw new ConflictException(
         'Ya existe una cuenta con ese correo. Si es tuya, inicia sesión o recupera la contraseña.',
       );
     }
 
-    // El identificador lo genera quien crea el registro, nunca la base: es la
-    // convencion del equipo y es lo que despues permite trabajar sin conexion.
     const id = esUuid(cuerpo?.id) ? cuerpo.id : randomUUID();
 
     let usuario;
@@ -95,10 +88,6 @@ export class ServicioUsuario {
         paisCodigo,
       });
     } catch (error: any) {
-      // Entre la consulta de arriba y esta insercion puede colarse otro
-      // registro con el mismo correo. El indice unico de la base lo impide
-      // igual; lo que falta es traducirlo, para que el usuario vea el mismo
-      // mensaje de siempre y no un error interno.
       if (error?.code === '23505' && error?.constraint === 'ux_usuarios_correo') {
         throw new ConflictException(
           'Ya existe una cuenta con ese correo. Si es tuya, inicia sesión o recupera la contraseña.',
@@ -107,16 +96,12 @@ export class ServicioUsuario {
       throw error;
     }
 
-    // HU-07 arranca aca: la cuenta nace sin verificar y el enlace sale en el
-    // acto. El enlace vuelve en la respuesta solo mientras el correo se
-    // "envia" por consola; con un servidor de correo de verdad llega null.
     const emitido = await this.verificacion.emitir(
       usuario.id,
       usuario.nombre,
       usuario.correo,
     );
 
-    // La contraseña, cifrada o no, no sale nunca de esta capa.
     return {
       usuario,
       siguiente: 'verificar_correo',
@@ -124,6 +109,33 @@ export class ServicioUsuario {
         'Cuenta creada. Te enviamos un correo para confirmar tu dirección. El enlace vence en 24 horas.',
       enlace_verificacion: emitido.enlace,
     };
+  }
+
+  /**
+   * HU-13: Un usuario, un solo rancho (Alta de colaboradores)
+   */
+  async altaColaborador(cuerpo: any, quien: UsuarioActual) {
+    if (quien.rol !== 'propietario') {
+      throw new ForbiddenException('Solo el propietario puede registrar nuevo personal.');
+    }
+
+    const correo = texto(cuerpo?.correo).toLowerCase();
+    
+    if (!correo || !FORMA_CORREO.test(correo)) {
+      throw new BadRequestException('El correo proporcionado no es válido.');
+    }
+
+    // HU-13 Criterio 2: Si el correo ya está registrado, se rechaza con un mensaje claro.
+    if (await this.repositorio.existeCorreo(correo)) {
+      throw new ConflictException(
+        'Este correo ya está registrado en otro rancho. Por seguridad, cada integrante puede trabajar en un solo establecimiento.',
+      );
+    }
+
+    // NOTA: Aquí irá la lógica de insertar al colaborador en la base de datos (HU-21),
+    // pero la regla de negocio de la HU-13 ya está cubierta por la validación de arriba.
+
+    return { mensaje: 'Validación superada. El usuario puede ser agregado al rancho.' };
   }
 }
 

@@ -10,7 +10,7 @@ export class RepositorioPais {
   async listar(): Promise<any[]> {
     const resultado = await this.bd.query(
       `SELECT codigo, nombre, idioma, moneda, unidad_peso, unidad_superficie,
-              formato_fecha, zona_horaria
+              formato_fecha, zona_horaria, franja_precio
          FROM paises
         WHERE eliminado_en IS NULL
         ORDER BY nombre`,
