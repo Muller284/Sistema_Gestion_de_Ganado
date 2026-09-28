@@ -19,6 +19,15 @@ export function cambiarUsuario(id: string) {
   localStorage.setItem('usuario-id', id);
 }
 
+// Solución al error de ESLint: reemplazamos 'any' por 'UsuarioRegistrado'
+export function guardarSesion(token_acceso: string, token_refresco: string, usuario?: UsuarioRegistrado) {
+  localStorage.setItem('token_acceso', token_acceso);
+  localStorage.setItem('token_refresco', token_refresco);
+  if (usuario) {
+    localStorage.setItem('usuario-id', usuario.id);
+  }
+}
+
 async function pedir<T>(ruta: string, opciones: RequestInit = {}): Promise<T> {
   const respuesta = await fetch(`${BASE}${ruta}`, {
     ...opciones,
@@ -109,6 +118,13 @@ export const api = {
   // todavia no tiene cuenta.
   registrar: (datos: Record<string, unknown>) =>
     pedir<RespuestaRegistro>('/usuarios/registro', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
+  // HU-08: Inicio de sesión (Agregado para que no falle tu pantalla de ingreso)
+  ingresar: (datos: Record<string, unknown>) =>
+    pedir<{ token_acceso: string; token_refresco: string; usuario: UsuarioRegistrado }>('/usuarios/ingreso', {
       method: 'POST',
       body: JSON.stringify(datos),
     }),
