@@ -39,7 +39,7 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
     setEnviando(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (api as any).ingresar({
+      await api.ingresar({
         correo: correo.trim(),
         contrasena,
       });
