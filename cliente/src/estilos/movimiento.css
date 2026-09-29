@@ -1,0 +1,188 @@
+/* ============================================================================
+ * HU-05 · Movimiento
+ * ----------------------------------------------------------------------------
+ * El sistema se veía correcto pero quieto: todo aparecía de golpe y nada
+ * respondía al puntero. Esto lo arregla en un solo archivo, sin tocar ninguna
+ * pantalla y sin instalar nada.
+ *
+ * LAS REGLAS QUE SE SIGUIERON
+ *   1. El movimiento explica algo. Lo que aparece, aparece desde donde viene;
+ *      lo que se puede tocar, responde al tocarlo. Nada se mueve de adorno.
+ *   2. Corto. Entre 120 y 380 ms, con los valores de tokens.css. Una animación
+ *      que se nota como animación es demasiado larga.
+ *   3. Nada bloquea. Todo es opacidad y transform, que el navegador dibuja sin
+ *      rehacer el diseño. Nunca se anima alto, ancho ni márgenes.
+ *   4. Quien pidió que las cosas no se muevan, no ve nada moverse. El bloque
+ *      del final lo apaga todo, y es obligatorio: hay gente a la que el
+ *      movimiento le produce mareo de verdad.
+ *
+ * Este archivo se puede borrar entero y el sistema sigue funcionando igual.
+ * ==========================================================================*/
+
+/* ----------------------------------------------------------------------------
+ * LO QUE APARECE
+ * -------------------------------------------------------------------------*/
+
+@keyframes entra-subiendo {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes entra {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* El contenido de una pantalla interna y la columna de las de acceso. */
+.app__ancho,
+.acceso__columna {
+  animation: entra-subiendo var(--t-lento) var(--curva-salida);
+}
+
+/* El panel verde de las pantallas de acceso entra desde su lado. */
+@keyframes entra-desde-izquierda {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.acceso__panel { animation: entra-desde-izquierda var(--t-lento) var(--curva-salida); }
+
+/* Las tarjetas de cifra entran una detrás de otra, de izquierda a derecha.
+   El escalonado es lo que hace que se lea como una fila y no como cuatro
+   cosas sueltas. Cinco cifras ya es demasiado para escalonar, así que a
+   partir de ahí entran todas juntas. */
+.rejilla-cifras > * { animation: entra-subiendo var(--t-med) var(--curva-salida) backwards; }
+.rejilla-cifras > *:nth-child(1) { animation-delay: 0ms; }
+.rejilla-cifras > *:nth-child(2) { animation-delay: 60ms; }
+.rejilla-cifras > *:nth-child(3) { animation-delay: 120ms; }
+.rejilla-cifras > *:nth-child(4) { animation-delay: 180ms; }
+
+/* Un aviso aparece por algo que acaba de pasar: tiene que notarse. */
+.aviso { animation: entra-subiendo var(--t-med) var(--curva-salida); }
+
+/* El estado vacío y el de carga, sin desplazamiento: ya están en su sitio. */
+.vacio,
+.esqueleto { animation: entra var(--t-med) var(--curva-salida); }
+
+/* ----------------------------------------------------------------------------
+ * LO QUE RESPONDE AL PUNTERO
+ * -------------------------------------------------------------------------*/
+
+.btn {
+  transition:
+    background var(--t-rapido) var(--curva),
+    border-color var(--t-rapido) var(--curva),
+    color var(--t-rapido) var(--curva),
+    box-shadow var(--t-rapido) var(--curva),
+    transform var(--t-rapido) var(--curva);
+}
+
+/* Un pelo hacia arriba al pasar por encima y un pelo hacia abajo al apretar.
+   Es el gesto que hace que un botón se sienta un botón. */
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--s-sm); }
+.btn:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+.btn:disabled { transform: none; }
+
+/* Las tarjetas se levantan solo si son de contenido, no los formularios. */
+.tarjeta,
+.cifra {
+  transition:
+    transform var(--t-med) var(--curva),
+    box-shadow var(--t-med) var(--curva);
+}
+
+.cifra:hover { transform: translateY(-2px); box-shadow: var(--s-md); }
+
+/* Los módulos del menú lateral se corren un poco hacia el contenido. */
+.lateral .item {
+  transition:
+    background var(--t-rapido) var(--curva),
+    color var(--t-rapido) var(--curva),
+    padding-left var(--t-rapido) var(--curva);
+}
+
+.lateral .item:hover:not(.activo):not(.desactivado) { padding-left: var(--e-16); }
+
+.lateral .item .casilla-icono { transition: color var(--t-rapido) var(--curva); }
+
+/* Los campos, al recibir el foco. */
+.campo input,
+.campo select,
+.campo textarea {
+  transition:
+    border-color var(--t-rapido) var(--curva),
+    box-shadow var(--t-rapido) var(--curva);
+}
+
+/* Los enlaces de dentro del texto. */
+a { transition: color var(--t-rapido) var(--curva); }
+
+/* ----------------------------------------------------------------------------
+ * LO QUE CAMBIA DE ESTADO
+ * -------------------------------------------------------------------------*/
+
+/* El hilo del alta, cuando se pasa de un paso al siguiente. */
+.pasos-alta li,
+.pasos-alta .marca {
+  transition:
+    background var(--t-med) var(--curva),
+    border-color var(--t-med) var(--curva),
+    color var(--t-med) var(--curva);
+}
+
+/* La barra del plan, cuando cambia el porcentaje. */
+.lateral .medidor span { transition: width var(--t-lento) var(--curva); }
+
+/* El tilde de un paso recién completado. */
+.pasos li.hecho > .ico { animation: entra-marcando var(--t-med) var(--curva-salida); }
+
+@keyframes entra-marcando {
+  from { opacity: 0; transform: scale(0.6); }
+  60%  { transform: scale(1.12); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* El esqueleto de carga, latiendo. Sin esto parece una caja rota. */
+.esqueleto,
+.esqueleto * { animation: respira 1.4s ease-in-out infinite; }
+
+@keyframes respira {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* ----------------------------------------------------------------------------
+ * EL FOCO
+ * Se ve siempre, y con el verde del sistema. Un foco invisible deja el teclado
+ * inservible, y es el error de accesibilidad más común de todos.
+ * -------------------------------------------------------------------------*/
+
+:focus-visible {
+  outline: 2px solid var(--corral-500);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+/* ----------------------------------------------------------------------------
+ * QUIEN PIDIO QUIETO, VE QUIETO
+ * No es un detalle de cortesía: para algunas personas el movimiento en
+ * pantalla produce mareo o malestar real. El sistema operativo ya lo dice y
+ * solo hay que hacerle caso.
+ * -------------------------------------------------------------------------*/
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .btn:hover:not(:disabled),
+  .cifra:hover,
+  .avatar-boton:hover { transform: none; }
+
+  .lateral .item:hover:not(.activo):not(.desactivado) { padding-left: var(--e-12); }
+}

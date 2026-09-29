@@ -172,7 +172,7 @@ export class ServicioContrasena {
     );
 
     const urlCliente = process.env.URL_CLIENTE || 'http://localhost:5173';
-    const enlace = `${urlCliente}/recuperar-contrasena?token=${token}`;
+    const enlace = `${urlCliente}/#/recuperar-contrasena?token=${token}`;
 
     await this.correo.enviar({
       para: usuario.correo,

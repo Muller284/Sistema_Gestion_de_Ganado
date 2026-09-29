@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alerta,
   Boton,
@@ -141,10 +142,10 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
             Confirma el correo para activar la cuenta. Hasta entonces no se
             puede entrar al sistema.
           </p>
-          <a className="btn btn-secundario btn-bloque" href="#/verificar">
+          <Link className="btn btn-secundario btn-bloque" to="/verificar">
             <Icono nombre="enviar" tamano={18} />
             No me llegó, pedir otro
-          </a>
+          </Link>
           {listo.enlace_verificacion && (
             <Alerta variante="info">
               En desarrollo el correo se escribe en la consola del servidor.
@@ -227,6 +228,10 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
               <Icono nombre="persona-mas" tamano={18} />
               {enviando ? 'Creando…' : 'Crear cuenta'}
             </Boton>
+
+            <p className="pie c-500 centrado">
+              ¿Ya tienes una cuenta? <Link to="/ingreso">Inicia sesión</Link>
+            </p>
           </form>
         )}
       </div>

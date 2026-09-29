@@ -36,7 +36,8 @@ export class GuardiaCuentaLista implements CanActivate {
 
   async canActivate(contexto: ExecutionContext): Promise<boolean> {
     const peticion = contexto.switchToHttp().getRequest();
-    const usuario = await this.usuarios.resolver(peticion.headers['x-usuario-id']);
+    const auth = peticion.headers['authorization'] || peticion.headers['x-usuario-id'];
+    const usuario = await this.usuarios.resolver(auth);
 
     if (!usuario.correoVerificado) {
       throw new ForbiddenException({
