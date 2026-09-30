@@ -24,6 +24,7 @@ export interface UsuarioActual {
 
 @Injectable()
 export class RepositorioUsuarioActual {
+  
   constructor(@Inject(POOL_BD) private readonly bd: Pool) {}
 
   async resolver(credencialEnCabecera?: string): Promise<UsuarioActual> {
@@ -53,6 +54,7 @@ export class RepositorioUsuarioActual {
         'No se indicó credencial de autenticación. Inicia sesión o envía un token válido.',
       );
     }
+    
 
     const resultado = await this.bd.query(
       `SELECT id, nombre, correo, rol, rancho_id,
