@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alerta,
   Boton,
@@ -10,6 +11,7 @@ import {
   Datos,
   DisenoApp,
   EstadoVacio,
+  GuiaConfiguracion,
   Icono,
   Insignia,
   MapaUbicacion,
@@ -54,10 +56,6 @@ export function PaginaRancho() {
   const [cargando, setCargando] = useState(true);
 
   // Estados para el formulario de invitar colaborador (HU-13)
-  const [correoColaborador, setCorreoColaborador] = useState('');
-  const [enviandoInvitacion, setEnviandoInvitacion] = useState(false);
-  const [errorInvitacion, setErrorInvitacion] = useState('');
-  const [exitoInvitacion, setExitoInvitacion] = useState('');
 
   /** Lo que se le pide al servidor para dibujar la pantalla. */
   async function pedirDatos() {
@@ -168,30 +166,6 @@ export function PaginaRancho() {
       await recargar();
     } catch (err) {
       setError((err as Error).message);
-    }
-  }
-
-  // HU-13: Función para invitar/agregar a un colaborador
-  async function agregarColaborador(e: React.FormEvent) {
-    e.preventDefault();
-    setErrorInvitacion('');
-    setExitoInvitacion('');
-
-    if (!correoColaborador) {
-      setErrorInvitacion('Ingresa el correo del colaborador.');
-      return;
-    }
-
-    setEnviandoInvitacion(true);
-    try {
-      const respuesta = await api.agregarColaborador({ correo: correoColaborador });
-      setExitoInvitacion(respuesta.mensaje);
-      setCorreoColaborador(''); // Limpiamos el campo
-    } catch (err) {
-      // Aquí se mostrará el mensaje de conflicto si el correo ya pertenece a otro rancho
-      setErrorInvitacion((err as Error).message);
-    } finally {
-      setEnviandoInvitacion(false);
     }
   }
 
@@ -308,44 +282,30 @@ export function PaginaRancho() {
                 </Datos>
               </Tarjeta>
 
-              <div className="col g16">
-                <Tarjeta titulo="Tu recorrido">
-                  <ol className="pasos">
-                    <Paso hecho>Cuenta creada</Paso>
-                    <Paso hecho>Correo confirmado</Paso>
-                    <Paso hecho>Rancho creado</Paso>
-                    <Paso fase={2}>Cargar los animales</Paso>
-                    <Paso fase={2}>Crear los corrales</Paso>
-                    <Paso fase={2}>Invitar al equipo</Paso>
-                  </ol>
+              {/* HU-16: la guía de configuración ocupa el lugar del
+                  recorrido fijo que había. El formulario provisional de
+                  HU-13 que estaba debajo se reemplazó por la pantalla de
+                  Equipo (HU-17), que aplica la misma regla y además crea
+                  al integrante. */}
+              {esPropietario ? (
+                <GuiaConfiguracion />
+              ) : (
+                <Tarjeta titulo="Tu lugar en el rancho">
+                  <div className="col g16 inicio">
+                  <p className="cuerpo c-600">
+                    {usuario.rol === 'socio'
+                      ? 'Como socio ves toda la información del rancho, sin modificarla.'
+                      : 'Como colaborador entras a los módulos de tu tipo. Llegan con la fase 2.'}
+                  </p>
+                  {usuario.rol === 'socio' && (
+                    <Link className="btn btn-secundario" to="/equipo">
+                      <Icono nombre="equipo" tamano={18} />
+                      Ver el equipo
+                    </Link>
+                  )}
+                  </div>
                 </Tarjeta>
-
-                {/* Formulario Provisional HU-13 para invitar equipo */}
-                {esPropietario && (
-                  <Tarjeta titulo="Invitar al equipo (HU-13)">
-                    <p className="texto-secundario pie mb16">
-                      Prueba dar de alta a un colaborador. Si su correo ya existe en otro rancho, el sistema lo rechazará.
-                    </p>
-                    {errorInvitacion && <Alerta variante="error">{errorInvitacion}</Alerta>}
-                    {exitoInvitacion && <Alerta variante="exito">{exitoInvitacion}</Alerta>}
-                    
-                    <form onSubmit={agregarColaborador} className="fila centro g8 mt8">
-                      <div style={{ flex: 1 }}>
-                        <CampoTexto
-                          etiqueta=""
-                          placeholder="ejemplo@correo.com"
-                          type="email"
-                          value={correoColaborador}
-                          onChange={(e) => setCorreoColaborador(e.target.value)}
-                        />
-                      </div>
-                      <Boton type="submit" variante="primario" disabled={enviandoInvitacion}>
-                        {enviandoInvitacion ? 'Enviando...' : 'Invitar'}
-                      </Boton>
-                    </form>
-                  </Tarjeta>
-                )}
-              </div>
+              )}
             </div>
           </>
         )}
@@ -455,28 +415,4 @@ export function PaginaRancho() {
 
 function capitalizar(texto: string): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
-
-/**
- * Una linea del recorrido. Lo hecho lleva tilde; lo que falta, el circulo
- * punteado y la fase en la que llega.
- */
-function Paso({
-  hecho = false,
-  fase,
-  children,
-}: {
-  hecho?: boolean;
-  fase?: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <li className={hecho ? 'hecho' : undefined}>
-      <Icono nombre={hecho ? 'exito' : 'pendiente'} tamano={18} />
-      <span>
-        {children}
-        {fase && <span className="pie"> · fase {fase}</span>}
-      </span>
-    </li>
-  );
 }

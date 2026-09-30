@@ -120,6 +120,35 @@ export class RepositorioUsuario {
     return resultado.rows[0] ?? null;
   }
 
+  /**
+   * La ficha de "Mi perfil". Sin contrasena_hash, como todo lo que sale de
+   * aca salvo buscarParaAutenticar.
+   */
+  async perfil(id: string): Promise<any | null> {
+    const resultado = await this.bd.query(
+      `SELECT u.id, u.nombre, u.correo, u.rol, u.estado,
+              u.pais_codigo, p.nombre AS pais,
+              r.nombre AS rancho, t.nombre AS tipo_colaborador,
+              u.creado_en, u.modificado_en
+         FROM usuarios u
+         LEFT JOIN paises p ON p.codigo = u.pais_codigo
+         LEFT JOIN ranchos r ON r.id = u.rancho_id AND r.eliminado_en IS NULL
+         LEFT JOIN tipos_colaborador t ON t.id = u.tipo_colaborador_id
+        WHERE u.id = $1 AND u.eliminado_en IS NULL`,
+      [id],
+    );
+    return resultado.rows[0] ?? null;
+  }
+
+  /** "Mi perfil": el nombre lo cambia su dueño y queda como autor del cambio. */
+  async cambiarNombre(id: string, nombre: string): Promise<void> {
+    await this.bd.query(
+      `UPDATE usuarios SET nombre = $2, modificado_por = $1
+        WHERE id = $1 AND eliminado_en IS NULL`,
+      [id, nombre],
+    );
+  }
+
   /** HU-07. Solo lo llama el servicio de verificacion, con un token consumido. */
   async marcarCorreoVerificado(usuarioId: string): Promise<void> {
     await this.bd.query(

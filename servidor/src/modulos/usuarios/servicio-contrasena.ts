@@ -5,12 +5,12 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { randomInt } from 'crypto';
 import { RepositorioUsuario } from './repositorio-usuario';
 import { RepositorioToken } from './repositorio-token';
 import { ServicioCorreo } from '../../comun/servicio-correo';
 import {
   cifrarContrasena,
+  claveTemporal,
   enumerar,
   revisarContrasena,
   verificarContrasena,
@@ -29,21 +29,6 @@ import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
  *      → restablecer() genera la clave, se la manda por correo al usuario y
  *        NO la devuelve en la respuesta. El propietario ve "listo", nada mas.
  */
-
-/** Sin caracteres que se confundan al dictarla: ni O ni 0, ni l ni 1. */
-const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-
-function claveTemporal(): string {
-  // 12 caracteres del alfabeto de arriba, mas una mayuscula y un numero
-  // asegurados, para que cumpla las mismas reglas que exige el sistema.
-  let clave = '';
-  for (let i = 0; i < 10; i++) {
-    clave += ALFABETO[randomInt(ALFABETO.length)];
-  }
-  clave += 'ABCDEFGHJKMNPQRSTUVWXYZ'[randomInt(23)];
-  clave += '23456789'[randomInt(8)];
-  return clave;
-}
 
 @Injectable()
 export class ServicioContrasena {
@@ -76,7 +61,9 @@ export class ServicioContrasena {
     // Segundo criterio.
     if (actual === nueva) {
       throw new BadRequestException(
-        'La contraseña nueva no puede ser igual a la temporal.',
+        usuario.debe_cambiar_contrasena
+          ? 'La contraseña nueva no puede ser igual a la temporal.'
+          : 'La contraseña nueva tiene que ser distinta de la actual.',
       );
     }
 
@@ -93,7 +80,11 @@ export class ServicioContrasena {
       quien.id,
     );
 
-    return { mensaje: 'Contraseña actualizada. Ya puedes usar el sistema.' };
+    return {
+      mensaje: usuario.debe_cambiar_contrasena
+        ? 'Contraseña actualizada. Ya puedes usar el sistema.'
+        : 'Contraseña actualizada.',
+    };
   }
 
   /**
@@ -180,12 +171,13 @@ export class ServicioContrasena {
       cuerpo: [
         `Hola ${usuario.nombre},`,
         '',
-        'Solicitaste recuperar tu contraseña. Haz clic en el siguiente enlace para crear una nueva:',
-        '',
-        enlace,
+        'Solicitaste recuperar tu contraseña. Usa el botón de abajo para crear una nueva.',
         '',
         'Este enlace caducará en 1 hora. Si no fuiste tú, puedes ignorar este correo.',
       ].join('\n'),
+      // El enlace va aparte para que el correo lo muestre como botón.
+      destacado: enlace,
+      textoBoton: 'Crear una contraseña nueva',
     });
 
     return { mensaje: 'Si el correo está registrado, recibirás un enlace de recuperación.' };

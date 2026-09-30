@@ -783,3 +783,117 @@ registra acá.
   shield-check.
 - Las animaciones respetan a quien pidió que nada se mueva, y sin
   IntersectionObserver (o en las pruebas) todo se ve desde el principio.
+
+---
+
+## 28. La guía de configuración (HU-16)
+
+**Fecha:** 29 de septiembre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+**Dónde vive.** En el panel del propietario, en el lugar del "Tu recorrido" fijo
+que había. Solo la ve el propietario: la historia dice "Como propietario". El
+socio ve en ese lugar una tarjeta que le explica su rol.
+
+**Qué guarda la base y qué se calcula.** La migración 004 crea `pasos_guia` (una
+fila por rancho y paso, con `visitado_en` y `completado_en`) y agrega
+`ranchos.guia_pausada_en`. Que un paso tenga datos no se guarda: se cuenta al
+consultar. Dos fuentes para el mismo dato terminan diciendo cosas distintas.
+
+**Cómo se decide el estado.**
+- *Completo*: el propietario lo dio por terminado ("Listo").
+- *En curso*: lo abrió alguna vez o ya tiene datos.
+- *Pendiente*: ninguna de las dos.
+
+"Completo" lo decide el propietario y no los datos: el sistema no puede saber si
+con tres colaboradores el equipo ya está armado.
+
+**Abandonar y retomar.** "Seguir después" achica la guía a una franja con el
+progreso; no borra nada. Al retomarla, el paso resaltado es el que quedó en
+curso (el servidor lo devuelve como `siguiente`).
+
+**Los pasos de otras fases.** Animales y corrales (fase 2) y vacunas (fase 3) se
+ven con "Llega en la fase N" y no se pueden marcar. Para prender uno cuando
+exista su módulo: en `servicio-guia.ts`, `disponible: true` y su `ruta`. El
+conteo ya mira las tablas `animales`, `corrales` y `esquemas_vacunacion`, y
+mientras no existan cuenta cero. **Brian: si las tablas de HU-27 y HU-36 van a
+tener otro nombre, avísame o cámbialo en el catálogo.**
+
+**`ON DELETE CASCADE` en `pasos_guia`.** Las semillas borran los ranchos en cada
+corrida; sin la cascada, `npm run sembrar` fallaría apenas alguien use la guía.
+
+---
+
+## 29. El alta del equipo (HU-17)
+
+**Fecha:** 29 de septiembre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+**Módulo propio: `/equipo`.** Listar, tipos de colaborador, alta y
+suspender/reactivar. Pasa por `GuardiaCuentaLista` y toma al usuario de la
+petición, así que funciona igual con el token de HU-08 que con `x-usuario-id`.
+
+**La contraseña temporal no la ve el propietario.** Es la misma regla que HU-10:
+la clave se manda por correo al integrante y no vuelve en la respuesta. Si el
+propietario la conociera, el "creado por" de HU-23 no probaría quién cargó cada
+dato. En desarrollo el correo sale por la consola del servidor. El generador de
+claves se movió a `comun/contrasenas.ts` para que HU-10 y HU-17 usen el mismo.
+
+**El correo nace verificado.** La clave viaja solo en ese correo: nadie puede
+entrar sin haberlo leído, y eso prueba que el correo es suyo. Pedirle además
+el enlace de HU-07 sería un paso más sin ganar nada. Sí nace con
+`debe_cambiar_contrasena`, así que HU-10 lo obliga a cambiarla.
+
+**Un correo, un solo rancho.** Es la regla de HU-13 (Brian), con su mismo
+mensaje. Si el correo ya es del propio equipo, el mensaje lo dice así.
+`POST /usuarios/colaboradores` de HU-13 sigue existiendo: valida pero no crea a
+nadie. El formulario provisional que lo usaba en el panel se reemplazó por la
+pantalla de Equipo. **Brian: decide si ese endpoint queda o se borra.**
+
+**Suspender cierra las sesiones.** Además de poner `estado = 'suspendido'`, se
+revocan sus tokens de refresco (HU-12). Sin eso, un suspendido con la sesión
+abierta seguiría entrando hasta que venciera.
+
+**Quién puede qué.** Propietario: todo. Socio: ve la lista, sin botones
+(HU-21). Colaborador: el servidor responde 403 y la pantalla explica por qué.
+Los permisos por módulo (HU-19) y los límites del plan (fase 4) se agregan en
+`servicio-equipo.ts` cuando existan.
+
+**Nada se confirma con `window.confirm`.** Suspender pide confirmación en la
+misma fila, con lo que va a pasar.
+
+---
+
+## 30. La landing primero, Mi perfil, transiciones y correo real
+
+**Fecha:** 30 de septiembre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+**La landing es lo primero que se ve, siempre.** `/` es la landing haya sesión o
+no; con sesión, el botón de arriba dice "Ir a mi rancho". El panel se movió a
+`/rancho`. Todas las pantallas del sistema (`/rancho`, `/equipo`, `/perfil`)
+pasan por el mismo portero: sin nadie adentro, al ingreso. `/bienvenida` queda
+como redirección para no romper enlaces viejos. Elegir una cuenta en la barra
+de demostración desde la landing lleva directo al panel.
+
+**Mi perfil (`/perfil`).** Se abre tocando el usuario al pie del menú lateral o
+desde el menú de la cuenta. Se edita el nombre (`PATCH /usuarios/yo/perfil`) y
+la contraseña, con la actual (el mismo servicio de HU-10). No se editan:
+- el correo, porque cambiarlo exige confirmar el nuevo (HU-07);
+- el país, porque es el criterio 2 de HU-14 (Brian);
+- el rol y el rancho, que los decide el propietario.
+Con el correo sin confirmar o la clave temporal pendiente, no se edita nada.
+
+**Transiciones de vista en Equipo.** Filtrar, abrir el formulario, dar de alta
+y suspender usan la View Transitions API (`servicios/transicion.ts`): lo que se
+queda se desliza, lo que sale se desvanece y lo que entra aparece. En un
+navegador sin soporte, o con movimiento reducido, el cambio se aplica igual,
+sin animación. El filtro es un componente nuevo, `Segmentos`, con la marca de
+la opción elegida deslizándose y la cantidad de cada grupo. Las cifras cuentan
+desde el valor que tenían: antes volvían a cero y parecía que la página se
+recargaba.
+
+**Correo de verdad.** El transporte de Brevo ya existía (punto 18). Se agregó:
+- `npm run probar:correo -- tu@correo.com`, que manda un correo de prueba con
+  la configuración del `.env` y explica qué falla si Brevo lo rechaza;
+- el texto del botón del correo según el mensaje: "Confirmar mi correo",
+  "Crear una contraseña nueva". Antes todos decían "Confirmar mi correo";
+- el correo de recuperación (HU-09) manda el enlace como botón y no como
+  texto suelto.

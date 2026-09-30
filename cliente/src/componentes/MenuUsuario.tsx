@@ -91,12 +91,22 @@ export function MenuUsuario({ nombre, rol, rancho, correo }: Propiedades) {
 
           <Link
             className="menu-usuario__accion"
-            to="/"
+            to="/rancho"
             role="menuitem"
             onClick={() => setAbierto(false)}
           >
             <Icono nombre="casa" tamano={18} />
             Ir a mi rancho
+          </Link>
+
+          <Link
+            className="menu-usuario__accion"
+            to="/perfil"
+            role="menuitem"
+            onClick={() => setAbierto(false)}
+          >
+            <Icono nombre="persona" tamano={18} />
+            Mi perfil
           </Link>
 
           <button

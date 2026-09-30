@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post } from '@nestjs/common';
 import { ServicioUsuario } from './servicio-usuario';
 import { ServicioVerificacion } from './servicio-verificacion';
 import { ServicioContrasena } from './servicio-contrasena';
@@ -13,6 +13,8 @@ import { RepositorioUsuarioActual } from '../../comun/repositorio-usuario-actual
  *   POST /usuarios/refresco                     HU-12, refrescar sesión
  *   POST /usuarios/cierre                       HU-12, cierre de sesión
  *   GET  /usuarios/yo                           el estado de mi cuenta
+ *   GET  /usuarios/yo/perfil                    mis datos, para "Mi perfil"
+ *   PATCH /usuarios/yo/perfil                   cambiar mi nombre
  *   POST /usuarios/verificacion                 HU-07, confirmar el correo
  *   POST /usuarios/verificacion/reenvio         HU-07, pedir otro enlace
  *   POST /usuarios/mi-contrasena                HU-10, cambiar la mia
@@ -93,6 +95,23 @@ export class ControladorUsuario {
           ? 'cambiar_contrasena'
           : null,
     };
+  }
+
+  @Get('yo/perfil')
+  async perfil(
+    @Headers('authorization') auth?: string,
+    @Headers('x-usuario-id') usuarioId?: string,
+  ) {
+    return this.servicio.perfil(await this.usuarios.resolver(auth || usuarioId));
+  }
+
+  @Patch('yo/perfil')
+  async actualizarPerfil(
+    @Body() cuerpo: any,
+    @Headers('authorization') auth?: string,
+    @Headers('x-usuario-id') usuarioId?: string,
+  ) {
+    return this.servicio.actualizarPerfil(cuerpo, await this.usuarios.resolver(auth || usuarioId));
   }
 
   @Post('verificacion')
