@@ -175,7 +175,7 @@ function Cabecera() {
           ))}
           <div className="lp-menu__acciones">
             {adentro ? (
-              <Link className="btn btn-primario" to="/">
+              <Link className="btn btn-primario" to="/rancho">
                 <Icono nombre="casa" tamano={18} />
                 Ir a mi rancho
               </Link>

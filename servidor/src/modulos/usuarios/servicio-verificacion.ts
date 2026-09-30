@@ -59,6 +59,7 @@ export class ServicioVerificacion {
         'Si no creaste ninguna cuenta, puedes ignorar este mensaje.',
       ].join('\n'),
       destacado: enlace,
+      textoBoton: 'Confirmar mi correo',
     });
 
     return {

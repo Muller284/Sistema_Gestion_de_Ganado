@@ -111,6 +111,36 @@ export class ServicioUsuario {
     };
   }
 
+  /** Mi perfil: lo que ve cada usuario de si mismo. */
+  async perfil(quien: UsuarioActual) {
+    const perfil = await this.repositorio.perfil(quien.id);
+    if (!perfil) throw new ForbiddenException('El usuario no existe.');
+    return perfil;
+  }
+
+  /**
+   * Mi perfil: por ahora se edita el nombre. El correo no, porque cambiarlo
+   * exige confirmar el nuevo (HU-07) y eso es otra historia; el pais tampoco
+   * desde aca, porque es el criterio 2 de HU-14 (Brian).
+   */
+  async actualizarPerfil(cuerpo: any, quien: UsuarioActual) {
+    // Mismas salidas que el portero: con esto pendiente no se edita nada.
+    if (!quien.correoVerificado || quien.debeCambiarContrasena) {
+      throw new ForbiddenException('Termina de activar tu cuenta antes de editar tu perfil.');
+    }
+
+    const nombre = texto(cuerpo?.nombre);
+    if (!nombre) {
+      throw new BadRequestException('El nombre no puede quedar vacío.');
+    }
+    if (nombre.length > LARGO_NOMBRE) {
+      throw new BadRequestException(`El nombre no puede pasar de ${LARGO_NOMBRE} caracteres.`);
+    }
+
+    await this.repositorio.cambiarNombre(quien.id, nombre);
+    return { perfil: await this.repositorio.perfil(quien.id), mensaje: 'Tus datos quedaron guardados.' };
+  }
+
   /**
    * HU-13: Un usuario, un solo rancho (Alta de colaboradores)
    */

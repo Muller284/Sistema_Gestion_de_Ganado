@@ -195,6 +195,74 @@ export interface EstadoRancho {
   rancho: Rancho | null;
 }
 
+/** HU-17 · Un integrante del equipo del rancho. */
+export interface MiembroEquipo {
+  id: string;
+  nombre: string;
+  correo: string;
+  rol: 'propietario' | 'socio' | 'colaborador';
+  estado: 'activo' | 'suspendido';
+  tipo_colaborador_id: string | null;
+  tipo_colaborador: string | null;
+  /** Todavia no entro a cambiar su contraseña temporal. */
+  debe_cambiar_contrasena: boolean;
+  creado_en: string;
+  creado_por_nombre: string | null;
+}
+
+export interface TipoColaborador {
+  id: string;
+  nombre: string;
+  es_predefinido: boolean;
+}
+
+export interface DatosAltaMiembro {
+  id: string;
+  nombre: string;
+  correo: string;
+  rol: 'socio' | 'colaborador';
+  tipo_colaborador_id?: string;
+}
+
+/** HU-16 · La guia de configuracion. */
+export type ClavePaso = 'animales' | 'corrales' | 'vacunas' | 'equipo';
+
+export interface PasoGuia {
+  clave: ClavePaso;
+  nombre: string;
+  descripcion: string;
+  fase: number;
+  disponible: boolean;
+  ruta: string | null;
+  estado: 'pendiente' | 'en_curso' | 'completo';
+  /** Cuantos registros tiene ya ese paso (integrantes, animales...). */
+  datos: number;
+}
+
+export interface EstadoGuia {
+  pasos: PasoGuia[];
+  completos: number;
+  total: number;
+  siguiente: ClavePaso | null;
+  pausada: boolean;
+  terminada: boolean;
+}
+
+/** Mi perfil. */
+export interface PerfilUsuario {
+  id: string;
+  nombre: string;
+  correo: string;
+  rol: 'propietario' | 'socio' | 'colaborador' | 'admin_plataforma';
+  estado: string;
+  pais_codigo: string | null;
+  pais: string | null;
+  rancho: string | null;
+  tipo_colaborador: string | null;
+  creado_en: string;
+  modificado_en: string;
+}
+
 export const api = {
   paises: () => pedir<Pais[]>('/paises'),
 
@@ -295,6 +363,39 @@ export const api = {
   agregarColaborador: (datos: { correo: string; nombre?: string; rol?: string }) =>
     pedir<{ mensaje: string }>('/usuarios/colaboradores', {
       method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
+  // HU-17 · Equipo
+  equipo: () => pedir<MiembroEquipo[]>('/equipo'),
+  tiposColaborador: () => pedir<TipoColaborador[]>('/equipo/tipos'),
+  darDeAltaMiembro: (datos: DatosAltaMiembro) =>
+    pedir<{ miembro: MiembroEquipo; mensaje: string; aviso: string }>('/equipo', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+  cambiarEstadoMiembro: (id: string, estado: 'activo' | 'suspendido') =>
+    pedir<{ miembro: MiembroEquipo; mensaje: string }>(`/equipo/${id}/estado`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado }),
+    }),
+
+  // HU-16 · Guia de configuracion
+  guia: () => pedir<EstadoGuia>('/guia'),
+  visitarPaso: (paso: ClavePaso) =>
+    pedir<EstadoGuia>(`/guia/pasos/${paso}/visita`, { method: 'POST' }),
+  completarPaso: (paso: ClavePaso) =>
+    pedir<EstadoGuia>(`/guia/pasos/${paso}/completar`, { method: 'POST' }),
+  reabrirPaso: (paso: ClavePaso) =>
+    pedir<EstadoGuia>(`/guia/pasos/${paso}/reabrir`, { method: 'POST' }),
+  pausarGuia: (pausada: boolean) =>
+    pedir<EstadoGuia>('/guia/pausa', { method: 'POST', body: JSON.stringify({ pausada }) }),
+
+  // Mi perfil
+  perfil: () => pedir<PerfilUsuario>('/usuarios/yo/perfil'),
+  actualizarPerfil: (datos: { nombre: string }) =>
+    pedir<{ perfil: PerfilUsuario; mensaje: string }>('/usuarios/yo/perfil', {
+      method: 'PATCH',
       body: JSON.stringify(datos),
     }),
 };

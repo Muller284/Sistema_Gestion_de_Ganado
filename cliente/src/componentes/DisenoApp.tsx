@@ -28,12 +28,13 @@ interface Modulo {
 }
 
 const MODULOS: Modulo[] = [
-  { clave: 'inicio', nombre: 'Mi rancho', icono: 'casa', ruta: '/' },
+  { clave: 'inicio', nombre: 'Mi rancho', icono: 'casa', ruta: '/rancho' },
   { clave: 'animales', nombre: 'Animales', icono: 'animal', fase: 2 },
   { clave: 'corrales', nombre: 'Corrales', icono: 'corral', fase: 2 },
   { clave: 'sanidad', nombre: 'Sanidad', icono: 'sanidad', fase: 3 },
   { clave: 'pesajes', nombre: 'Pesajes', icono: 'balanza', fase: 3 },
-  { clave: 'equipo', nombre: 'Equipo', icono: 'equipo', fase: 2 },
+  // HU-17. Llegó antes que su fase: el alta del equipo es del Sprint 2.
+  { clave: 'equipo', nombre: 'Equipo', icono: 'equipo', ruta: '/equipo' },
 ];
 
 interface Propiedades {
@@ -52,6 +53,7 @@ interface Propiedades {
 }
 
 function iconoDelModulo(clave: string): NombreIcono {
+  if (clave === 'perfil') return 'persona';
   return MODULOS.find((modulo) => modulo.clave === clave)?.icono ?? 'casa';
 }
 
@@ -135,13 +137,20 @@ export function DisenoApp({
           <span className="detalle">76 % de animales usados</span>
         </div>
 
-        <div className="usuario">
+        {/* Abre "Mi perfil". Es un enlace de verdad, como los modulos: se
+            puede abrir en otra pestaña y el teclado llega igual. */}
+        <NavLink
+          to="/perfil"
+          className={({ isActive }) => (isActive ? 'usuario activo' : 'usuario')}
+          title="Mi perfil"
+        >
           <span className="avatar-inicial">{inicial(usuario.nombre)}</span>
-          <span className="nombre">
+          <span className="nombre flex1">
             {usuario.nombre}
             <span className="rol">{usuario.rol}</span>
           </span>
-        </div>
+          <Icono nombre="lapiz" tamano={16} className="usuario__editar" />
+        </NavLink>
       </aside>
 
       <div className="app__cuerpo">
@@ -232,17 +241,24 @@ function Contador({ texto }: { texto: string }) {
     quieto || destino === null ? (destino ?? 0) : 0,
   );
   const cuadro = useRef(0);
+  // Lo que se esta mostrando en este momento. Cuando el valor cambia (se sumo
+  // alguien al equipo), se cuenta desde aca y no desde cero: volver a cero
+  // parece que la pantalla se recargo.
+  const mostrado = useRef(0);
 
   useEffect(() => {
     if (destino === null || quieto) return;
 
     const DURACION = 500;
+    const desde = mostrado.current;
     const arranque = performance.now();
     const paso = (ahora: number) => {
       const avance = Math.min(1, (ahora - arranque) / DURACION);
       // Empieza rápido y frena al final, que es como se lee mejor.
       const suave = 1 - (1 - avance) ** 3;
-      setActual(destino * suave);
+      const valor = desde + (destino - desde) * suave;
+      mostrado.current = valor;
+      setActual(valor);
       if (avance < 1) cuadro.current = requestAnimationFrame(paso);
     };
     cuadro.current = requestAnimationFrame(paso);
@@ -252,7 +268,7 @@ function Contador({ texto }: { texto: string }) {
   if (destino === null) return <>{texto}</>;
   return (
     <>
-      {actual.toFixed(decimales)}
+      {(quieto ? destino : actual).toFixed(decimales)}
       {resto}
     </>
   );

@@ -37,6 +37,9 @@ export function BarraDemostracion() {
 
   function elegir(nuevo: string) {
     cambiarUsuario(nuevo);
+    // Desde la landing se va directo al panel: elegir una cuenta es querer
+    // verla por dentro. En cualquier otra pantalla, se queda donde está.
+    if (/^#?\/?$/.test(window.location.hash)) window.location.hash = '#/rancho';
     // Se recarga entera para que todas las pantallas vuelvan a preguntar por
     // la cuenta. Es lo más simple y esto no va al producto.
     window.location.reload();

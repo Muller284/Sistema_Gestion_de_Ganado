@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import {
   HashRouter,
   Navigate,
@@ -8,7 +8,9 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { BarraDemostracion, Cargando } from './componentes';
+import { PaginaEquipo } from './paginas/equipo/PaginaEquipo';
 import { PaginaIngreso } from './paginas/ingreso/PaginaIngreso';
+import { PaginaPerfil } from './paginas/perfil/PaginaPerfil';
 import { PaginaLanding } from './paginas/landing/PaginaLanding';
 import { PaginaRancho } from './paginas/ranchos/PaginaRancho';
 import { PaginaRegistro } from './paginas/registro/PaginaRegistro';
@@ -38,9 +40,12 @@ import { api, hayAlguienDentro, type EstadoCuenta } from './servicios/api';
  * Bloquear solo en el cliente no bloquea nada: cualquiera puede llamar al
  * servidor sin pasar por la pantalla.
  *
- *   /                        la landing si no hay nadie adentro; si lo hay,
- *                            el portero y el rancho (HU-15)
- *   /bienvenida              la landing siempre, aunque haya sesion
+ *   /                        la landing. Es lo primero que se ve siempre,
+ *                            haya sesion o no; con sesion, el boton de
+ *                            arriba dice "Ir a mi rancho".
+ *   /rancho                  el panel del rancho (HU-15), detras del portero
+ *   /equipo                  el equipo del rancho (HU-17), detras del portero
+ *   /perfil                  mis datos (nombre y contraseña), detras del portero
  *   /ingreso                 entrar con correo y contraseña (HU-08)
  *   /registro                crear cuenta de propietario (HU-06)
  *   /verificar               confirmar el correo (HU-07)
@@ -81,7 +86,7 @@ function Sistema() {
    * pantalla de la que acaba de salir.
    */
   const seguirAlRancho = useCallback(() => {
-    navegar('/');
+    navegar('/rancho');
     setCargando(true);
     void preguntarPorLaCuenta();
   }, [navegar, preguntarPorLaCuenta]);
@@ -128,9 +133,10 @@ function Sistema() {
         />
         <Route path="/iniciar-sesion" element={<Navigate to="/ingreso" replace />} />
 
-        {/* La landing. En "/" solo la ve quien no entro; aca la ve cualquiera,
-            para mostrarla en una demostracion sin tener que cerrar sesion. */}
-        <Route path="/bienvenida" element={<PaginaLanding />} />
+        {/* La landing es lo primero que se ve, siempre. /bienvenida era su
+            direccion cuando "/" era el panel; queda para no romper enlaces. */}
+        <Route path="/" element={<PaginaLanding />} />
+        <Route path="/bienvenida" element={<Navigate to="/" replace />} />
 
         {/* HU-09. Tambien fuera del portero: quien no puede entrar es
             justamente quien necesita recuperar su contraseña. */}
@@ -143,10 +149,13 @@ function Sistema() {
           element={<PaginaRestablecerContrasena />}
         />
 
-        <Route
-          path="/"
-          element={hayAlguienDentro() ? elPortero() : <PaginaLanding />}
-        />
+        {/* Las pantallas del sistema. Pasan todas por el mismo portero: sin
+            sesion, al ingreso; sin correo confirmado o con clave temporal,
+            a resolver eso primero. */}
+        <Route path="/rancho" element={adentro(<PaginaRancho />)} />
+        <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
+        <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
+
         {/* Cualquier otra direccion vuelve al principio. */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -156,7 +165,13 @@ function Sistema() {
     </>
   );
 
-  function elPortero() {
+  /** Una pantalla del sistema: sin nadie adentro, al ingreso. */
+  function adentro(pantalla: ReactNode) {
+    return hayAlguienDentro() ? elPortero(pantalla) : <Navigate to="/ingreso" replace />;
+  }
+
+  /** Lo que se ve si la cuenta esta lista. */
+  function elPortero(pantalla: ReactNode) {
     if (cargando) {
       return (
         <main className="pagina pagina-angosta">
@@ -189,7 +204,7 @@ function Sistema() {
       );
     }
 
-    return <PaginaRancho />;
+    return pantalla;
   }
 }
 

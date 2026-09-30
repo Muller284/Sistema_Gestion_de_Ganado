@@ -59,7 +59,7 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
       if (alIngresar) {
         alIngresar();
       } else {
-        window.location.hash = '#/';
+        window.location.hash = '#/rancho';
         window.location.reload();
       }
     } catch (err) {

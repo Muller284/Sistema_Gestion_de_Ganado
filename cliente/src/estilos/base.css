@@ -156,6 +156,7 @@ a:hover {
 .col { display: flex; flex-direction: column; }
 .fila { display: flex; flex-direction: row; flex-wrap: wrap; }
 .centro { align-items: center; }
+.inicio { align-items: flex-start; }
 .entre { justify-content: space-between; }
 .medio { justify-content: center; }
 .flex1 { flex: 1; }

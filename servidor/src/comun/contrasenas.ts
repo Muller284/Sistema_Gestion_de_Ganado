@@ -1,4 +1,4 @@
-import { randomBytes, scrypt, timingSafeEqual } from 'crypto';
+import { randomBytes, randomInt, scrypt, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
 
 const derivar = promisify(scrypt) as (
@@ -95,4 +95,26 @@ export function revisarContrasena(contrasena: string): string[] {
 export function enumerar(partes: string[]): string {
   if (partes.length <= 1) return partes.join('');
   return `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
+}
+
+/** Sin caracteres que se confundan al dictarla: ni O ni 0, ni l ni 1. */
+const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+
+/**
+ * La contraseña temporal de HU-10 (restablecimiento) y HU-17 (alta de un
+ * integrante). Vivia dentro del servicio de contraseñas; se paso aca cuando
+ * la segunda historia la necesito, para que las dos generen la misma clase de
+ * clave.
+ *
+ * Diez caracteres del alfabeto de arriba, mas una mayuscula y un numero
+ * asegurados, para que cumpla las mismas reglas que exige el sistema.
+ */
+export function claveTemporal(): string {
+  let clave = '';
+  for (let i = 0; i < 10; i++) {
+    clave += ALFABETO[randomInt(ALFABETO.length)];
+  }
+  clave += 'ABCDEFGHJKMNPQRSTUVWXYZ'[randomInt(23)];
+  clave += '23456789'[randomInt(8)];
+  return clave;
 }

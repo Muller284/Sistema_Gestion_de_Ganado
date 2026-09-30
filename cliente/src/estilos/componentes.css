@@ -335,7 +335,27 @@
 
 .lateral .item.activo { background: var(--corral-600); color: var(--arena-0); }
 .lateral .espaciador { flex: 1; }
-.lateral .usuario { display: flex; align-items: center; gap: var(--e-10); padding: var(--e-12) var(--e-12) var(--e-4); }
+.lateral .usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--e-10);
+  margin-top: var(--e-4);
+  padding: var(--e-10) var(--e-12);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  transition: background var(--t-rapido) var(--curva);
+}
+.lateral .usuario:hover,
+.lateral .usuario.activo { background: color-mix(in srgb, var(--arena-0) 8%, transparent); }
+.lateral .usuario .usuario__editar {
+  color: var(--corral-300);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity var(--t-rapido) var(--curva), transform var(--t-rapido) var(--curva);
+}
+.lateral .usuario:hover .usuario__editar,
+.lateral .usuario:focus-visible .usuario__editar,
+.lateral .usuario.activo .usuario__editar { opacity: 1; transform: none; }
 .lateral .avatar { width: var(--e-32); height: var(--e-32); border-radius: var(--r-full); background: var(--corral-500); flex-shrink: 0; }
 
 .barra-sup {

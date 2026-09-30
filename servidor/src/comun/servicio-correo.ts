@@ -44,6 +44,11 @@ export interface MensajeCorreo {
   cuerpo: string;
   /** El enlace o el dato que el usuario necesita. Se resalta aparte. */
   destacado?: string;
+  /**
+   * Si destacado es un enlace, el texto del boton. Sin esto el boton decia
+   * "Confirmar mi correo" hasta en el correo de recuperar la contraseña.
+   */
+  textoBoton?: string;
 }
 
 export interface TransporteCorreo {
@@ -151,7 +156,7 @@ function cuerpoHtml(mensaje: MensajeCorreo): string {
            <a href="${mensaje.destacado}"
               style="display:inline-block;background:#1D5B4B;color:#FFFFFF;
                      text-decoration:none;padding:12px 24px;border-radius:8px;
-                     font-weight:600;font-size:15px">Confirmar mi correo</a>
+                     font-weight:600;font-size:15px">${escapar(mensaje.textoBoton ?? 'Abrir el enlace')}</a>
            <p style="margin:16px 0 0;font-size:13px;line-height:18px;color:#8C8478">
              Si el botón no funciona, copia esta dirección en tu navegador:<br>
              <span style="color:#1D5B4B;word-break:break-all">${mensaje.destacado}</span>
