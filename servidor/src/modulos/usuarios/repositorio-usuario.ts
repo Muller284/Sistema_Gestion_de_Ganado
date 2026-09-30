@@ -19,7 +19,16 @@ import { POOL_BD } from '../../comun/modulo-base-datos';
 @Injectable()
 export class RepositorioUsuario {
   constructor(@Inject(POOL_BD) private readonly bd: Pool) {}
-
+  async buscarParaAutenticar(correo: string) {
+    const resultado = await this.bd.query(
+      `SELECT id, nombre, correo, contrasena, rol, rancho_id,
+              correo_verificado, debe_cambiar_contrasena, estado
+         FROM usuarios
+        WHERE correo = $1 AND eliminado_en IS NULL`,
+      [correo],
+    );
+    return resultado.rows[0] || null;
+  }
   /**
    * El correo es unico en toda la plataforma, no por rancho (HU-13). Se compara
    * en minuscula, igual que el indice ux_usuarios_correo.

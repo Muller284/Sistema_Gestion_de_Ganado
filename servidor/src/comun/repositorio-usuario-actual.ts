@@ -28,6 +28,7 @@ export interface UsuarioActual {
 
 @Injectable()
 export class RepositorioUsuarioActual {
+  
   constructor(@Inject(POOL_BD) private readonly bd: Pool) {}
 
   async resolver(idEnCabecera?: string): Promise<UsuarioActual> {
@@ -37,6 +38,7 @@ export class RepositorioUsuarioActual {
         'No se indico el usuario. Envia la cabecera x-usuario-id o define USUARIO_DEMO_ID en el .env.',
       );
     }
+    
 
     const resultado = await this.bd.query(
       `SELECT id, nombre, correo, rol, rancho_id,
