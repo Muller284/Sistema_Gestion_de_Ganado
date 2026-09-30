@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
+import {
+  HashRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 import { BarraDemostracion, Cargando } from './componentes';
+import { PaginaIngreso } from './paginas/ingreso/PaginaIngreso';
+import { PaginaLanding } from './paginas/landing/PaginaLanding';
 import { PaginaRancho } from './paginas/ranchos/PaginaRancho';
 import { PaginaRegistro } from './paginas/registro/PaginaRegistro';
 import { PaginaSistemaDiseno } from './paginas/sistema-diseno/PaginaSistemaDiseno';
@@ -7,56 +17,58 @@ import { PaginaVerificacion } from './paginas/verificacion/PaginaVerificacion';
 import { PaginaCambioContrasena } from './paginas/contrasena/PaginaCambioContrasena';
 import { PaginaSolicitarRecuperacion } from './paginas/contrasena/PaginaSolicitarRecuperacion';
 import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestablecerContrasena';
-import { api, type EstadoCuenta } from './servicios/api';
+import { api, hayAlguienDentro, type EstadoCuenta } from './servicios/api';
 
 /**
- * Navegacion provisional por la direccion del navegador, y el portero del
- * cliente.
+ * El enrutador y el portero del cliente.
+ *
+ * POR QUE HashRouter Y NO BrowserRouter
+ * Con las direcciones normales, escribir /verificar en la barra del navegador
+ * le pide ese archivo al servidor, que no existe, y da 404. Para que funcione
+ * hay que configurar el servidor donde se publique. Con la almohadilla no hace
+ * falta configurar nada y los enlaces de los correos ya emitidos siguen
+ * sirviendo, porque son de la forma  /#/verificar?token=...
  *
  * EL PORTERO
- * Antes de dejar ver cualquier pantalla se pregunta al servidor como esta la
- * cuenta (GET /usuarios/yo). Si falta confirmar el correo (HU-07) o cambiar la
- * contraseña temporal (HU-10), no se llega a ninguna otra pantalla: se muestra
- * la que resuelve eso y nada mas.
+ * Antes de dejar ver el sistema se pregunta al servidor como esta la cuenta
+ * (GET /usuarios/yo). Si falta confirmar el correo (HU-07) o cambiar la
+ * contraseña temporal (HU-10), no se llega a ninguna otra pantalla.
  *
  * Esto es lo que se ve; lo que vale es GuardiaCuentaLista, en el servidor.
  * Bloquear solo en el cliente no bloquea nada: cualquiera puede llamar al
  * servidor sin pasar por la pantalla.
  *
- * No se instala un enrutador: la regla del equipo es que las dependencias las
- * instala Favio. Cuando exista el inicio de sesion (HU-08) esto se reemplaza
- * por un enrutador de verdad y ninguna pantalla se entera.
- *
- *   #/                el rancho (HU-15)
- *   #/registro        crear cuenta de propietario (HU-06)
- *   #/verificar       confirmar el correo (HU-07)
- *   #/sistema-diseno  el catalogo del sistema de diseño (HU-05)
+ *   /                        la landing si no hay nadie adentro; si lo hay,
+ *                            el portero y el rancho (HU-15)
+ *   /bienvenida              la landing siempre, aunque haya sesion
+ *   /ingreso                 entrar con correo y contraseña (HU-08)
+ *   /registro                crear cuenta de propietario (HU-06)
+ *   /verificar               confirmar el correo (HU-07)
+ *   /sistema-diseno          el catalogo del sistema de diseño (HU-05)
+ *   /solicitar-recuperacion  pedir el enlace de recuperacion (HU-09)
+ *   /recuperar-contrasena    poner la contraseña nueva (HU-09)
  */
 
-function rutaActual() {
-  // Mejora: Si el usuario entra directamente por la URL del correo, capturamos la ruta.
-  const rutaDirecta = window.location.pathname.replace(/^\/+/, '');
-  if (rutaDirecta === 'solicitar-recuperacion' || rutaDirecta === 'recuperar-contrasena') {
-    return rutaDirecta;
-  }
-  return window.location.hash.replace(/^#\/?/, '').split('?')[0];
+function App() {
+  return (
+    <HashRouter>
+      <Sistema />
+    </HashRouter>
+  );
 }
 
-function App() {
-  const [ruta, setRuta] = useState(rutaActual());
+function Sistema() {
   const [cuenta, setCuenta] = useState<EstadoCuenta | null>(null);
   const [cargando, setCargando] = useState(true);
-
-  useEffect(() => {
-    const alCambiar = () => setRuta(rutaActual());
-    window.addEventListener('hashchange', alCambiar);
-    return () => window.removeEventListener('hashchange', alCambiar);
-  }, []);
+  const navegar = useNavigate();
+  const ubicacion = useLocation();
 
   // Se pregunta siempre, sin comprobar antes si hay usuario: si no lo hay, el
   // servidor responde que no y se resuelve igual.
+  // Si no hay nadie adentro no se pregunta: la respuesta seria un 401 seguro
+  // y la landing no necesita cuenta.
   const preguntarPorLaCuenta = useCallback(async () => {
-    const estado = await api.yo().catch(() => null);
+    const estado = hayAlguienDentro() ? await api.yo().catch(() => null) : null;
     setCuenta(estado);
     setCargando(false);
   }, []);
@@ -64,21 +76,22 @@ function App() {
   /**
    * El paso siguiente del alta, una vez confirmado el correo.
    *
-   * Lo llaman el registro y la verificacion. Cambia la direccion Y vuelve a
-   * preguntar por la cuenta: sin lo segundo, App seguiria creyendo que falta
-   * confirmar el correo y el portero devolveria al usuario a la misma
+   * Lo llaman el registro y la verificacion. Navega Y vuelve a preguntar por
+   * la cuenta: sin lo segundo, el portero devolveria al usuario a la misma
    * pantalla de la que acaba de salir.
    */
   const seguirAlRancho = useCallback(() => {
-    window.location.hash = '#/';
+    navegar('/');
     setCargando(true);
     void preguntarPorLaCuenta();
-  }, [preguntarPorLaCuenta]);
+  }, [navegar, preguntarPorLaCuenta]);
 
+  // Al cambiar de pantalla se vuelve a preguntar: entre una y otra la cuenta
+  // pudo haber cambiado de estado.
   useEffect(() => {
     let vigente = true;
     void (async () => {
-      const estado = await api.yo().catch(() => null);
+      const estado = hayAlguienDentro() ? await api.yo().catch(() => null) : null;
       if (!vigente) return;
       setCuenta(estado);
       setCargando(false);
@@ -86,28 +99,64 @@ function App() {
     return () => {
       vigente = false;
     };
-  }, [ruta]);
+  }, [ubicacion.pathname]);
 
   return (
     <>
-      {elegirPantalla()}
+      <Routes>
+        {/* Estas tres se ven siempre: son la salida de los bloqueos y el
+            catalogo. */}
+        <Route
+          path="/registro"
+          element={<PaginaRegistro alConfirmar={seguirAlRancho} />}
+        />
+        <Route
+          path="/verificar"
+          element={
+            <PaginaVerificacion
+              correo={cuenta?.correo}
+              alConfirmar={seguirAlRancho}
+            />
+          }
+        />
+        <Route path="/sistema-diseno" element={<PaginaSistemaDiseno />} />
+
+        {/* HU-08. Fuera del portero: es justamente la puerta de entrada. */}
+        <Route
+          path="/ingreso"
+          element={<PaginaIngreso alIngresar={seguirAlRancho} />}
+        />
+        <Route path="/iniciar-sesion" element={<Navigate to="/ingreso" replace />} />
+
+        {/* La landing. En "/" solo la ve quien no entro; aca la ve cualquiera,
+            para mostrarla en una demostracion sin tener que cerrar sesion. */}
+        <Route path="/bienvenida" element={<PaginaLanding />} />
+
+        {/* HU-09. Tambien fuera del portero: quien no puede entrar es
+            justamente quien necesita recuperar su contraseña. */}
+        <Route
+          path="/solicitar-recuperacion"
+          element={<PaginaSolicitarRecuperacion />}
+        />
+        <Route
+          path="/recuperar-contrasena"
+          element={<PaginaRestablecerContrasena />}
+        />
+
+        <Route
+          path="/"
+          element={hayAlguienDentro() ? elPortero() : <PaginaLanding />}
+        />
+        {/* Cualquier otra direccion vuelve al principio. */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
       {/* Provisional. Se borra junto con HU-08. */}
       <BarraDemostracion />
     </>
   );
 
-  function elegirPantalla() {
-    // Estas se ven siempre: son la salida de los bloqueos, el catalogo y la recuperacion (HU-09).
-    if (ruta === 'registro') return <PaginaRegistro alConfirmar={seguirAlRancho} />;
-    if (ruta === 'verificar') {
-      return (
-        <PaginaVerificacion correo={cuenta?.correo} alConfirmar={seguirAlRancho} />
-      );
-    }
-    if (ruta === 'sistema-diseno') return <PaginaSistemaDiseno />;
-    if (ruta === 'solicitar-recuperacion') return <PaginaSolicitarRecuperacion />;
-    if (ruta === 'recuperar-contrasena') return <PaginaRestablecerContrasena />;
-
+  function elPortero() {
     if (cargando) {
       return (
         <main className="pagina pagina-angosta">
@@ -116,13 +165,19 @@ function App() {
       );
     }
 
-    // El portero.
-    if (cuenta?.pendiente === 'verificar_correo') {
+    // Habia alguien guardado en el navegador pero el servidor no lo reconoce:
+    // la sesion vencio o la cuenta ya no existe. Se le pide entrar de nuevo.
+    if (!cuenta) {
+      return <PaginaIngreso alIngresar={seguirAlRancho} />;
+    }
+
+    if (cuenta.pendiente === 'verificar_correo') {
       return (
         <PaginaVerificacion correo={cuenta.correo} alConfirmar={seguirAlRancho} />
       );
     }
-    if (cuenta?.pendiente === 'cambiar_contrasena') {
+
+    if (cuenta.pendiente === 'cambiar_contrasena') {
       return (
         <PaginaCambioContrasena
           nombre={cuenta.nombre}

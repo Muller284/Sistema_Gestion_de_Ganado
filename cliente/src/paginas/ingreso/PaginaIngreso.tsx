@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alerta,
   Boton,
@@ -6,7 +7,7 @@ import {
   DisenoAcceso,
   Icono,
 } from '../../componentes';
-import { api } from '../../servicios/api';
+import { api, guardarSesion } from '../../servicios/api';
 
 /**
  * HU-08 · Inicio de sesión.
@@ -15,6 +16,11 @@ import { api } from '../../servicios/api';
  *   1. Si las credenciales son correctas entro al sistema.
  *   2. Si no lo son, el mensaje no revela si el error fue el correo o la contraseña.
  *   3. Las contraseñas se guardan con función de hash (scrypt), nunca en texto plano.
+ *
+ * La lógica es la de Favio. En la integración se le devolvió lo que se había
+ * perdido en el camino (guardar los tokens que responde el servidor, sin lo
+ * cual el ingreso no dejaba a nadie adentro) y se pasó a las clases del
+ * sistema de diseño, porque las que usaba no existían en ninguna hoja.
  */
 interface Propiedades {
   /** Se invoca tras un inicio de sesión exitoso para que App actualice el estado y avance. */
@@ -38,11 +44,17 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
 
     setEnviando(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await api.ingresar({
+      const respuesta = await api.ingresar({
         correo: correo.trim(),
         contrasena,
       });
+
+      // HU-12: se guardan los tokens de acceso y de refresco.
+      guardarSesion(
+        respuesta.token_acceso,
+        respuesta.token_refresco,
+        respuesta.usuario,
+      );
 
       if (alIngresar) {
         alIngresar();
@@ -59,60 +71,48 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
 
   return (
     <DisenoAcceso
+      icono="entrar"
       titulo="Bienvenido de vuelta"
+      subtitulo="Ingresa tus credenciales para acceder a la gestión de tu rancho."
+      nota={
+        <>
+          ¿No tienes cuenta todavía?{' '}
+          <Link to="/registro">Crea una, son 10 días gratis</Link>
+        </>
+      }
     >
-      <div className="bloque-acceso">
-        <h2 className="titulo-seccion">Iniciar sesión</h2>
+      <form onSubmit={manejarIngreso} className="col g16">
+        {error && <Alerta variante="error">{error}</Alerta>}
 
-        {error && (
-          <div style={{ marginBottom: '1.25rem' }}>
-            <Alerta variante="error">{error}</Alerta>
-          </div>
-        )}
+        <CampoTexto
+          etiqueta="Correo"
+          obligatorio
+          type="email"
+          autoComplete="email"
+          placeholder="tu@ejemplo.com"
+          value={correo}
+          onChange={(e) => setCorreo(e.target.value)}
+        />
 
-        <form onSubmit={manejarIngreso} className="formulario-columna">
-          <CampoTexto
-            etiqueta="Correo electrónico"
-            obligatorio
-            type="email"
-            autoComplete="email"
-            placeholder="tu@ejemplo.com"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-          />
+        <CampoTexto
+          etiqueta="Contraseña"
+          obligatorio
+          type="password"
+          autoComplete="current-password"
+          placeholder="Tu contraseña"
+          value={contrasena}
+          onChange={(e) => setContrasena(e.target.value)}
+        />
 
-          <CampoTexto
-            etiqueta="Contraseña"
-            obligatorio
-            type="password"
-            autoComplete="current-password"
-            placeholder="Tu contraseña"
-            value={contrasena}
-            onChange={(e) => setContrasena(e.target.value)}
-          />
+        <Link className="pie enlace-derecha" to="/solicitar-recuperacion">
+          ¿Olvidaste tu contraseña?
+        </Link>
 
-          <Boton
-            type="submit"
-            variante="primario"
-            bloque
-            disabled={enviando}
-          >
-            <Icono nombre="entrar" tamano={18} />
-            {enviando ? 'Ingresando…' : 'Ingresar al sistema'}
-          </Boton>
-        </form>
-
-        <p className="pie c-500 centrado" style={{ marginTop: '1.5rem' }}>
-          ¿No tienes una cuenta de propietario todavía?{' '}
-          <a
-            href="#/registro"
-            className="enlace"
-            style={{ fontWeight: 600 }}
-          >
-            Registrarse aquí
-          </a>
-        </p>
-      </div>
+        <Boton type="submit" variante="primario" bloque disabled={enviando}>
+          <Icono nombre="entrar" tamano={18} />
+          {enviando ? 'Ingresando…' : 'Ingresar'}
+        </Boton>
+      </form>
     </DisenoAcceso>
   );
 }

@@ -1,4 +1,8 @@
-import { cambiarUsuario, usuarioActual } from '../servicios/api';
+import {
+  cambiarUsuario,
+  limpiarSesionLocal,
+  usuarioActual,
+} from '../servicios/api';
 
 /**
  * Barra de demostración. PROVISIONAL, y se borra sola cuando exista HU-08.
@@ -11,7 +15,7 @@ import { cambiarUsuario, usuarioActual } from '../servicios/api';
  * debe competir con la pantalla. Cuando HU-08 esté lista, se borra este
  * archivo y su uso en App.tsx, y no hay que tocar nada más.
  *
- * "Empezar de cero" olvida el usuario y devuelve al registro. Es lo único que
+ * "Empezar de cero" olvida el usuario y devuelve a la landing. Es lo único que
  * permite recorrer el alta entera de principio a fin sin borrar el
  * almacenamiento del navegador a mano. No es el cierre de sesión de HU-12:
  * eso es de Favio y vive en el producto, esto vive en la barra provisional y
@@ -39,8 +43,9 @@ export function BarraDemostracion() {
   }
 
   function empezarDeCero() {
-    localStorage.removeItem('usuario-id');
-    window.location.hash = '#/registro';
+    limpiarSesionLocal();
+    // Sin nadie adentro, "/" muestra la landing: es el principio de verdad.
+    window.location.hash = '#/';
     window.location.reload();
   }
 
@@ -67,7 +72,7 @@ export function BarraDemostracion() {
       <button type="button" className="enlace-demo" onClick={empezarDeCero}>
         Empezar de cero
       </button>
-      <span className="pie">Se reemplaza por el inicio de sesión (HU-08).</span>
+      <span className="pie">Provisional: muestra cada rol sin saber sus contraseñas.</span>
     </div>
   );
 }

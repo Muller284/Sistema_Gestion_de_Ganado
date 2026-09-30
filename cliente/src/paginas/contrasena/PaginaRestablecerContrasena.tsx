@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alerta, Boton, CampoTexto, DisenoAcceso,  } from '../../componentes';
 import { api } from '../../servicios/api';
 
@@ -22,9 +23,12 @@ export function PaginaRestablecerContrasena() {
   const [exito, setExito] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  // Extraer el token de la URL (ej. http://localhost:5173/recuperar-contrasena?token=12345)
-  const parametros = new URLSearchParams(window.location.search);
+  // El token viene en la direccion: /#/recuperar-contrasena?token=...
+  // Con HashRouter la consulta vive DENTRO de la almohadilla, asi que
+  // window.location.search llega vacio. Se lee con el enrutador.
+  const [parametros] = useSearchParams();
   const token = parametros.get('token');
+  const navegar = useNavigate();
 
   const faltas = faltasDeContrasena(nueva);
   const tocada = nueva.length > 0;
@@ -70,8 +74,8 @@ export function PaginaRestablecerContrasena() {
           <Alerta variante="exito">
             Ya puedes usar tu nueva contraseña para ingresar al sistema.
           </Alerta>
-          <Boton variante="primario" bloque onClick={() => window.location.href = '/'}>
-            Ir al inicio
+          <Boton variante="primario" bloque onClick={() => navegar('/ingreso')}>
+            Ingresar con la nueva
           </Boton>
         </div>
       </DisenoAcceso>
@@ -90,7 +94,7 @@ export function PaginaRestablecerContrasena() {
           <Alerta variante="error">
             Falta el código de seguridad. Asegúrate de hacer clic en el enlace completo que llegó a tu correo.
           </Alerta>
-          <Boton variante="secundario" bloque onClick={() => window.location.href = '/'}>
+          <Boton variante="secundario" bloque onClick={() => navegar('/')}>
             Volver al inicio
           </Boton>
         </div>

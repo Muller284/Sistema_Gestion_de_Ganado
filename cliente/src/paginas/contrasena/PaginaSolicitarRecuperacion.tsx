@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Alerta, Boton, CampoTexto, DisenoAcceso,  } from '../../componentes';
 import { api } from '../../servicios/api';
 
@@ -7,6 +8,7 @@ export function PaginaSolicitarRecuperacion() {
   const [error, setError] = useState('');
   const [exito, setExito] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const navegar = useNavigate();
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -41,8 +43,8 @@ export function PaginaSolicitarRecuperacion() {
           <Alerta variante="adv">
             Haz clic en el enlace que te enviamos para crear una nueva contraseña. Recuerda que el enlace caduca en 1 hora.
           </Alerta>
-          <Boton variante="secundario" bloque onClick={() => window.location.href = '/'}>
-            Volver al inicio
+          <Boton variante="secundario" bloque onClick={() => navegar('/ingreso')}>
+            Volver a ingresar
           </Boton>
         </div>
       </DisenoAcceso>
@@ -71,7 +73,7 @@ export function PaginaSolicitarRecuperacion() {
           <Boton type="submit" variante="primario" bloque disabled={enviando}>
             {enviando ? 'Enviando enlace...' : 'Enviar enlace'}
           </Boton>
-          <Boton type="button" variante="secundario" bloque onClick={() => window.location.href = '/'}>
+          <Boton type="button" variante="secundario" bloque onClick={() => navegar('/ingreso')}>
             Cancelar
           </Boton>
         </form>

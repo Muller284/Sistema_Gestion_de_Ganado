@@ -1,6 +1,9 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { NavLink } from 'react-router-dom';
 import { Icono, type NombreIcono } from './Iconos';
 import { IconoMarca } from './Marca';
+import { inicial } from '../servicios/texto';
+import { MenuUsuario } from './MenuUsuario';
 
 /**
  * El marco de las pantallas internas, tal como está en los mockups: menú
@@ -18,12 +21,14 @@ interface Modulo {
   clave: string;
   nombre: string;
   icono: NombreIcono;
+  /** A dónde lleva. Solo los módulos que ya existen la tienen. */
+  ruta?: string;
   /** Cuando está, el módulo se ve apagado y dice de qué fase es. */
   fase?: number;
 }
 
 const MODULOS: Modulo[] = [
-  { clave: 'inicio', nombre: 'Mi rancho', icono: 'casa' },
+  { clave: 'inicio', nombre: 'Mi rancho', icono: 'casa', ruta: '/' },
   { clave: 'animales', nombre: 'Animales', icono: 'animal', fase: 2 },
   { clave: 'corrales', nombre: 'Corrales', icono: 'corral', fase: 2 },
   { clave: 'sanidad', nombre: 'Sanidad', icono: 'sanidad', fase: 3 },
@@ -36,7 +41,7 @@ interface Propiedades {
   activo?: string;
   /** El rastro de la barra superior: "Mi rancho · Propietario". */
   ruta: string[];
-  usuario: { nombre: string; rol: string };
+  usuario: { nombre: string; rol: string; correo?: string };
   rancho?: string | null;
   /** Rótulo chico arriba del título. */
   rotulo?: string;
@@ -44,10 +49,6 @@ interface Propiedades {
   /** Botones a la derecha del título. */
   acciones?: ReactNode;
   children: ReactNode;
-}
-
-function inicial(nombre: string): string {
-  return (nombre.trim()[0] ?? '?').toUpperCase();
 }
 
 function iconoDelModulo(clave: string): NombreIcono {
@@ -76,29 +77,40 @@ export function DisenoApp({
         </div>
 
         {MODULOS.map((modulo) => {
-          const disponible = !modulo.fase;
-          const clases = [
-            'item',
-            modulo.clave === activo ? 'activo' : '',
-            disponible ? '' : 'desactivado',
-          ]
-            .filter(Boolean)
-            .join(' ');
-
-          return (
-            <a
-              key={modulo.clave}
-              className={clases}
-              href={disponible ? '#/' : undefined}
-              aria-disabled={disponible ? undefined : true}
-              title={disponible ? undefined : `Llega en la fase ${modulo.fase}`}
-            >
+          const contenido = (
+            <>
               <span className="casilla-icono" aria-hidden="true">
                 <Icono nombre={modulo.icono} />
               </span>
               <span className="flex1">{modulo.nombre}</span>
-              {!disponible && <span className="pie">Fase {modulo.fase}</span>}
-            </a>
+              {modulo.fase && <span className="pie">Fase {modulo.fase}</span>}
+            </>
+          );
+
+          // Los modulos de fases futuras no son enlaces: un enlace que no
+          // lleva a ningun lado confunde y el teclado se para en el igual.
+          if (modulo.fase) {
+            return (
+              <span
+                key={modulo.clave}
+                className="item desactivado"
+                aria-disabled="true"
+                title={`Llega en la fase ${modulo.fase}`}
+              >
+                {contenido}
+              </span>
+            );
+          }
+
+          return (
+            <NavLink
+              key={modulo.clave}
+              to={modulo.ruta!}
+              end
+              className={({ isActive }) => (isActive ? 'item activo' : 'item')}
+            >
+              {contenido}
+            </NavLink>
           );
         })}
 
@@ -144,7 +156,12 @@ export function DisenoApp({
             ))}
           </span>
           <span className="flex1" />
-          <span className="avatar-inicial">{inicial(usuario.nombre)}</span>
+          <MenuUsuario
+            nombre={usuario.nombre}
+            rol={usuario.rol}
+            rancho={rancho}
+            correo={usuario.correo}
+          />
         </header>
 
         <main className="app__contenido">
@@ -183,8 +200,60 @@ export function Cifra({
         <span className="flex1">{rotulo}</span>
         {icono && <Icono nombre={icono} tamano={18} />}
       </p>
-      <p className="valor">{valor}</p>
+      <p className="valor">
+        {typeof valor === 'string' ? <Contador texto={valor} /> : valor}
+      </p>
       {detalle && <p className="detalle">{detalle}</p>}
     </div>
+  );
+}
+
+function prefiereQuieto(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * El número de una cifra, contando desde cero hasta su valor.
+ *
+ * Solo cuenta si el texto empieza por un número: "850.5 ha" cuenta, "Carne" y
+ * "—" se escriben tal cual. Dura medio segundo y respeta a quien pidió que las
+ * cosas no se muevan.
+ */
+function Contador({ texto }: { texto: string }) {
+  const coincidencia = /^(-?\d+(?:[.,]\d+)?)(.*)$/.exec(texto.trim());
+  const destino = coincidencia ? Number(coincidencia[1].replace(',', '.')) : null;
+  const resto = coincidencia ? coincidencia[2] : '';
+  const decimales = coincidencia?.[1].includes('.') ? 1 : 0;
+
+  // Se lee antes de dibujar, no dentro del efecto: asi el primer numero que
+  // se pinta ya es el correcto para quien pidio que nada se mueva.
+  const quieto = prefiereQuieto();
+  const [actual, setActual] = useState(() =>
+    quieto || destino === null ? (destino ?? 0) : 0,
+  );
+  const cuadro = useRef(0);
+
+  useEffect(() => {
+    if (destino === null || quieto) return;
+
+    const DURACION = 500;
+    const arranque = performance.now();
+    const paso = (ahora: number) => {
+      const avance = Math.min(1, (ahora - arranque) / DURACION);
+      // Empieza rápido y frena al final, que es como se lee mejor.
+      const suave = 1 - (1 - avance) ** 3;
+      setActual(destino * suave);
+      if (avance < 1) cuadro.current = requestAnimationFrame(paso);
+    };
+    cuadro.current = requestAnimationFrame(paso);
+    return () => cancelAnimationFrame(cuadro.current);
+  }, [destino, quieto]);
+
+  if (destino === null) return <>{texto}</>;
+  return (
+    <>
+      {actual.toFixed(decimales)}
+      {resto}
+    </>
   );
 }

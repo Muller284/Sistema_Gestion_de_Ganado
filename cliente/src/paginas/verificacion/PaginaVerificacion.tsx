@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Alerta,
   Boton,
@@ -36,17 +37,11 @@ interface Propiedades {
   alConfirmar?: () => void;
 }
 
-function tokenDeLaDireccion(): string {
-  // El hash viene como "#/verificar?token=abc". URLSearchParams no lee el
-  // hash, asi que se corta a mano lo que hay despues del signo de pregunta.
-  const hash = window.location.hash;
-  const signo = hash.indexOf('?');
-  if (signo === -1) return '';
-  return new URLSearchParams(hash.slice(signo + 1)).get('token') ?? '';
-}
-
 export function PaginaVerificacion({ correo = '', alConfirmar }: Propiedades) {
-  const token = tokenDeLaDireccion();
+  // El enrutador lee el token del enlace del correo:
+  //   /#/verificar?token=...
+  const [parametros] = useSearchParams();
+  const token = parametros.get('token') ?? '';
   const [estado, setEstado] = useState<'confirmando' | 'confirmado' | 'pendiente'>(
     token ? 'confirmando' : 'pendiente',
   );
@@ -84,8 +79,7 @@ export function PaginaVerificacion({ correo = '', alConfirmar }: Propiedades) {
     // Quien navega es App: ademas de cambiar la direccion tiene que volver a
     // preguntar por la cuenta, porque el token que se acaba de consumir
     // cambio el estado en el servidor.
-    if (alConfirmar) alConfirmar();
-    else window.location.hash = '#/';
+    alConfirmar?.();
   }
 
   async function reenviar() {
