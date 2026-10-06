@@ -210,10 +210,37 @@ export interface MiembroEquipo {
   creado_por_nombre: string | null;
 }
 
+/** HU-20 · Qué puede un tipo en un módulo. */
+export type NivelPermiso = 'ninguno' | 'ver' | 'editar';
+
+export interface PermisoDeModulo {
+  modulo: string;
+  nombre: string;
+  nivel: NivelPermiso;
+}
+
 export interface TipoColaborador {
   id: string;
   nombre: string;
   es_predefinido: boolean;
+  /** Un predefinido que el propietario ajustó para su rancho. */
+  ajustado: boolean;
+  /** Cuántos colaboradores del rancho lo tienen. */
+  colaboradores: number;
+  /** Los ocho módulos, en orden. */
+  permisos: PermisoDeModulo[];
+}
+
+export interface DatosTipo {
+  id?: string;
+  nombre?: string;
+  permisos: Record<string, NivelPermiso>;
+}
+
+export interface RespuestaTipo {
+  tipo: TipoColaborador;
+  mensaje: string;
+  afectados?: number;
 }
 
 export interface DatosAltaMiembro {
@@ -379,6 +406,22 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ estado }),
     }),
+
+  // HU-20 · Tipos de colaborador
+  modulosConPermisos: () => pedir<{ codigo: string; nombre: string }[]>('/equipo/modulos'),
+  crearTipo: (datos: DatosTipo) =>
+    pedir<RespuestaTipo>('/equipo/tipos', { method: 'POST', body: JSON.stringify(datos) }),
+  actualizarTipo: (id: string, datos: DatosTipo) =>
+    pedir<RespuestaTipo>(`/equipo/tipos/${id}`, { method: 'PUT', body: JSON.stringify(datos) }),
+  restablecerTipo: (id: string) =>
+    pedir<RespuestaTipo>(`/equipo/tipos/${id}/restablecer`, { method: 'POST' }),
+  eliminarTipo: (id: string) =>
+    pedir<{ mensaje: string }>(`/equipo/tipos/${id}`, { method: 'DELETE' }),
+  asignarTipo: (usuarioId: string, tipoId: string) =>
+    pedir<{ tipo_colaborador_id: string; tipo_colaborador: string; mensaje: string }>(
+      `/equipo/${usuarioId}/tipo`,
+      { method: 'PATCH', body: JSON.stringify({ tipo_colaborador_id: tipoId }) },
+    ),
 
   // HU-16 · Guia de configuracion
   guia: () => pedir<EstadoGuia>('/guia'),

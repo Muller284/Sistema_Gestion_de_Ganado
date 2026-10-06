@@ -9,8 +9,8 @@
     "construir": "nest build",
     "iniciar": "nest start",
     "start:dev": "nest start --watch",
-    "test": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js && node pruebas/bloqueo.test.js && node pruebas/sesion.test.js && node pruebas/equipo.test.js && node pruebas/guia.test.js && node pruebas/perfil.test.js",
-    "probar": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js && node pruebas/bloqueo.test.js && node pruebas/sesion.test.js && node pruebas/equipo.test.js && node pruebas/guia.test.js && node pruebas/perfil.test.js",
+    "test": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js && node pruebas/bloqueo.test.js && node pruebas/sesion.test.js && node pruebas/equipo.test.js && node pruebas/guia.test.js && node pruebas/perfil.test.js && node pruebas/tipos.test.js",
+    "probar": "node pruebas/aislamiento.test.js && node pruebas/registro.test.js && node pruebas/cuenta.test.js && node pruebas/bloqueo.test.js && node pruebas/sesion.test.js && node pruebas/equipo.test.js && node pruebas/guia.test.js && node pruebas/perfil.test.js && node pruebas/tipos.test.js",
     "probar:aislamiento": "node pruebas/aislamiento.test.js",
     "probar:registro": "node pruebas/registro.test.js",
     "probar:cuenta": "node pruebas/cuenta.test.js",
@@ -19,6 +19,7 @@
     "probar:equipo": "node pruebas/equipo.test.js",
     "probar:guia": "node pruebas/guia.test.js",
     "probar:perfil": "node pruebas/perfil.test.js",
+    "probar:tipos": "node pruebas/tipos.test.js",
     "probar:correo": "node probar-correo.js"
   },
   "repository": {
@@ -46,7 +47,6 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^12.0.0",
-    "@nestjs/mau": "^0.2.6",
     "@nestjs/schematics": "^12.0.0",
     "@nestjs/testing": "^12.0.1",
     "@types/express": "^5.0.0",

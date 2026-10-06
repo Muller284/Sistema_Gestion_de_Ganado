@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 import { BarraDemostracion, Cargando } from './componentes';
 import { PaginaEquipo } from './paginas/equipo/PaginaEquipo';
+import { PaginaTipos } from './paginas/equipo/PaginaTipos';
 import { PaginaIngreso } from './paginas/ingreso/PaginaIngreso';
 import { PaginaPerfil } from './paginas/perfil/PaginaPerfil';
 import { PaginaLanding } from './paginas/landing/PaginaLanding';
@@ -154,6 +155,7 @@ function Sistema() {
             a resolver eso primero. */}
         <Route path="/rancho" element={adentro(<PaginaRancho />)} />
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
+        <Route path="/equipo/tipos" element={adentro(<PaginaTipos />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}

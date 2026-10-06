@@ -61,9 +61,31 @@ npm run sembrar
 
 ## Pruebas
 
+Las del servidor hablan con la base real y con el servidor levantado. Con la
+base migrada y sembrada, en una terminal:
+
 ```bash
-cd servidor && npm test     # aislamiento entre ranchos, contra la base real
-cd cliente && npm run build
+cd servidor
+CORREO_TRANSPORTE=consola npm run start:dev
+```
+
+y en otra:
+
+```bash
+cd servidor
+npm test                    # todas: aislamiento, registro, cuenta, bloqueo,
+                            # sesion, equipo, guia, perfil y tipos
+npm run probar:tipos        # o una sola (probar:equipo, probar:guia, ...)
+```
+
+`CORREO_TRANSPORTE=consola` hace que los correos de las pruebas salgan por la
+consola: con `brevo` se mandarían de verdad y gastarían el cupo diario.
+
+Las del cliente:
+
+```bash
+cd cliente
+npm run lint && npm test && npm run build
 ```
 
 ## Estructura del repositorio

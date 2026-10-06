@@ -537,3 +537,183 @@
 @media (max-width: 860px) {
   .perfil__par { grid-template-columns: 1fr; }
 }
+
+/* ---------------------------------------------------------------------------
+ * HU-20 · Tipos de colaborador
+ * Las tarjetas de cada tipo, con sus permisos, y el editor en el que se
+ * convierten. La matriz de permisos usa los mismos segmentos del filtro.
+ * -------------------------------------------------------------------------*/
+
+.tipos__intro { max-width: var(--ancho-lectura); margin: 0; }
+.tipos__intro strong { color: var(--arena-900); font-weight: var(--peso-medio); }
+.tipos__nota { margin: calc(var(--e-4) * -1) 0 0; max-width: var(--ancho-lectura); }
+
+.tipos__rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: var(--e-16);
+}
+
+/* Las tarjetas de una misma fila miden lo mismo y sus botones quedan alineados abajo. */
+.tipos__tarjeta > .tarjeta-borde {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tipos__tarjeta .contenido { flex: 1; }
+
+/* El editor ocupa todo el ancho: ocho filas con segmentos no entran en una columna. */
+.tipos__rejilla > .tipos__editor { grid-column: 1 / -1; }
+
+.tipos__cuantos {
+  display: flex;
+  align-items: center;
+  gap: var(--e-6);
+  margin: 0 0 var(--e-12);
+}
+
+.tipos__permisos {
+  display: grid;
+  gap: var(--e-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tipos__permisos li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12);
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  color: var(--arena-800);
+}
+
+.tipos__sin { margin: var(--e-12) 0 0; }
+
+/* El nivel de un modulo: edita en verde corral, ve en arena. */
+.nivel {
+  display: inline-flex;
+  align-items: center;
+  height: var(--alto-insignia);
+  padding: 0 var(--e-10);
+  border-radius: var(--r-full);
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--ls-pie);
+}
+
+.nivel-editar { background: var(--corral-100); color: var(--corral-700); }
+.nivel-ver { background: var(--arena-100); color: var(--arena-700); }
+.nivel-ninguno { background: transparent; color: var(--arena-500); }
+
+.tipos__botones {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--e-8);
+}
+
+.tipos__confirmar {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--e-8);
+}
+
+.tipos__confirmar .pie { margin-right: auto; color: var(--adv-texto); }
+
+.tipos__vacio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-16) var(--e-20);
+  border: var(--borde) dashed var(--arena-300);
+  border-radius: var(--r-lg);
+  color: var(--arena-500);
+}
+
+.tipos__vacio .cuerpo { flex: 1 1 280px; }
+
+/* La matriz: una fila por modulo, el nombre a la izquierda y el nivel a la derecha. */
+.tipos__matriz {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.tipos__matriz legend { margin-bottom: var(--e-8); padding: 0; }
+
+.tipos__modulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-8) var(--e-16);
+  padding: var(--e-12) 0;
+}
+
+.tipos__modulo + .tipos__modulo { border-top: var(--borde) solid var(--arena-100); }
+
+.tipos__modulo-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tipos__modulo-texto strong {
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  font-weight: var(--peso-medio);
+  color: var(--arena-900);
+}
+
+.tipos__ayuda {
+  display: flex;
+  align-items: center;
+  gap: var(--e-6);
+  margin: 0;
+}
+
+/* En el formulario de alta: lo que puede el tipo elegido. */
+.equipo__resumen-tipo {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-6);
+  margin: calc(var(--e-8) * -1) 0 0;
+}
+
+.equipo__resumen-tipo svg { flex: none; margin-top: 1px; }
+
+/* Cambiar el tipo de un colaborador, en su misma fila. */
+.equipo__cambio-tipo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--e-8);
+}
+
+.equipo__cambio-tipo select {
+  height: var(--e-32);
+  padding: 0 var(--e-8);
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-sm);
+  background: var(--arena-0);
+  font: inherit;
+  font-size: var(--t-etiqueta);
+  color: var(--arena-900);
+}
+
+@media (max-width: 640px) {
+  .tipos__modulo { align-items: flex-start; }
+  .tipos__modulo .segmentos { width: 100%; justify-content: space-between; }
+}

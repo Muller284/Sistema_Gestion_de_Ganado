@@ -6,9 +6,11 @@ import { ServicioEquipo } from './servicio-equipo';
  * HU-17 · El equipo del rancho.
  *
  *   GET   /equipo               los integrantes del rancho
- *   GET   /equipo/tipos         los tipos de colaborador que se pueden asignar
  *   POST  /equipo               dar de alta a un socio o colaborador
  *   PATCH /equipo/:id/estado    suspender o reactivar  { estado }
+ *
+ * Los tipos de colaborador (GET /equipo/tipos y el resto) son de HU-20 y
+ * estan en modulos/tipos/controlador-tipos.ts.
  *
  * GuardiaCuentaLista resuelve quien pide (token o x-usuario-id) y lo deja en
  * la peticion: no hace falta volver a preguntarle a la base.
@@ -21,11 +23,6 @@ export class ControladorEquipo {
   @Get()
   async listar(@Req() peticion: any) {
     return this.servicio.listar(peticion.usuarioActual);
-  }
-
-  @Get('tipos')
-  async tipos(@Req() peticion: any) {
-    return this.servicio.tipos(peticion.usuarioActual);
   }
 
   @Post()

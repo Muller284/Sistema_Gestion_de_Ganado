@@ -67,10 +67,6 @@ export class ServicioEquipo {
     return this.equipo.listar(ranchoId);
   }
 
-  async tipos(quien: UsuarioActual) {
-    return this.equipo.tipos(this.ranchoDe(quien));
-  }
-
   async alta(cuerpo: any, quien: UsuarioActual) {
     const ranchoId = this.soloPropietario(quien, 'dar de alta a alguien');
 

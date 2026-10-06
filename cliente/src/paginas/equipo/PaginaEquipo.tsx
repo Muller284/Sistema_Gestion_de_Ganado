@@ -18,6 +18,7 @@ import {
   type MiembroEquipo,
   type TipoColaborador,
 } from '../../servicios/api';
+import { nombreTipo } from '../../servicios/permisos';
 import { inicial } from '../../servicios/texto';
 import { conTransicion } from '../../servicios/transicion';
 import { FormularioAlta } from './FormularioAlta';
@@ -43,6 +44,9 @@ import { FormularioAlta } from './FormularioAlta';
  * que salen se desvanecen y las que entran aparecen. Cada fila y cada bloque
  * lleva su view-transition-name para que el navegador sepa qué es qué.
  * Las cifras de arriba cuentan desde el valor que tenían, no desde cero.
+ *
+ * HU-20: los tipos de colaborador se administran en /equipo/tipos. Desde la
+ * fila de un colaborador, el propietario le cambia el tipo sin salir de acá.
  */
 
 type Filtro = 'todos' | 'socio' | 'colaborador' | 'suspendido';
@@ -72,6 +76,7 @@ export function PaginaEquipo() {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
+  const [cambiandoTipo, setCambiandoTipo] = useState<string | null>(null);
   const [recienLlegado, setRecienLlegado] = useState<string | null>(null);
   // Solo la primera vez que llega la lista, las filas entran escalonadas.
   const [entrando, setEntrando] = useState(true);
@@ -191,6 +196,33 @@ export function PaginaEquipo() {
     }
   }
 
+  async function cambiarTipo(miembro: MiembroEquipo, tipoId: string) {
+    setOcupado(miembro.id);
+    setError('');
+    try {
+      const respuesta = await api.asignarTipo(miembro.id, tipoId);
+      conTransicion(() => {
+        setMiembros((previos) =>
+          previos.map((m) =>
+            m.id === miembro.id
+              ? {
+                  ...m,
+                  tipo_colaborador_id: respuesta.tipo_colaborador_id,
+                  tipo_colaborador: respuesta.tipo_colaborador,
+                }
+              : m,
+          ),
+        );
+        setAviso({ mensaje: respuesta.mensaje });
+        setCambiandoTipo(null);
+      });
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setOcupado(null);
+    }
+  }
+
   const usuario = rancho?.usuario ?? { nombre: 'Invitado', rol: '—' };
 
   return (
@@ -202,11 +234,19 @@ export function PaginaEquipo() {
       rotulo="Tu equipo"
       titulo="Equipo"
       acciones={
-        esPropietario && rancho?.tieneRancho && !agregando ? (
-          <Boton variante="primario" onClick={() => abrirFormulario(true)}>
-            <Icono nombre="persona-mas" tamano={18} />
-            Agregar integrante
-          </Boton>
+        rancho?.tieneRancho && !sinPermiso && !cargando ? (
+          <>
+            <Link className="btn btn-secundario" to="/equipo/tipos">
+              <Icono nombre="llave" tamano={18} />
+              Tipos y permisos
+            </Link>
+            {esPropietario && !agregando && (
+              <Boton variante="primario" onClick={() => abrirFormulario(true)}>
+                <Icono nombre="persona-mas" tamano={18} />
+                Agregar integrante
+              </Boton>
+            )}
+          </>
         ) : undefined
       }
     >
@@ -330,10 +370,21 @@ export function PaginaEquipo() {
                         miembro={m}
                         editable={esPropietario && m.rol !== 'propietario'}
                         confirmando={confirmando === m.id}
+                        cambiandoTipo={cambiandoTipo === m.id}
+                        tipos={tipos}
                         ocupado={ocupado === m.id}
                         nuevo={recienLlegado === m.id}
-                        alPedirSuspension={() => setConfirmando(m.id)}
+                        alPedirSuspension={() => {
+                          setCambiandoTipo(null);
+                          setConfirmando(m.id);
+                        }}
                         alCancelar={() => setConfirmando(null)}
+                        alPedirCambioTipo={() => {
+                          setConfirmando(null);
+                          setCambiandoTipo(m.id);
+                        }}
+                        alCancelarCambioTipo={() => setCambiandoTipo(null)}
+                        alCambiarTipo={(tipoId) => cambiarTipo(m, tipoId)}
                         alCambiarEstado={() => cambiarEstado(m)}
                         alRestablecer={() => restablecer(m)}
                       />
@@ -361,10 +412,15 @@ function FilaMiembro({
   miembro,
   editable,
   confirmando,
+  cambiandoTipo,
+  tipos,
   ocupado,
   nuevo,
   alPedirSuspension,
   alCancelar,
+  alPedirCambioTipo,
+  alCancelarCambioTipo,
+  alCambiarTipo,
   alCambiarEstado,
   alRestablecer,
 }: {
@@ -372,13 +428,19 @@ function FilaMiembro({
   miembro: MiembroEquipo;
   editable: boolean;
   confirmando: boolean;
+  cambiandoTipo: boolean;
+  tipos: TipoColaborador[];
   ocupado: boolean;
   nuevo: boolean;
   alPedirSuspension: () => void;
   alCancelar: () => void;
+  alPedirCambioTipo: () => void;
+  alCancelarCambioTipo: () => void;
+  alCambiarTipo: (tipoId: string) => void;
   alCambiarEstado: () => void;
   alRestablecer: () => void;
 }) {
+  const [tipoElegido, setTipoElegido] = useState(miembro.tipo_colaborador_id ?? '');
   const suspendido = miembro.estado === 'suspendido';
   const clases = ['equipo__fila', suspendido ? 'suspendido' : '', nuevo ? 'nuevo' : '']
     .filter(Boolean)
@@ -408,7 +470,9 @@ function FilaMiembro({
           {NOMBRE_ROL[miembro.rol]}
         </Insignia>
         {miembro.tipo_colaborador && (
-          <span className="pie c-500">{miembro.tipo_colaborador}</span>
+          <span className="pie c-500">
+            {nombreTipo({ id: miembro.tipo_colaborador_id, nombre: miembro.tipo_colaborador })}
+          </span>
         )}
       </div>
 
@@ -423,8 +487,49 @@ function FilaMiembro({
       </div>
 
       <div className="equipo__acciones">
-        {editable && !confirmando && (
+        {editable && cambiandoTipo && (
+          <div className="equipo__cambio-tipo" role="group" aria-label={`Cambiar el tipo de ${miembro.nombre}`}>
+            <select
+              aria-label="Tipo de colaborador"
+              value={tipoElegido}
+              onChange={(e) => setTipoElegido(e.target.value)}
+              disabled={ocupado}
+            >
+              {tipos.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {nombreTipo(t)}
+                </option>
+              ))}
+            </select>
+            <Boton variante="secundario" onClick={alCancelarCambioTipo} disabled={ocupado}>
+              Cancelar
+            </Boton>
+            <Boton
+              variante="primario"
+              onClick={() => alCambiarTipo(tipoElegido)}
+              disabled={ocupado || !tipoElegido || tipoElegido === miembro.tipo_colaborador_id}
+            >
+              {ocupado ? 'Guardando…' : 'Guardar'}
+            </Boton>
+          </div>
+        )}
+
+        {editable && !confirmando && !cambiandoTipo && (
           <>
+            {miembro.rol === 'colaborador' && !suspendido && (
+              <Boton
+                variante="fantasma"
+                onClick={() => {
+                  setTipoElegido(miembro.tipo_colaborador_id ?? '');
+                  alPedirCambioTipo();
+                }}
+                disabled={ocupado}
+                title="Cambia a qué módulos entra"
+              >
+                <Icono nombre="lapiz" tamano={16} />
+                <span className="equipo__texto-accion">Tipo</span>
+              </Boton>
+            )}
             {!suspendido && (
               <Boton
                 variante="fantasma"

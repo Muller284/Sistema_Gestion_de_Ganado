@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alerta,
   Boton,
@@ -9,6 +10,7 @@ import {
   type NombreIcono,
 } from '../../componentes';
 import { api, type MiembroEquipo, type TipoColaborador } from '../../servicios/api';
+import { nombreTipo, resumenPermisos } from '../../servicios/permisos';
 
 /**
  * HU-17 · El formulario de alta de un socio o un colaborador.
@@ -55,6 +57,7 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
 
   const predefinidos = tipos.filter((t) => t.es_predefinido);
   const propios = tipos.filter((t) => !t.es_predefinido);
+  const elegido = tipos.find((t) => t.id === tipo);
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -158,7 +161,7 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
             <optgroup label="Predefinidos">
               {predefinidos.map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.nombre}
+                  {nombreTipo(t)}
                 </option>
               ))}
             </optgroup>
@@ -172,6 +175,17 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
               </optgroup>
             )}
           </CampoLista>
+        )}
+
+        {rol === 'colaborador' && elegido && (
+          <p className="pie c-600 equipo__resumen-tipo" aria-live="polite">
+            <Icono nombre="info" tamano={14} />
+            <span>
+              {resumenPermisos(elegido) || 'Este tipo no tiene acceso a ningún módulo todavía.'}
+              {'. '}
+              <Link to="/equipo/tipos">Ver o cambiar los tipos</Link>
+            </span>
+          </p>
         )}
 
         <p className="equipo__nota">
