@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../servicios/api';
+import { t } from '../servicios/idioma';
 
 /**
  * HU-07 · La espera de la confirmación, viva.
@@ -67,16 +68,14 @@ export function EsperaDeCorreo({ alConfirmar }: Propiedades) {
 
   if (cansado) {
     return (
-      <p className="espera espera-detenida">
-        Dejamos de revisar. Recarga la página cuando hayas confirmado.
-      </p>
+      <p className="espera espera-detenida">{t('acceso.espera.detenida')}</p>
     );
   }
 
   return (
     <p className="espera" role="status">
       <span className="latido" aria-hidden="true" />
-      Esta pantalla se actualiza sola en cuanto confirmes.
+      {t('acceso.espera.viva')}
     </p>
   );
 }

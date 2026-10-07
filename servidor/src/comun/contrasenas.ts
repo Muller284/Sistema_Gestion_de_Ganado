@@ -1,5 +1,6 @@
 import { randomBytes, randomInt, scrypt, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
+import { t } from './idioma';
 
 const derivar = promisify(scrypt) as (
   clave: string,
@@ -80,21 +81,16 @@ export async function verificarContrasena(
 
 /**
  * Reglas de HU-06: minimo ocho caracteres, una mayuscula y un numero.
- * Devuelve la lista de lo que falta, para poder decirselo todo junto al
- * usuario en lugar de de a un error por vez.
+ * Devuelve la lista de lo que falta, ya en el idioma de la peticion, para
+ * poder decirselo todo junto al usuario (con enumerarEn) en lugar de de a un
+ * error por vez.
  */
 export function revisarContrasena(contrasena: string): string[] {
   const faltas: string[] = [];
-  if (contrasena.length < 8) faltas.push('ocho caracteres');
-  if (!/[A-ZÁÉÍÓÚÑ]/.test(contrasena)) faltas.push('una mayúscula');
-  if (!/[0-9]/.test(contrasena)) faltas.push('un número');
+  if (contrasena.length < 8) faltas.push(t('comun.contrasena.largo'));
+  if (!/[A-ZÁÉÍÓÚÑ]/.test(contrasena)) faltas.push(t('comun.contrasena.mayuscula'));
+  if (!/[0-9]/.test(contrasena)) faltas.push(t('comun.contrasena.numero'));
   return faltas;
-}
-
-/** "a, b y c". Para que el mensaje se lea como una frase y no como una lista. */
-export function enumerar(partes: string[]): string {
-  if (partes.length <= 1) return partes.join('');
-  return `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
 }
 
 /** Sin caracteres que se confundan al dictarla: ni O ni 0, ni l ni 1. */

@@ -19,11 +19,12 @@ import {
   type RespuestaTipo,
   type TipoColaborador,
 } from '../../servicios/api';
+import { localeActual, t, tJsx, tn } from '../../servicios/idioma';
 import {
-  DETALLE_MODULO,
-  NOMBRE_NIVEL,
   cuantosColaboradores,
+  detalleModulo,
   nombreModulo,
+  nombreNivel,
   nombreTipo,
 } from '../../servicios/permisos';
 import { conTransicion } from '../../servicios/transicion';
@@ -60,22 +61,28 @@ export function PaginaTipos() {
   const [borrando, setBorrando] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
 
-  const esPropietario = rancho?.usuario.rol === 'propietario';
+  // HU-24: el Admin que entró a dar soporte puede lo mismo que el propietario.
+  const esPropietario =
+    rancho?.usuario.rol === 'propietario' || Boolean(rancho?.usuario.soporte);
 
   useEffect(() => {
     let vigente = true;
+    let rol = '';
     void (async () => {
       try {
         const estado = await api.miRancho();
         if (!vigente) return;
         setRancho(estado);
+        rol = estado.usuario.rol;
         if (!estado.tieneRancho) return;
         const lista = await api.tiposColaborador();
         if (vigente) setTipos(lista);
       } catch (err) {
         if (!vigente) return;
         const mensaje = (err as Error).message;
-        if (/propietario y los socios/.test(mensaje)) setSinPermiso(mensaje);
+        // El colaborador no ve los tipos (403). El mensaje llega traducido
+        // del servidor, así que se decide por el rol y no por el texto.
+        if (rol === 'colaborador') setSinPermiso(mensaje);
         else setError(mensaje);
       } finally {
         if (vigente) setCargando(false);
@@ -86,8 +93,8 @@ export function PaginaTipos() {
     };
   }, []);
 
-  const predefinidos = tipos.filter((t) => t.es_predefinido);
-  const propios = tipos.filter((t) => !t.es_predefinido);
+  const predefinidos = tipos.filter((tp) => tp.es_predefinido);
+  const propios = tipos.filter((tp) => !tp.es_predefinido);
 
   function abrir(id: string | null) {
     conTransicion(() => {
@@ -100,9 +107,9 @@ export function PaginaTipos() {
   function alGuardar(respuesta: RespuestaTipo) {
     conTransicion(() => {
       setTipos((previos) => {
-        const existe = previos.some((t) => t.id === respuesta.tipo.id);
+        const existe = previos.some((tp) => tp.id === respuesta.tipo.id);
         const lista = existe
-          ? previos.map((t) => (t.id === respuesta.tipo.id ? respuesta.tipo : t))
+          ? previos.map((tp) => (tp.id === respuesta.tipo.id ? respuesta.tipo : tp))
           : [...previos, respuesta.tipo];
         return ordenar(lista);
       });
@@ -129,7 +136,7 @@ export function PaginaTipos() {
     try {
       const respuesta = await api.eliminarTipo(tipo.id);
       conTransicion(() => {
-        setTipos((previos) => previos.filter((t) => t.id !== tipo.id));
+        setTipos((previos) => previos.filter((tp) => tp.id !== tipo.id));
         setAviso(respuesta.mensaje);
         setBorrando(null);
       });
@@ -140,7 +147,7 @@ export function PaginaTipos() {
     }
   }
 
-  const usuario = rancho?.usuario ?? { nombre: 'Invitado', rol: '—' };
+  const usuario = rancho?.usuario ?? { nombre: t('equipo.invitado'), rol: '—' };
 
   function tarjeta(tipo: TipoColaborador) {
     if (editando === tipo.id) {
@@ -167,21 +174,21 @@ export function PaginaTipos() {
   return (
     <DisenoApp
       activo="equipo"
-      ruta={['Equipo', 'Tipos de colaborador']}
+      ruta={[t('equipo.titulo'), t('tipos.titulo')]}
       usuario={usuario}
       rancho={rancho?.rancho?.nombre ?? null}
-      rotulo="Tu equipo"
-      titulo="Tipos de colaborador"
+      rotulo={t('equipo.rotulo')}
+      titulo={t('tipos.titulo')}
       acciones={
         <>
           <Link className="btn btn-secundario" to="/equipo">
             <Icono nombre="equipo" tamano={18} />
-            Integrantes
+            {t('tipos.acciones.integrantes')}
           </Link>
           {esPropietario && editando === null && rancho?.tieneRancho && (
             <Boton variante="primario" onClick={() => abrir(NUEVO)}>
               <Icono nombre="mas" tamano={18} />
-              Nuevo tipo
+              {t('tipos.acciones.nuevo')}
             </Boton>
           )}
         </>
@@ -193,17 +200,17 @@ export function PaginaTipos() {
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
 
         {!cargando && sinPermiso && (
-          <EstadoVacio icono="equipo" titulo="Esta parte no es para tu rol" texto={sinPermiso} />
+          <EstadoVacio icono="equipo" titulo={t('equipo.sinPermiso')} texto={sinPermiso} />
         )}
 
         {!cargando && rancho && !rancho.tieneRancho && (
           <EstadoVacio
             icono="casa"
-            titulo="Primero crea tu rancho"
-            texto="Los tipos de colaborador son de cada rancho. Cuando lo crees, vuelve acá."
+            titulo={t('equipo.sinRancho.titulo')}
+            texto={t('tipos.sinRancho')}
             accion={
               <Link className="btn btn-primario" to="/rancho">
-                Crear mi rancho
+                {t('equipo.sinRancho.accion')}
               </Link>
             }
           />
@@ -212,8 +219,7 @@ export function PaginaTipos() {
         {!cargando && !sinPermiso && rancho?.tieneRancho && (
           <>
             <p className="cuerpo c-600 tipos__intro">
-              Cada colaborador tiene un tipo, y el tipo decide qué módulos ve y en cuáles puede
-              cargar datos. <strong>Si cambias un tipo, cambia para todos los que lo tienen.</strong>
+              {tJsx('tipos.intro', { b: (s) => <strong>{s}</strong> })}
             </p>
 
             {editando === NUEVO && (
@@ -221,17 +227,16 @@ export function PaginaTipos() {
             )}
 
             <section className="col g12">
-              <h2 className="h3">De tu rancho</h2>
+              <h2 className="h3">{t('tipos.propios.titulo')}</h2>
               {propios.length === 0 ? (
                 <div className="tipos__vacio">
                   <Icono nombre="equipo" tamano={20} />
                   <span className="cuerpo c-500">
-                    Todavía no creaste tipos propios. Si ninguno de los cuatro de abajo encaja con
-                    alguien de tu equipo, arma uno a su medida.
+                    {t('tipos.propios.vacio')}
                   </span>
                   {esPropietario && editando === null && (
                     <Boton variante="secundario" onClick={() => abrir(NUEVO)}>
-                      Crear un tipo
+                      {t('tipos.propios.crear')}
                     </Boton>
                   )}
                 </div>
@@ -241,17 +246,16 @@ export function PaginaTipos() {
             </section>
 
             <section className="col g12">
-              <h2 className="h3">Predefinidos</h2>
+              <h2 className="h3">{t('tipos.deFabrica.titulo')}</h2>
               <p className="pie c-500 tipos__nota">
-                Vienen con el sistema. Puedes ajustar sus permisos: el cambio vale solo en tu
-                rancho, y siempre puedes volver a los de fábrica.
+                {t('tipos.deFabrica.nota')}
               </p>
               <div className="tipos__rejilla">{predefinidos.map(tarjeta)}</div>
             </section>
 
             {!esPropietario && (
               <Alerta variante="info">
-                Solo el propietario puede crear tipos o cambiar sus permisos.
+                {t('tipos.soloPropietario')}
               </Alerta>
             )}
           </>
@@ -289,20 +293,20 @@ function TarjetaTipo({
 
   const pie = editable ? (
     borrando ? (
-      <div className="tipos__confirmar" role="group" aria-label={`Confirmar eliminación de ${tipo.nombre}`}>
-        <span className="pie">¿Eliminar «{tipo.nombre}»?</span>
+      <div className="tipos__confirmar" role="group" aria-label={t('tipos.tarjeta.confirmarGrupo', { nombre: nombreTipo(tipo) })}>
+        <span className="pie">{t('tipos.tarjeta.confirmar', { nombre: nombreTipo(tipo) })}</span>
         <Boton variante="secundario" onClick={alCancelarBorrado} disabled={ocupado}>
-          Cancelar
+          {t('comun.cancelar')}
         </Boton>
         <Boton variante="destructivo" onClick={alEliminar} disabled={ocupado}>
-          {ocupado ? 'Eliminando…' : 'Eliminar'}
+          {ocupado ? t('tipos.tarjeta.eliminando') : t('tipos.tarjeta.eliminar')}
         </Boton>
       </div>
     ) : (
       <div className="tipos__botones">
         {tipo.ajustado && (
           <Boton variante="fantasma" onClick={alRestablecer} disabled={ocupado}>
-            {ocupado ? 'Restableciendo…' : 'Volver a los de fábrica'}
+            {ocupado ? t('tipos.tarjeta.restableciendo') : t('tipos.tarjeta.restablecer')}
           </Boton>
         )}
         {!tipo.es_predefinido && (
@@ -312,17 +316,17 @@ function TarjetaTipo({
             disabled={ocupado || tipo.colaboradores > 0}
             title={
               tipo.colaboradores > 0
-                ? 'Lo tiene alguien de tu equipo: cámbiale el tipo antes de eliminarlo'
+                ? t('tipos.tarjeta.enUso')
                 : undefined
             }
           >
             <Icono nombre="archivar" tamano={16} />
-            Eliminar
+            {t('tipos.tarjeta.eliminar')}
           </Boton>
         )}
         <Boton variante="secundario" onClick={alEditar} disabled={ocupado}>
           <Icono nombre="lapiz" tamano={16} />
-          Editar permisos
+          {t('tipos.tarjeta.editar')}
         </Boton>
       </div>
     )
@@ -335,12 +339,12 @@ function TarjetaTipo({
         accion={
           tipo.es_predefinido ? (
             tipo.ajustado ? (
-              <Insignia variante="adv">Ajustado</Insignia>
+              <Insignia variante="adv">{t('tipos.insignias.ajustado')}</Insignia>
             ) : (
-              <Insignia variante="neutro">Predefinido</Insignia>
+              <Insignia variante="neutro">{t('tipos.insignias.predefinido')}</Insignia>
             )
           ) : (
-            <Insignia variante="info">Propio</Insignia>
+            <Insignia variante="info">{t('tipos.insignias.propio')}</Insignia>
           )
         }
         pie={pie}
@@ -353,13 +357,15 @@ function TarjetaTipo({
           {conAcceso.map((p) => (
             <li key={p.modulo}>
               <span>{nombreModulo(p.modulo, p.nombre)}</span>
-              <span className={`nivel nivel-${p.nivel}`}>{NOMBRE_NIVEL[p.nivel]}</span>
+              <span className={`nivel nivel-${p.nivel}`}>{nombreNivel(p.nivel)}</span>
             </li>
           ))}
         </ul>
         {sinAcceso.length > 0 && (
           <p className="pie c-500 tipos__sin">
-            Sin acceso a {sinAcceso.map((p) => nombreModulo(p.modulo, p.nombre)).join(', ')}.
+            {t('tipos.tarjeta.sinAcceso', {
+              modulos: sinAcceso.map((p) => nombreModulo(p.modulo, p.nombre)).join(', '),
+            })}
           </p>
         )}
       </Tarjeta>
@@ -410,11 +416,11 @@ function EditorTipo({
     e.preventDefault();
     setError('');
     if (!predefinido && !nombre.trim()) {
-      setError('Ponle un nombre al tipo.');
+      setError(t('tipos.editor.faltaNombre'));
       return;
     }
     if (conAcceso === 0) {
-      setError('Elige al menos un módulo que este tipo pueda ver.');
+      setError(t('tipos.editor.faltaModulo'));
       return;
     }
     setEnviando(true);
@@ -436,39 +442,43 @@ function EditorTipo({
       className="tipos__editor"
       style={{ viewTransitionName: tipo ? `tipo-${tipo.id}` : 'tipo-nuevo' }}
     >
-      <Tarjeta titulo={tipo ? `Permisos de ${nombreTipo(tipo)}` : 'Nuevo tipo de colaborador'}>
+      <Tarjeta
+        titulo={
+          tipo ? t('tipos.editor.tituloPermisos', { nombre: nombreTipo(tipo) }) : t('tipos.editor.tituloNuevo')
+        }
+      >
         <form className="col g16" onSubmit={guardar}>
           {error && <Alerta variante="error">{error}</Alerta>}
 
           <CampoTexto
-            etiqueta="Nombre del tipo"
+            etiqueta={t('tipos.editor.nombre')}
             obligatorio={!predefinido}
             maxLength={100}
-            placeholder="Por ejemplo: Ordeñador, Tractorista, Contador"
+            placeholder={t('tipos.editor.nombreEjemplo')}
             value={nombre}
             disabled={predefinido}
             ayuda={
               predefinido
-                ? 'Los predefinidos no cambian de nombre. Si necesitas otro, crea un tipo propio.'
+                ? t('tipos.editor.nombrePredefinido')
                 : undefined
             }
             onChange={(e) => setNombre(e.target.value)}
           />
 
           <fieldset className="tipos__matriz">
-            <legend className="etiqueta">Qué puede en cada módulo</legend>
+            <legend className="etiqueta">{t('tipos.editor.matriz')}</legend>
             {modulos.length === 0 && <Cargando lineas={3} />}
             {modulos.map((m) => (
               <div className="tipos__modulo" key={m.codigo}>
                 <div className="tipos__modulo-texto">
                   <strong>{nombreModulo(m.codigo, m.nombre)}</strong>
-                  <span className="pie c-500">{DETALLE_MODULO[m.codigo]}</span>
+                  <span className="pie c-500">{detalleModulo(m.codigo)}</span>
                 </div>
                 <Segmentos
-                  etiqueta={`Permiso en ${nombreModulo(m.codigo, m.nombre)}`}
+                  etiqueta={t('tipos.editor.permisoEn', { modulo: nombreModulo(m.codigo, m.nombre) })}
                   valor={niveles[m.codigo] ?? 'ninguno'}
                   alCambiar={(nivel) => setNiveles((previos) => ({ ...previos, [m.codigo]: nivel }))}
-                  opciones={NIVELES.map((n) => ({ clave: n, nombre: NOMBRE_NIVEL[n] }))}
+                  opciones={NIVELES.map((n) => ({ clave: n, nombre: nombreNivel(n) }))}
                 />
               </div>
             ))}
@@ -476,24 +486,26 @@ function EditorTipo({
 
           <p className="pie c-500 tipos__ayuda">
             <Icono nombre="info" tamano={14} />
-            «Edita» incluye ver. Sin acceso, el módulo ni siquiera aparece en su menú.
+            {t('tipos.editor.ayuda')}
           </p>
 
           {alcance > 0 && (
             <Alerta variante="adv">
-              {alcance === 1
-                ? 'Un colaborador tiene este tipo: el cambio le llega en cuanto guardes.'
-                : `${alcance} colaboradores tienen este tipo: el cambio les llega a todos en cuanto guardes.`}
+              {tn('tipos.editor.alcance', alcance)}
             </Alerta>
           )}
 
           <div className="fila g8 tipos__botones">
             <Boton type="button" variante="secundario" onClick={alCancelar} disabled={enviando}>
-              Cancelar
+              {t('comun.cancelar')}
             </Boton>
             <Boton type="submit" variante="primario" disabled={enviando}>
               <Icono nombre="exito" tamano={18} />
-              {enviando ? 'Guardando…' : tipo ? 'Guardar permisos' : 'Crear tipo'}
+              {enviando
+                ? t('comun.guardando')
+                : tipo
+                  ? t('tipos.editor.guardar')
+                  : t('tipos.editor.crear')}
             </Boton>
           </div>
         </form>
@@ -505,7 +517,7 @@ function EditorTipo({
 function ordenar(tipos: TipoColaborador[]): TipoColaborador[] {
   return [...tipos].sort((a, b) =>
     a.es_predefinido === b.es_predefinido
-      ? a.nombre.localeCompare(b.nombre, 'es')
+      ? nombreTipo(a).localeCompare(nombreTipo(b), localeActual())
       : a.es_predefinido
         ? -1
         : 1,

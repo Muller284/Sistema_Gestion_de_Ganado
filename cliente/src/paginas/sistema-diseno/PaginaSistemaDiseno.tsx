@@ -12,6 +12,7 @@ import {
   type NombreIcono,
   Tarjeta,
 } from '../../componentes';
+import { t, tJsx } from '../../servicios/idioma';
 
 /**
  * HU-05 · Catalogo del sistema de diseño.
@@ -25,21 +26,22 @@ import {
  * Se abre en la direccion #/sistema-diseno.
  */
 
+/** nombre es la clave del texto en el archivo de idioma; se traduce al dibujar. */
 const COLORES: { nombre: string; variable: string }[] = [
-  { nombre: 'Corral 800', variable: '--corral-800' },
-  { nombre: 'Corral 600', variable: '--corral-600' },
-  { nombre: 'Corral 400', variable: '--corral-400' },
-  { nombre: 'Corral 100', variable: '--corral-100' },
-  { nombre: 'Caravana 500', variable: '--caravana-500' },
-  { nombre: 'Caravana 100', variable: '--caravana-100' },
-  { nombre: 'Arena 900', variable: '--arena-900' },
-  { nombre: 'Arena 600', variable: '--arena-600' },
-  { nombre: 'Arena 300', variable: '--arena-300' },
-  { nombre: 'Arena 100', variable: '--arena-100' },
-  { nombre: 'Éxito', variable: '--exito-base' },
-  { nombre: 'Advertencia', variable: '--adv-base' },
-  { nombre: 'Error', variable: '--error-base' },
-  { nombre: 'Información', variable: '--info-base' },
+  { nombre: 'sistemaDiseno.colores.nombres.corral800', variable: '--corral-800' },
+  { nombre: 'sistemaDiseno.colores.nombres.corral600', variable: '--corral-600' },
+  { nombre: 'sistemaDiseno.colores.nombres.corral400', variable: '--corral-400' },
+  { nombre: 'sistemaDiseno.colores.nombres.corral100', variable: '--corral-100' },
+  { nombre: 'sistemaDiseno.colores.nombres.caravana500', variable: '--caravana-500' },
+  { nombre: 'sistemaDiseno.colores.nombres.caravana100', variable: '--caravana-100' },
+  { nombre: 'sistemaDiseno.colores.nombres.arena900', variable: '--arena-900' },
+  { nombre: 'sistemaDiseno.colores.nombres.arena600', variable: '--arena-600' },
+  { nombre: 'sistemaDiseno.colores.nombres.arena300', variable: '--arena-300' },
+  { nombre: 'sistemaDiseno.colores.nombres.arena100', variable: '--arena-100' },
+  { nombre: 'sistemaDiseno.colores.nombres.exito', variable: '--exito-base' },
+  { nombre: 'sistemaDiseno.colores.nombres.advertencia', variable: '--adv-base' },
+  { nombre: 'sistemaDiseno.colores.nombres.error', variable: '--error-base' },
+  { nombre: 'sistemaDiseno.colores.nombres.informacion', variable: '--info-base' },
 ];
 
 /** Todos los iconos del sistema, en el orden en que aparecen en Iconos.tsx. */
@@ -74,7 +76,7 @@ function Muestra({ nombre, variable }: { nombre: string; variable: string }) {
   return (
     <div className="col g4">
       <div className="muestra" style={{ backgroundColor: `var(${variable})` }} />
-      <span className="pie c-500">{nombre}</span>
+      <span className="pie c-500">{t(nombre)}</span>
       <span className="dato">{variable}</span>
     </div>
   );
@@ -84,19 +86,13 @@ export function PaginaSistemaDiseno() {
   return (
     <main className="pagina">
       <header className="encabezado-pagina">
-        <h1>Sistema de diseño</h1>
-        <p className="cuerpo c-600">
-          HU-05 · Todo lo que se puede usar en una pantalla. Si algo no está
-          acá, no se escribe a mano: se agrega acá primero.
-        </p>
+        <h1>{t('sistemaDiseno.titulo')}</h1>
+        <p className="cuerpo c-600">{t('sistemaDiseno.intro')}</p>
       </header>
 
       <div className="col g24">
-        <Tarjeta titulo="Colores">
-          <p className="cuerpo c-600 separado">
-            El dorado caravana se usa únicamente en planes, suscripción y
-            límites de plan. Nunca en una acción común.
-          </p>
+        <Tarjeta titulo={t('sistemaDiseno.colores.titulo')}>
+          <p className="cuerpo c-600 separado">{t('sistemaDiseno.colores.nota')}</p>
           <div className="rejilla-auto">
             {COLORES.map((color) => (
               <Muestra key={color.variable} {...color} />
@@ -104,108 +100,107 @@ export function PaginaSistemaDiseno() {
           </div>
         </Tarjeta>
 
-        <Tarjeta titulo="Tipografía">
+        <Tarjeta titulo={t('sistemaDiseno.tipografia.titulo')}>
           <div className="col g16">
             <div>
-              <span className="pie c-600 rotulo-token">Outfit · títulos</span>
+              <span className="pie c-600 rotulo-token">{t('sistemaDiseno.tipografia.titulos')}</span>
               <h2>Hacienda La Floresta</h2>
             </div>
             <div>
-              <span className="pie c-600 rotulo-token">Inter · texto</span>
-              <p>
-                El rancho es la raíz del aislamiento: ninguna consulta puede
-                devolver información de un rancho ajeno.
-              </p>
+              <span className="pie c-600 rotulo-token">{t('sistemaDiseno.tipografia.texto')}</span>
+              <p>{t('sistemaDiseno.tipografia.ejemplo')}</p>
             </div>
             <div>
               <span className="pie c-600 rotulo-token">
-                IBM Plex Mono · identificadores
+                {t('sistemaDiseno.tipografia.identificadores')}
               </span>
               <p className="dato">BO-4471-A · a0000000-0000-4000-8000-000000000001</p>
             </div>
           </div>
         </Tarjeta>
 
-        <Tarjeta titulo="Botones">
+        <Tarjeta titulo={t('sistemaDiseno.botones.titulo')}>
           <div className="fila centro g8">
-            <Boton variante="primario">Crear rancho</Boton>
-            <Boton variante="secundario">Editar</Boton>
-            <Boton variante="fantasma">Cancelar</Boton>
-            <Boton variante="destructivo">Dar de baja</Boton>
+            <Boton variante="primario">{t('sistemaDiseno.botones.crearRancho')}</Boton>
+            <Boton variante="secundario">{t('sistemaDiseno.botones.editar')}</Boton>
+            <Boton variante="fantasma">{t('comun.cancelar')}</Boton>
+            <Boton variante="destructivo">{t('sistemaDiseno.botones.darDeBaja')}</Boton>
             <Boton variante="secundario" disabled>
-              Deshabilitado
+              {t('sistemaDiseno.botones.deshabilitado')}
             </Boton>
-            <Boton variante="plan">Mejorar plan</Boton>
+            <Boton variante="plan">{t('sistemaDiseno.botones.mejorarPlan')}</Boton>
           </div>
         </Tarjeta>
 
-        <Tarjeta titulo="Campos">
+        <Tarjeta titulo={t('sistemaDiseno.campos.titulo')}>
           <div className="col g16">
             <CampoTexto
-              etiqueta="Nombre del rancho"
+              etiqueta={t('sistemaDiseno.campos.nombreRancho')}
               obligatorio
               defaultValue="Rancho El Cerrito"
             />
             <CampoTexto
-              etiqueta="Superficie"
-              ayuda="En hectáreas."
+              etiqueta={t('sistemaDiseno.campos.superficie')}
+              ayuda={t('sistemaDiseno.campos.superficieAyuda')}
               type="number"
               defaultValue="240"
             />
             <CampoTexto
-              etiqueta="Correo"
-              error="Ya existe una cuenta con ese correo."
-              defaultValue="ariel@ejemplo.com"
+              etiqueta={t('sistemaDiseno.campos.correo')}
+              error={t('sistemaDiseno.campos.correoError')}
+              defaultValue={t('sistemaDiseno.campos.correoEjemplo')}
             />
-            <CampoTexto etiqueta="Caravana" mono defaultValue="BO-4471-A" />
-            <CampoLista etiqueta="Tipo de producción" defaultValue="mixto">
-              <option value="carne">Carne</option>
-              <option value="leche">Leche</option>
-              <option value="mixto">Mixto</option>
+            <CampoTexto etiqueta={t('sistemaDiseno.campos.caravana')} mono defaultValue="BO-4471-A" />
+            <CampoLista etiqueta={t('sistemaDiseno.campos.tipoProduccion')} defaultValue="mixto">
+              <option value="carne">{t('sistemaDiseno.campos.carne')}</option>
+              <option value="leche">{t('sistemaDiseno.campos.leche')}</option>
+              <option value="mixto">{t('sistemaDiseno.campos.mixto')}</option>
             </CampoLista>
-            <CampoTexto etiqueta="País" disabled defaultValue="Bolivia" />
+            <CampoTexto etiqueta={t('sistemaDiseno.campos.pais')} disabled defaultValue="Bolivia" />
           </div>
         </Tarjeta>
 
         <Tarjeta
-          titulo="Tarjeta con encabezado, cuerpo y pie"
-          accion={<Insignia variante="exito">Activo</Insignia>}
+          titulo={t('sistemaDiseno.tarjeta.titulo')}
+          accion={<Insignia variante="exito">{t('sistemaDiseno.insignias.activo')}</Insignia>}
           pie={
             <>
-              <Boton variante="secundario">Editar</Boton>
-              <Boton variante="destructivo">Dar de baja</Boton>
+              <Boton variante="secundario">{t('sistemaDiseno.botones.editar')}</Boton>
+              <Boton variante="destructivo">{t('sistemaDiseno.botones.darDeBaja')}</Boton>
             </>
           }
         >
           <Datos>
-            <Dato nombre="Ubicación">Sacaba, Cochabamba (BO)</Dato>
-            <Dato nombre="Superficie">240 ha</Dato>
-            <Dato nombre="Caravanas">
+            <Dato nombre={t('sistemaDiseno.tarjeta.ubicacion')}>Sacaba, Cochabamba (BO)</Dato>
+            <Dato nombre={t('sistemaDiseno.campos.superficie')}>240 ha</Dato>
+            <Dato nombre={t('sistemaDiseno.tarjeta.caravanas')}>
               <span className="dato">4471 · 4472 · 4473</span>
             </Dato>
           </Datos>
         </Tarjeta>
 
-        <Tarjeta titulo="Insignias">
+        <Tarjeta titulo={t('sistemaDiseno.insignias.titulo')}>
           <div className="fila centro g8">
-            <Insignia>Neutra</Insignia>
-            <Insignia variante="exito">Activo</Insignia>
-            <Insignia variante="adv">Sin verificar</Insignia>
-            <Insignia variante="error">Suspendido</Insignia>
-            <Insignia variante="info">Solo lectura</Insignia>
-            <Insignia variante="plan">Plan Profesional</Insignia>
+            <Insignia>{t('sistemaDiseno.insignias.neutra')}</Insignia>
+            <Insignia variante="exito">{t('sistemaDiseno.insignias.activo')}</Insignia>
+            <Insignia variante="adv">{t('sistemaDiseno.insignias.sinVerificar')}</Insignia>
+            <Insignia variante="error">{t('sistemaDiseno.insignias.suspendido')}</Insignia>
+            <Insignia variante="info">{t('sistemaDiseno.insignias.soloLectura')}</Insignia>
+            <Insignia variante="plan">{t('sistemaDiseno.insignias.planProfesional')}</Insignia>
           </div>
         </Tarjeta>
 
-        <Tarjeta titulo="Iconos">
+        <Tarjeta titulo={t('sistemaDiseno.iconos.titulo')}>
           <div className="col g16">
             <p className="cuerpo c-600">
-              Son de <a href="https://lucide.dev">Lucide</a>, con licencia ISC.
-              Los trazos están copiados en{' '}
-              <span className="dato">componentes/Iconos.tsx</span>: no hay
-              ninguna dependencia instalada. Se usan con{' '}
-              <span className="dato">&lt;Icono nombre="corral" /&gt;</span> y
-              toman el color del texto que los rodea.
+              {tJsx(
+                'sistemaDiseno.iconos.texto',
+                {
+                  enlace: (s) => <a href="https://lucide.dev">{s}</a>,
+                  dato: (s) => <span className="dato">{s}</span>,
+                },
+                { archivo: 'componentes/Iconos.tsx', ejemplo: '<Icono nombre="corral" />' },
+              )}
             </p>
             <div className="rejilla-iconos">
               {ICONOS.map((nombre) => (
@@ -218,31 +213,25 @@ export function PaginaSistemaDiseno() {
           </div>
         </Tarjeta>
 
-        <Tarjeta titulo="Alertas">
+        <Tarjeta titulo={t('sistemaDiseno.alertas.titulo')}>
           <div className="col g16">
-            <Alerta variante="exito">Rancho creado.</Alerta>
-            <Alerta variante="error">
-              Una cuenta maneja un solo rancho.
-            </Alerta>
-            <Alerta variante="adv">
-              Confirma tu correo para poder usar el sistema.
-            </Alerta>
-            <Alerta variante="info">
-              Solo el propietario puede crear o editar el rancho.
-            </Alerta>
+            <Alerta variante="exito">{t('sistemaDiseno.alertas.ranchoCreado')}</Alerta>
+            <Alerta variante="error">{t('sistemaDiseno.alertas.unSoloRancho')}</Alerta>
+            <Alerta variante="adv">{t('sistemaDiseno.alertas.confirmaCorreo')}</Alerta>
+            <Alerta variante="info">{t('sistemaDiseno.alertas.soloPropietario')}</Alerta>
           </div>
         </Tarjeta>
 
-        <Tarjeta titulo="Estado vacío">
+        <Tarjeta titulo={t('sistemaDiseno.vacio.titulo')}>
           <EstadoVacio
             icono="animal"
-            titulo="Todavía no tienes animales"
-            texto="Registra el primero o impórtalos desde un archivo de Excel."
-            accion={<Boton variante="primario">Registrar animal</Boton>}
+            titulo={t('sistemaDiseno.vacio.sinAnimales')}
+            texto={t('sistemaDiseno.vacio.texto')}
+            accion={<Boton variante="primario">{t('sistemaDiseno.vacio.registrar')}</Boton>}
           />
         </Tarjeta>
 
-        <Tarjeta titulo="Estado de carga">
+        <Tarjeta titulo={t('sistemaDiseno.carga.titulo')}>
           <Cargando />
         </Tarjeta>
       </div>

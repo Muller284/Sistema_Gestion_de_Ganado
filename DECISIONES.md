@@ -1005,3 +1005,102 @@ sigue con las dependencias anteriores.
 **Pendiente.** El repositorio está en la cuenta de GitHub de Favio. Hay que
 pedirle que lo transfiera o que le dé a Aaron permisos de administrador, para
 poder tocar la protección de `main` y los secretos sin depender de él.
+
+---
+
+## 33. El Admin de plataforma entra a los ranchos con un acceso registrado (HU-24)
+
+**Fecha:** 6 de octubre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+**El Admin no tiene rancho, entra a uno.** Su pantalla es `/admin`: la lista de
+todos los ranchos (criterio 1) y el registro de accesos. Para ver uno por
+dentro, elige el rancho y escribe por qué entra (al menos 10 caracteres). Eso
+abre una fila en `accesos_admin` (migración 006) con quién, a qué rancho, por
+qué y cuándo (criterio 3). Desde ahí el cliente manda la cabecera
+`x-rancho-soporte` en cada petición, y `GuardiaCuentaLista` comprueba que haya
+un acceso abierto de ese Admin a ese rancho antes de dejarlo trabajar adentro.
+**Sin acceso abierto no ve nada**: no hay forma de entrar sin quedar
+registrado.
+
+**Adentro puede lo mismo que el propietario.** "Acceso completo para dar
+soporte" quiere decir poder arreglar, no solo mirar. Los servicios que
+preguntaban `rol === 'propietario'` ahora preguntan `actuaComoPropietario()`
+(`comun/permisos-rol.ts`). Lo que haga queda a su nombre (HU-23): el
+`creado_por` es el Admin, no el propietario. Crear un rancho sigue siendo solo
+del propietario. **Brian: en HU-19, el Admin en soporte tiene que pasar todos
+los controles de módulo igual que el propietario.**
+
+**El acceso se cierra solo.** Al salir (botón en la banda de arriba) se guarda
+`salido_en`. Si el Admin se olvida, el acceso vence a las 8 horas. Entrar de
+nuevo al mismo rancho cierra el anterior: cada entrada tiene su propio motivo.
+
+**El propietario lo ve.** En su panel aparece quién del soporte entró, cuándo y
+por qué (`GET /admin/accesos/de-mi-rancho`). No es un criterio, pero un
+registro que solo ve quien entra no protege a nadie.
+
+**Criterio 2 ya se cumplía**: el alta del equipo solo acepta socio o
+colaborador y el registro siempre crea un propietario. Ahora hay pruebas que lo
+comprueban, incluso con el Admin en soporte intentando dar de alta a otro Admin.
+
+**De paso:** el controlador de ranchos resolvía al usuario leyendo solo
+`x-usuario-id` e ignoraba el token de sesión (HU-12). Ahora usa el usuario que
+ya resolvió el portero.
+
+La barra de demostración suma la cuenta del Admin de las semillas.
+
+---
+
+## 34. Los textos en archivos de idioma: español e inglés (HU-25)
+
+**Fecha:** 6 de octubre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+**Un archivo por idioma, en la raíz: `idiomas/es.json`, `idiomas/en.json`.** Lo
+leen el cliente (la interfaz) y el servidor (sus mensajes, bajo `servidor.*`, y
+los correos, bajo `correos.*`). Están en la raíz y no dentro de `cliente/` o
+`servidor/` porque son de los dos.
+
+**Agregar un idioma = sumar un archivo (criterio 3).** Se copia `es.json` con
+otro nombre (por ejemplo `pt.json`), se cambia `_idioma` y se traducen los
+textos. El cliente descubre los archivos con `import.meta.glob` y el servidor
+lee la carpeta al arrancar: aparece solo en el selector y se acepta en Mi
+perfil. Las pruebas comprueban que el idioma nuevo tenga todas las claves.
+
+**Cómo se escribe un texto nuevo (para todos):**
+- En el cliente: `t('equipo.titulo')`, con datos `t('x', { nombre })`, con
+  cantidad `tn('x', n)` (claves `.uno` y `.otros`), y con partes destacadas
+  `tJsx('x', { b: (s) => <strong>{s}</strong> })`. Todo en
+  `servicios/idioma.ts`. Fechas y números con `localeActual()`.
+- En el servidor: `t('servidor.modulo.clave', { ... })` de `comun/idioma.ts`.
+- Se agrega la clave en `es.json` **y** en `en.json`. Si falta en uno, las
+  pruebas fallan (`cliente/pruebas/idiomas.test.ts` y
+  `servidor/pruebas/idiomas.test.js`). También fallan si queda un texto escrito
+  directo en una pantalla o en una excepción del servidor.
+- No guardar textos traducidos en constantes a nivel de módulo: se guarda la
+  clave y se traduce al dibujar.
+
+**Qué idioma se usa (criterio 2).** Con sesión: el que la persona eligió en Mi
+perfil; si no eligió, el de su país; si no tiene país propio (socios y
+colaboradores), el del país de su rancho (migración 007, columna
+`usuarios.idioma`). Lo resuelve el servidor y llega en `/usuarios/yo`. Sin
+sesión: el elegido en el selector (se recuerda en el navegador), o el del
+navegador, o español.
+
+**El servidor contesta en el idioma de la interfaz.** El cliente manda
+`Accept-Language` en cada petición; un middleware lo guarda mientras dura la
+petición (AsyncLocalStorage) y `t()` lo usa sin tener que pasarlo de mano en
+mano. Los correos salen en el idioma de quien hace la acción, salvo el
+restablecimiento de contraseña, que sale en el idioma de quien lo recibe.
+
+**El español no cambió:** los textos se movieron tal cual estaban; las pruebas
+del servidor siguen comparando los mismos mensajes. Los nombres de los tipos
+predefinidos se traducen; los tipos propios, los nombres de países y los
+datos que escribe la gente, no. El nombre del producto, "Gestión de Ganado", se
+mantiene en todos los idiomas.
+
+**Docker.** Como el contenedor del servidor solo ve `servidor/`, en
+`docker-compose.yml` se monta `idiomas/` aparte y se le indica con
+`CARPETA_IDIOMAS`. Fuera de Docker el servidor encuentra la carpeta solo.
+
+**Para Brian y Romina:** a partir de ahora las pantallas nuevas (animales,
+corrales, importación) se escriben con `t()` desde el principio. Si se escribe
+un texto directo, la prueba del cliente lo marca.

@@ -1,8 +1,10 @@
 import {
   cambiarUsuario,
   limpiarSesionLocal,
+  guardarSoporte,
   usuarioActual,
 } from '../servicios/api';
+import { t } from '../servicios/idioma';
 
 /**
  * Barra de demostración. PROVISIONAL, y se borra sola cuando exista HU-08.
@@ -22,13 +24,18 @@ import {
  * se borra con ella.
  */
 
+// nombre es la clave del texto en el archivo de idioma; se traduce al dibujar.
 const CUENTAS = [
-  { id: 'a1000000-0000-4000-8000-000000000001', nombre: 'Carlos · propietario con rancho' },
-  { id: 'a1000000-0000-4000-8000-000000000002', nombre: 'María René · socia' },
-  { id: 'c1000000-0000-4000-8000-000000000001', nombre: 'Ariel · propietario sin rancho' },
-  { id: 'c1000000-0000-4000-8000-000000000002', nombre: 'Lucía · correo sin confirmar' },
-  { id: 'c1000000-0000-4000-8000-000000000003', nombre: 'Rubén · con clave temporal' },
+  { id: 'a1000000-0000-4000-8000-000000000001', nombre: 'app.demo.cuentas.carlos' },
+  { id: 'a1000000-0000-4000-8000-000000000002', nombre: 'app.demo.cuentas.mariaRene' },
+  { id: 'c1000000-0000-4000-8000-000000000001', nombre: 'app.demo.cuentas.ariel' },
+  { id: 'c1000000-0000-4000-8000-000000000002', nombre: 'app.demo.cuentas.lucia' },
+  { id: 'c1000000-0000-4000-8000-000000000003', nombre: 'app.demo.cuentas.ruben' },
+  // HU-24
+  { id: 'f0000000-0000-4000-8000-000000000001', nombre: 'app.demo.cuentas.admin' },
 ];
+
+const ADMIN = 'f0000000-0000-4000-8000-000000000001';
 
 export function BarraDemostracion() {
   // Se lee en cada renderizado y no se guarda en el estado: si se guardara,
@@ -37,9 +44,13 @@ export function BarraDemostracion() {
 
   function elegir(nuevo: string) {
     cambiarUsuario(nuevo);
+    // Otra cuenta no hereda el rancho al que había entrado el Admin (HU-24).
+    guardarSoporte(null);
     // Desde la landing se va directo al panel: elegir una cuenta es querer
-    // verla por dentro. En cualquier otra pantalla, se queda donde está.
-    if (/^#?\/?$/.test(window.location.hash)) window.location.hash = '#/rancho';
+    // verla por dentro. En cualquier otra pantalla, se queda donde está. El
+    // Admin de plataforma no tiene panel de rancho: va a la suya.
+    if (nuevo === ADMIN) window.location.hash = '#/admin';
+    else if (/^#?\/?$/.test(window.location.hash)) window.location.hash = '#/rancho';
     // Se recarga entera para que todas las pantallas vuelvan a preguntar por
     // la cuenta. Es lo más simple y esto no va al producto.
     window.location.reload();
@@ -54,9 +65,9 @@ export function BarraDemostracion() {
 
   return (
     <div className="barra-demo">
-      <span className="etiqueta-demo">Demostración</span>
+      <span className="etiqueta-demo">{t('app.demo.etiqueta')}</span>
       <label className="solo-lectores" htmlFor="barra-demo-usuario">
-        Usuario con el que se muestra el sistema
+        {t('app.demo.usuario')}
       </label>
       <select
         id="barra-demo-usuario"
@@ -64,18 +75,18 @@ export function BarraDemostracion() {
         onChange={(e) => elegir(e.target.value)}
       >
         <option value="" disabled>
-          Elegir cuenta…
+          {t('app.demo.elegirCuenta')}
         </option>
         {CUENTAS.map((cuenta) => (
           <option key={cuenta.id} value={cuenta.id}>
-            {cuenta.nombre}
+            {t(cuenta.nombre)}
           </option>
         ))}
       </select>
       <button type="button" className="enlace-demo" onClick={empezarDeCero}>
-        Empezar de cero
+        {t('app.demo.empezarDeCero')}
       </button>
-      <span className="pie">Provisional: muestra cada rol sin saber sus contraseñas.</span>
+      <span className="pie">{t('app.demo.provisional')}</span>
     </div>
   );
 }

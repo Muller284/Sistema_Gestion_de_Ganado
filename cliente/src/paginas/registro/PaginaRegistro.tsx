@@ -11,6 +11,8 @@ import {
   Icono,
 } from '../../componentes';
 import { api, cambiarUsuario, type Pais, type RespuestaRegistro } from '../../servicios/api';
+import { t, tJsx } from '../../servicios/idioma';
+import { enumerar, faltasDeContrasena } from '../../servicios/texto';
 
 /**
  * HU-06 · Registro de propietario.
@@ -35,21 +37,6 @@ const VACIO = {
   contrasena: '',
   pais_codigo: 'BO',
 };
-
-/** Las mismas tres reglas que aplica el servidor, en el mismo orden. */
-function faltasDeContrasena(contrasena: string): string[] {
-  const faltas: string[] = [];
-  if (contrasena.length < 8) faltas.push('ocho caracteres');
-  if (!/[A-ZÁÉÍÓÚÑ]/.test(contrasena)) faltas.push('una mayúscula');
-  if (!/[0-9]/.test(contrasena)) faltas.push('un número');
-  return faltas;
-}
-
-/** "a, b y c", para que el mensaje se lea como una frase. */
-function enumerar(partes: string[]): string {
-  if (partes.length <= 1) return partes.join('');
-  return `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
-}
 
 interface Propiedades {
   /** Se llama cuando la cuenta queda confirmada, para que App siga sola. */
@@ -99,7 +86,7 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
     setErrorCorreo('');
 
     if (faltas.length > 0) {
-      setError(`La contraseña necesita al menos ${enumerar(faltas)}.`);
+      setError(t('comun.contrasena.necesita', { faltas: enumerar(faltas) }));
       return;
     }
 
@@ -118,7 +105,8 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
     } catch (err) {
       const mensaje = (err as Error).message;
       // El del correo repetido va debajo del campo, donde esta el problema.
-      if (mensaje.toLowerCase().includes('correo')) setErrorCorreo(mensaje);
+      // El servidor lo manda en el idioma de la interfaz: "correo" o "email".
+      if (/correo|e-?mail/i.test(mensaje)) setErrorCorreo(mensaje);
       else setError(mensaje);
     } finally {
       setEnviando(false);
@@ -130,27 +118,24 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
       <DisenoAcceso
         paso={2}
         icono="correo"
-        titulo="Revisa tu correo"
-        subtitulo={`Le enviamos un enlace de confirmación a ${listo.usuario.correo}.`}
-        nota="El enlace vence en 24 horas. Si no llega, puedes pedir otro."
+        titulo={t('acceso.registro.revisa.titulo')}
+        subtitulo={t('acceso.registro.revisa.subtitulo', { correo: listo.usuario.correo })}
+        nota={t('acceso.registro.revisa.nota')}
       >
         <div className="col g16">
           <Alerta variante="exito">
-            Cuenta creada a nombre de {listo.usuario.nombre}.
+            {t('acceso.registro.revisa.creada', { nombre: listo.usuario.nombre })}
           </Alerta>
-          <p className="cuerpo c-600">
-            Confirma el correo para activar la cuenta. Hasta entonces no se
-            puede entrar al sistema.
-          </p>
+          <p className="cuerpo c-600">{t('acceso.registro.revisa.confirma')}</p>
           <Link className="btn btn-secundario btn-bloque" to="/verificar">
             <Icono nombre="enviar" tamano={18} />
-            No me llegó, pedir otro
+            {t('acceso.registro.revisa.pedirOtro')}
           </Link>
           {listo.enlace_verificacion && (
             <Alerta variante="info">
-              En desarrollo el correo se escribe en la consola del servidor.
-              Este es el enlace:{' '}
-              <a href={listo.enlace_verificacion}>ábrelo aquí</a>.
+              {tJsx('acceso.comun.enlaceDesarrollo', {
+                enlace: (s) => <a href={listo.enlace_verificacion ?? undefined}>{s}</a>,
+              })}
             </Alerta>
           )}
 
@@ -164,9 +149,9 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
     <DisenoAcceso
       paso={1}
       icono="persona-mas"
-      titulo="Crea tu cuenta"
-      subtitulo="10 días con todas las funciones. Sin tarjeta."
-      nota="Cuando terminen los 10 días tu cuenta pasa al plan Gratis. No se bloquea y no pierdes nada."
+      titulo={t('acceso.registro.titulo')}
+      subtitulo={t('acceso.registro.subtitulo')}
+      nota={t('acceso.registro.nota')}
     >
       <div className="col g16">
         {error && <Alerta variante="error">{error}</Alerta>}
@@ -176,41 +161,41 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
         {!cargando && (
           <form onSubmit={registrar} className="col g16">
             <CampoTexto
-              etiqueta="Nombre y apellido"
+              etiqueta={t('acceso.registro.nombre')}
               obligatorio
               autoComplete="name"
               maxLength={150}
-              placeholder="Ej. Aaron Vargas"
+              placeholder={t('acceso.registro.nombreEjemplo')}
               {...campo('nombre')}
             />
             <CampoTexto
-              etiqueta="Correo"
+              etiqueta={t('acceso.comun.correo')}
               obligatorio
               type="email"
               autoComplete="email"
               maxLength={150}
-              placeholder="tu@ejemplo.com"
+              placeholder={t('acceso.comun.correoEjemplo')}
               error={errorCorreo || undefined}
               {...campo('correo')}
             />
             <CampoTexto
-              etiqueta="Contraseña"
+              etiqueta={t('acceso.comun.contrasena')}
               obligatorio
               type="password"
               autoComplete="new-password"
-              placeholder="Al menos 8 caracteres"
-              ayuda="Usa al menos 8 caracteres, con una mayúscula y un número."
+              placeholder={t('acceso.comun.alMenos8')}
+              ayuda={t('acceso.comun.ayudaContrasena')}
               error={
                 contrasenaTocada && faltas.length > 0
-                  ? `Falta al menos ${enumerar(faltas)}.`
+                  ? t('comun.contrasena.falta', { faltas: enumerar(faltas) })
                   : undefined
               }
               {...campo('contrasena')}
             />
             <CampoLista
-              etiqueta="País"
+              etiqueta={t('acceso.registro.pais')}
               obligatorio
-              ayuda="Define el idioma, la moneda y las unidades de medida. Lo puedes cambiar después."
+              ayuda={t('acceso.registro.paisAyuda')}
               {...campo('pais_codigo')}
             >
               {paises.map((p) => (
@@ -220,17 +205,17 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
               ))}
             </CampoLista>
 
-            <p className="pie c-500 centrado">
-              Acepto los términos del servicio y la política de privacidad.
-            </p>
+            <p className="pie c-500 centrado">{t('acceso.registro.terminos')}</p>
 
             <Boton type="submit" variante="primario" bloque disabled={enviando}>
               <Icono nombre="persona-mas" tamano={18} />
-              {enviando ? 'Creando…' : 'Crear cuenta'}
+              {enviando ? t('acceso.registro.creando') : t('acceso.registro.crear')}
             </Boton>
 
             <p className="pie c-500 centrado">
-              ¿Ya tienes una cuenta? <Link to="/ingreso">Inicia sesión</Link>
+              {tJsx('acceso.registro.yaTienes', {
+                enlace: (s) => <Link to="/ingreso">{s}</Link>,
+              })}
             </p>
           </form>
         )}

@@ -2,19 +2,8 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alerta, Boton, CampoTexto, DisenoAcceso,  } from '../../componentes';
 import { api } from '../../servicios/api';
-
-function faltasDeContrasena(contrasena: string): string[] {
-  const faltas: string[] = [];
-  if (contrasena.length < 8) faltas.push('ocho caracteres');
-  if (!/[A-ZÁÉÍÓÚÑ]/.test(contrasena)) faltas.push('una mayúscula');
-  if (!/[0-9]/.test(contrasena)) faltas.push('un número');
-  return faltas;
-}
-
-function enumerar(partes: string[]): string {
-  if (partes.length <= 1) return partes.join('');
-  return `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
-}
+import { t } from '../../servicios/idioma';
+import { enumerar, faltasDeContrasena } from '../../servicios/texto';
 
 export function PaginaRestablecerContrasena() {
   const [nueva, setNueva] = useState('');
@@ -39,15 +28,15 @@ export function PaginaRestablecerContrasena() {
     setError('');
 
     if (!token) {
-      setError('El enlace de recuperación no es válido o está incompleto.');
+      setError(t('acceso.contrasena.restablecer.enlaceInvalido'));
       return;
     }
     if (faltas.length > 0) {
-      setError(`La contraseña necesita al menos ${enumerar(faltas)}.`);
+      setError(t('comun.contrasena.necesita', { faltas: enumerar(faltas) }));
       return;
     }
     if (nueva !== repetir) {
-      setError('Las dos contraseñas no coinciden.');
+      setError(t('acceso.comun.noCoinciden'));
       return;
     }
 
@@ -67,15 +56,13 @@ export function PaginaRestablecerContrasena() {
     return (
       <DisenoAcceso
         icono="llave"
-        titulo="¡Contraseña recuperada!"
-        nota="Tu contraseña se ha actualizado correctamente."
+        titulo={t('acceso.contrasena.restablecer.exito.titulo')}
+        nota={t('acceso.contrasena.restablecer.exito.nota')}
       >
         <div className="col g16">
-          <Alerta variante="exito">
-            Ya puedes usar tu nueva contraseña para ingresar al sistema.
-          </Alerta>
+          <Alerta variante="exito">{t('acceso.contrasena.restablecer.exito.texto')}</Alerta>
           <Boton variante="primario" bloque onClick={() => navegar('/ingreso')}>
-            Ingresar con la nueva
+            {t('acceso.contrasena.restablecer.exito.ingresar')}
           </Boton>
         </div>
       </DisenoAcceso>
@@ -87,15 +74,13 @@ export function PaginaRestablecerContrasena() {
     return (
       <DisenoAcceso
         icono="llave"
-        titulo="Enlace inválido"
-        nota="No podemos recuperar tu contraseña."
+        titulo={t('acceso.contrasena.restablecer.invalido.titulo')}
+        nota={t('acceso.contrasena.restablecer.invalido.nota')}
       >
         <div className="col g16">
-          <Alerta variante="error">
-            Falta el código de seguridad. Asegúrate de hacer clic en el enlace completo que llegó a tu correo.
-          </Alerta>
+          <Alerta variante="error">{t('acceso.contrasena.restablecer.invalido.texto')}</Alerta>
           <Boton variante="secundario" bloque onClick={() => navegar('/')}>
-            Volver al inicio
+            {t('acceso.contrasena.restablecer.invalido.volverInicio')}
           </Boton>
         </div>
       </DisenoAcceso>
@@ -106,35 +91,41 @@ export function PaginaRestablecerContrasena() {
   return (
     <DisenoAcceso
       icono="llave"
-      titulo="Crea tu nueva contraseña"
-      nota="Ingresa una contraseña segura que puedas recordar."
+      titulo={t('acceso.contrasena.restablecer.titulo')}
+      nota={t('acceso.contrasena.restablecer.nota')}
     >
       <div className="col g16">
         {error && <Alerta variante="error">{error}</Alerta>}
 
         <form onSubmit={guardar} className="col g16">
           <CampoTexto
-            etiqueta="Contraseña nueva"
+            etiqueta={t('acceso.comun.contrasenaNueva')}
             obligatorio
             type="password"
             autoComplete="new-password"
-            placeholder="Al menos 8 caracteres"
-            ayuda="Usa al menos 8 caracteres, con una mayúscula y un número."
-            error={tocada && faltas.length > 0 ? `Falta al menos ${enumerar(faltas)}.` : undefined}
+            placeholder={t('acceso.comun.alMenos8')}
+            ayuda={t('acceso.comun.ayudaContrasena')}
+            error={
+              tocada && faltas.length > 0
+                ? t('comun.contrasena.falta', { faltas: enumerar(faltas) })
+                : undefined
+            }
             value={nueva}
             onChange={(e) => setNueva(e.target.value)}
           />
           <CampoTexto
-            etiqueta="Repetir la contraseña nueva"
+            etiqueta={t('acceso.comun.repetirNueva')}
             obligatorio
             type="password"
             autoComplete="new-password"
-            error={noCoinciden ? 'Las dos contraseñas no coinciden.' : undefined}
+            error={noCoinciden ? t('acceso.comun.noCoinciden') : undefined}
             value={repetir}
             onChange={(e) => setRepetir(e.target.value)}
           />
           <Boton type="submit" variante="primario" bloque disabled={enviando}>
-            {enviando ? 'Guardando...' : 'Guardar contraseña'}
+            {enviando
+              ? t('acceso.contrasena.restablecer.guardando')
+              : t('acceso.contrasena.restablecer.guardar')}
           </Boton>
         </form>
       </div>

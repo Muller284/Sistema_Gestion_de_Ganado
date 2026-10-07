@@ -73,8 +73,9 @@ y en otra:
 
 ```bash
 cd servidor
-npm test                    # todas: aislamiento, registro, cuenta, bloqueo,
-                            # sesion, equipo, guia, perfil y tipos
+npm test                    # todas: idiomas, aislamiento, registro, cuenta,
+                            # bloqueo, sesion, equipo, guia, perfil, tipos,
+                            # admin e idioma-cuenta
 npm run probar:tipos        # o una sola (probar:equipo, probar:guia, ...)
 ```
 
@@ -88,6 +89,14 @@ cd cliente
 npm run lint && npm test && npm run build
 ```
 
+## Idiomas
+
+Todos los textos de la interfaz, los mensajes del servidor y los correos están
+en `idiomas/`, un archivo por idioma (`es.json`, `en.json`). Para sumar un
+idioma se copia `es.json` con el código nuevo (`pt.json`), se cambia
+`_idioma` y se traduce: no hay que tocar el código. En el código los textos se
+piden con `t('clave')`. Detalle en DECISIONES.md, punto 34.
+
 ## Estructura del repositorio
 
 ```
@@ -95,6 +104,7 @@ gestion-ganado/
 ├── docker-compose.yml       levanta base de datos y servicios
 ├── README.md                 este archivo
 ├── DECISIONES.md              registro de decisiones técnicas
+├── idiomas/                   textos de la interfaz y del servidor, uno por idioma
 ├── servidor/
 │   ├── src/
 │   │   ├── modulos/           un directorio por módulo del sistema

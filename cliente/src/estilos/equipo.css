@@ -717,3 +717,198 @@
   .tipos__modulo { align-items: flex-start; }
   .tipos__modulo .segmentos { width: 100%; justify-content: space-between; }
 }
+
+/* ---------------------------------------------------------------------------
+ * HU-25 · El selector de idioma
+ * Una lista chica con el icono de idiomas. Se usa en la landing, en las
+ * pantallas de acceso, en el menu de la cuenta y (como opciones) en Mi perfil.
+ * -------------------------------------------------------------------------*/
+
+.selector-idioma {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-6);
+  height: var(--e-32);
+  padding: 0 var(--e-8);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-full);
+  background: var(--arena-0);
+  color: var(--arena-600);
+  transition: border-color var(--t-rapido) var(--curva);
+}
+
+.selector-idioma:hover,
+.selector-idioma:focus-within { border-color: var(--corral-300); color: var(--corral-700); }
+
+.selector-idioma select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0 var(--e-4) 0 0;
+  font: inherit;
+  font-size: var(--t-etiqueta);
+  font-weight: var(--peso-medio);
+  color: var(--arena-900);
+  cursor: pointer;
+}
+
+.selector-idioma select:focus { outline: none; }
+.selector-idioma select:disabled { cursor: progress; opacity: .6; }
+
+/* En las pantallas de acceso va arriba a la derecha, fuera de la columna. */
+.acceso__contenido { position: relative; }
+.acceso__idioma {
+  position: absolute;
+  top: var(--e-16);
+  right: var(--e-16);
+}
+
+.menu-usuario__idioma {
+  display: flex;
+  margin: var(--e-4) 0;
+}
+
+/* Mi perfil: las opciones de idioma, como las tarjetas de rol del alta. */
+.perfil__idiomas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: var(--e-12);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.perfil__idiomas legend { grid-column: 1 / -1; margin-bottom: var(--e-8); padding: 0; }
+.perfil__idiomas .aviso-error { grid-column: 1 / -1; }
+
+.perfil__idioma {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-10);
+  padding: var(--e-14) var(--e-16);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-md);
+  background: var(--arena-0);
+  cursor: pointer;
+  transition: border-color var(--t-rapido) var(--curva), background var(--t-rapido) var(--curva);
+}
+
+.perfil__idioma:hover { border-color: var(--corral-300); }
+.perfil__idioma.elegido { border-color: var(--corral-500); background: var(--corral-50); }
+.perfil__idioma input { margin-top: 3px; accent-color: var(--corral-500); }
+.perfil__idioma strong { font-weight: var(--peso-medio); color: var(--arena-900); }
+.perfil__idiomas:disabled .perfil__idioma { cursor: progress; opacity: .7; }
+
+/* ---------------------------------------------------------------------------
+ * HU-24 · El Admin de plataforma
+ * La banda del modo soporte, la lista de ranchos y el registro de accesos.
+ * -------------------------------------------------------------------------*/
+
+/* Arriba de todo mientras el Admin esta dentro de un rancho. Usa los colores
+   de informacion, no los de error: no es un problema, es un aviso. */
+.banda-soporte {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-10) var(--e-32);
+  border-bottom: var(--borde) solid var(--info-borde);
+  background: var(--info-bg);
+  color: var(--info-texto);
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+}
+
+.banda-soporte > .ico { flex: none; color: var(--info-base); }
+.banda-soporte strong { font-weight: var(--peso-fuerte); }
+.banda-soporte__motivo {
+  display: block;
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  opacity: .85;
+}
+.banda-soporte .btn { flex: none; }
+
+.admin__intro { max-width: var(--ancho-lectura); margin: 0; }
+.admin__vacio { margin: 0; padding: var(--e-16) 0; }
+
+.admin__lista,
+.admin__registro {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin__fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) minmax(0, .8fr) auto;
+  align-items: center;
+  gap: var(--e-8) var(--e-16);
+  padding: var(--e-14) 0;
+}
+
+.admin__fila + .admin__fila,
+.admin__acceso + .admin__acceso { border-top: var(--borde) solid var(--arena-100); }
+
+.admin__rancho,
+.admin__dueno,
+.admin__que,
+.admin__cuando {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin__rancho strong,
+.admin__que strong { font-weight: var(--peso-medio); color: var(--arena-900); }
+.admin__dueno > span:first-child { color: var(--arena-800); }
+.admin__rancho .pie,
+.admin__dueno .pie { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.admin__datos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-8);
+}
+
+.admin__acciones { display: flex; justify-content: flex-end; }
+
+/* El motivo se pide en la misma fila, ocupando todo el ancho. */
+.admin__motivo {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  padding: var(--e-16);
+  border-radius: var(--r-md);
+  background: var(--arena-50);
+  animation: entra var(--t-med) var(--curva-salida);
+}
+
+.admin__botones { justify-content: flex-end; }
+
+.admin__acceso {
+  display: grid;
+  grid-template-columns: minmax(150px, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--e-8) var(--e-16);
+  padding: var(--e-12) 0;
+}
+
+.admin__cuando .dato { font-size: var(--t-etiqueta); color: var(--arena-800); }
+.admin__que .pie { font-style: italic; }
+
+.accesos-soporte__nadie { margin: 0; }
+.accesos-soporte__intro { margin: 0 0 var(--e-12); }
+
+@media (max-width: 860px) {
+  .admin__fila { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin__dueno { grid-column: 1 / 2; }
+  .admin__datos { grid-column: 1 / 2; }
+  .admin__acciones { grid-row: 1; grid-column: 2; }
+  .admin__acceso { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin__cuando { grid-column: 1 / -1; }
+  .banda-soporte { flex-wrap: wrap; padding: var(--e-10) var(--e-16); }
+}
