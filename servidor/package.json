@@ -19,7 +19,11 @@
     "probar:equipo": "node pruebas/equipo.test.js",
     "probar:guia": "node pruebas/guia.test.js",
     "probar:perfil": "node pruebas/perfil.test.js",
-    "probar:correo": "node probar-correo.js"
+    "probar:correo": "node probar-correo.js",
+    "probar:socio": "node pruebas/socio.test.js",
+    "probar:colaborador": "node pruebas/colaborador.test.js",
+    "probar:importacion": "node pruebas/importacion.test.js",
+    "test:sprint2": "node pruebas/socio.test.js && node pruebas/colaborador.test.js && node pruebas/importacion.test.js"
   },
   "repository": {
     "type": "git",

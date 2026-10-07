@@ -88,7 +88,7 @@ INSERT INTO usuarios (
     'a1000000-0000-4000-8000-000000000001',
     'Carlos Gutierrez Mendoza',
     'carlos.gutierrez@elcerrito.bo',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=',
     TRUE,
     FALSE,
     'activo',
@@ -130,31 +130,31 @@ INSERT INTO usuarios (
 ) VALUES
     -- Socio
     ('a1000000-0000-4000-8000-000000000002', 'Maria Rene Aguilera Paz', 'mrene.aguilera@elcerrito.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'a0000000-0000-4000-8000-000000000001', 'socio', NULL,
      'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001'),
 
     -- Colaborador 1: Veterinario
     ('a1000000-0000-4000-8000-000000000003', 'Dr. Jorge Soliz Prado', 'jorge.soliz@elcerrito.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'a0000000-0000-4000-8000-000000000001', 'colaborador', '11111111-1111-4111-8111-000000000001',
      'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001'),
 
     -- Colaborador 2: Encargado de campo
     ('a1000000-0000-4000-8000-000000000004', 'Roberto Justiniano Saucedo', 'roberto.justiniano@elcerrito.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'a0000000-0000-4000-8000-000000000001', 'colaborador', '11111111-1111-4111-8111-000000000002',
      'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001'),
 
     -- Colaborador 3: Encargado de almacen
     ('a1000000-0000-4000-8000-000000000005', 'Gonzalo Chavez Roca', 'gonzalo.chavez@elcerrito.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'a0000000-0000-4000-8000-000000000001', 'colaborador', '11111111-1111-4111-8111-000000000003',
      'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001'),
 
     -- Colaborador 4: Administrativo
     ('a1000000-0000-4000-8000-000000000006', 'Valeria Mercado Vaca', 'valeria.mercado@elcerrito.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'a0000000-0000-4000-8000-000000000001', 'colaborador', '11111111-1111-4111-8111-000000000004',
      'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001');
 
@@ -171,7 +171,7 @@ INSERT INTO usuarios (
     'b1000000-0000-4000-8000-000000000001',
     'Fernando Torrico Camacho',
     'fernando.torrico@lafloresta.bo',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=',
     TRUE,
     FALSE,
     'activo',
@@ -213,19 +213,19 @@ INSERT INTO usuarios (
 ) VALUES
     -- Socio
     ('b1000000-0000-4000-8000-000000000002', 'Patricia Villarroel Rios', 'patricia.villarroel@lafloresta.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'b0000000-0000-4000-8000-000000000002', 'socio', NULL,
      'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000001'),
 
     -- Colaborador 1: Veterinario
     ('b1000000-0000-4000-8000-000000000003', 'Dra. Lucia Morales Arteaga', 'lucia.morales@lafloresta.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'b0000000-0000-4000-8000-000000000002', 'colaborador', '11111111-1111-4111-8111-000000000001',
      'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000001'),
 
     -- Colaborador 2: Encargado de campo
     ('b1000000-0000-4000-8000-000000000004', 'Walter Fernandez Claure', 'walter.fernandez@lafloresta.bo',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, FALSE, 'activo',
+     'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=', TRUE, FALSE, 'activo',
      'b0000000-0000-4000-8000-000000000002', 'colaborador', '11111111-1111-4111-8111-000000000002',
      'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000001');
 
@@ -241,7 +241,7 @@ INSERT INTO usuarios (
     'f0000000-0000-4000-8000-000000000001',
     'Soporte Central Plataforma Ganado',
     'soporte@plataforma.bo',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=',
     TRUE,
     FALSE,
     'activo',
@@ -266,7 +266,7 @@ INSERT INTO usuarios (
     'c1000000-0000-4000-8000-000000000001',
     'Ariel Camacho Peredo',
     'ariel.camacho@correo.bo',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    'scrypt$16384$8$1$AK6L1S+M3zd44oJxvHmChA==$HTqW1TQbd1JkToko/T2reLf9KE6Z9XZ5QzLGjPMbeyc=',
     TRUE,
     FALSE,
     'activo',

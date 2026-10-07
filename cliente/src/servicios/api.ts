@@ -398,4 +398,18 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify(datos),
     }),
+
+  // HU-40 a HU-45 · Importacion de ganado
+  plantillaImportacion: () =>
+    pedir<{ encabezados: string[]; ejemplo: string; contenidoCsv: string }>('/importacion/plantilla'),
+  validarImportacion: (datos: { csv?: string; filas?: any[] }) =>
+    pedir<any>('/importacion/validar', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+  ejecutarImportacion: (datos: { csv?: string; filas?: any[]; estrategia_duplicados: string }) =>
+    pedir<any>('/importacion/ejecutar', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
 };
