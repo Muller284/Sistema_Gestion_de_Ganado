@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Alerta,
   Boton,
@@ -9,6 +10,8 @@ import {
   type NombreIcono,
 } from '../../componentes';
 import { api, type MiembroEquipo, type TipoColaborador } from '../../servicios/api';
+import { t, tJsx } from '../../servicios/idioma';
+import { nombreRol, nombreTipo, resumenPermisos } from '../../servicios/permisos';
 
 /**
  * HU-17 · El formulario de alta de un socio o un colaborador.
@@ -23,19 +26,11 @@ import { api, type MiembroEquipo, type TipoColaborador } from '../../servicios/a
 
 type Rol = 'socio' | 'colaborador';
 
-const ROLES: { clave: Rol; nombre: string; texto: string; icono: NombreIcono }[] = [
-  {
-    clave: 'socio',
-    nombre: 'Socio',
-    texto: 'Ve toda la información del rancho, sin modificarla.',
-    icono: 'equipo',
-  },
-  {
-    clave: 'colaborador',
-    nombre: 'Colaborador',
-    texto: 'Carga lo de su trabajo, según su tipo: sanidad, pesajes, campo…',
-    icono: 'sanidad',
-  },
+// El nombre sale de roles.<clave> y la explicación de equipo.alta.roles.<clave>;
+// se traducen al dibujar.
+const ROLES: { clave: Rol; icono: NombreIcono }[] = [
+  { clave: 'socio', icono: 'equipo' },
+  { clave: 'colaborador', icono: 'sanidad' },
 ];
 
 interface Propiedades {
@@ -53,8 +48,9 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
   const [error, setError] = useState('');
   const [errorCorreo, setErrorCorreo] = useState('');
 
-  const predefinidos = tipos.filter((t) => t.es_predefinido);
-  const propios = tipos.filter((t) => !t.es_predefinido);
+  const predefinidos = tipos.filter((tp) => tp.es_predefinido);
+  const propios = tipos.filter((tp) => !tp.es_predefinido);
+  const elegido = tipos.find((tp) => tp.id === tipo);
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -62,7 +58,7 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
     setErrorCorreo('');
 
     if (rol === 'colaborador' && !tipo) {
-      setError('Elige qué tipo de colaborador es: define a qué módulos va a entrar.');
+      setError(t('equipo.alta.faltaTipo'));
       return;
     }
 
@@ -79,7 +75,8 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
     } catch (err) {
       const mensaje = (err as Error).message;
       // El del correo repetido va debajo del campo, donde está el problema.
-      if (/correo|equipo/i.test(mensaje)) setErrorCorreo(mensaje);
+      // El servidor contesta en el idioma de la interfaz: se buscan las dos.
+      if (/correo|equipo|email|team/i.test(mensaje)) setErrorCorreo(mensaje);
       else setError(mensaje);
     } finally {
       setEnviando(false);
@@ -88,9 +85,9 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
 
   return (
     <Tarjeta
-      titulo="Nuevo integrante"
+      titulo={t('equipo.alta.titulo')}
       accion={
-        <button type="button" className="btn btn-fantasma" onClick={alCancelar} aria-label="Cerrar el formulario">
+        <button type="button" className="btn btn-fantasma" onClick={alCancelar} aria-label={t('equipo.alta.cerrar')}>
           <Icono nombre="cerrar" tamano={18} />
         </button>
       }
@@ -100,22 +97,22 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
 
         <div className="par-formulario">
           <CampoTexto
-            etiqueta="Nombre y apellido"
+            etiqueta={t('equipo.alta.nombre')}
             obligatorio
             autoComplete="off"
             maxLength={150}
-            placeholder="Ej. Jorge Soliz"
+            placeholder={t('equipo.alta.nombreEjemplo')}
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
           />
           <CampoTexto
-            etiqueta="Correo"
+            etiqueta={t('equipo.alta.correo')}
             obligatorio
             type="email"
             autoComplete="off"
             maxLength={150}
-            placeholder="nombre@correo.com"
-            ayuda="Ahí le llega su contraseña temporal."
+            placeholder={t('equipo.alta.correoEjemplo')}
+            ayuda={t('equipo.alta.correoAyuda')}
             error={errorCorreo || undefined}
             value={correo}
             onChange={(e) => setCorreo(e.target.value)}
@@ -123,7 +120,7 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
         </div>
 
         <fieldset className="equipo__roles">
-          <legend className="etiqueta-campo">Rol</legend>
+          <legend className="etiqueta-campo">{t('equipo.alta.rol')}</legend>
           {ROLES.map((r) => (
             <label key={r.clave} className={rol === r.clave ? 'equipo__rol-opcion elegido' : 'equipo__rol-opcion'}>
               <input
@@ -137,8 +134,8 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
                 <Icono nombre={r.icono} tamano={20} />
               </span>
               <span>
-                <strong>{r.nombre}</strong>
-                <span className="pie c-500">{r.texto}</span>
+                <strong>{nombreRol(r.clave)}</strong>
+                <span className="pie c-500">{t(`equipo.alta.roles.${r.clave}`)}</span>
               </span>
             </label>
           ))}
@@ -146,27 +143,27 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
 
         {rol === 'colaborador' && (
           <CampoLista
-            etiqueta="Tipo de colaborador"
+            etiqueta={t('equipo.alta.tipo')}
             obligatorio
-            ayuda="El tipo decide a qué módulos entra. Arranca solo con permiso de consulta."
+            ayuda={t('equipo.alta.tipoAyuda')}
             value={tipo}
             onChange={(e) => setTipo(e.target.value)}
           >
             <option value="" disabled>
-              Elegir tipo…
+              {t('equipo.alta.elegirTipo')}
             </option>
-            <optgroup label="Predefinidos">
-              {predefinidos.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nombre}
+            <optgroup label={t('equipo.alta.predefinidos')}>
+              {predefinidos.map((tp) => (
+                <option key={tp.id} value={tp.id}>
+                  {nombreTipo(tp)}
                 </option>
               ))}
             </optgroup>
             {propios.length > 0 && (
-              <optgroup label="De tu rancho">
-                {propios.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.nombre}
+              <optgroup label={t('equipo.alta.propios')}>
+                {propios.map((tp) => (
+                  <option key={tp.id} value={tp.id}>
+                    {tp.nombre}
                   </option>
                 ))}
               </optgroup>
@@ -174,19 +171,31 @@ export function FormularioAlta({ tipos, alDarDeAlta, alCancelar }: Propiedades) 
           </CampoLista>
         )}
 
+        {rol === 'colaborador' && elegido && (
+          <p className="pie c-600 equipo__resumen-tipo" aria-live="polite">
+            <Icono nombre="info" tamano={14} />
+            <span>
+              {tJsx(
+                'equipo.alta.resumenTipo',
+                { enlace: (s) => <Link to="/equipo/tipos">{s}</Link> },
+                { resumen: resumenPermisos(elegido) || t('equipo.alta.tipoSinAcceso') },
+              )}
+            </span>
+          </p>
+        )}
+
         <p className="equipo__nota">
           <Icono nombre="llave" tamano={16} />
-          Le enviamos una contraseña temporal a su correo y la cambia la primera vez
-          que entra. Tú no la vas a ver: así, lo que cargue queda a su nombre.
+          {t('equipo.alta.nota')}
         </p>
 
         <div className="fila g8 equipo__botones">
           <Boton type="button" variante="secundario" onClick={alCancelar} disabled={enviando}>
-            Cancelar
+            {t('comun.cancelar')}
           </Boton>
           <Boton type="submit" variante="primario" disabled={enviando}>
             <Icono nombre="enviar" tamano={18} />
-            {enviando ? 'Dando de alta…' : 'Dar de alta'}
+            {enviando ? t('equipo.alta.enviando') : t('equipo.alta.enviar')}
           </Boton>
         </div>
       </form>

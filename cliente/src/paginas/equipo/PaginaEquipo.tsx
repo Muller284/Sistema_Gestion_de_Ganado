@@ -18,6 +18,8 @@ import {
   type MiembroEquipo,
   type TipoColaborador,
 } from '../../servicios/api';
+import { t } from '../../servicios/idioma';
+import { nombreRol, nombreTipo } from '../../servicios/permisos';
 import { inicial } from '../../servicios/texto';
 import { conTransicion } from '../../servicios/transicion';
 import { FormularioAlta } from './FormularioAlta';
@@ -43,22 +45,15 @@ import { FormularioAlta } from './FormularioAlta';
  * que salen se desvanecen y las que entran aparecen. Cada fila y cada bloque
  * lleva su view-transition-name para que el navegador sepa qué es qué.
  * Las cifras de arriba cuentan desde el valor que tenían, no desde cero.
+ *
+ * HU-20: los tipos de colaborador se administran en /equipo/tipos. Desde la
+ * fila de un colaborador, el propietario le cambia el tipo sin salir de acá.
  */
 
 type Filtro = 'todos' | 'socio' | 'colaborador' | 'suspendido';
 
-const FILTROS: { clave: Filtro; nombre: string }[] = [
-  { clave: 'todos', nombre: 'Todos' },
-  { clave: 'socio', nombre: 'Socios' },
-  { clave: 'colaborador', nombre: 'Colaboradores' },
-  { clave: 'suspendido', nombre: 'Suspendidos' },
-];
-
-const NOMBRE_ROL: Record<MiembroEquipo['rol'], string> = {
-  propietario: 'Propietario',
-  socio: 'Socio',
-  colaborador: 'Colaborador',
-};
+// El nombre de cada filtro está en equipo.filtros.<clave>; se traduce al dibujar.
+const FILTROS: Filtro[] = ['todos', 'socio', 'colaborador', 'suspendido'];
 
 export function PaginaEquipo() {
   const [rancho, setRancho] = useState<EstadoRancho | null>(null);
@@ -72,19 +67,24 @@ export function PaginaEquipo() {
   const [filtro, setFiltro] = useState<Filtro>('todos');
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
+  const [cambiandoTipo, setCambiandoTipo] = useState<string | null>(null);
   const [recienLlegado, setRecienLlegado] = useState<string | null>(null);
   // Solo la primera vez que llega la lista, las filas entran escalonadas.
   const [entrando, setEntrando] = useState(true);
 
-  const esPropietario = rancho?.usuario.rol === 'propietario';
+  // HU-24: el Admin que entró a dar soporte puede lo mismo que el propietario.
+  const esPropietario =
+    rancho?.usuario.rol === 'propietario' || Boolean(rancho?.usuario.soporte);
 
   useEffect(() => {
     let vigente = true;
+    let rol = '';
     void (async () => {
       try {
         const estado = await api.miRancho();
         if (!vigente) return;
         setRancho(estado);
+        rol = estado.usuario.rol;
         if (!estado.tieneRancho) return;
 
         const [lista, listaTipos] = await Promise.all([
@@ -103,7 +103,9 @@ export function PaginaEquipo() {
       } catch (err) {
         if (!vigente) return;
         const mensaje = (err as Error).message;
-        if (/propietario y los socios/.test(mensaje)) setSinPermiso(mensaje);
+        // El colaborador no ve el equipo (403). El mensaje llega traducido
+        // del servidor, así que se decide por el rol y no por el texto.
+        if (rol === 'colaborador') setSinPermiso(mensaje);
         else setError(mensaje);
       } finally {
         if (vigente) setCargando(false);
@@ -191,22 +193,57 @@ export function PaginaEquipo() {
     }
   }
 
-  const usuario = rancho?.usuario ?? { nombre: 'Invitado', rol: '—' };
+  async function cambiarTipo(miembro: MiembroEquipo, tipoId: string) {
+    setOcupado(miembro.id);
+    setError('');
+    try {
+      const respuesta = await api.asignarTipo(miembro.id, tipoId);
+      conTransicion(() => {
+        setMiembros((previos) =>
+          previos.map((m) =>
+            m.id === miembro.id
+              ? {
+                  ...m,
+                  tipo_colaborador_id: respuesta.tipo_colaborador_id,
+                  tipo_colaborador: respuesta.tipo_colaborador,
+                }
+              : m,
+          ),
+        );
+        setAviso({ mensaje: respuesta.mensaje });
+        setCambiandoTipo(null);
+      });
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setOcupado(null);
+    }
+  }
+
+  const usuario = rancho?.usuario ?? { nombre: t('equipo.invitado'), rol: '—' };
 
   return (
     <DisenoApp
       activo="equipo"
-      ruta={['Equipo', NOMBRE_ROL[usuario.rol as MiembroEquipo['rol']] ?? usuario.rol]}
+      ruta={[t('equipo.titulo'), nombreRol(usuario.rol)]}
       usuario={usuario}
       rancho={rancho?.rancho?.nombre ?? null}
-      rotulo="Tu equipo"
-      titulo="Equipo"
+      rotulo={t('equipo.rotulo')}
+      titulo={t('equipo.titulo')}
       acciones={
-        esPropietario && rancho?.tieneRancho && !agregando ? (
-          <Boton variante="primario" onClick={() => abrirFormulario(true)}>
-            <Icono nombre="persona-mas" tamano={18} />
-            Agregar integrante
-          </Boton>
+        rancho?.tieneRancho && !sinPermiso && !cargando ? (
+          <>
+            <Link className="btn btn-secundario" to="/equipo/tipos">
+              <Icono nombre="llave" tamano={18} />
+              {t('equipo.acciones.tipos')}
+            </Link>
+            {esPropietario && !agregando && (
+              <Boton variante="primario" onClick={() => abrirFormulario(true)}>
+                <Icono nombre="persona-mas" tamano={18} />
+                {t('equipo.acciones.agregar')}
+              </Boton>
+            )}
+          </>
         ) : undefined
       }
     >
@@ -223,7 +260,7 @@ export function PaginaEquipo() {
         {!cargando && sinPermiso && (
           <EstadoVacio
             icono="equipo"
-            titulo="Esta parte no es para tu rol"
+            titulo={t('equipo.sinPermiso')}
             texto={sinPermiso}
           />
         )}
@@ -231,11 +268,11 @@ export function PaginaEquipo() {
         {!cargando && rancho && !rancho.tieneRancho && (
           <EstadoVacio
             icono="casa"
-            titulo="Primero crea tu rancho"
-            texto="El equipo trabaja dentro de un rancho. Cuando lo crees, vuelve acá para sumar a tus socios y colaboradores."
+            titulo={t('equipo.sinRancho.titulo')}
+            texto={t('equipo.sinRancho.texto')}
             accion={
               <Link className="btn btn-primario" to="/rancho">
-                Crear mi rancho
+                {t('equipo.sinRancho.accion')}
               </Link>
             }
           />
@@ -255,41 +292,41 @@ export function PaginaEquipo() {
 
             <div className="rejilla-cifras vt-cifras">
               <Cifra
-                rotulo="Pueden entrar"
+                rotulo={t('equipo.cifras.activos.rotulo')}
                 icono="equipo"
                 valor={String(cuentas.activos)}
-                detalle="Integrantes activos, contándote"
+                detalle={t('equipo.cifras.activos.detalle')}
               />
               <Cifra
-                rotulo="Socios"
+                rotulo={t('equipo.cifras.socios.rotulo')}
                 icono="persona-mas"
                 valor={String(cuentas.socios)}
-                detalle="Ven todo, sin modificar"
+                detalle={t('equipo.cifras.socios.detalle')}
               />
               <Cifra
-                rotulo="Colaboradores"
+                rotulo={t('equipo.cifras.colaboradores.rotulo')}
                 icono="sanidad"
                 valor={String(cuentas.colaboradores)}
-                detalle="Cargan lo de su tipo"
+                detalle={t('equipo.cifras.colaboradores.detalle')}
               />
               <Cifra
-                rotulo="Suspendidos"
+                rotulo={t('equipo.cifras.suspendidos.rotulo')}
                 icono="pendiente"
                 valor={String(cuentas.suspendidos)}
-                detalle="No pueden entrar"
+                detalle={t('equipo.cifras.suspendidos.detalle')}
               />
             </div>
 
             {miembros.length <= 1 && !agregando ? (
               <EstadoVacio
                 icono="equipo"
-                titulo="Por ahora trabajas solo"
-                texto="Suma a tus socios para que vean cómo va el rancho, y a tus colaboradores para que carguen lo de su trabajo. Cada uno entra con su propia cuenta."
+                titulo={t('equipo.vacio.titulo')}
+                texto={t('equipo.vacio.texto')}
                 accion={
                   esPropietario ? (
                     <Boton variante="primario" onClick={() => abrirFormulario(true)}>
                       <Icono nombre="persona-mas" tamano={18} />
-                      Agregar al primero
+                      {t('equipo.vacio.accion')}
                     </Boton>
                   ) : undefined
                 }
@@ -297,20 +334,21 @@ export function PaginaEquipo() {
             ) : (
               <div className="vt-lista">
               <Tarjeta
-                titulo="Integrantes"
+                titulo={t('equipo.lista.titulo')}
                 accion={
                   <Segmentos
-                    etiqueta="Filtrar integrantes"
+                    etiqueta={t('equipo.lista.filtrar')}
                     valor={filtro}
                     alCambiar={filtrar}
-                    opciones={FILTROS.map((f) => ({
-                      ...f,
+                    opciones={FILTROS.map((clave) => ({
+                      clave,
+                      nombre: t(`equipo.filtros.${clave}`),
                       cantidad:
-                        f.clave === 'todos'
+                        clave === 'todos'
                           ? miembros.length
-                          : f.clave === 'suspendido'
+                          : clave === 'suspendido'
                             ? cuentas.suspendidos
-                            : f.clave === 'socio'
+                            : clave === 'socio'
                               ? cuentas.socios
                               : cuentas.colaboradores,
                     }))}
@@ -319,7 +357,7 @@ export function PaginaEquipo() {
               >
                 {visibles.length === 0 ? (
                   <p className="cuerpo c-500 centrado equipo__sin-resultados">
-                    Nadie en este filtro.
+                    {t('equipo.lista.sinResultados')}
                   </p>
                 ) : (
                   <ul className={entrando ? 'equipo__lista entrando' : 'equipo__lista'}>
@@ -330,10 +368,21 @@ export function PaginaEquipo() {
                         miembro={m}
                         editable={esPropietario && m.rol !== 'propietario'}
                         confirmando={confirmando === m.id}
+                        cambiandoTipo={cambiandoTipo === m.id}
+                        tipos={tipos}
                         ocupado={ocupado === m.id}
                         nuevo={recienLlegado === m.id}
-                        alPedirSuspension={() => setConfirmando(m.id)}
+                        alPedirSuspension={() => {
+                          setCambiandoTipo(null);
+                          setConfirmando(m.id);
+                        }}
                         alCancelar={() => setConfirmando(null)}
+                        alPedirCambioTipo={() => {
+                          setConfirmando(null);
+                          setCambiandoTipo(m.id);
+                        }}
+                        alCancelarCambioTipo={() => setCambiandoTipo(null)}
+                        alCambiarTipo={(tipoId) => cambiarTipo(m, tipoId)}
                         alCambiarEstado={() => cambiarEstado(m)}
                         alRestablecer={() => restablecer(m)}
                       />
@@ -346,7 +395,7 @@ export function PaginaEquipo() {
 
             {!esPropietario && (
               <Alerta variante="info">
-                Solo el propietario puede sumar, suspender o reactivar integrantes.
+                {t('equipo.soloPropietario')}
               </Alerta>
             )}
           </>
@@ -361,10 +410,15 @@ function FilaMiembro({
   miembro,
   editable,
   confirmando,
+  cambiandoTipo,
+  tipos,
   ocupado,
   nuevo,
   alPedirSuspension,
   alCancelar,
+  alPedirCambioTipo,
+  alCancelarCambioTipo,
+  alCambiarTipo,
   alCambiarEstado,
   alRestablecer,
 }: {
@@ -372,13 +426,19 @@ function FilaMiembro({
   miembro: MiembroEquipo;
   editable: boolean;
   confirmando: boolean;
+  cambiandoTipo: boolean;
+  tipos: TipoColaborador[];
   ocupado: boolean;
   nuevo: boolean;
   alPedirSuspension: () => void;
   alCancelar: () => void;
+  alPedirCambioTipo: () => void;
+  alCancelarCambioTipo: () => void;
+  alCambiarTipo: (tipoId: string) => void;
   alCambiarEstado: () => void;
   alRestablecer: () => void;
 }) {
+  const [tipoElegido, setTipoElegido] = useState(miembro.tipo_colaborador_id ?? '');
   const suspendido = miembro.estado === 'suspendido';
   const clases = ['equipo__fila', suspendido ? 'suspendido' : '', nuevo ? 'nuevo' : '']
     .filter(Boolean)
@@ -405,57 +465,100 @@ function FilaMiembro({
 
       <div className="equipo__rol">
         <Insignia variante={miembro.rol === 'propietario' ? 'exito' : miembro.rol === 'socio' ? 'info' : 'neutro'}>
-          {NOMBRE_ROL[miembro.rol]}
+          {nombreRol(miembro.rol)}
         </Insignia>
         {miembro.tipo_colaborador && (
-          <span className="pie c-500">{miembro.tipo_colaborador}</span>
+          <span className="pie c-500">
+            {nombreTipo({ id: miembro.tipo_colaborador_id, nombre: miembro.tipo_colaborador })}
+          </span>
         )}
       </div>
 
       <div className="equipo__estado">
         {suspendido ? (
-          <Insignia variante="adv">Suspendido</Insignia>
+          <Insignia variante="adv">{t('equipo.estados.suspendido')}</Insignia>
         ) : miembro.debe_cambiar_contrasena ? (
-          <Insignia variante="info">Aún no entró</Insignia>
+          <Insignia variante="info">{t('equipo.estados.sinEntrar')}</Insignia>
         ) : (
-          <Insignia variante="activo">Activo</Insignia>
+          <Insignia variante="activo">{t('equipo.estados.activo')}</Insignia>
         )}
       </div>
 
       <div className="equipo__acciones">
-        {editable && !confirmando && (
+        {editable && cambiandoTipo && (
+          <div className="equipo__cambio-tipo" role="group" aria-label={t('equipo.cambioTipo.grupo', { nombre: miembro.nombre })}>
+            <select
+              aria-label={t('equipo.cambioTipo.lista')}
+              value={tipoElegido}
+              onChange={(e) => setTipoElegido(e.target.value)}
+              disabled={ocupado}
+            >
+              {tipos.map((tipo) => (
+                <option key={tipo.id} value={tipo.id}>
+                  {nombreTipo(tipo)}
+                </option>
+              ))}
+            </select>
+            <Boton variante="secundario" onClick={alCancelarCambioTipo} disabled={ocupado}>
+              {t('comun.cancelar')}
+            </Boton>
+            <Boton
+              variante="primario"
+              onClick={() => alCambiarTipo(tipoElegido)}
+              disabled={ocupado || !tipoElegido || tipoElegido === miembro.tipo_colaborador_id}
+            >
+              {ocupado ? t('comun.guardando') : t('comun.guardar')}
+            </Boton>
+          </div>
+        )}
+
+        {editable && !confirmando && !cambiandoTipo && (
           <>
+            {miembro.rol === 'colaborador' && !suspendido && (
+              <Boton
+                variante="fantasma"
+                onClick={() => {
+                  setTipoElegido(miembro.tipo_colaborador_id ?? '');
+                  alPedirCambioTipo();
+                }}
+                disabled={ocupado}
+                title={t('equipo.fila.tipoAyuda')}
+              >
+                <Icono nombre="lapiz" tamano={16} />
+                <span className="equipo__texto-accion">{t('equipo.fila.tipo')}</span>
+              </Boton>
+            )}
             {!suspendido && (
               <Boton
                 variante="fantasma"
                 onClick={alRestablecer}
                 disabled={ocupado}
-                title="Le enviamos una contraseña temporal nueva a su correo"
+                title={t('equipo.fila.claveAyuda')}
               >
                 <Icono nombre="llave" tamano={16} />
-                <span className="equipo__texto-accion">Nueva clave</span>
+                <span className="equipo__texto-accion">{t('equipo.fila.clave')}</span>
               </Boton>
             )}
             {suspendido ? (
               <Boton variante="secundario" onClick={alCambiarEstado} disabled={ocupado}>
-                {ocupado ? 'Reactivando…' : 'Reactivar'}
+                {ocupado ? t('equipo.fila.reactivando') : t('equipo.fila.reactivar')}
               </Boton>
             ) : (
               <Boton variante="secundario" onClick={alPedirSuspension} disabled={ocupado}>
-                Suspender
+                {t('equipo.fila.suspender')}
               </Boton>
             )}
           </>
         )}
 
         {editable && confirmando && (
-          <div className="equipo__confirmar" role="group" aria-label={`Confirmar suspensión de ${miembro.nombre}`}>
-            <span className="pie">Se cierran sus sesiones y no podrá entrar.</span>
+          <div className="equipo__confirmar" role="group" aria-label={t('equipo.confirmar.grupo', { nombre: miembro.nombre })}>
+            <span className="pie">{t('equipo.confirmar.texto')}</span>
             <Boton variante="secundario" onClick={alCancelar} disabled={ocupado}>
-              Cancelar
+              {t('comun.cancelar')}
             </Boton>
             <Boton variante="destructivo" onClick={alCambiarEstado} disabled={ocupado}>
-              {ocupado ? 'Suspendiendo…' : 'Suspender'}
+              {ocupado ? t('equipo.fila.suspendiendo') : t('equipo.fila.suspender')}
             </Boton>
           </div>
         )}

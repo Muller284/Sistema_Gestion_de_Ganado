@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { RepositorioGuia } from './repositorio-guia';
+import { actuaComoPropietario } from '../../comun/permisos-rol';
+import { t } from '../../comun/idioma';
 
 /**
  * HU-16 · Guía de configuración inicial.
@@ -34,10 +36,13 @@ import { RepositorioGuia } from './repositorio-guia';
 
 type ClavePaso = 'animales' | 'corrales' | 'vacunas' | 'equipo';
 
+/**
+ * El nombre y la descripcion de cada paso no van aca sino en idiomas/, bajo
+ * servidor.guia.pasos.<clave>: se traducen al armar la respuesta, en el
+ * idioma de quien pregunta.
+ */
 interface DefinicionPaso {
   clave: ClavePaso;
-  nombre: string;
-  descripcion: string;
   fase: number;
   disponible: boolean;
   /** A que pantalla lleva el paso en el cliente. */
@@ -49,8 +54,6 @@ interface DefinicionPaso {
 const CATALOGO: DefinicionPaso[] = [
   {
     clave: 'animales',
-    nombre: 'Carga tus animales',
-    descripcion: 'Uno por uno o importando tu planilla de Excel.',
     fase: 2,
     disponible: false,
     ruta: null,
@@ -58,8 +61,6 @@ const CATALOGO: DefinicionPaso[] = [
   },
   {
     clave: 'corrales',
-    nombre: 'Arma tus corrales',
-    descripcion: 'Con su capacidad, para que el sistema avise si uno se llena.',
     fase: 2,
     disponible: false,
     ruta: null,
@@ -67,8 +68,6 @@ const CATALOGO: DefinicionPaso[] = [
   },
   {
     clave: 'vacunas',
-    nombre: 'Define tus vacunas',
-    descripcion: 'Tu esquema sanitario, para recibir avisos antes de cada vencimiento.',
     fase: 3,
     disponible: false,
     ruta: null,
@@ -76,8 +75,6 @@ const CATALOGO: DefinicionPaso[] = [
   },
   {
     clave: 'equipo',
-    nombre: 'Suma a tu equipo',
-    descripcion: 'Socios que ven todo y colaboradores que cargan lo suyo.',
     fase: 1,
     disponible: true,
     ruta: '/equipo',
@@ -110,8 +107,8 @@ export class ServicioGuia {
 
         return {
           clave: definicion.clave,
-          nombre: definicion.nombre,
-          descripcion: definicion.descripcion,
+          nombre: t(`servidor.guia.pasos.${definicion.clave}.nombre`),
+          descripcion: t(`servidor.guia.pasos.${definicion.clave}.descripcion`),
           fase: definicion.fase,
           disponible: definicion.disponible,
           ruta: definicion.disponible ? definicion.ruta : null,
@@ -155,7 +152,7 @@ export class ServicioGuia {
   async pausar(cuerpo: any, quien: UsuarioActual) {
     const ranchoId = this.soloPropietario(quien);
     if (typeof cuerpo?.pausada !== 'boolean') {
-      throw new BadRequestException('Indica si la guía queda en pausa (pausada: true o false).');
+      throw new BadRequestException(t('servidor.guia.pausaInvalida'));
     }
     await this.guia.pausar(ranchoId, cuerpo.pausada, quien.id);
     return this.estado(quien);
@@ -170,27 +167,25 @@ export class ServicioGuia {
     const ranchoId = this.soloPropietario(quien);
     const definicion = CATALOGO.find((d) => d.clave === paso);
     if (!definicion) {
-      throw new NotFoundException('Ese paso no existe en la guía.');
+      throw new NotFoundException(t('servidor.guia.pasoNoExiste'));
     }
     if (!definicion.disponible) {
-      throw new BadRequestException(
-        `Ese paso todavía no está disponible: llega en la fase ${definicion.fase}.`,
-      );
+      throw new BadRequestException(t('servidor.guia.noDisponible', { fase: definicion.fase }));
     }
     return { ranchoId, definicion };
   }
 
   private ranchoDe(quien: UsuarioActual): string {
     if (!quien.ranchoId) {
-      throw new ForbiddenException('Primero hay que crear el rancho.');
+      throw new ForbiddenException(t('servidor.datos.primeroElRancho'));
     }
     return quien.ranchoId;
   }
 
   private soloPropietario(quien: UsuarioActual): string {
     const ranchoId = this.ranchoDe(quien);
-    if (quien.rol !== 'propietario') {
-      throw new ForbiddenException('La guía de configuración la maneja el propietario.');
+    if (!actuaComoPropietario(quien)) {
+      throw new ForbiddenException(t('servidor.guia.soloPropietario'));
     }
     return ranchoId;
   }

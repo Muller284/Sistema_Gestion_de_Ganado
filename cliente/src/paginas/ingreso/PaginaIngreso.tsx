@@ -8,6 +8,7 @@ import {
   Icono,
 } from '../../componentes';
 import { api, guardarSesion } from '../../servicios/api';
+import { t, tJsx } from '../../servicios/idioma';
 
 /**
  * HU-08 · Inicio de sesión.
@@ -38,7 +39,7 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
     setError('');
 
     if (!correo.trim() || !contrasena) {
-      setError('Por favor ingresa tu correo y contraseña.');
+      setError(t('acceso.ingreso.faltanDatos'));
       return;
     }
 
@@ -63,7 +64,7 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
         window.location.reload();
       }
     } catch (err) {
-      setError((err as Error).message || 'Correo o contraseña incorrectos.');
+      setError((err as Error).message || t('acceso.ingreso.incorrectos'));
     } finally {
       setEnviando(false);
     }
@@ -72,45 +73,42 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
   return (
     <DisenoAcceso
       icono="entrar"
-      titulo="Bienvenido de vuelta"
-      subtitulo="Ingresa tus credenciales para acceder a la gestión de tu rancho."
-      nota={
-        <>
-          ¿No tienes cuenta todavía?{' '}
-          <Link to="/registro">Crea una, son 10 días gratis</Link>
-        </>
-      }
+      titulo={t('acceso.ingreso.titulo')}
+      subtitulo={t('acceso.ingreso.subtitulo')}
+      nota={tJsx('acceso.ingreso.sinCuenta', {
+        enlace: (s) => <Link to="/registro">{s}</Link>,
+      })}
     >
       <form onSubmit={manejarIngreso} className="col g16">
         {error && <Alerta variante="error">{error}</Alerta>}
 
         <CampoTexto
-          etiqueta="Correo"
+          etiqueta={t('acceso.comun.correo')}
           obligatorio
           type="email"
           autoComplete="email"
-          placeholder="tu@ejemplo.com"
+          placeholder={t('acceso.comun.correoEjemplo')}
           value={correo}
           onChange={(e) => setCorreo(e.target.value)}
         />
 
         <CampoTexto
-          etiqueta="Contraseña"
+          etiqueta={t('acceso.comun.contrasena')}
           obligatorio
           type="password"
           autoComplete="current-password"
-          placeholder="Tu contraseña"
+          placeholder={t('acceso.ingreso.contrasenaEjemplo')}
           value={contrasena}
           onChange={(e) => setContrasena(e.target.value)}
         />
 
         <Link className="pie enlace-derecha" to="/solicitar-recuperacion">
-          ¿Olvidaste tu contraseña?
+          {t('acceso.ingreso.olvido')}
         </Link>
 
         <Boton type="submit" variante="primario" bloque disabled={enviando}>
           <Icono nombre="entrar" tamano={18} />
-          {enviando ? 'Ingresando…' : 'Ingresar'}
+          {enviando ? t('acceso.ingreso.ingresando') : t('acceso.ingreso.ingresar')}
         </Boton>
       </form>
     </DisenoAcceso>

@@ -40,6 +40,25 @@ DELETE FROM tokens WHERE usuario_id IN (
     'c1000000-0000-4000-8000-000000000002', 'c1000000-0000-4000-8000-000000000003'
 );
 
+-- HU-20: los tipos propios que se hayan creado en estos ranchos al probar.
+-- Quien los tenga pasa a un predefinido (un colaborador siempre tiene tipo),
+-- y despues se borran. Los permisos ajustados se van solos con el rancho
+-- (ON DELETE CASCADE en la migracion 005).
+UPDATE usuarios SET tipo_colaborador_id = '11111111-1111-4111-8111-000000000002'
+ WHERE tipo_colaborador_id IN (
+    SELECT id FROM tipos_colaborador
+     WHERE rancho_id IN ('a0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002')
+        OR rancho_id IN (SELECT id FROM ranchos WHERE propietario_id = 'c1000000-0000-4000-8000-000000000001')
+ );
+DELETE FROM permisos_tipo WHERE tipo_colaborador_id IN (
+    SELECT id FROM tipos_colaborador
+     WHERE rancho_id IN ('a0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002')
+        OR rancho_id IN (SELECT id FROM ranchos WHERE propietario_id = 'c1000000-0000-4000-8000-000000000001')
+);
+DELETE FROM tipos_colaborador
+ WHERE rancho_id IN ('a0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002')
+    OR rancho_id IN (SELECT id FROM ranchos WHERE propietario_id = 'c1000000-0000-4000-8000-000000000001');
+
 -- El rancho que se haya creado durante la demostracion de HU-15
 UPDATE usuarios SET rancho_id = NULL WHERE id = 'c1000000-0000-4000-8000-000000000001';
 DELETE FROM ranchos WHERE propietario_id = 'c1000000-0000-4000-8000-000000000001';

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Icono } from './Iconos';
+import { t } from '../servicios/idioma';
 
 /**
  * La marca del sistema: el ícono de caravana más el nombre.
@@ -15,7 +16,7 @@ export function Marca({ como = 'span' }: { como?: 'span' | 'a' }) {
   const contenido = (
     <>
       <IconoMarca />
-      <span>Gestión de Ganado</span>
+      <span>{t('app.nombreSistema')}</span>
     </>
   );
   return como === 'a' ? (

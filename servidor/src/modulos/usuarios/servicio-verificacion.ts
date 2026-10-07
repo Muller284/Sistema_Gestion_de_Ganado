@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { RepositorioToken } from './repositorio-token';
 import { RepositorioUsuario } from './repositorio-usuario';
 import { ServicioCorreo } from '../../comun/servicio-correo';
+import { t } from '../../comun/idioma';
 
 /**
  * HU-07 · Verificación de correo.
@@ -49,17 +50,10 @@ export class ServicioVerificacion {
 
     await this.correo.enviar({
       para: aCorreo,
-      asunto: 'Confirma tu correo — Sistema de Gestión de Ganado',
-      cuerpo: [
-        `Hola ${nombre},`,
-        '',
-        'Para activar tu cuenta y empezar a usar el sistema, confirma tu correo',
-        'desde este enlace. Vence en 24 horas.',
-        '',
-        'Si no creaste ninguna cuenta, puedes ignorar este mensaje.',
-      ].join('\n'),
+      asunto: t('correos.verificacion.asunto'),
+      cuerpo: t('correos.verificacion.cuerpo', { nombre }),
       destacado: enlace,
-      textoBoton: 'Confirmar mi correo',
+      textoBoton: t('correos.verificacion.boton'),
     });
 
     return {
@@ -71,7 +65,7 @@ export class ServicioVerificacion {
   /** Confirma la cuenta. El token se consume: sirve una sola vez. */
   async confirmar(token: string) {
     if (!token || typeof token !== 'string') {
-      throw new BadRequestException('Falta el enlace de confirmación.');
+      throw new BadRequestException(t('servidor.verificacion.faltaEnlace'));
     }
 
     const usuarioId = await this.tokens.consumir(token, 'verificacion_correo');
@@ -82,8 +76,8 @@ export class ServicioVerificacion {
       const vencido = await this.tokens.estabaVencido(token, 'verificacion_correo');
       throw new BadRequestException(
         vencido
-          ? 'El enlace venció. Pide uno nuevo desde la pantalla de acceso.'
-          : 'El enlace no es válido o ya se usó.',
+          ? t('servidor.verificacion.vencido')
+          : t('servidor.verificacion.invalido'),
       );
     }
 
@@ -91,7 +85,7 @@ export class ServicioVerificacion {
     const usuario = await this.usuarios.porId(usuarioId);
 
     return {
-      mensaje: 'Correo confirmado. Ya puedes usar el sistema.',
+      mensaje: t('servidor.verificacion.confirmado'),
       usuario: {
         id: usuario.id,
         nombre: usuario.nombre,
@@ -109,12 +103,11 @@ export class ServicioVerificacion {
   async reenviar(correoPedido: string) {
     const correo = typeof correoPedido === 'string' ? correoPedido.trim() : '';
     if (!correo) {
-      throw new BadRequestException('Falta el correo.');
+      throw new BadRequestException(t('servidor.verificacion.faltaCorreo'));
     }
 
     const respuesta = {
-      mensaje:
-        'Si ese correo tiene una cuenta sin confirmar, le enviamos un enlace nuevo.',
+      mensaje: t('servidor.verificacion.reenviado'),
       enlace: null as string | null,
     };
 

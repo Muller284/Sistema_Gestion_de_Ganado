@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { api, guardarSoporte, soporteActual } from '../servicios/api';
 import { Icono, type NombreIcono } from './Iconos';
 import { IconoMarca } from './Marca';
 import { inicial } from '../servicios/texto';
+import { existe, t, tJsx } from '../servicios/idioma';
 import { MenuUsuario } from './MenuUsuario';
 
 /**
@@ -19,6 +21,7 @@ import { MenuUsuario } from './MenuUsuario';
 
 interface Modulo {
   clave: string;
+  /** Clave del nombre en el archivo de idioma; se traduce al dibujar. */
   nombre: string;
   icono: NombreIcono;
   /** A dónde lleva. Solo los módulos que ya existen la tienen. */
@@ -28,13 +31,13 @@ interface Modulo {
 }
 
 const MODULOS: Modulo[] = [
-  { clave: 'inicio', nombre: 'Mi rancho', icono: 'casa', ruta: '/rancho' },
-  { clave: 'animales', nombre: 'Animales', icono: 'animal', fase: 2 },
-  { clave: 'corrales', nombre: 'Corrales', icono: 'corral', fase: 2 },
-  { clave: 'sanidad', nombre: 'Sanidad', icono: 'sanidad', fase: 3 },
-  { clave: 'pesajes', nombre: 'Pesajes', icono: 'balanza', fase: 3 },
+  { clave: 'inicio', nombre: 'app.modulos.inicio', icono: 'casa', ruta: '/rancho' },
+  { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', fase: 2 },
+  { clave: 'corrales', nombre: 'app.modulos.corrales', icono: 'corral', fase: 2 },
+  { clave: 'sanidad', nombre: 'app.modulos.sanidad', icono: 'sanidad', fase: 3 },
+  { clave: 'pesajes', nombre: 'app.modulos.pesajes', icono: 'balanza', fase: 3 },
   // HU-17. Llegó antes que su fase: el alta del equipo es del Sprint 2.
-  { clave: 'equipo', nombre: 'Equipo', icono: 'equipo', ruta: '/equipo' },
+  { clave: 'equipo', nombre: 'app.modulos.equipo', icono: 'equipo', ruta: '/equipo' },
 ];
 
 interface Propiedades {
@@ -52,8 +55,14 @@ interface Propiedades {
   children: ReactNode;
 }
 
+/** El nombre del rol en el idioma actual. Si no es un rol conocido ("—"), tal cual. */
+function nombreDelRol(rol: string): string {
+  return existe(`roles.${rol}`) ? t(`roles.${rol}`) : rol;
+}
+
 function iconoDelModulo(clave: string): NombreIcono {
   if (clave === 'perfil') return 'persona';
+  if (clave === 'admin') return 'escudo';
   return MODULOS.find((modulo) => modulo.clave === clave)?.icono ?? 'casa';
 }
 
@@ -67,25 +76,44 @@ export function DisenoApp({
   acciones,
   children,
 }: Propiedades) {
+  // HU-24. El Admin de plataforma ve su entrada de Soporte; los módulos del
+  // rancho, solo si entró a uno.
+  const esAdmin = usuario.rol === 'admin_plataforma';
+  const soporte = esAdmin ? soporteActual() : null;
+  const modulos = esAdmin && !soporte ? [] : MODULOS;
+
   return (
     <div className="app">
       <aside className="lateral app__panel">
         <div className="marca">
           <IconoMarca />
           <span className="nombre">
-            Gestión de Ganado
-            <span className="rancho">{rancho ?? 'Sin rancho todavía'}</span>
+            {t('app.nombreSistema')}
+            <span className="rancho">{rancho ?? t('app.sinRancho')}</span>
           </span>
         </div>
 
-        {MODULOS.map((modulo) => {
+        {esAdmin && (
+          <NavLink
+            to="/admin"
+            end
+            className={({ isActive }) => (isActive ? 'item activo' : 'item')}
+          >
+            <span className="casilla-icono" aria-hidden="true">
+              <Icono nombre="escudo" />
+            </span>
+            <span className="flex1">{t('admin.menu')}</span>
+          </NavLink>
+        )}
+
+        {modulos.map((modulo) => {
           const contenido = (
             <>
               <span className="casilla-icono" aria-hidden="true">
                 <Icono nombre={modulo.icono} />
               </span>
-              <span className="flex1">{modulo.nombre}</span>
-              {modulo.fase && <span className="pie">Fase {modulo.fase}</span>}
+              <span className="flex1">{t(modulo.nombre)}</span>
+              {modulo.fase && <span className="pie">{t('app.fase', { n: modulo.fase })}</span>}
             </>
           );
 
@@ -97,7 +125,7 @@ export function DisenoApp({
                 key={modulo.clave}
                 className="item desactivado"
                 aria-disabled="true"
-                title={`Llega en la fase ${modulo.fase}`}
+                title={t('app.llegaEnFase', { n: modulo.fase })}
               >
                 {contenido}
               </span>
@@ -118,11 +146,12 @@ export function DisenoApp({
 
         <div className="espaciador" />
 
+        {!esAdmin && (
         <div className="bloque-cuenta">
-          <span className="titulo">Cuenta</span>
+          <span className="titulo">{t('app.cuenta.titulo')}</span>
           <span className="plan">
             <Icono nombre="plan" tamano={16} />
-            Plan Profesional
+            {t('app.cuenta.plan')}
           </span>
           <div
             className="medidor"
@@ -130,30 +159,32 @@ export function DisenoApp({
             aria-valuenow={76}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="Animales usados del plan"
+            aria-label={t('app.cuenta.medidor')}
           >
             <span style={{ width: '76%' }} />
           </div>
-          <span className="detalle">76 % de animales usados</span>
+          <span className="detalle">{t('app.cuenta.usados', { porcentaje: 76 })}</span>
         </div>
+        )}
 
         {/* Abre "Mi perfil". Es un enlace de verdad, como los modulos: se
             puede abrir en otra pestaña y el teclado llega igual. */}
         <NavLink
           to="/perfil"
           className={({ isActive }) => (isActive ? 'usuario activo' : 'usuario')}
-          title="Mi perfil"
+          title={t('app.miPerfil')}
         >
           <span className="avatar-inicial">{inicial(usuario.nombre)}</span>
           <span className="nombre flex1">
             {usuario.nombre}
-            <span className="rol">{usuario.rol}</span>
+            <span className="rol">{nombreDelRol(usuario.rol)}</span>
           </span>
           <Icono nombre="lapiz" tamano={16} className="usuario__editar" />
         </NavLink>
       </aside>
 
       <div className="app__cuerpo">
+        {soporte && <BandaSoporte soporte={soporte} />}
         <header className="barra-sup">
           <Icono nombre={iconoDelModulo(activo)} className="ico-ruta" />
           <span className="ruta">
@@ -186,6 +217,38 @@ export function DisenoApp({
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+/**
+ * HU-24. Mientras el Admin está dentro de un rancho, una banda arriba de todo
+ * lo recuerda: en qué rancho está, por qué entró y cómo salir. Nadie tiene
+ * que confundir el modo soporte con su propia cuenta.
+ */
+function BandaSoporte({ soporte }: { soporte: NonNullable<ReturnType<typeof soporteActual>> }) {
+  const navegar = useNavigate();
+  const [saliendo, setSaliendo] = useState(false);
+
+  async function salir() {
+    setSaliendo(true);
+    // Aunque el servidor no conteste, aca se sale igual: el acceso vence solo.
+    await api.salirDeRancho(soporte.accesoId).catch(() => undefined);
+    guardarSoporte(null);
+    navegar('/admin');
+  }
+
+  return (
+    <div className="banda-soporte" role="status">
+      <Icono nombre="escudo" tamano={18} />
+      <span className="flex1">
+        {tJsx('admin.banda.texto', { b: (s) => <strong>{s}</strong> }, { rancho: soporte.rancho })}
+        <span className="banda-soporte__motivo">{t('admin.banda.motivo', { motivo: soporte.motivo })}</span>
+      </span>
+      <button type="button" className="btn btn-secundario" onClick={salir} disabled={saliendo}>
+        <Icono nombre="salir" tamano={16} />
+        {saliendo ? t('admin.banda.saliendo') : t('admin.banda.salir')}
+      </button>
     </div>
   );
 }

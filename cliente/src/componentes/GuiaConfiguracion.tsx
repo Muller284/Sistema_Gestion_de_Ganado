@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api, type EstadoGuia, type PasoGuia } from '../servicios/api';
 import { Icono, type NombreIcono } from './Iconos';
 import { Insignia } from './Insignia';
+import { t, tn } from '../servicios/idioma';
 
 /**
  * HU-16 · Guía de configuración inicial.
@@ -33,10 +34,11 @@ const ICONOS: Record<PasoGuia['clave'], NombreIcono> = {
   equipo: 'equipo',
 };
 
-const ESTADOS: Record<PasoGuia['estado'], { texto: string; variante: 'neutro' | 'info' | 'exito' }> = {
-  pendiente: { texto: 'Pendiente', variante: 'neutro' },
-  en_curso: { texto: 'En curso', variante: 'info' },
-  completo: { texto: 'Completo', variante: 'exito' },
+/** Se guarda la clave del texto, no el texto: t() se llama al dibujar. */
+const ESTADOS: Record<PasoGuia['estado'], { clave: string; variante: 'neutro' | 'info' | 'exito' }> = {
+  pendiente: { clave: 'guia.estados.pendiente', variante: 'neutro' },
+  en_curso: { clave: 'guia.estados.enCurso', variante: 'info' },
+  completo: { clave: 'guia.estados.completo', variante: 'exito' },
 };
 
 export function GuiaConfiguracion() {
@@ -71,7 +73,7 @@ export function GuiaConfiguracion() {
   if (error && !guia) {
     return (
       <section className="guia">
-        <p className="pie c-500">No se pudo cargar la guía: {error}</p>
+        <p className="pie c-500">{t('guia.errorCarga', { error })}</p>
       </section>
     );
   }
@@ -95,7 +97,7 @@ export function GuiaConfiguracion() {
       aria-valuenow={guia.completos}
       aria-valuemin={0}
       aria-valuemax={guia.total}
-      aria-label="Pasos de la guía completos"
+      aria-label={t('guia.progresoAria')}
     >
       <span style={{ width: `${porcentaje}%` }} />
     </div>
@@ -109,9 +111,9 @@ export function GuiaConfiguracion() {
           <Icono nombre="regla" tamano={20} />
         </span>
         <div className="guia__resumen">
-          <strong>Dejaste la guía para después</strong>
+          <strong>{t('guia.pausada.titulo')}</strong>
           <span className="pie c-500">
-            {guia.completos} de {guia.total} pasos completos. Sigue desde donde quedaste.
+            {t('guia.pausada.progreso', { completos: guia.completos, total: guia.total })}
           </span>
           {barra}
         </div>
@@ -121,7 +123,7 @@ export function GuiaConfiguracion() {
           disabled={ocupado === 'pausa'}
           onClick={() => hacer('pausa', () => api.pausarGuia(false))}
         >
-          Retomar la guía
+          {t('guia.pausada.retomar')}
         </button>
       </section>
     );
@@ -132,10 +134,10 @@ export function GuiaConfiguracion() {
       <header className="guia__cabecera">
         <div>
           <h2 id="guia-titulo" className="h3">
-            {guia.terminada ? 'Tu rancho quedó configurado' : 'Deja tu rancho andando'}
+            {guia.terminada ? t('guia.titulo.terminada') : t('guia.titulo.enMarcha')}
           </h2>
           <p className="pie c-500">
-            {guia.completos} de {guia.total} pasos completos
+            {t('guia.progreso', { completos: guia.completos, total: guia.total })}
           </p>
         </div>
         {!guia.terminada && (
@@ -145,7 +147,7 @@ export function GuiaConfiguracion() {
             disabled={ocupado === 'pausa'}
             onClick={() => hacer('pausa', () => api.pausarGuia(true))}
           >
-            Seguir después
+            {t('guia.seguirDespues')}
           </button>
         )}
       </header>
@@ -217,8 +219,8 @@ function Paso({
         {paso.disponible && paso.datos > 0 && paso.estado !== 'completo' && (
           <span className="pie c-corral">
             {paso.clave === 'equipo'
-              ? `${paso.datos} ${paso.datos === 1 ? 'integrante' : 'integrantes'} ya en el equipo`
-              : `${paso.datos} cargados`}
+              ? tn('guia.paso.integrantes', paso.datos)
+              : t('guia.paso.cargados', { n: paso.datos })}
           </span>
         )}
       </div>
@@ -226,10 +228,10 @@ function Paso({
       <div className="guia__lado">
         {/* Criterio 4: visible, pero marcado como no disponible todavía. */}
         {!paso.disponible ? (
-          <Insignia variante="neutro">Llega en la fase {paso.fase}</Insignia>
+          <Insignia variante="neutro">{t('guia.paso.llegaEnFase', { fase: paso.fase })}</Insignia>
         ) : (
           <>
-            <Insignia variante={estado.variante}>{estado.texto}</Insignia>
+            <Insignia variante={estado.variante}>{t(estado.clave)}</Insignia>
             <div className="guia__acciones">
               {paso.estado !== 'completo' && paso.ruta && (
                 <Link
@@ -237,19 +239,19 @@ function Paso({
                   to={paso.ruta}
                   onClick={alAbrir}
                 >
-                  {paso.estado === 'pendiente' ? 'Empezar' : 'Continuar'}
+                  {paso.estado === 'pendiente' ? t('guia.paso.empezar') : t('guia.paso.continuar')}
                   <Icono nombre="flecha" tamano={16} />
                 </Link>
               )}
               {paso.estado === 'completo' ? (
                 <button type="button" className="btn btn-fantasma" onClick={alReabrir} disabled={ocupado}>
-                  Reabrir
+                  {t('guia.paso.reabrir')}
                 </button>
               ) : (
                 paso.estado === 'en_curso' && (
                   <button type="button" className="btn btn-fantasma" onClick={alCompletar} disabled={ocupado}>
                     <Icono nombre="exito" tamano={16} />
-                    Listo
+                    {t('guia.paso.listo')}
                   </button>
                 )
               )}

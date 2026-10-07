@@ -10,6 +10,7 @@ import {
   Icono,
 } from '../../componentes';
 import { api } from '../../servicios/api';
+import { t, tJsx } from '../../servicios/idioma';
 
 /**
  * HU-07 · Verificación de correo.
@@ -103,8 +104,8 @@ export function PaginaVerificacion({ correo = '', alConfirmar }: Propiedades) {
       <DisenoAcceso
         paso={2}
         icono="correo"
-        titulo="Confirmando tu correo"
-        subtitulo="Un momento."
+        titulo={t('acceso.verificacion.confirmando.titulo')}
+        subtitulo={t('acceso.verificacion.confirmando.subtitulo')}
       >
         <Cargando lineas={2} />
       </DisenoAcceso>
@@ -116,15 +117,15 @@ export function PaginaVerificacion({ correo = '', alConfirmar }: Propiedades) {
       <DisenoAcceso
         paso={3}
         icono="exito"
-        titulo="Correo confirmado"
-        subtitulo="Tu cuenta quedó activa."
-        nota="Ya puedes crear tu rancho y empezar a cargar animales."
+        titulo={t('acceso.verificacion.confirmado.titulo')}
+        subtitulo={t('acceso.verificacion.confirmado.subtitulo')}
+        nota={t('acceso.verificacion.confirmado.nota')}
       >
         <div className="col g16">
-          <Alerta variante="exito">Listo. Ya puedes usar el sistema.</Alerta>
+          <Alerta variante="exito">{t('acceso.verificacion.confirmado.listo')}</Alerta>
           <Boton variante="primario" bloque onClick={entrar}>
             <Icono nombre="entrar" tamano={18} />
-            Crear mi rancho
+            {t('acceso.verificacion.confirmado.crearRancho')}
           </Boton>
         </div>
       </DisenoAcceso>
@@ -135,37 +136,37 @@ export function PaginaVerificacion({ correo = '', alConfirmar }: Propiedades) {
     <DisenoAcceso
       paso={2}
       icono="correo"
-      titulo="Confirma tu correo"
-      subtitulo="Sin confirmarlo no se puede entrar al sistema."
-      nota="El enlace vence a las 24 horas. Pedir uno nuevo deja el anterior sin efecto."
+      titulo={t('acceso.verificacion.pendiente.titulo')}
+      subtitulo={t('acceso.verificacion.pendiente.subtitulo')}
+      nota={t('acceso.verificacion.pendiente.nota')}
     >
       <div className="col g16">
         {error && <Alerta variante="error">{error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
 
-        <p className="cuerpo c-600">
-          Te enviamos un enlace de confirmación. Si ya venció o no llegó, pide
-          uno nuevo.
-        </p>
+        <p className="cuerpo c-600">{t('acceso.verificacion.pendiente.texto')}</p>
 
         <CampoTexto
-          etiqueta="Correo de tu cuenta"
+          etiqueta={t('acceso.verificacion.pendiente.correo')}
           type="email"
           autoComplete="email"
-          placeholder="tu@ejemplo.com"
+          placeholder={t('acceso.comun.correoEjemplo')}
           value={correoEscrito}
           onChange={(e) => setCorreoEscrito(e.target.value)}
         />
 
         <Boton variante="primario" bloque onClick={reenviar} disabled={enviando}>
           <Icono nombre="enviar" tamano={18} />
-          {enviando ? 'Enviando…' : 'Reenviar el enlace'}
+          {enviando
+            ? t('acceso.verificacion.pendiente.enviando')
+            : t('acceso.verificacion.pendiente.reenviar')}
         </Boton>
 
         {enlace && (
           <Alerta variante="info">
-            En desarrollo el correo se escribe en la consola del servidor. Este
-            es el enlace: <a href={enlace}>ábrelo aquí</a>.
+            {tJsx('acceso.comun.enlaceDesarrollo', {
+              enlace: (s) => <a href={enlace}>{s}</a>,
+            })}
           </Alerta>
         )}
 

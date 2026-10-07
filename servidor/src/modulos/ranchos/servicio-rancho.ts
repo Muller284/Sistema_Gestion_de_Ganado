@@ -8,6 +8,8 @@ import {
 import { randomUUID } from 'crypto';
 import { DatosRancho, RepositorioRancho } from './repositorio-rancho';
 import { UsuarioActual } from '../../comun/repositorio-usuario-actual';
+import { actuaComoPropietario } from '../../comun/permisos-rol';
+import { t } from '../../comun/idioma';
 
 const TIPOS_PRODUCCION = ['carne', 'leche', 'mixto'];
 
@@ -26,14 +28,20 @@ const TIPOS_PRODUCCION = ['carne', 'leche', 'mixto'];
 export class ServicioRancho {
   constructor(private readonly repositorio: RepositorioRancho) {}
 
+  /** campo es la clave del nombre del campo, bajo servidor.ranchos.campos. */
   private exigirTexto(valor: any, campo: string, maximo: number): string {
     if (typeof valor !== 'string' || valor.trim() === '') {
-      throw new BadRequestException(`El campo ${campo} es obligatorio.`);
+      throw new BadRequestException(
+        t('servidor.ranchos.campoObligatorio', { campo: t(`servidor.ranchos.campos.${campo}`) }),
+      );
     }
     const limpio = valor.trim();
     if (limpio.length > maximo) {
       throw new BadRequestException(
-        `El campo ${campo} no puede pasar de ${maximo} caracteres.`,
+        t('servidor.ranchos.campoLargo', {
+          campo: t(`servidor.ranchos.campos.${campo}`),
+          n: maximo,
+        }),
       );
     }
     return limpio;
@@ -42,9 +50,7 @@ export class ServicioRancho {
   private exigirSuperficie(valor: any): number {
     const numero = Number(valor);
     if (!Number.isFinite(numero) || numero <= 0) {
-      throw new BadRequestException(
-        'La superficie es obligatoria y tiene que ser un numero mayor que cero.',
-      );
+      throw new BadRequestException(t('servidor.ranchos.superficie'));
     }
     return numero;
   }
@@ -55,31 +61,29 @@ export class ServicioRancho {
 
     if (!tieneLat && !tieneLon) return { latitud: null, longitud: null };
     if (tieneLat !== tieneLon) {
-      throw new BadRequestException(
-        'La ubicacion es opcional, pero si se carga tiene que llevar latitud y longitud.',
-      );
+      throw new BadRequestException(t('servidor.ranchos.ubicacionIncompleta'));
     }
     const latitud = Number(cuerpo.latitud);
     const longitud = Number(cuerpo.longitud);
     if (!Number.isFinite(latitud) || latitud < -90 || latitud > 90) {
-      throw new BadRequestException('La latitud tiene que estar entre -90 y 90.');
+      throw new BadRequestException(t('servidor.ranchos.latitud'));
     }
     if (!Number.isFinite(longitud) || longitud < -180 || longitud > 180) {
-      throw new BadRequestException('La longitud tiene que estar entre -180 y 180.');
+      throw new BadRequestException(t('servidor.ranchos.longitud'));
     }
     return { latitud, longitud };
   }
 
   private async armarDatos(cuerpo: any): Promise<DatosRancho> {
-    const tipo = this.exigirTexto(cuerpo.tipo_produccion, 'tipo de produccion', 20);
+    const tipo = this.exigirTexto(cuerpo.tipo_produccion, 'tipoProduccion', 20);
     if (!TIPOS_PRODUCCION.includes(tipo)) {
       throw new BadRequestException(
-        `El tipo de produccion tiene que ser uno de: ${TIPOS_PRODUCCION.join(', ')}.`,
+        t('servidor.ranchos.tipoProduccion', { tipos: TIPOS_PRODUCCION.join(', ') }),
       );
     }
     const pais = this.exigirTexto(cuerpo.pais_codigo, 'pais', 10);
     if (!(await this.repositorio.existePais(pais))) {
-      throw new BadRequestException(`El pais ${pais} no existe en el catalogo.`);
+      throw new BadRequestException(t('servidor.ranchos.paisNoExiste', { pais }));
     }
     const { latitud, longitud } = this.revisarUbicacion(cuerpo);
 
@@ -98,13 +102,11 @@ export class ServicioRancho {
   async crear(cuerpo: any, usuario: UsuarioActual) {
     if (usuario.rol !== 'propietario') {
       throw new ForbiddenException(
-        'Solo el propietario puede crear el rancho. Tu rol es ' + usuario.rol + '.',
+        t('servidor.ranchos.soloPropietarioCrea', { rol: nombreDelRol(usuario.rol) }),
       );
     }
     if (await this.repositorio.propietarioYaTieneRancho(usuario.id)) {
-      throw new ConflictException(
-        'Ya tienes un rancho creado. Una cuenta maneja un solo rancho.',
-      );
+      throw new ConflictException(t('servidor.ranchos.yaTienes'));
     }
 
     const datos = await this.armarDatos(cuerpo);
@@ -126,18 +128,18 @@ export class ServicioRancho {
 
   async obtener(id: string, usuario: UsuarioActual) {
     if (!usuario.ranchoId) {
-      throw new NotFoundException('Todavia no tienes un rancho creado.');
+      throw new NotFoundException(t('servidor.ranchos.sinRancho'));
     }
     const rancho = await this.repositorio.obtenerPorId(id, usuario.ranchoId);
     if (!rancho) {
-      throw new NotFoundException('No existe un rancho con ese identificador.');
+      throw new NotFoundException(t('servidor.ranchos.noExiste'));
     }
     return rancho;
   }
 
   async actualizar(id: string, cuerpo: any, usuario: UsuarioActual) {
-    if (usuario.rol !== 'propietario') {
-      throw new ForbiddenException('Solo el propietario puede editar el rancho.');
+    if (!actuaComoPropietario(usuario)) {
+      throw new ForbiddenException(t('servidor.ranchos.soloPropietarioEdita'));
     }
     await this.obtener(id, usuario);
 
@@ -149,10 +151,10 @@ export class ServicioRancho {
       cambios.localidad = this.exigirTexto(cuerpo.localidad, 'localidad', 100);
     if ('superficie' in cuerpo) cambios.superficie = this.exigirSuperficie(cuerpo.superficie);
     if ('tipo_produccion' in cuerpo) {
-      const tipo = this.exigirTexto(cuerpo.tipo_produccion, 'tipo de produccion', 20);
+      const tipo = this.exigirTexto(cuerpo.tipo_produccion, 'tipoProduccion', 20);
       if (!TIPOS_PRODUCCION.includes(tipo)) {
         throw new BadRequestException(
-          `El tipo de produccion tiene que ser uno de: ${TIPOS_PRODUCCION.join(', ')}.`,
+          t('servidor.ranchos.tipoProduccion', { tipos: TIPOS_PRODUCCION.join(', ') }),
         );
       }
       cambios.tipo_produccion = tipo;
@@ -160,7 +162,7 @@ export class ServicioRancho {
     if ('pais_codigo' in cuerpo) {
       const pais = this.exigirTexto(cuerpo.pais_codigo, 'pais', 10);
       if (!(await this.repositorio.existePais(pais))) {
-        throw new BadRequestException(`El pais ${pais} no existe en el catalogo.`);
+        throw new BadRequestException(t('servidor.ranchos.paisNoExiste', { pais }));
       }
       cambios.pais_codigo = pais;
     }
@@ -172,20 +174,31 @@ export class ServicioRancho {
 
     const rancho = await this.repositorio.actualizar(id, usuario.ranchoId!, cambios, usuario.id);
     if (!rancho) {
-      throw new NotFoundException('No existe un rancho con ese identificador.');
+      throw new NotFoundException(t('servidor.ranchos.noExiste'));
     }
     return rancho;
   }
 
   async darDeBaja(id: string, usuario: UsuarioActual) {
-    if (usuario.rol !== 'propietario') {
-      throw new ForbiddenException('Solo el propietario puede dar de baja el rancho.');
+    if (!actuaComoPropietario(usuario)) {
+      throw new ForbiddenException(t('servidor.ranchos.soloPropietarioDaDeBaja'));
     }
     await this.obtener(id, usuario);
     const rancho = await this.repositorio.darDeBaja(id, usuario.ranchoId!, usuario.id);
     if (!rancho) {
-      throw new NotFoundException('No existe un rancho con ese identificador.');
+      throw new NotFoundException(t('servidor.ranchos.noExiste'));
     }
     return rancho;
   }
+}
+
+/**
+ * El rol tal como se guarda ('socio', 'admin_plataforma'...) en el idioma de
+ * la peticion. En español queda igual que el codigo; si llegara un rol que no
+ * esta en idiomas/, se muestra el codigo.
+ */
+function nombreDelRol(rol: string): string {
+  const clave = `servidor.roles.${rol}`;
+  const nombre = t(clave);
+  return nombre === clave ? rol : nombre;
 }
