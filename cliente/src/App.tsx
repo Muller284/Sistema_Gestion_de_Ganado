@@ -19,6 +19,7 @@ import { PaginaVerificacion } from './paginas/verificacion/PaginaVerificacion';
 import { PaginaCambioContrasena } from './paginas/contrasena/PaginaCambioContrasena';
 import { PaginaSolicitarRecuperacion } from './paginas/contrasena/PaginaSolicitarRecuperacion';
 import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestablecerContrasena';
+import { PaginaImportacion } from './paginas/importacion/PaginaImportacion';
 import { api, hayAlguienDentro, type EstadoCuenta } from './servicios/api';
 
 /**
@@ -154,6 +155,7 @@ function Sistema() {
             a resolver eso primero. */}
         <Route path="/rancho" element={adentro(<PaginaRancho />)} />
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
+        <Route path="/importacion" element={adentro(<PaginaImportacion />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}
