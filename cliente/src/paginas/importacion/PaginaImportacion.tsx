@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { api } from '../../servicios/api';
 import { DisenoApp } from '../../componentes/DisenoApp';
-import { useLocation } from 'react-router-dom';
-
 export function PaginaImportacion() {
-  const ubicacion = useLocation();
   const usuarioRaw = localStorage.getItem('ganado_usuario');
   const usuario = usuarioRaw ? JSON.parse(usuarioRaw) : { nombre: 'Usuario', rol: 'propietario' };
 
