@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Sistema de Gestión de Ganado — Sistema de diseño
+   Los valores de este archivo son los mismos tokens cargados en Figma.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+
+:root {
+  /* Verde Corral — marca y acciones principales */
+  --corral-50:#F0F7F4; --corral-100:#DCEDE7; --corral-200:#B0D6C9; --corral-300:#74B7A3;
+  --corral-400:#3D9179; --corral-500:#24705C; --corral-600:#1D5B4B; --corral-700:#17493C;
+  --corral-800:#123A30; --corral-900:#0D2B24;
+
+  /* Dorado Caravana — SOLO planes y suscripción */
+  --caravana-100:#FDF3E2; --caravana-200:#F8E0B4; --caravana-300:#F2C87C;
+  --caravana-400:#E0AB4A; --caravana-500:#C9922B; --caravana-600:#A3741C; --caravana-700:#7A5410;
+
+  /* Neutros Arena */
+  --arena-0:#FFFFFF; --arena-50:#FAF8F5; --arena-100:#F4F1EB; --arena-200:#E7E2D9;
+  --arena-300:#D4CEC3; --arena-400:#B3AC9F; --arena-500:#8C8478; --arena-600:#6B6459;
+  --arena-700:#4A443C; --arena-800:#2E2A25; --arena-900:#1C1A17;
+
+  /* Estados */
+  --exito-bg:#E7F4EB; --exito-borde:#A8D5B5; --exito-base:#2F8F52; --exito-texto:#1C5C33;
+  --adv-bg:#FDECE0; --adv-borde:#F3C4A3; --adv-base:#C2410C; --adv-texto:#8A2E08;
+  --error-bg:#FBEAEA; --error-borde:#EFB8B8; --error-base:#B02A2A; --error-texto:#7A1C1C;
+  --info-bg:#E8F0F8; --info-borde:#B4CDE6; --info-base:#2563A8; --info-texto:#17406E;
+
+  /* Conexión (solo móvil) */
+  --con-sin:#6B6459; --con-sincronizando:#2563A8; --con-sincronizado:#2F8F52; --con-conflicto:#C2410C;
+
+  /* Radios */
+  --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:12px; --r-xl:16px; --r-full:999px;
+
+  /* Sombras */
+  --s-sm:0 1px 2px rgba(28,26,23,.06);
+  --s-md:0 2px 8px rgba(28,26,23,.08);
+  --s-lg:0 8px 24px rgba(28,26,23,.10);
+  --s-modal:0 16px 48px rgba(28,26,23,.18);
+
+  --f-titulo:'Outfit',sans-serif;
+  --f-cuerpo:'Inter',sans-serif;
+  --f-dato:'IBM Plex Mono',monospace;
+}
+
+*,*::before,*::after{box-sizing:border-box;}
+body{margin:0;font-family:var(--f-cuerpo);color:var(--arena-800);background:var(--arena-100);
+  -webkit-font-smoothing:antialiased;}
+
+/* ---------- Tipografía ---------- */
+.display{font-family:var(--f-titulo);font-size:40px;line-height:48px;font-weight:600;letter-spacing:-.5px;margin:0;}
+.h1{font-family:var(--f-titulo);font-size:32px;line-height:40px;font-weight:600;letter-spacing:-.4px;margin:0;}
+.h2{font-family:var(--f-titulo);font-size:24px;line-height:32px;font-weight:600;letter-spacing:-.2px;margin:0;}
+.h3{font-family:var(--f-titulo);font-size:20px;line-height:28px;font-weight:600;margin:0;}
+.cuerpo-g{font-size:16px;line-height:24px;margin:0;}
+.cuerpo{font-size:14px;line-height:20px;margin:0;}
+.cuerpo-m{font-size:14px;line-height:20px;font-weight:500;margin:0;}
+.etiqueta{font-size:13px;line-height:18px;font-weight:500;letter-spacing:.1px;margin:0;}
+.pie{font-size:12px;line-height:16px;letter-spacing:.2px;margin:0;}
+.dato{font-family:var(--f-dato);font-size:14px;line-height:20px;font-weight:500;}
+
+.c-900{color:var(--arena-900);} .c-800{color:var(--arena-800);} .c-700{color:var(--arena-700);}
+.c-600{color:var(--arena-600);} .c-500{color:var(--arena-500);} .c-400{color:var(--arena-400);}
+.c-blanco{color:var(--arena-0);} .c-corral{color:var(--corral-600);}
+.c-corral-100{color:var(--corral-100);} .c-corral-200{color:var(--corral-200);}
+.c-corral-300{color:var(--corral-300);}
+
+/* ---------- Marcos de pantalla ---------- */
+.pantalla-web{width:1440px;background:var(--arena-100);margin:0 auto;overflow:hidden;}
+.pantalla-movil{width:390px;min-height:844px;background:var(--arena-100);margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* ---------- Botones ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;
+  padding:0 20px;border-radius:var(--r-md);border:1px solid transparent;cursor:pointer;
+  font-family:var(--f-cuerpo);font-size:14px;font-weight:500;line-height:20px;
+  text-decoration:none;white-space:nowrap;}
+.btn-primario{background:var(--corral-600);color:var(--arena-0);}
+.btn-primario:hover{background:var(--corral-700);}
+.btn-secundario{background:var(--arena-0);color:var(--arena-800);border-color:var(--arena-300);}
+.btn-secundario:hover{background:var(--arena-50);}
+.btn-fantasma{background:transparent;color:var(--corral-600);}
+.btn-fantasma:hover{background:var(--corral-50);}
+.btn-destructivo{background:var(--error-base);color:var(--arena-0);}
+.btn-plan{background:var(--caravana-500);color:var(--arena-900);}
+.btn-plan:hover{background:var(--caravana-600);}
+.btn:focus-visible{outline:2px solid var(--corral-400);outline-offset:2px;}
+.btn[disabled],.btn.desactivado{opacity:.4;pointer-events:none;}
+.btn-bloque{width:100%;}
+.btn-movil{height:52px;font-size:16px;border-radius:var(--r-md);}
+.btn-campo{height:56px;font-size:16px;font-weight:500;}
+
+/* ---------- Campos ---------- */
+.campo{display:flex;flex-direction:column;gap:6px;}
+.campo > label{font-size:13px;line-height:18px;font-weight:500;color:var(--arena-700);}
+.campo input,.campo select{height:40px;padding:0 12px;border:1px solid var(--arena-300);
+  border-radius:var(--r-sm);background:var(--arena-0);font-family:var(--f-cuerpo);
+  font-size:14px;color:var(--arena-800);width:100%;}
+.campo input::placeholder{color:var(--arena-500);}
+.campo input:focus,.campo select:focus{outline:none;border:2px solid var(--corral-600);padding:0 11px;}
+.campo.error input{border-color:var(--error-base);}
+.campo .msg-error{font-size:13px;line-height:18px;color:var(--error-texto);}
+.campo .ayuda{font-size:13px;line-height:18px;color:var(--arena-600);}
+.campo-movil input,.campo-movil select{height:52px;font-size:16px;}
+.campo-movil > label{font-size:14px;line-height:20px;}
+
+/* ---------- Tarjetas y bloques ---------- */
+.tarjeta{background:var(--arena-0);border-radius:var(--r-lg);box-shadow:var(--s-sm);padding:20px;}
+.tarjeta-borde{background:var(--arena-0);border:1px solid var(--arena-200);border-radius:var(--r-lg);padding:24px;}
+
+/* ---------- Insignias ---------- */
+.insignia{display:inline-flex;align-items:center;height:24px;padding:0 10px;
+  border-radius:var(--r-full);font-size:13px;font-weight:500;line-height:18px;}
+.ins-activo{background:var(--exito-bg);color:var(--exito-texto);}
+.ins-vendido{background:var(--info-bg);color:var(--info-texto);}
+.ins-muerto{background:var(--arena-200);color:var(--arena-700);}
+.ins-archivado{background:var(--adv-bg);color:var(--adv-texto);}
+.ins-plan{background:var(--caravana-500);color:var(--arena-900);}
+
+/* ---------- Avisos ---------- */
+.aviso{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r-md);
+  border:1px solid transparent;font-size:14px;line-height:20px;}
+.aviso-info{background:var(--info-bg);border-color:var(--info-borde);color:var(--info-texto);}
+.aviso-exito{background:var(--exito-bg);border-color:var(--exito-borde);color:var(--exito-texto);}
+.aviso-adv{background:var(--adv-bg);border-color:var(--adv-borde);color:var(--adv-texto);}
+.aviso-error{background:var(--error-bg);border-color:var(--error-borde);color:var(--error-texto);}
+.aviso-plan{background:var(--caravana-100);border-color:var(--caravana-300);color:var(--caravana-700);}
+
+/* ---------- Barra lateral ---------- */
+.lateral{width:256px;background:var(--corral-800);padding:20px 12px;
+  display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+.lateral .marca{display:flex;align-items:center;gap:10px;padding:4px 8px 20px;}
+.lateral .item{display:flex;align-items:center;gap:12px;padding:10px 12px;
+  border-radius:var(--r-md);color:var(--corral-100);font-size:14px;font-weight:500;
+  text-decoration:none;}
+.lateral .item.activo{background:var(--corral-600);color:var(--arena-0);}
+.lateral .espaciador{flex:1;}
+.lateral .usuario{display:flex;align-items:center;gap:10px;padding:12px 12px 4px;}
+.lateral .avatar{width:32px;height:32px;border-radius:var(--r-full);background:var(--corral-500);flex-shrink:0;}
+
+/* ---------- Encabezado interno ---------- */
+.barra-sup{height:64px;background:var(--arena-0);border-bottom:1px solid var(--arena-200);
+  display:flex;align-items:center;gap:16px;padding:0 32px;flex-shrink:0;}
+
+/* ---------- Navegación inferior móvil ---------- */
+.nav-inf{height:64px;background:var(--arena-0);border-top:1px solid var(--arena-200);
+  display:flex;margin-top:auto;flex-shrink:0;}
+.nav-inf a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;text-decoration:none;color:var(--arena-500);font-size:12px;line-height:16px;}
+.nav-inf a.activo{color:var(--corral-600);}
+
+/* ---------- Indicador de conexión ---------- */
+.conexion{display:inline-flex;align-items:center;gap:8px;height:28px;padding:0 14px;
+  border-radius:var(--r-full);color:var(--arena-0);font-size:13px;line-height:18px;}
+.conexion .punto{width:8px;height:8px;border-radius:var(--r-full);background:var(--arena-0);}
+.con-sin{background:var(--con-sin);}
+.con-sincronizando{background:var(--con-sincronizando);}
+.con-sincronizado{background:var(--con-sincronizado);}
+.con-conflicto{background:var(--con-conflicto);}
+
+/* ---------- Utilidades ---------- */
+.col{display:flex;flex-direction:column;}
+.fila{display:flex;flex-direction:row;}
+.centro{align-items:center;}
+.entre{justify-content:space-between;}
+.medio{justify-content:center;}
+.g4{gap:4px;}.g6{gap:6px;}.g8{gap:8px;}.g10{gap:10px;}.g12{gap:12px;}
+.g14{gap:14px;}.g16{gap:16px;}
+.g20{gap:20px;}.g24{gap:24px;}.g32{gap:32px;}.g40{gap:40px;}.g48{gap:48px;}
+.flex1{flex:1;}
+.ico{flex-shrink:0;stroke-width:1.5;}
+
+/* ---------- Estado vacío ---------- */
+.vacio{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;
+  padding:48px 32px;background:var(--arena-0);border-radius:var(--r-lg);}
+.vacio .ico-grande{width:48px;height:48px;color:var(--arena-400);}
+
+/* ---------- Rótulo de pantalla (solo para el archivo de mockups) ---------- */
+.rotulo{font-family:var(--f-cuerpo);font-size:13px;font-weight:600;color:var(--arena-600);
+  padding:12px 0 8px;letter-spacing:.4px;text-transform:uppercase;}

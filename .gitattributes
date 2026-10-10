@@ -1,0 +1,20 @@
+# Normaliza los finales de linea. Sin esto, con cuatro personas en Windows,
+# git marca archivos enteros como modificados sin que nadie los haya tocado
+# y cada integracion trae conflictos falsos.
+* text=auto eol=lf
+
+# Archivos que siempre son binarios: git no los toca.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
+*.docx binary
+*.xlsx binary
+
+# Los scripts de Windows si llevan finales de linea de Windows.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
