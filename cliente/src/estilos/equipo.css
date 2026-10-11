@@ -1,0 +1,539 @@
+/* ============================================================================
+ * SPRINT 2 · Puesta en marcha
+ * ----------------------------------------------------------------------------
+ *   HU-16  la guia de configuracion, en el panel del propietario
+ *   HU-17  la pantalla de Equipo y su formulario de alta
+ *          el filtro por segmentos y las transiciones de vista
+ *          Mi perfil
+ *
+ * Solo tokens. Lo que ya existia (tarjeta, insignia, boton, avatar) no se
+ * repite: aca esta unicamente lo nuevo.
+ * ==========================================================================*/
+
+/* ---------------------------------------------------------------------------
+ * Filtro por segmentos. Generico: lo usa Equipo y lo puede usar cualquier
+ * listado (animales, corrales) cuando llegue.
+ * -------------------------------------------------------------------------*/
+
+.segmentos {
+  position: relative;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--e-4);
+  padding: var(--e-4);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-full);
+  background: var(--arena-50);
+}
+
+/* La pieza blanca que marca la opcion elegida. Se desliza de una a otra. */
+.segmentos__marca {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: var(--r-full);
+  background: var(--arena-0);
+  box-shadow: var(--s-sm);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform var(--t-med) var(--curva),
+    width var(--t-med) var(--curva),
+    opacity var(--t-rapido) var(--curva);
+}
+
+.segmentos button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-6);
+  height: var(--e-32);
+  padding: 0 var(--e-14);
+  border: 0;
+  border-radius: var(--r-full);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--t-etiqueta);
+  font-weight: var(--peso-medio);
+  color: var(--arena-600);
+  transition: color var(--t-med) var(--curva);
+}
+
+.segmentos button:hover { color: var(--arena-900); }
+.segmentos button.activo { color: var(--corral-700); }
+
+.segmentos__cantidad {
+  min-width: var(--e-20);
+  padding: 0 var(--e-6);
+  border-radius: var(--r-full);
+  background: var(--arena-200);
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  text-align: center;
+  color: var(--arena-600);
+  font-variant-numeric: tabular-nums;
+  transition: background var(--t-med) var(--curva), color var(--t-med) var(--curva);
+}
+
+.segmentos button.activo .segmentos__cantidad { background: var(--corral-100); color: var(--corral-700); }
+
+/* ---------------------------------------------------------------------------
+ * HU-17 · Lista del equipo
+ * Una fila por integrante: quien, rol, estado y acciones. En pantalla chica
+ * cada fila se vuelve una tarjetita apilada.
+ * -------------------------------------------------------------------------*/
+
+/* Las columnas las define la lista y las filas las heredan (subgrid): asi
+   la fila del propietario, que no tiene botones, queda alineada con el resto.
+   Las dos columnas de los bordes hacen de margen: con subgrid, el relleno de
+   la fila se le come espacio a la primera y a la ultima columna. Con el
+   espacio entre columnas suman los 24 del resto de las tarjetas. */
+.equipo__lista {
+  display: grid;
+  grid-template-columns:
+    var(--e-8) var(--e-32) minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1fr) auto var(--e-8);
+  column-gap: var(--e-16);
+  margin: calc(var(--e-24) * -1);
+  padding: 0;
+  list-style: none;
+}
+
+.equipo__fila {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding: var(--e-14) 0;
+  transition: background var(--t-rapido) var(--curva);
+}
+
+.equipo__fila > :first-child { grid-column: 2; }
+
+.equipo__fila + .equipo__fila { border-top: var(--borde) solid var(--arena-100); }
+
+/* La primera vez que llega la lista, las filas entran una tras otra. */
+.equipo__lista.entrando .equipo__fila {
+  animation: entra-subiendo var(--t-med) var(--curva-salida) backwards;
+  animation-delay: calc(var(--orden, 0) * 45ms);
+}
+
+.equipo__sin-resultados { margin: 0; padding: var(--e-16) 0; animation: entra var(--t-med) var(--curva-salida); }
+.equipo__fila:hover { background: var(--arena-50); }
+
+.equipo__fila.suspendido .equipo__quien,
+.equipo__fila.suspendido .avatar-inicial { opacity: .55; }
+
+/* El recien dado de alta se marca un momento, para encontrarlo en la lista. */
+.equipo__fila.nuevo { animation: recien-llegado 2.4s var(--curva-salida); }
+
+@keyframes recien-llegado {
+  from { background: var(--corral-50); }
+  to   { background: transparent; }
+}
+
+.equipo__quien,
+.equipo__rol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+.equipo__quien strong { color: var(--arena-900); font-weight: var(--peso-medio); }
+.equipo__quien .pie { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.equipo__acciones {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--e-8);
+}
+
+.equipo__confirmar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--e-8);
+  animation: entra var(--t-med) var(--curva-salida);
+}
+
+.equipo__confirmar .pie { color: var(--adv-texto); }
+
+.equipo__aviso-detalle { display: block; margin-top: var(--e-4); opacity: .85; }
+
+/* ---------------------------------------------------------------------------
+ * HU-17 · Formulario de alta
+ * -------------------------------------------------------------------------*/
+
+.equipo__formulario { max-width: var(--ancho-contenido); }
+
+.par-formulario {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-16);
+}
+
+.equipo__roles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-12);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.equipo__roles legend { margin-bottom: var(--e-8); padding: 0; }
+
+.equipo__rol-opcion {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-12);
+  padding: var(--e-16);
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-lg);
+  background: var(--arena-0);
+  cursor: pointer;
+  transition: border-color var(--t-rapido) var(--curva), box-shadow var(--t-rapido) var(--curva), background var(--t-rapido) var(--curva);
+}
+
+.equipo__rol-opcion:hover { border-color: var(--corral-300); }
+
+.equipo__rol-opcion.elegido {
+  border-color: var(--corral-500);
+  background: var(--corral-50);
+  box-shadow: 0 0 0 var(--borde) var(--corral-500);
+}
+
+/* El radio sigue existiendo para el teclado y los lectores; se ve la tarjeta. */
+.equipo__rol-opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.equipo__rol-opcion:has(input:focus-visible) {
+  outline: 2px solid var(--corral-400);
+  outline-offset: 2px;
+}
+
+.equipo__rol-opcion > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+}
+
+.equipo__rol-opcion strong { color: var(--arena-900); }
+
+.equipo__rol-icono {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-40);
+  height: var(--e-40);
+  border-radius: var(--r-md);
+  background: var(--arena-100);
+  color: var(--arena-600);
+  transition: background var(--t-rapido) var(--curva), color var(--t-rapido) var(--curva);
+}
+
+.equipo__rol-opcion.elegido .equipo__rol-icono { background: var(--corral-600); color: var(--arena-0); }
+
+.equipo__nota {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-8);
+  margin: 0;
+  padding: var(--e-12) var(--e-14);
+  border-radius: var(--r-md);
+  background: var(--arena-50);
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--arena-600);
+}
+
+.equipo__nota .ico { margin-top: 1px; color: var(--corral-600); }
+
+.equipo__botones { justify-content: flex-end; }
+
+/* ---------------------------------------------------------------------------
+ * HU-16 · Guia de configuracion
+ * -------------------------------------------------------------------------*/
+
+.guia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-16);
+  padding: var(--e-24);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-lg);
+  background: var(--arena-0);
+}
+
+.guia__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e-12);
+}
+
+.guia__cabecera h2 { margin: 0 0 var(--e-4); }
+.guia__cabecera p { margin: 0; }
+
+.guia__barra {
+  height: var(--e-8);
+  overflow: hidden;
+  border-radius: var(--r-full);
+  background: var(--arena-100);
+}
+
+.guia__barra span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--corral-400), var(--corral-600));
+  transition: width var(--t-lento) var(--curva);
+}
+
+.guia__error { margin: 0; color: var(--error-texto); }
+
+.guia__pasos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guia__paso {
+  display: grid;
+  grid-template-columns: var(--e-24) var(--e-40) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-12);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-md);
+  transition: border-color var(--t-med) var(--curva), background var(--t-med) var(--curva);
+}
+
+/* El paso que toca ahora: "desde donde quedaste". */
+.guia__paso.siguiente {
+  border-color: var(--corral-300);
+  background: var(--corral-50);
+}
+
+.guia__paso.no-disponible { background: var(--arena-50); }
+.guia__paso.no-disponible .guia__texto,
+.guia__paso.no-disponible .guia__icono { opacity: .6; }
+
+.guia__marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-24);
+  height: var(--e-24);
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-full);
+  font-size: var(--t-pie);
+  font-weight: var(--peso-fuerte);
+  color: var(--arena-600);
+}
+
+.guia__paso--en_curso .guia__marca { border-color: var(--info-base); color: var(--info-texto); }
+
+.guia__paso--completo .guia__marca {
+  border-color: var(--exito-base);
+  background: var(--exito-base);
+  color: var(--arena-0);
+  animation: entra-marcando var(--t-med) var(--curva-salida);
+}
+
+.guia__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-40);
+  height: var(--e-40);
+  border-radius: var(--r-md);
+  background: var(--arena-100);
+  color: var(--arena-600);
+}
+
+.guia__paso.siguiente .guia__icono { background: var(--corral-600); color: var(--arena-0); }
+.guia__paso--completo .guia__icono { background: var(--exito-bg); color: var(--exito-texto); }
+
+.guia__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+.guia__texto strong { font-size: var(--t-cuerpo); color: var(--arena-900); }
+.guia__paso--completo .guia__texto strong { color: var(--arena-600); }
+
+.guia__lado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--e-8);
+}
+
+.guia__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-6); }
+.guia__acciones .btn { height: var(--e-32); padding: 0 var(--e-12); font-size: var(--t-etiqueta); }
+
+/* En pausa: una franja, no una tarjeta entera. */
+.guia--pausada {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--e-16);
+}
+
+.guia__emblema {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-40);
+  height: var(--e-40);
+  border-radius: var(--r-full);
+  background: var(--corral-50);
+  color: var(--corral-700);
+}
+
+.guia__resumen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-6);
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Transiciones de vista (servicios/transicion.ts)
+ * Cada bloque que se mueve cuando cambia la pantalla tiene nombre propio: asi
+ * el navegador lo desliza en lugar de hacerlo desaparecer y aparecer.
+ * -------------------------------------------------------------------------*/
+
+.vt-formulario { view-transition-name: formulario-alta; }
+.vt-cifras { view-transition-name: cifras-equipo; }
+.vt-lista { view-transition-name: lista-equipo; }
+
+::view-transition-group(*) {
+  animation-duration: var(--t-lento);
+  animation-timing-function: var(--curva);
+}
+
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: var(--t-med);
+}
+
+/* La tarjeta de la lista cambia de alto al filtrar: que se estire sin
+   deformar su contenido, que lo manejan las filas. */
+::view-transition-old(lista-equipo),
+::view-transition-new(lista-equipo) {
+  height: 100%;
+  object-fit: none;
+  object-position: top;
+}
+
+/* Lo que no se mueve (la barra, el menu) no participa. */
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; }
+
+/* ---------------------------------------------------------------------------
+ * Mi perfil
+ * -------------------------------------------------------------------------*/
+
+.perfil__cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--e-20);
+  padding: var(--e-24);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(60% 140% at 100% 0%, var(--corral-50) 0%, transparent 70%),
+    var(--arena-0);
+}
+
+.perfil__avatar {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--e-64);
+  height: var(--e-64);
+  border-radius: var(--r-full);
+  background: var(--corral-600);
+  font-family: var(--f-titulo);
+  font-size: var(--t-h2);
+  font-weight: var(--peso-fuerte);
+  color: var(--arena-0);
+  box-shadow: var(--s-md);
+}
+
+.perfil__quien { display: flex; flex-direction: column; gap: var(--e-6); min-width: 0; }
+.perfil__quien h2 { margin: 0; }
+
+.perfil__par { align-items: start; gap: var(--e-24); }
+.perfil__datos { margin: 0; }
+.perfil__botones { justify-content: flex-end; }
+
+/* ---------------------------------------------------------------------------
+ * Pantallas chicas
+ * -------------------------------------------------------------------------*/
+
+@media (max-width: 860px) {
+  .equipo__lista { display: flex; flex-direction: column; }
+
+  .equipo__fila {
+    grid-template-columns: var(--e-32) minmax(0, 1fr) auto;
+    column-gap: var(--e-12);
+    padding: var(--e-14) var(--e-24);
+    grid-template-areas:
+      'avatar quien  estado'
+      '.      rol    rol'
+      '.      acciones acciones';
+    row-gap: var(--e-8);
+  }
+
+  .equipo__fila > .avatar-inicial { grid-area: avatar; }
+  .equipo__quien { grid-area: quien; }
+  .equipo__estado { grid-area: estado; }
+  .equipo__rol { grid-area: rol; flex-direction: row; align-items: center; }
+  .equipo__acciones { grid-area: acciones; justify-content: flex-start; flex-wrap: wrap; }
+  .equipo__confirmar { justify-content: flex-start; }
+}
+
+@media (max-width: 640px) {
+  .par-formulario,
+  .equipo__roles { grid-template-columns: 1fr; }
+
+  .equipo__texto-accion { display: none; }
+
+  .guia__paso {
+    grid-template-columns: var(--e-24) minmax(0, 1fr);
+    grid-template-areas:
+      'marca texto'
+      '.     lado';
+  }
+
+  .guia__marca { grid-area: marca; }
+  .guia__icono { display: none; }
+  .guia__texto { grid-area: texto; }
+  .guia__lado { grid-area: lado; flex-direction: row; flex-wrap: wrap; align-items: center; }
+
+  .guia--pausada { flex-wrap: wrap; }
+
+  .perfil__cabecera { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 860px) {
+  .perfil__par { grid-template-columns: 1fr; }
+}
