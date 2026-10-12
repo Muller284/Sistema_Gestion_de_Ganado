@@ -23,6 +23,7 @@ import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestable
 import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
 import { api, hayAlguienDentro, soporteActual, type EstadoCuenta } from './servicios/api';
 import { cambiarIdioma } from './servicios/idioma';
+import { PaginaAnimales } from './paginas/animales/PaginaAnimales';
 
 /**
  * El enrutador y el portero del cliente.
@@ -58,6 +59,7 @@ import { cambiarIdioma } from './servicios/idioma';
  *   /rancho                  el panel del rancho (HU-15), detras del portero
  *   /equipo                  el equipo del rancho (HU-17), detras del portero
  *   /perfil                  mis datos (nombre, idioma y contraseña), detras del portero
+ *   /animales                el listado y registro de animales (HU-27 y HU-29)
  *   /admin                   el Admin de plataforma: ranchos y registro de accesos (HU-24)
  *   /ingreso                 entrar con correo y contraseña (HU-08)
  *   /registro                crear cuenta de propietario (HU-06)
@@ -175,6 +177,7 @@ function Sistema() {
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
         <Route path="/equipo/tipos" element={adentro(<PaginaTipos />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
+        <Route path="/animales" element={adentro(<PaginaAnimales />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}
         <Route path="*" element={<Navigate to="/" replace />} />

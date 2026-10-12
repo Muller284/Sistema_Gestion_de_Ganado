@@ -510,6 +510,13 @@ export const api = {
       { method: 'PATCH', body: JSON.stringify({ tipo_colaborador_id: tipoId }) },
     ),
 
+  // Registro de animales en la base de datos (HU-27)
+  registrarAnimal: (datos: Record<string, unknown>) =>
+    pedir<any>('/animales', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
   // HU-16 · Guia de configuracion
   guia: () => pedir<EstadoGuia>('/guia'),
   visitarPaso: (paso: ClavePaso) =>
