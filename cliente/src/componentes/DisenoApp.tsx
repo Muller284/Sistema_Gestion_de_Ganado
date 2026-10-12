@@ -9,12 +9,6 @@ import { MenuUsuario } from './MenuUsuario';
  * El marco de las pantallas internas, tal como está en los mockups: menú
  * lateral verde oscuro, barra superior blanca y el contenido sobre el fondo
  * arena.
- *
- * LOS MÓDULOS QUE TODAVÍA NO EXISTEN SE VEN, PERO NO SE PUEDEN ABRIR.
- * Animales, corrales, sanidad, pesajes y el asistente son de las fases 2 y 3.
- * Aparecen apagados, con la fase a la que pertenecen. Es lo mismo que pide
- * HU-16 para la guía de configuración: dejar visible lo que viene, en lugar de
- * un menú que crece de golpe y no se entiende.
  */
 
 interface Modulo {
@@ -29,7 +23,7 @@ interface Modulo {
 
 const MODULOS: Modulo[] = [
   { clave: 'inicio', nombre: 'Mi rancho', icono: 'casa', ruta: '/rancho' },
-  { clave: 'animales', nombre: 'Animales', icono: 'animal', fase: 2 },
+  { clave: 'animales', nombre: 'Animales', icono: 'animal', ruta: '/animales' }, // <-- HABILITADO
   { clave: 'corrales', nombre: 'Corrales', icono: 'corral', fase: 2 },
   { clave: 'sanidad', nombre: 'Sanidad', icono: 'sanidad', fase: 3 },
   { clave: 'pesajes', nombre: 'Pesajes', icono: 'balanza', fase: 3 },

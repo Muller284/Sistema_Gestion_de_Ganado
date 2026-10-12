@@ -8,6 +8,7 @@ import { ModuloPais } from './modulos/paises/modulo-pais';
 import { ModuloUsuario } from './modulos/usuarios/modulo-usuario';
 import { ModuloEquipo } from './modulos/equipo/modulo-equipo';
 import { ModuloGuia } from './modulos/guia/modulo-guia';
+import { ModuloAnimales } from './modulos/animales/modulo-animales'; // Módulo de animales (HU-27)
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ModuloGuia } from './modulos/guia/modulo-guia';
     ModuloUsuario,
     ModuloEquipo, // HU-17
     ModuloGuia, // HU-16
+    ModuloAnimales, // HU-27 y HU-29
   ],
 })
 export class AppModule {}

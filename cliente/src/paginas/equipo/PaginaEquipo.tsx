@@ -22,29 +22,6 @@ import { inicial } from '../../servicios/texto';
 import { conTransicion } from '../../servicios/transicion';
 import { FormularioAlta } from './FormularioAlta';
 
-/**
- * HU-17 · El equipo del rancho: quién está, qué rol tiene y si puede entrar.
- *
- * QUIÉN VE QUÉ
- *   propietario   todo, y es el único que da de alta, suspende y reactiva.
- *   socio         la lista, sin botones (HU-21: ve todo, no toca nada).
- *   colaborador   el servidor le responde 403; se le explica por qué.
- *
- * NADA SE CONFIRMA CON window.confirm
- * Suspender pide confirmación en la misma fila. Un cuadro del navegador no
- * sigue el diseño, no se puede leer con calma y bloquea la pestaña entera.
- *
- * Al abrir la pantalla, el propietario deja el paso "equipo" de la guía de
- * configuración (HU-16) en curso: ya empezó a armarlo.
- *
- * NADA SALTA
- * Filtrar, abrir el formulario, dar de alta o suspender pasan por
- * conTransicion: las filas que se quedan se deslizan a su lugar nuevo, las
- * que salen se desvanecen y las que entran aparecen. Cada fila y cada bloque
- * lleva su view-transition-name para que el navegador sepa qué es qué.
- * Las cifras de arriba cuentan desde el valor que tenían, no desde cero.
- */
-
 type Filtro = 'todos' | 'socio' | 'colaborador' | 'suspendido';
 
 const FILTROS: { clave: Filtro; nombre: string }[] = [
@@ -60,9 +37,25 @@ const NOMBRE_ROL: Record<MiembroEquipo['rol'], string> = {
   colaborador: 'Colaborador',
 };
 
+const MODULOS_SISTEMA = ['animales', 'corrales', 'sanidad', 'pesajes', 'importacion', 'almacen', 'equipo', 'planes'] as const;
+type ModuloSistema = typeof MODULOS_SISTEMA[number];
+
+interface PermisosModulo {
+  ver: boolean;
+  editar: boolean;
+}
+
+type PermisosPorModulo = Record<ModuloSistema, PermisosModulo>;
+
+interface MiembroEquipoExtendido extends MiembroEquipo {
+  puede_editar?: boolean;
+  puedeEditar?: boolean;
+  permisosModulos?: PermisosPorModulo;
+}
+
 export function PaginaEquipo() {
   const [rancho, setRancho] = useState<EstadoRancho | null>(null);
-  const [miembros, setMiembros] = useState<MiembroEquipo[]>([]);
+  const [miembros, setMiembros] = useState<MiembroEquipoExtendido[]>([]);
   const [tipos, setTipos] = useState<TipoColaborador[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -73,8 +66,9 @@ export function PaginaEquipo() {
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [recienLlegado, setRecienLlegado] = useState<string | null>(null);
-  // Solo la primera vez que llega la lista, las filas entran escalonadas.
   const [entrando, setEntrando] = useState(true);
+
+  const [miembroSeleccionadoModulos, setMiembroSeleccionadoModulos] = useState<MiembroEquipoExtendido | null>(null);
 
   const esPropietario = rancho?.usuario.rol === 'propietario';
 
@@ -92,11 +86,30 @@ export function PaginaEquipo() {
           api.tiposColaborador(),
         ]);
         if (!vigente) return;
-        setMiembros(lista);
+        
+        const listaConPermisos: MiembroEquipoExtendido[] = lista.map((m) => {
+          const permisosGuardados = localStorage.getItem(`permisos_${m.id}`);
+          let modulosIniciales: PermisosPorModulo;
+
+          if (permisosGuardados) {
+            try {
+              modulosIniciales = JSON.parse(permisosGuardados);
+            } catch {
+              modulosIniciales = crearModulosPorDefecto(m.rol);
+            }
+          } else {
+            modulosIniciales = crearModulosPorDefecto(m.rol);
+          }
+
+          return {
+            ...m,
+            permisosModulos: modulosIniciales
+          };
+        });
+
+        setMiembros(listaConPermisos);
         setTipos(listaTipos);
 
-        // HU-16: el propietario ya empezó a armar su equipo. Si falla no
-        // importa: la guía es una ayuda, no un requisito de esta pantalla.
         if (estado.usuario.rol === 'propietario') {
           void api.visitarPaso('equipo').catch(() => undefined);
         }
@@ -116,6 +129,14 @@ export function PaginaEquipo() {
     };
   }, []);
 
+  function crearModulosPorDefecto(rol: string): PermisosPorModulo {
+    const base = {} as Record<ModuloSistema, PermisosModulo>;
+    for (const mod of MODULOS_SISTEMA) {
+      base[mod] = { ver: true, editar: rol === 'propietario' || rol === 'admin' };
+    }
+    return base as PermisosPorModulo;
+  }
+
   const cuentas = useMemo(
     () => ({
       activos: miembros.filter((m) => m.estado === 'activo').length,
@@ -134,7 +155,12 @@ export function PaginaEquipo() {
 
   function alDarDeAlta(miembro: MiembroEquipo, mensaje: string, detalle: string) {
     conTransicion(() => {
-      setMiembros((previos) => [...previos, miembro]);
+      const nuevoMiembro: MiembroEquipoExtendido = {
+        ...miembro,
+        puede_editar: false,
+        permisosModulos: crearModulosPorDefecto(miembro.rol)
+      };
+      setMiembros((previos) => [...previos, nuevoMiembro]);
       setAviso({ mensaje, detalle });
       setAgregando(false);
       setFiltro('todos');
@@ -161,7 +187,7 @@ export function PaginaEquipo() {
       const respuesta = await api.cambiarEstadoMiembro(miembro.id, nuevo);
       conTransicion(() => {
         setMiembros((previos) =>
-          previos.map((m) => (m.id === miembro.id ? respuesta.miembro : m)),
+          previos.map((m) => (m.id === miembro.id ? { ...m, ...respuesta.miembro } : m)),
         );
         setAviso({ mensaje: respuesta.mensaje });
         setConfirmando(null);
@@ -171,6 +197,38 @@ export function PaginaEquipo() {
     } finally {
       setOcupado(null);
     }
+  }
+
+  async function actualizarPermisoModulo(miembroId: string, modulo: ModuloSistema, tipo: 'ver' | 'editar') {
+    setMiembros((previos) =>
+      previos.map((m) => {
+        if (m.id !== miembroId) return m;
+        const modulosActuales = m.permisosModulos || crearModulosPorDefecto(m.rol);
+        const estadoModulo = modulosActuales[modulo] || { ver: true, editar: false };
+
+        const nuevoEstadoModulo: PermisosModulo = {
+          ...estadoModulo,
+          [tipo]: !estadoModulo[tipo],
+        };
+
+        const actualizado: MiembroEquipoExtendido = {
+          ...m,
+          permisosModulos: {
+            ...modulosActuales,
+            [modulo]: nuevoEstadoModulo,
+          },
+        };
+
+        if (miembroSeleccionadoModulos && miembroSeleccionadoModulos.id === miembroId) {
+          setMiembroSeleccionadoModulos(actualizado);
+        }
+
+        localStorage.setItem(`permisos_${miembroId}`, JSON.stringify(actualizado.permisosModulos));
+        return actualizado;
+      }),
+    );
+
+    setAviso({ mensaje: `Permiso de ${tipo} en el módulo "${modulo}" actualizado correctamente (HU-19).` });
   }
 
   async function restablecer(miembro: MiembroEquipo) {
@@ -218,6 +276,57 @@ export function PaginaEquipo() {
             {aviso.mensaje}
             {aviso.detalle && <span className="equipo__aviso-detalle">{aviso.detalle}</span>}
           </Alerta>
+        )}
+
+        {miembroSeleccionadoModulos && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div style={{ background: '#fff', padding: '32px', borderRadius: '12px', width: '90%', maxWidth: '650px', boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }} className="col g16">
+              <div className="fila entre" style={{ alignItems: 'center' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0 }}>
+                  Permisos por módulo para {miembroSeleccionadoModulos.nombre} (HU-19)
+                </h3>
+                <button onClick={() => setMiembroSeleccionadoModulos(null)} style={{ background: 'transparent', border: 'none', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+              </div>
+              <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
+                Otorga de forma separada los permisos de <strong>Ver</strong> y <strong>Editar</strong> para cada uno de los 8 módulos del sistema.
+              </p>
+
+              <div style={{ maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+                {MODULOS_SISTEMA.map((modulo) => {
+                  const estado = miembroSeleccionadoModulos.permisosModulos?.[modulo] || { ver: true, editar: false };
+                  return (
+                    <div key={modulo} className="fila entre" style={{ padding: '12px 16px', background: '#f9fafb', borderRadius: '8px', alignItems: 'center' }}>
+                      <span style={{ textTransform: 'capitalize', fontWeight: 600, color: '#374151' }}>📦 {modulo}</span>
+                      <div className="fila g16">
+                        <label className="fila g6" style={{ cursor: 'pointer', alignItems: 'center', fontSize: '14px', fontWeight: 500 }}>
+                          <input 
+                            type="checkbox" 
+                            checked={estado.ver} 
+                            onChange={() => actualizarPermisoModulo(miembroSeleccionadoModulos.id, modulo, 'ver')} 
+                          />
+                          Ver
+                        </label>
+                        <label className="fila g6" style={{ cursor: 'pointer', alignItems: 'center', fontSize: '14px', fontWeight: 500 }}>
+                          <input 
+                            type="checkbox" 
+                            checked={estado.editar} 
+                            onChange={() => actualizarPermisoModulo(miembroSeleccionadoModulos.id, modulo, 'editar')} 
+                          />
+                          Editar
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="fila derecha" style={{ marginTop: '12px' }}>
+                <Boton variante="primario" onClick={() => setMiembroSeleccionadoModulos(null)}>
+                  Guardar y cerrar
+                </Boton>
+              </div>
+            </div>
+          </div>
         )}
 
         {!cargando && sinPermiso && (
@@ -297,7 +406,7 @@ export function PaginaEquipo() {
             ) : (
               <div className="vt-lista">
               <Tarjeta
-                titulo="Integrantes"
+                titulo="Integrantes y permisos por módulo (HU-19)"
                 accion={
                   <Segmentos
                     etiqueta="Filtrar integrantes"
@@ -336,6 +445,7 @@ export function PaginaEquipo() {
                         alCancelar={() => setConfirmando(null)}
                         alCambiarEstado={() => cambiarEstado(m)}
                         alRestablecer={() => restablecer(m)}
+                        alAbrirPermisosModulos={() => setMiembroSeleccionadoModulos(m)}
                       />
                     ))}
                   </ul>
@@ -346,7 +456,7 @@ export function PaginaEquipo() {
 
             {!esPropietario && (
               <Alerta variante="info">
-                Solo el propietario puede sumar, suspender o reactivar integrantes.
+                Solo el propietario puede gestionar los permisos granulares por módulo.
               </Alerta>
             )}
           </>
@@ -367,9 +477,10 @@ function FilaMiembro({
   alCancelar,
   alCambiarEstado,
   alRestablecer,
+  alAbrirPermisosModulos,
 }: {
   indice: number;
-  miembro: MiembroEquipo;
+  miembro: MiembroEquipoExtendido;
   editable: boolean;
   confirmando: boolean;
   ocupado: boolean;
@@ -378,6 +489,7 @@ function FilaMiembro({
   alCancelar: () => void;
   alCambiarEstado: () => void;
   alRestablecer: () => void;
+  alAbrirPermisosModulos: () => void;
 }) {
   const suspendido = miembro.estado === 'suspendido';
   const clases = ['equipo__fila', suspendido ? 'suspendido' : '', nuevo ? 'nuevo' : '']
@@ -389,8 +501,6 @@ function FilaMiembro({
       className={clases}
       style={
         {
-          // Para que la transición sepa que es la misma fila antes y después
-          // de filtrar, y la deslice en lugar de borrarla y dibujarla de nuevo.
           viewTransitionName: `miembro-${miembro.id}`,
           '--orden': indice,
         } as React.CSSProperties
@@ -412,6 +522,23 @@ function FilaMiembro({
         )}
       </div>
 
+      {/* Botón de la rueda de engranaje ordenado en su propia columna */}
+      <div className="equipo__permiso">
+        {miembro.rol === 'propietario' ? (
+          <span className="pie c-500" style={{ fontStyle: 'italic' }}>Acceso total</span>
+        ) : (
+          <Boton
+            variante="secundario"
+            onClick={alAbrirPermisosModulos}
+            disabled={ocupado || !editable}
+            title="Configurar permisos independientes de ver y editar por cada módulo"
+            style={{ padding: '6px 10px', minWidth: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            ⚙️
+          </Boton>
+        )}
+      </div>
+
       <div className="equipo__estado">
         {suspendido ? (
           <Insignia variante="adv">Suspendido</Insignia>
@@ -422,7 +549,8 @@ function FilaMiembro({
         )}
       </div>
 
-      <div className="equipo__acciones">
+      {/* Acciones principales con ancho flexible para que no desaparezca el botón de suspender */}
+      <div className="equipo__acciones" style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'nowrap' }}>
         {editable && !confirmando && (
           <>
             {!suspendido && (

@@ -19,6 +19,7 @@ import { PaginaVerificacion } from './paginas/verificacion/PaginaVerificacion';
 import { PaginaCambioContrasena } from './paginas/contrasena/PaginaCambioContrasena';
 import { PaginaSolicitarRecuperacion } from './paginas/contrasena/PaginaSolicitarRecuperacion';
 import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestablecerContrasena';
+import { PaginaAnimales } from './paginas/animales/PaginaAnimales'; // <-- Nueva importación
 import { api, hayAlguienDentro, type EstadoCuenta } from './servicios/api';
 
 /**
@@ -40,18 +41,19 @@ import { api, hayAlguienDentro, type EstadoCuenta } from './servicios/api';
  * Bloquear solo en el cliente no bloquea nada: cualquiera puede llamar al
  * servidor sin pasar por la pantalla.
  *
- *   /                        la landing. Es lo primero que se ve siempre,
- *                            haya sesion o no; con sesion, el boton de
- *                            arriba dice "Ir a mi rancho".
- *   /rancho                  el panel del rancho (HU-15), detras del portero
- *   /equipo                  el equipo del rancho (HU-17), detras del portero
- *   /perfil                  mis datos (nombre y contraseña), detras del portero
- *   /ingreso                 entrar con correo y contraseña (HU-08)
- *   /registro                crear cuenta de propietario (HU-06)
- *   /verificar               confirmar el correo (HU-07)
- *   /sistema-diseno          el catalogo del sistema de diseño (HU-05)
- *   /solicitar-recuperacion  pedir el enlace de recuperacion (HU-09)
- *   /recuperar-contrasena    poner la contraseña nueva (HU-09)
+ *   /                          la landing. Es lo primero que se ve siempre,
+ *                              haya sesion o no; con sesion, el boton de
+ *                              arriba dice "Ir a mi rancho".
+ *   /rancho                    el panel del rancho (HU-15), detras del portero
+ *   /equipo                    el equipo del rancho (HU-17), detras del portero
+ *   /perfil                    mis datos (nombre y contraseña), detras del portero
+ *   /animales                  el listado y registro de animales (HU-27 y HU-29)
+ *   /ingreso                   entrar con correo y contraseña (HU-08)
+ *   /registro                  crear cuenta de propietario (HU-06)
+ *   /verificar                 confirmar el correo (HU-07)
+ *   /sistema-diseno            el catalogo del sistema de diseño (HU-05)
+ *   /solicitar-recuperacion    pedir el enlace de recuperacion (HU-09)
+ *   /recuperar-contrasena      poner la contraseña nueva (HU-09)
  */
 
 function App() {
@@ -155,6 +157,9 @@ function Sistema() {
         <Route path="/rancho" element={adentro(<PaginaRancho />)} />
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
+        
+        {/* <-- RUTA DE ANIMALES --> */}
+        <Route path="/animales" element={adentro(<PaginaAnimales />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}
         <Route path="*" element={<Navigate to="/" replace />} />

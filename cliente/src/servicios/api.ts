@@ -380,6 +380,13 @@ export const api = {
       body: JSON.stringify({ estado }),
     }),
 
+  // Registro de animales en la base de datos (HU-27)
+  registrarAnimal: (datos: Record<string, unknown>) =>
+    pedir<any>('/animales', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
   // HU-16 · Guia de configuracion
   guia: () => pedir<EstadoGuia>('/guia'),
   visitarPaso: (paso: ClavePaso) =>
