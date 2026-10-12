@@ -7,6 +7,7 @@ import { verificarContrasena } from '../../comun/contrasenas';
 import { firmarTokenAcceso } from '../../comun/tokens';
 import { RepositorioUsuario } from './repositorio-usuario';
 import { RepositorioSesion } from './repositorio-sesion';
+import { t, tn } from '../../comun/idioma';
 
 /**
  * Servicio de Autenticación y Manejo de Sesión.
@@ -39,7 +40,7 @@ export class ServicioSesion {
       typeof cuerpo?.contrasena === 'string' ? cuerpo.contrasena : '';
 
     if (!correo || !contrasena) {
-      throw new BadRequestException('Debes indicar correo y contraseña.');
+      throw new BadRequestException(t('servidor.sesion.faltanCredenciales'));
     }
 
     // Verificar si la cuenta se encuentra bloqueada por intentos fallidos (HU-11)
@@ -49,20 +50,18 @@ export class ServicioSesion {
         1,
         Math.ceil((bloqueo.bloqueadoHasta.getTime() - Date.now()) / 60000),
       );
-      throw new UnauthorizedException(
-        `Cuenta temporalmente bloqueada por exceso de intentos fallidos. Intente nuevamente en ${minutosRestantes} minutos.`,
-      );
+      throw new UnauthorizedException(tn('servidor.sesion.bloqueada', minutosRestantes));
     }
 
     const usuario = await this.usuarios.buscarParaAutenticar(correo);
 
     if (!usuario) {
       // Criterio 2: El mensaje no revela si el error fue el correo o la contraseña
-      throw new UnauthorizedException('Correo o contraseña incorrectos.');
+      throw new UnauthorizedException(t('servidor.sesion.credencialesIncorrectas'));
     }
 
     if (usuario.estado !== 'activo') {
-      throw new UnauthorizedException('La cuenta se encuentra suspendida.');
+      throw new UnauthorizedException(t('servidor.sesion.suspendida'));
     }
 
     // Verificar contraseña contra el hash scrypt guardado (HU-08 Criterio 3)
@@ -74,12 +73,10 @@ export class ServicioSesion {
     if (!contrasenaValida) {
       const intento = await this.usuarios.registrarIntentoFallido(correo);
       if (intento.bloqueado) {
-        throw new UnauthorizedException(
-          'Cuenta temporalmente bloqueada por exceso de intentos fallidos. Intente nuevamente en 15 minutos.',
-        );
+        throw new UnauthorizedException(tn('servidor.sesion.bloqueada', 15));
       }
       // Criterio 2: Mensaje genérico seguro
-      throw new UnauthorizedException('Correo o contraseña incorrectos.');
+      throw new UnauthorizedException(t('servidor.sesion.credencialesIncorrectas'));
     }
 
     // Ingreso correcto: se reinicia el contador de intentos fallidos
@@ -122,24 +119,22 @@ export class ServicioSesion {
    */
   async refrescar(tokenRefresco?: string) {
     if (!tokenRefresco) {
-      throw new UnauthorizedException('Falta el token de refresco.');
+      throw new UnauthorizedException(t('servidor.sesion.faltaRefresco'));
     }
 
     const sesion = await this.sesiones.buscarPorTokenRefresco(tokenRefresco);
     if (!sesion || sesion.revocada_en) {
-      throw new UnauthorizedException('La sesión ha sido revocada o no es válida.');
+      throw new UnauthorizedException(t('servidor.sesion.revocada'));
     }
 
     const ahora = new Date();
     if (new Date(sesion.expira_en) <= ahora) {
-      throw new UnauthorizedException(
-        'La sesión expiró tras 30 días sin actividad. Inicia sesión nuevamente.',
-      );
+      throw new UnauthorizedException(t('servidor.sesion.expirada'));
     }
 
     const usuario = await this.usuarios.porId(sesion.usuario_id);
     if (!usuario || usuario.estado !== 'activo') {
-      throw new UnauthorizedException('Usuario no encontrado o inactivo.');
+      throw new UnauthorizedException(t('servidor.sesion.usuarioInactivo'));
     }
 
     // Actualiza el último uso y amplía 30 días la fecha de expiración
@@ -178,6 +173,6 @@ export class ServicioSesion {
     } else if (usuarioId) {
       await this.sesiones.revocarTodasDeUsuario(usuarioId);
     }
-    return { mensaje: 'Sesión cerrada correctamente.' };
+    return { mensaje: t('servidor.sesion.cerrada') };
   }
 }

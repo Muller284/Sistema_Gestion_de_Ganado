@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { RepositorioUsuarioActual } from './repositorio-usuario-actual';
+import { t } from './idioma';
 
 /**
  * El portero del sistema.
@@ -42,20 +43,23 @@ export class GuardiaCuentaLista implements CanActivate {
     if (!usuario.correoVerificado) {
       throw new ForbiddenException({
         motivo: 'correo_sin_verificar',
-        message:
-          'Confirma tu correo para poder usar el sistema. Puedes pedir que te reenviemos el enlace.',
+        message: t('servidor.portero.correoSinVerificar'),
       });
     }
 
     if (usuario.debeCambiarContrasena) {
       throw new ForbiddenException({
         motivo: 'debe_cambiar_contrasena',
-        message: 'Cambia tu contraseña temporal para poder usar el sistema.',
+        message: t('servidor.portero.debeCambiarContrasena'),
       });
     }
 
+    // HU-24: el Admin de plataforma trabaja dentro del rancho al que entro.
     // Se guarda para que el controlador no tenga que resolverlo otra vez.
-    peticion.usuarioActual = usuario;
+    peticion.usuarioActual = await this.usuarios.aplicarSoporte(
+      usuario,
+      peticion.headers['x-rancho-soporte'],
+    );
     return true;
   }
 }

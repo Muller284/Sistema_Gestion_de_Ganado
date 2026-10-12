@@ -1,0 +1,1226 @@
+{
+  "_idioma": {
+    "codigo": "es",
+    "nombre": "Español"
+  },
+  "comun": {
+    "cargando": "Cargando…",
+    "cancelar": "Cancelar",
+    "guardar": "Guardar",
+    "guardando": "Guardando…",
+    "volver": "Volver",
+    "cerrar": "Cerrar",
+    "idioma": "Idioma",
+    "enumerar": "{primeros} y {ultimo}",
+    "contrasena": {
+      "largo": "ocho caracteres",
+      "mayuscula": "una mayúscula",
+      "numero": "un número",
+      "falta": "Falta al menos {faltas}.",
+      "necesita": "La contraseña necesita al menos {faltas}.",
+      "reglas": "Al menos 8 caracteres, con una mayúscula y un número."
+    }
+  },
+  "servidor": {
+    "comun": {
+      "enumerar": "{primeros} y {ultimo}"
+    },
+    "admin": {
+      "soporteVencido": "Tu acceso de soporte a este rancho terminó o nunca se abrió. Vuelve a entrar desde la lista de ranchos.",
+      "motivoCorto": "Escribe por qué entras, con al menos {n} caracteres. Queda en el registro de accesos.",
+      "motivoLargo": "El motivo no puede pasar de {n} caracteres.",
+      "ranchoNoExiste": "Ese rancho no existe.",
+      "entraste": "Entraste a {rancho}. Este acceso quedó registrado.",
+      "saliste": "Saliste del rancho. El acceso quedó cerrado en el registro.",
+      "yaSaliste": "Ese acceso ya estaba cerrado.",
+      "soloAdmin": "Esta parte es solo para el Admin de la plataforma.",
+      "soloPropietarioVeAccesos": "El registro de accesos de soporte lo ve el propietario del rancho."
+    },
+    "perfil": {
+      "terminaDeActivar": "Termina de activar tu cuenta antes de editar tu perfil.",
+      "nadaQueCambiar": "No llegó nada para cambiar.",
+      "nombreVacio": "El nombre no puede quedar vacío.",
+      "nombreLargo": "El nombre no puede pasar de {n} caracteres.",
+      "idiomaNoExiste": "Ese idioma no está disponible. Los disponibles son: {disponibles}.",
+      "guardado": "Tus datos quedaron guardados.",
+      "idiomaGuardado": "Listo, el sistema ya está en español."
+    },
+    "datos": {
+      "faltan": "Faltan datos obligatorios: {faltantes}.",
+      "campos": {
+        "nombre": "nombre",
+        "correo": "correo",
+        "contrasena": "contraseña",
+        "pais": "país",
+        "rol": "rol",
+        "tipoColaborador": "tipo de colaborador"
+      },
+      "correoInvalido": "El correo no tiene un formato válido.",
+      "usuarioNoExiste": "El usuario no existe.",
+      "primeroElRancho": "Primero hay que crear el rancho.",
+      "soloPropietario": "Solo el propietario puede {accion}.",
+      "noEsDeTuRancho": "Esa persona no pertenece a tu rancho.",
+      "tipoNoExiste": "Ese tipo de colaborador no existe en tu rancho.",
+      "correoEnOtroRancho": "Este correo ya está registrado en otro rancho. Por seguridad, cada integrante puede trabajar en un solo establecimiento.",
+      "contrasenaOculta": "Por seguridad, la contraseña no se muestra acá. Solo la recibe su dueño."
+    },
+    "roles": {
+      "propietario": "propietario",
+      "socio": "socio",
+      "colaborador": "colaborador",
+      "admin_plataforma": "admin_plataforma"
+    },
+    "registro": {
+      "correoLargo": "El correo no puede pasar de {n} caracteres.",
+      "paisNoExiste": "El país indicado no existe.",
+      "correoRepetido": "Ya existe una cuenta con ese correo. Si es tuya, inicia sesión o recupera la contraseña.",
+      "creada": "Cuenta creada. Te enviamos un correo para confirmar tu dirección. El enlace vence en 24 horas."
+    },
+    "usuarios": {
+      "soloPropietarioRegistra": "Solo el propietario puede registrar nuevo personal.",
+      "correoNoValido": "El correo proporcionado no es válido.",
+      "validacionSuperada": "Validación superada. El usuario puede ser agregado al rancho."
+    },
+    "sesion": {
+      "faltanCredenciales": "Debes indicar correo y contraseña.",
+      "bloqueada": {
+        "uno": "Cuenta temporalmente bloqueada por exceso de intentos fallidos. Intente nuevamente en {n} minutos.",
+        "otros": "Cuenta temporalmente bloqueada por exceso de intentos fallidos. Intente nuevamente en {n} minutos."
+      },
+      "credencialesIncorrectas": "Correo o contraseña incorrectos.",
+      "suspendida": "La cuenta se encuentra suspendida.",
+      "faltaRefresco": "Falta el token de refresco.",
+      "revocada": "La sesión ha sido revocada o no es válida.",
+      "expirada": "La sesión expiró tras 30 días sin actividad. Inicia sesión nuevamente.",
+      "usuarioInactivo": "Usuario no encontrado o inactivo.",
+      "cerrada": "Sesión cerrada correctamente.",
+      "tokenInvalido": "Token de acceso inválido o expirado.",
+      "sinCredencial": "No se indicó credencial de autenticación. Inicia sesión o envía un token válido.",
+      "usuarioNoActivo": "El usuario indicado no existe o no está activo."
+    },
+    "portero": {
+      "correoSinVerificar": "Confirma tu correo para poder usar el sistema. Puedes pedir que te reenviemos el enlace.",
+      "debeCambiarContrasena": "Cambia tu contraseña temporal para poder usar el sistema."
+    },
+    "contrasena": {
+      "faltanAmbas": "Hacen falta la contraseña actual y la nueva.",
+      "actualIncorrecta": "La contraseña actual no es correcta.",
+      "igualTemporal": "La contraseña nueva no puede ser igual a la temporal.",
+      "igualActual": "La contraseña nueva tiene que ser distinta de la actual.",
+      "actualizadaYaPuedes": "Contraseña actualizada. Ya puedes usar el sistema.",
+      "actualizada": "Contraseña actualizada.",
+      "soloPropietarioRestablece": "Solo el propietario puede restablecer la contraseña de su equipo.",
+      "usuarioAjeno": "Ese usuario no pertenece a tu rancho.",
+      "usaElCambio": "Para cambiar tu propia contraseña usa el cambio de contraseña, no el restablecimiento.",
+      "temporalEnviada": "Se le envió una contraseña temporal a {correo}.",
+      "correoObligatorio": "El correo es obligatorio.",
+      "recuperacionPedida": "Si el correo está registrado, recibirás un enlace de recuperación.",
+      "faltanTokenYNueva": "El token y la nueva contraseña son obligatorios.",
+      "enlaceExpirado": "El enlace de recuperación ha expirado. Solicita uno nuevo.",
+      "enlaceInvalido": "El enlace de recuperación es inválido o ya fue utilizado.",
+      "recuperada": "Contraseña recuperada con éxito. Ya puedes iniciar sesión."
+    },
+    "verificacion": {
+      "faltaEnlace": "Falta el enlace de confirmación.",
+      "vencido": "El enlace venció. Pide uno nuevo desde la pantalla de acceso.",
+      "invalido": "El enlace no es válido o ya se usó.",
+      "confirmado": "Correo confirmado. Ya puedes usar el sistema.",
+      "faltaCorreo": "Falta el correo.",
+      "reenviado": "Si ese correo tiene una cuenta sin confirmar, le enviamos un enlace nuevo."
+    },
+    "equipo": {
+      "soloVen": "El equipo lo ven el propietario y los socios. Si lo necesitas, pídeselo al propietario.",
+      "acciones": {
+        "alta": "dar de alta a alguien",
+        "estado": "suspender o reactivar a alguien"
+      },
+      "rolInvalido": "El rol tiene que ser socio o colaborador. El propietario es uno solo y el Admin no se crea desde un rancho.",
+      "tipoSoloColaboradores": "El tipo de colaborador solo se asigna a colaboradores.",
+      "yaEsDelEquipo": "Esa persona ya es parte de tu equipo.",
+      "correoRegistrado": "Ese correo ya está registrado.",
+      "alta": "{nombre} ya es parte del equipo. Le enviamos su contraseña temporal a {correo}.",
+      "estadoInvalido": "El estado tiene que ser activo o suspendido.",
+      "propietarioNoSeSuspende": "El propietario no se puede suspender.",
+      "suspendido": "{nombre} quedó suspendido. No puede entrar hasta que lo reactives.",
+      "reactivado": "{nombre} puede volver a entrar."
+    },
+    "tipos": {
+      "acciones": {
+        "crear": "crear tipos de colaborador",
+        "cambiar": "cambiar los tipos de colaborador",
+        "restablecer": "restablecer los tipos de colaborador",
+        "eliminar": "eliminar tipos de colaborador",
+        "asignar": "cambiar el tipo de un colaborador"
+      },
+      "yaTienes": "Ya tienes un tipo llamado «{nombre}».",
+      "creado": "Listo, ya puedes asignar el tipo «{nombre}» a tus colaboradores.",
+      "predefinidoSinRenombrar": "Los tipos predefinidos no cambian de nombre. Si quieres otro nombre, crea un tipo propio.",
+      "guardados": {
+        "cero": "Guardaste los permisos de «{nombre}».",
+        "uno": "Guardaste los permisos de «{nombre}». El colaborador que lo tiene ya trabaja con ellos.",
+        "otros": "Guardaste los permisos de «{nombre}». Los {n} colaboradores que lo tienen ya trabajan con ellos."
+      },
+      "soloPredefinidosRestablecen": "Solo los tipos predefinidos tienen permisos de fábrica a los que volver.",
+      "restablecido": "«{nombre}» volvió a sus permisos de fábrica.",
+      "predefinidoNoSeElimina": "Los tipos predefinidos no se pueden eliminar.",
+      "enUso": {
+        "uno": "Un colaborador tiene este tipo. Cámbiale el tipo antes de eliminarlo.",
+        "otros": "{n} colaboradores tienen este tipo. Cámbiales el tipo antes de eliminarlo."
+      },
+      "eliminado": "Eliminaste el tipo «{nombre}».",
+      "faltaTipo": "Falta el tipo de colaborador.",
+      "soloColaboradores": "El tipo solo se asigna a colaboradores.",
+      "asignado": "{persona} ahora es {tipo}.",
+      "sinNombre": "Ponle un nombre al tipo.",
+      "yaExiste": "Ya existe un tipo llamado «{nombre}».",
+      "faltanPermisos": "Faltan los permisos: elige qué módulos ve o edita este tipo.",
+      "moduloNoExiste": "El módulo «{modulo}» no existe.",
+      "nivelInvalido": "El permiso de «{modulo}» tiene que ser ninguno, ver o editar.",
+      "algunModulo": "Elige al menos un módulo que este tipo pueda ver.",
+      "soloVen": "Los tipos de colaborador los ven el propietario y los socios.",
+      "predefinidos": {
+        "veterinario": "Veterinario",
+        "encargadoCampo": "Encargado de campo",
+        "encargadoAlmacen": "Encargado de almacén",
+        "administrativo": "Administrativo"
+      }
+    },
+    "guia": {
+      "pasos": {
+        "animales": {
+          "nombre": "Carga tus animales",
+          "descripcion": "Uno por uno o importando tu planilla de Excel."
+        },
+        "corrales": {
+          "nombre": "Arma tus corrales",
+          "descripcion": "Con su capacidad, para que el sistema avise si uno se llena."
+        },
+        "vacunas": {
+          "nombre": "Define tus vacunas",
+          "descripcion": "Tu esquema sanitario, para recibir avisos antes de cada vencimiento."
+        },
+        "equipo": {
+          "nombre": "Suma a tu equipo",
+          "descripcion": "Socios que ven todo y colaboradores que cargan lo suyo."
+        }
+      },
+      "pausaInvalida": "Indica si la guía queda en pausa (pausada: true o false).",
+      "pasoNoExiste": "Ese paso no existe en la guía.",
+      "noDisponible": "Ese paso todavía no está disponible: llega en la fase {fase}.",
+      "soloPropietario": "La guía de configuración la maneja el propietario."
+    },
+    "ranchos": {
+      "campoObligatorio": "El campo {campo} es obligatorio.",
+      "campoLargo": "El campo {campo} no puede pasar de {n} caracteres.",
+      "campos": {
+        "nombre": "nombre",
+        "departamento": "departamento",
+        "localidad": "localidad",
+        "tipoProduccion": "tipo de produccion",
+        "pais": "pais"
+      },
+      "superficie": "La superficie es obligatoria y tiene que ser un numero mayor que cero.",
+      "ubicacionIncompleta": "La ubicacion es opcional, pero si se carga tiene que llevar latitud y longitud.",
+      "latitud": "La latitud tiene que estar entre -90 y 90.",
+      "longitud": "La longitud tiene que estar entre -180 y 180.",
+      "tipoProduccion": "El tipo de produccion tiene que ser uno de: {tipos}.",
+      "paisNoExiste": "El pais {pais} no existe en el catalogo.",
+      "soloPropietarioCrea": "Solo el propietario puede crear el rancho. Tu rol es {rol}.",
+      "yaTienes": "Ya tienes un rancho creado. Una cuenta maneja un solo rancho.",
+      "sinRancho": "Todavia no tienes un rancho creado.",
+      "noExiste": "No existe un rancho con ese identificador.",
+      "soloPropietarioEdita": "Solo el propietario puede editar el rancho.",
+      "soloPropietarioDaDeBaja": "Solo el propietario puede dar de baja el rancho.",
+      "dadoDeBaja": "Rancho dado de baja."
+    }
+  },
+  "acceso": {
+    "marco": {
+      "titular": "Tu rancho entero,<salto></salto>en el bolsillo",
+      "bajada": "Animales, corrales, vacunas y pesajes. Desde el celular, aunque no haya señal.",
+      "pie": "© 2026 Gestión de Ganado"
+    },
+    "pasos": {
+      "cuenta": "Cuenta",
+      "correo": "Correo",
+      "rancho": "Rancho",
+      "progreso": "Paso {actual} de {total}"
+    },
+    "espera": {
+      "detenida": "Dejamos de revisar. Recarga la página cuando hayas confirmado.",
+      "viva": "Esta pantalla se actualiza sola en cuanto confirmes."
+    },
+    "comun": {
+      "correo": "Correo",
+      "correoEjemplo": "tu@ejemplo.com",
+      "contrasena": "Contraseña",
+      "contrasenaNueva": "Contraseña nueva",
+      "repetirNueva": "Repetir la contraseña nueva",
+      "alMenos8": "Al menos 8 caracteres",
+      "ayudaContrasena": "Usa al menos 8 caracteres, con una mayúscula y un número.",
+      "noCoinciden": "Las dos contraseñas no coinciden.",
+      "enlaceDesarrollo": "En desarrollo el correo se escribe en la consola del servidor. Este es el enlace: <enlace>ábrelo aquí</enlace>."
+    },
+    "ingreso": {
+      "titulo": "Bienvenido de vuelta",
+      "subtitulo": "Ingresa tus credenciales para acceder a la gestión de tu rancho.",
+      "sinCuenta": "¿No tienes cuenta todavía? <enlace>Crea una, son 10 días gratis</enlace>",
+      "faltanDatos": "Por favor ingresa tu correo y contraseña.",
+      "incorrectos": "Correo o contraseña incorrectos.",
+      "contrasenaEjemplo": "Tu contraseña",
+      "olvido": "¿Olvidaste tu contraseña?",
+      "ingresando": "Ingresando…",
+      "ingresar": "Ingresar"
+    },
+    "registro": {
+      "titulo": "Crea tu cuenta",
+      "subtitulo": "10 días con todas las funciones. Sin tarjeta.",
+      "nota": "Cuando terminen los 10 días tu cuenta pasa al plan Gratis. No se bloquea y no pierdes nada.",
+      "nombre": "Nombre y apellido",
+      "nombreEjemplo": "Ej. Aaron Vargas",
+      "pais": "País",
+      "paisAyuda": "Define el idioma, la moneda y las unidades de medida. Lo puedes cambiar después.",
+      "terminos": "Acepto los términos del servicio y la política de privacidad.",
+      "creando": "Creando…",
+      "crear": "Crear cuenta",
+      "yaTienes": "¿Ya tienes una cuenta? <enlace>Inicia sesión</enlace>",
+      "revisa": {
+        "titulo": "Revisa tu correo",
+        "subtitulo": "Le enviamos un enlace de confirmación a {correo}.",
+        "nota": "El enlace vence en 24 horas. Si no llega, puedes pedir otro.",
+        "creada": "Cuenta creada a nombre de {nombre}.",
+        "confirma": "Confirma el correo para activar la cuenta. Hasta entonces no se puede entrar al sistema.",
+        "pedirOtro": "No me llegó, pedir otro"
+      }
+    },
+    "verificacion": {
+      "confirmando": {
+        "titulo": "Confirmando tu correo",
+        "subtitulo": "Un momento."
+      },
+      "confirmado": {
+        "titulo": "Correo confirmado",
+        "subtitulo": "Tu cuenta quedó activa.",
+        "nota": "Ya puedes crear tu rancho y empezar a cargar animales.",
+        "listo": "Listo. Ya puedes usar el sistema.",
+        "crearRancho": "Crear mi rancho"
+      },
+      "pendiente": {
+        "titulo": "Confirma tu correo",
+        "subtitulo": "Sin confirmarlo no se puede entrar al sistema.",
+        "nota": "El enlace vence a las 24 horas. Pedir uno nuevo deja el anterior sin efecto.",
+        "texto": "Te enviamos un enlace de confirmación. Si ya venció o no llegó, pide uno nuevo.",
+        "correo": "Correo de tu cuenta",
+        "enviando": "Enviando…",
+        "reenviar": "Reenviar el enlace"
+      }
+    },
+    "contrasena": {
+      "cambio": {
+        "titulo": "Cambia tu contraseña",
+        "subtituloConNombre": "{nombre}, entraste con una contraseña temporal.",
+        "subtitulo": "Entraste con una contraseña temporal.",
+        "nota": "Hasta que la cambies no puedes usar el resto del sistema.",
+        "aviso": "Nadie más conoce tu contraseña nueva, ni siquiera el propietario del rancho. Por eso el registro de quién cargó cada dato tiene valor.",
+        "temporal": "Contraseña temporal",
+        "temporalEjemplo": "La que te enviaron",
+        "igualTemporal": "La contraseña nueva no puede ser igual a la temporal.",
+        "igualTemporalCampo": "No puede ser igual a la temporal.",
+        "guardarYEntrar": "Guardar y entrar"
+      },
+      "restablecer": {
+        "titulo": "Crea tu nueva contraseña",
+        "nota": "Ingresa una contraseña segura que puedas recordar.",
+        "enlaceInvalido": "El enlace de recuperación no es válido o está incompleto.",
+        "guardando": "Guardando...",
+        "guardar": "Guardar contraseña",
+        "exito": {
+          "titulo": "¡Contraseña recuperada!",
+          "nota": "Tu contraseña se ha actualizado correctamente.",
+          "texto": "Ya puedes usar tu nueva contraseña para ingresar al sistema.",
+          "ingresar": "Ingresar con la nueva"
+        },
+        "invalido": {
+          "titulo": "Enlace inválido",
+          "nota": "No podemos recuperar tu contraseña.",
+          "texto": "Falta el código de seguridad. Asegúrate de hacer clic en el enlace completo que llegó a tu correo.",
+          "volverInicio": "Volver al inicio"
+        }
+      },
+      "solicitar": {
+        "titulo": "Recuperar contraseña",
+        "nota": "Ingresa tu correo y te enviaremos un enlace para recuperarla.",
+        "faltaCorreo": "Por favor ingresa tu correo electrónico.",
+        "correo": "Correo electrónico",
+        "correoEjemplo": "ejemplo@correo.com",
+        "enviando": "Enviando enlace...",
+        "enviar": "Enviar enlace",
+        "exito": {
+          "titulo": "Revisa tu bandeja",
+          "nota": "Si tu correo está registrado, te hemos enviado instrucciones.",
+          "texto": "Haz clic en el enlace que te enviamos para crear una nueva contraseña. Recuerda que el enlace caduca en 1 hora.",
+          "volverIngresar": "Volver a ingresar"
+        }
+      }
+    }
+  },
+  "app": {
+    "nombreSistema": "Gestión de Ganado",
+    "sinRancho": "Sin rancho todavía",
+    "miPerfil": "Mi perfil",
+    "fase": "Fase {n}",
+    "llegaEnFase": "Llega en la fase {n}",
+    "modulos": {
+      "inicio": "Mi rancho",
+      "animales": "Animales",
+      "corrales": "Corrales",
+      "sanidad": "Sanidad",
+      "pesajes": "Pesajes",
+      "equipo": "Equipo"
+    },
+    "cuenta": {
+      "titulo": "Cuenta",
+      "plan": "Plan Profesional",
+      "medidor": "Animales usados del plan",
+      "usados": "{porcentaje} % de animales usados"
+    },
+    "menuUsuario": {
+      "cuentaDe": "Cuenta de {nombre}",
+      "rol": "Rol",
+      "rancho": "Rancho",
+      "irAMiRancho": "Ir a mi rancho",
+      "cerrando": "Cerrando…",
+      "cerrarSesion": "Cerrar sesión"
+    },
+    "demo": {
+      "etiqueta": "Demostración",
+      "usuario": "Usuario con el que se muestra el sistema",
+      "elegirCuenta": "Elegir cuenta…",
+      "empezarDeCero": "Empezar de cero",
+      "provisional": "Provisional: muestra cada rol sin saber sus contraseñas.",
+      "cuentas": {
+        "carlos": "Carlos · propietario con rancho",
+        "mariaRene": "María René · socia",
+        "ariel": "Ariel · propietario sin rancho",
+        "lucia": "Lucía · correo sin confirmar",
+        "ruben": "Rubén · con clave temporal",
+        "admin": "Admin · soporte de la plataforma"
+      }
+    }
+  },
+  "sistemaDiseno": {
+    "titulo": "Sistema de diseño",
+    "intro": "HU-05 · Todo lo que se puede usar en una pantalla. Si algo no está acá, no se escribe a mano: se agrega acá primero.",
+    "colores": {
+      "titulo": "Colores",
+      "nota": "El dorado caravana se usa únicamente en planes, suscripción y límites de plan. Nunca en una acción común.",
+      "nombres": {
+        "corral800": "Corral 800",
+        "corral600": "Corral 600",
+        "corral400": "Corral 400",
+        "corral100": "Corral 100",
+        "caravana500": "Caravana 500",
+        "caravana100": "Caravana 100",
+        "arena900": "Arena 900",
+        "arena600": "Arena 600",
+        "arena300": "Arena 300",
+        "arena100": "Arena 100",
+        "exito": "Éxito",
+        "advertencia": "Advertencia",
+        "error": "Error",
+        "informacion": "Información"
+      }
+    },
+    "tipografia": {
+      "titulo": "Tipografía",
+      "titulos": "Outfit · títulos",
+      "texto": "Inter · texto",
+      "identificadores": "IBM Plex Mono · identificadores",
+      "ejemplo": "El rancho es la raíz del aislamiento: ninguna consulta puede devolver información de un rancho ajeno."
+    },
+    "botones": {
+      "titulo": "Botones",
+      "crearRancho": "Crear rancho",
+      "editar": "Editar",
+      "darDeBaja": "Dar de baja",
+      "deshabilitado": "Deshabilitado",
+      "mejorarPlan": "Mejorar plan"
+    },
+    "campos": {
+      "titulo": "Campos",
+      "nombreRancho": "Nombre del rancho",
+      "superficie": "Superficie",
+      "superficieAyuda": "En hectáreas.",
+      "correo": "Correo",
+      "correoError": "Ya existe una cuenta con ese correo.",
+      "correoEjemplo": "ariel@ejemplo.com",
+      "caravana": "Caravana",
+      "tipoProduccion": "Tipo de producción",
+      "carne": "Carne",
+      "leche": "Leche",
+      "mixto": "Mixto",
+      "pais": "País"
+    },
+    "tarjeta": {
+      "titulo": "Tarjeta con encabezado, cuerpo y pie",
+      "ubicacion": "Ubicación",
+      "caravanas": "Caravanas"
+    },
+    "insignias": {
+      "titulo": "Insignias",
+      "neutra": "Neutra",
+      "activo": "Activo",
+      "sinVerificar": "Sin verificar",
+      "suspendido": "Suspendido",
+      "soloLectura": "Solo lectura",
+      "planProfesional": "Plan Profesional"
+    },
+    "iconos": {
+      "titulo": "Iconos",
+      "texto": "Son de <enlace>Lucide</enlace>, con licencia ISC. Los trazos están copiados en <dato>{archivo}</dato>: no hay ninguna dependencia instalada. Se usan con <dato>{ejemplo}</dato> y toman el color del texto que los rodea."
+    },
+    "alertas": {
+      "titulo": "Alertas",
+      "ranchoCreado": "Rancho creado.",
+      "unSoloRancho": "Una cuenta maneja un solo rancho.",
+      "confirmaCorreo": "Confirma tu correo para poder usar el sistema.",
+      "soloPropietario": "Solo el propietario puede crear o editar el rancho."
+    },
+    "vacio": {
+      "titulo": "Estado vacío",
+      "sinAnimales": "Todavía no tienes animales",
+      "texto": "Registra el primero o impórtalos desde un archivo de Excel.",
+      "registrar": "Registrar animal"
+    },
+    "carga": {
+      "titulo": "Estado de carga"
+    }
+  },
+  "roles": {
+    "propietario": "Propietario",
+    "socio": "Socio",
+    "colaborador": "Colaborador",
+    "admin_plataforma": "Admin de plataforma"
+  },
+  "niveles": {
+    "ninguno": "Sin acceso",
+    "ver": "Ve",
+    "editar": "Edita"
+  },
+  "modulos": {
+    "animales": {
+      "nombre": "Animales",
+      "detalle": "Fichas, altas y estados de los animales"
+    },
+    "corrales": {
+      "nombre": "Corrales",
+      "detalle": "Corrales, ocupación y movimientos"
+    },
+    "sanidad": {
+      "nombre": "Sanidad",
+      "detalle": "Vacunas, tratamientos y diagnósticos"
+    },
+    "pesajes": {
+      "nombre": "Pesajes",
+      "detalle": "Pesadas y ganancia de peso"
+    },
+    "importacion": {
+      "nombre": "Importación",
+      "detalle": "Subir planillas de Excel o CSV"
+    },
+    "almacen": {
+      "nombre": "Almacén",
+      "detalle": "Insumos, vacunas y alimento en stock"
+    },
+    "equipo": {
+      "nombre": "Equipo",
+      "detalle": "Ver quién es parte del rancho"
+    },
+    "planes": {
+      "nombre": "Planes",
+      "detalle": "El plan y la facturación del rancho"
+    }
+  },
+  "equipo": {
+    "titulo": "Equipo",
+    "rotulo": "Tu equipo",
+    "invitado": "Invitado",
+    "acciones": {
+      "tipos": "Tipos y permisos",
+      "agregar": "Agregar integrante"
+    },
+    "sinPermiso": "Esta parte no es para tu rol",
+    "sinRancho": {
+      "titulo": "Primero crea tu rancho",
+      "texto": "El equipo trabaja dentro de un rancho. Cuando lo crees, vuelve acá para sumar a tus socios y colaboradores.",
+      "accion": "Crear mi rancho"
+    },
+    "cifras": {
+      "activos": {
+        "rotulo": "Pueden entrar",
+        "detalle": "Integrantes activos, contándote"
+      },
+      "socios": {
+        "rotulo": "Socios",
+        "detalle": "Ven todo, sin modificar"
+      },
+      "colaboradores": {
+        "rotulo": "Colaboradores",
+        "detalle": "Cargan lo de su tipo"
+      },
+      "suspendidos": {
+        "rotulo": "Suspendidos",
+        "detalle": "No pueden entrar"
+      }
+    },
+    "vacio": {
+      "titulo": "Por ahora trabajas solo",
+      "texto": "Suma a tus socios para que vean cómo va el rancho, y a tus colaboradores para que carguen lo de su trabajo. Cada uno entra con su propia cuenta.",
+      "accion": "Agregar al primero"
+    },
+    "lista": {
+      "titulo": "Integrantes",
+      "filtrar": "Filtrar integrantes",
+      "sinResultados": "Nadie en este filtro."
+    },
+    "filtros": {
+      "todos": "Todos",
+      "socio": "Socios",
+      "colaborador": "Colaboradores",
+      "suspendido": "Suspendidos"
+    },
+    "soloPropietario": "Solo el propietario puede sumar, suspender o reactivar integrantes.",
+    "estados": {
+      "suspendido": "Suspendido",
+      "sinEntrar": "Aún no entró",
+      "activo": "Activo"
+    },
+    "cambioTipo": {
+      "grupo": "Cambiar el tipo de {nombre}",
+      "lista": "Tipo de colaborador"
+    },
+    "fila": {
+      "tipo": "Tipo",
+      "tipoAyuda": "Cambia a qué módulos entra",
+      "clave": "Nueva clave",
+      "claveAyuda": "Le enviamos una contraseña temporal nueva a su correo",
+      "reactivar": "Reactivar",
+      "reactivando": "Reactivando…",
+      "suspender": "Suspender",
+      "suspendiendo": "Suspendiendo…"
+    },
+    "confirmar": {
+      "grupo": "Confirmar suspensión de {nombre}",
+      "texto": "Se cierran sus sesiones y no podrá entrar."
+    },
+    "alta": {
+      "titulo": "Nuevo integrante",
+      "cerrar": "Cerrar el formulario",
+      "faltaTipo": "Elige qué tipo de colaborador es: define a qué módulos va a entrar.",
+      "nombre": "Nombre y apellido",
+      "nombreEjemplo": "Ej. Jorge Soliz",
+      "correo": "Correo",
+      "correoEjemplo": "nombre@correo.com",
+      "correoAyuda": "Ahí le llega su contraseña temporal.",
+      "rol": "Rol",
+      "roles": {
+        "socio": "Ve toda la información del rancho, sin modificarla.",
+        "colaborador": "Carga lo de su trabajo, según su tipo: sanidad, pesajes, campo…"
+      },
+      "tipo": "Tipo de colaborador",
+      "tipoAyuda": "El tipo decide a qué módulos entra. Arranca solo con permiso de consulta.",
+      "elegirTipo": "Elegir tipo…",
+      "predefinidos": "Predefinidos",
+      "propios": "De tu rancho",
+      "tipoSinAcceso": "Este tipo no tiene acceso a ningún módulo todavía",
+      "resumenTipo": "{resumen}. <enlace>Ver o cambiar los tipos</enlace>",
+      "nota": "Le enviamos una contraseña temporal a su correo y la cambia la primera vez que entra. Tú no la vas a ver: así, lo que cargue queda a su nombre.",
+      "enviar": "Dar de alta",
+      "enviando": "Dando de alta…"
+    }
+  },
+  "tipos": {
+    "titulo": "Tipos de colaborador",
+    "predefinidos": {
+      "veterinario": "Veterinario",
+      "encargadoCampo": "Encargado de campo",
+      "encargadoAlmacen": "Encargado de almacén",
+      "administrativo": "Administrativo"
+    },
+    "resumen": {
+      "edita": "Edita {modulos}",
+      "ve": "Ve {modulos}"
+    },
+    "colaboradores": {
+      "cero": "Nadie lo tiene todavía",
+      "uno": "1 colaborador",
+      "otros": "{n} colaboradores"
+    },
+    "acciones": {
+      "integrantes": "Integrantes",
+      "nuevo": "Nuevo tipo"
+    },
+    "sinRancho": "Los tipos de colaborador son de cada rancho. Cuando lo crees, vuelve acá.",
+    "intro": "Cada colaborador tiene un tipo, y el tipo decide qué módulos ve y en cuáles puede cargar datos. <b>Si cambias un tipo, cambia para todos los que lo tienen.</b>",
+    "propios": {
+      "titulo": "De tu rancho",
+      "vacio": "Todavía no creaste tipos propios. Si ninguno de los cuatro de abajo encaja con alguien de tu equipo, arma uno a su medida.",
+      "crear": "Crear un tipo"
+    },
+    "deFabrica": {
+      "titulo": "Predefinidos",
+      "nota": "Vienen con el sistema. Puedes ajustar sus permisos: el cambio vale solo en tu rancho, y siempre puedes volver a los de fábrica."
+    },
+    "soloPropietario": "Solo el propietario puede crear tipos o cambiar sus permisos.",
+    "tarjeta": {
+      "confirmarGrupo": "Confirmar eliminación de {nombre}",
+      "confirmar": "¿Eliminar «{nombre}»?",
+      "eliminar": "Eliminar",
+      "eliminando": "Eliminando…",
+      "restablecer": "Volver a los de fábrica",
+      "restableciendo": "Restableciendo…",
+      "enUso": "Lo tiene alguien de tu equipo: cámbiale el tipo antes de eliminarlo",
+      "editar": "Editar permisos",
+      "sinAcceso": "Sin acceso a {modulos}."
+    },
+    "insignias": {
+      "ajustado": "Ajustado",
+      "predefinido": "Predefinido",
+      "propio": "Propio"
+    },
+    "editor": {
+      "tituloPermisos": "Permisos de {nombre}",
+      "tituloNuevo": "Nuevo tipo de colaborador",
+      "faltaNombre": "Ponle un nombre al tipo.",
+      "faltaModulo": "Elige al menos un módulo que este tipo pueda ver.",
+      "nombre": "Nombre del tipo",
+      "nombreEjemplo": "Por ejemplo: Ordeñador, Tractorista, Contador",
+      "nombrePredefinido": "Los predefinidos no cambian de nombre. Si necesitas otro, crea un tipo propio.",
+      "matriz": "Qué puede en cada módulo",
+      "permisoEn": "Permiso en {modulo}",
+      "ayuda": "«Edita» incluye ver. Sin acceso, el módulo ni siquiera aparece en su menú.",
+      "alcance": {
+        "uno": "Un colaborador tiene este tipo: el cambio le llega en cuanto guardes.",
+        "otros": "{n} colaboradores tienen este tipo: el cambio les llega a todos en cuanto guardes."
+      },
+      "guardar": "Guardar permisos",
+      "crear": "Crear tipo"
+    }
+  },
+  "landing": {
+    "marca": "Gestión de Ganado",
+    "menu": {
+      "secciones": "Secciones",
+      "funciones": "Funciones",
+      "asistente": "Asistente",
+      "comoEmpieza": "Cómo empieza",
+      "planes": "Planes",
+      "preguntas": "Preguntas",
+      "irAMiRancho": "Ir a mi rancho",
+      "ingresar": "Ingresar",
+      "probarGratis": "Probar gratis",
+      "abrir": "Abrir el menú",
+      "cerrar": "Cerrar el menú"
+    },
+    "portada": {
+      "pastilla": "Para productores de cualquier país",
+      "titulo": "Tu rancho entero, <resaltado>en el bolsillo</resaltado>",
+      "bajada": "Animales, corrales, vacunas y pesajes en un solo lugar. Trabaja con tu equipo, registra desde el corral aunque no haya señal y pregunta lo que necesites saber con tus propias palabras.",
+      "probar": "Probar 10 días gratis",
+      "yaTengoCuenta": "Ya tengo cuenta",
+      "sinTarjeta": "Sin tarjeta",
+      "sigueGratis": "Después sigues gratis",
+      "exportas": "Tus datos se exportan cuando quieras"
+    },
+    "vitrina": {
+      "barra": "Estancia La Esperanza · Panel",
+      "animales": "Animales activos",
+      "animalesNota": "+12 este mes",
+      "corrales": "Corrales",
+      "corralesNota": "1 excedido",
+      "vacunas": "Vacunas por vencer",
+      "vacunasNota": "esta semana",
+      "grafico": "Ganancia diaria · lote de engorde",
+      "filas": {
+        "novillo": "Brangus · Novillo",
+        "vaquilla": "Nelore · Vaquilla",
+        "toro": "Criollo · Toro"
+      },
+      "activo": "Activo",
+      "vendido": "Vendido",
+      "sinSenal": "Sin señal en el corral",
+      "sinSenalNota": "3 pesajes guardados, se suben solos",
+      "pregunta": "¿Qué corral engorda peor?",
+      "respuesta": "El Bajo: 410 g/día, 22 % menos que el resto."
+    },
+    "diferenciales": {
+      "rotulo": "Por qué no una planilla",
+      "titulo": "Tres cosas que un cuaderno no puede hacer",
+      "equipo": {
+        "titulo": "Se trabaja en equipo",
+        "texto": "Delegas la carga en tus colaboradores y compartes la información con tus socios, sin perder el control. Cada dato guarda quién lo registró y cuándo."
+      },
+      "sinInternet": {
+        "titulo": "Funciona sin internet",
+        "texto": "Desde el celular registras animales, vacunas, pesajes y movimientos en la manga, sin señal. Los datos suben solos cuando vuelve la conexión."
+      },
+      "asistente": {
+        "titulo": "Un asistente que conoce tu rancho",
+        "texto": "Pregunta con palabras normales, sin filtros ni reportes. Solo lee los datos de tu rancho: no consulta internet y no modifica nada."
+      }
+    },
+    "funciones": {
+      "rotulo": "Funciones",
+      "titulo": "Todo el trabajo del campo, ordenado",
+      "bajada": "Lo que hoy está repartido entre cuadernos, planillas y la memoria de cada uno, en un solo lugar y con el historial completo.",
+      "lista": {
+        "animales": {
+          "titulo": "Animales",
+          "texto": "La ficha y el historial completo de cada animal, con su caravana única dentro del rancho."
+        },
+        "corrales": {
+          "titulo": "Corrales",
+          "texto": "Capacidad, ocupación y un aviso cuando un corral se pasa de su límite."
+        },
+        "sanidad": {
+          "titulo": "Sanidad",
+          "texto": "Tus propios esquemas de vacunación, un calendario y avisos antes de cada vencimiento."
+        },
+        "pesajes": {
+          "titulo": "Pesajes",
+          "texto": "La ganancia diaria se calcula sola. Compara lotes y detecta a tiempo el que no engorda."
+        },
+        "importa": {
+          "titulo": "Importa tu planilla",
+          "texto": "Sube tu Excel como está: el sistema reconoce las columnas y te muestra los errores antes de cargar."
+        },
+        "tusDatos": {
+          "titulo": "Tus datos son tuyos",
+          "texto": "Bájalos a Excel cuando quieras. Nada se borra de verdad: lo dado de baja se puede consultar."
+        }
+      }
+    },
+    "asistente": {
+      "rotulo": "Asistente con inteligencia artificial",
+      "titulo": "Pregunta como le preguntarías a tu capataz",
+      "bajada": "No hay una lista cerrada de preguntas ni filtros que aprender. El asistente arma la consulta sobre los datos de tu rancho y te responde en segundos.",
+      "reglas": {
+        "soloLee": "Solo lee tu rancho. Nunca ve datos de otras cuentas.",
+        "noModifica": "No da de alta, no modifica y no borra nada.",
+        "colaboradores": "A cada colaborador le responde solo sobre sus módulos."
+      },
+      "ejemplosEtiqueta": "Preguntas de ejemplo",
+      "autor": "Asistente",
+      "nota": "Respuestas de ejemplo con datos ficticios.",
+      "ejemplos": {
+        "terneros": {
+          "pregunta": "¿Cuántos terneros machos nacidos este año tengo en el corral norte?",
+          "respuesta": "Tienes 14 terneros machos nacidos en 2026 en el corral Norte. El más reciente es la caravana 0561, nacido el 3 de septiembre."
+        },
+        "vacunaVencida": {
+          "pregunta": "¿Qué animales tienen la vacuna vencida hace más de un mes?",
+          "respuesta": "Son 4 animales, todos de aftosa: 0447, 0512, 0520 y 0533. Están en el corral El Bajo."
+        },
+        "ganancia": {
+          "pregunta": "¿Cuál fue la ganancia diaria del lote de engorde en los últimos 90 días?",
+          "respuesta": "El lote de engorde ganó en promedio 780 g por día. Es un 9 % más que en los 90 días anteriores."
+        },
+        "veterinario": {
+          "pregunta": "¿Qué le aplicó el veterinario a la caravana 447 en el último año?",
+          "respuesta": "Tres aplicaciones: aftosa en marzo, carbunclo en abril y un antiparasitario en agosto. Las registró el Dr. Rojas."
+        },
+        "peorCorral": {
+          "pregunta": "¿Qué corral viene engordando peor que el resto?",
+          "respuesta": "El Bajo: 410 g por día, un 22 % por debajo del promedio de los otros corrales."
+        }
+      }
+    },
+    "comoEmpieza": {
+      "rotulo": "Cómo empieza",
+      "titulo": "De cero a tu rancho andando, sin llamar a nadie",
+      "bajada": "No hay vendedores ni instalaciones. Te registras, confirmas el correo y en unos minutos estás cargando tu rodeo.",
+      "crearCuenta": "Crear mi cuenta",
+      "pasos": {
+        "cuenta": {
+          "titulo": "Crea tu cuenta",
+          "texto": "Nombre, correo, contraseña y país. El país define idioma, moneda y unidades."
+        },
+        "correo": {
+          "titulo": "Confirma tu correo",
+          "texto": "Te llega un enlace. Al abrirlo, la cuenta queda activa."
+        },
+        "rancho": {
+          "titulo": "Crea tu rancho",
+          "texto": "Nombre, superficie, tipo de producción y, si quieres, su lugar en el mapa."
+        },
+        "guia": {
+          "titulo": "Sigue la guía",
+          "texto": "Animales, corrales, vacunas y equipo, paso a paso y a tu ritmo."
+        }
+      }
+    },
+    "planes": {
+      "rotulo": "Planes",
+      "titulo": "Pagas por el tamaño de tu equipo, no por anotar",
+      "bajada": "Empiezas con 10 días del plan Profesional, sin tarjeta. Si no eliges nada, pasas al plan Gratis: la cuenta no se bloquea y no pierdes ningún dato.",
+      "formaDePago": "Forma de pago",
+      "mensual": "Mensual",
+      "anual": "Anual <ahorro>−20 %</ahorro>",
+      "preciosPara": "Precios para",
+      "cinta": "Tus primeros 10 días",
+      "paraSiempre": "para siempre",
+      "porMes": "/ mes",
+      "porAnio": "/ año",
+      "probar": "Probar 10 días gratis",
+      "empezar": "Empezar",
+      "nota": "Precios en dólares estadounidenses. Cada cuenta maneja un rancho. Donde dice «sin límite» se aplica una política de uso razonable.",
+      "detalleGratis": "Sin vencimiento y sin tarjeta.",
+      "detalleMensual": "O USD {monto} pagando el año entero.",
+      "detalleAnual": "Equivale a USD {monto} por mes.",
+      "franjas": {
+        "A": "Estados Unidos, Canadá, Europa y Oceanía",
+        "B": "Argentina, Brasil, Chile, Uruguay, México y Colombia",
+        "C": "Bolivia, Paraguay, Perú y Centroamérica"
+      },
+      "lista": {
+        "gratis": {
+          "nombre": "Gratis",
+          "para": "Para empezar a ordenar un rodeo chico.",
+          "incluye": {
+            "equipo": "2 socios y 3 colaboradores",
+            "limites": "Hasta 50 animales y 3 corrales",
+            "asistente": "Asistente: 10 preguntas al mes",
+            "importa": "Importa hasta 100 filas al mes",
+            "historial": "Historial de los últimos 12 meses",
+            "sinConexion": "App sin conexión"
+          }
+        },
+        "productor": {
+          "nombre": "Productor",
+          "para": "Para el productor familiar con un equipo chico.",
+          "incluye": {
+            "equipo": "5 socios y 8 colaboradores",
+            "limites": "Hasta 400 animales y 20 corrales",
+            "asistente": "Asistente: 150 preguntas al mes",
+            "excel": "Importa y exporta a Excel",
+            "historial": "Historial completo",
+            "soporte": "Soporte por correo"
+          }
+        },
+        "profesional": {
+          "nombre": "Profesional",
+          "para": "Para el rancho que ya trabaja con capataz y veterinario.",
+          "incluye": {
+            "equipo": "12 socios y 25 colaboradores",
+            "limites": "Hasta 2.000 animales y 100 corrales",
+            "asistente": "Asistente: 600 preguntas al mes",
+            "excel": "Importa y exporta a Excel",
+            "historial": "Historial completo",
+            "soporte": "Soporte prioritario"
+          }
+        },
+        "empresa": {
+          "nombre": "Empresa",
+          "para": "Para la empresa agropecuaria con varios equipos.",
+          "incluye": {
+            "equipo": "30 socios y 60 colaboradores",
+            "limites": "Animales y corrales sin límite",
+            "asistente": "Asistente sin límite para los dueños",
+            "excel": "Importa y exporta a Excel",
+            "historial": "Historial completo",
+            "soporte": "Canal de soporte propio"
+          }
+        }
+      }
+    },
+    "preguntas": {
+      "rotulo": "Preguntas",
+      "titulo": "Lo que todos preguntan antes de empezar",
+      "lista": {
+        "finPrueba": {
+          "p": "¿Qué pasa cuando terminan los 10 días de prueba?",
+          "r": "Tu cuenta pasa sola al plan Gratis. No se bloquea, no pierdes ningún dato y puedes mejorar el plan cuando quieras."
+        },
+        "internet": {
+          "p": "¿Necesito internet para usarlo?",
+          "r": "Para la web, sí. Desde el celular puedes registrar animales, vacunas, pesajes y movimientos de corral sin señal: se guardan en el teléfono y se suben solos cuando vuelve la conexión."
+        },
+        "excel": {
+          "p": "¿Puedo traer lo que ya tengo en Excel?",
+          "r": "Sí. Subes tu planilla como está y el sistema reconoce las columnas por su nombre. Solo te pregunta por las que no pudo identificar, y antes de cargar te muestra los errores y los repetidos."
+        },
+        "privacidad": {
+          "p": "¿Otro productor puede ver mis animales?",
+          "r": "No. Cada rancho está separado desde la base de datos, y hay pruebas automáticas que intentan leer datos de otro rancho y tienen que fallar. El asistente tampoco puede salir de tu rancho."
+        },
+        "irme": {
+          "p": "¿Y si quiero irme?",
+          "r": "Exporta todo a Excel en cualquier momento. Si cancelas, la cuenta queda en solo lectura al menos 12 meses para que sigas consultando y exportando tu información."
+        }
+      }
+    },
+    "cierre": {
+      "titulo": "Empieza hoy con tu rodeo",
+      "bajada": "10 días con todas las funciones. Sin tarjeta y sin compromiso.",
+      "crearCuenta": "Crear mi cuenta",
+      "ingresar": "Ingresar"
+    },
+    "pie": {
+      "enlaces": "Enlaces del pie",
+      "crearCuenta": "Crear cuenta",
+      "ingresar": "Ingresar",
+      "recuperar": "Recuperar contraseña",
+      "sistemaDiseno": "Sistema de diseño",
+      "derechos": "© 2026 {marca}"
+    }
+  },
+  "rancho": {
+    "miRancho": "Mi rancho",
+    "rotulo": "Resumen del rancho",
+    "invitado": "Invitado",
+    "hectareas": "{n} ha",
+    "acciones": {
+      "editar": "Editar",
+      "darDeBaja": "Dar de baja"
+    },
+    "confirmarBaja": "¿Dar de baja \"{nombre}\"? La información no se borra.",
+    "avisos": {
+      "actualizado": "Rancho actualizado.",
+      "creado": "Rancho creado.",
+      "dadoDeBaja": "Rancho dado de baja. El registro sigue en la base de datos."
+    },
+    "tipos": {
+      "carne": "Carne",
+      "leche": "Leche",
+      "mixto": "Mixto"
+    },
+    "campos": {
+      "nombre": "Nombre",
+      "departamento": "Departamento",
+      "localidad": "Localidad",
+      "superficie": "Superficie",
+      "tipoProduccion": "Tipo de producción",
+      "pais": "País",
+      "ubicacion": "Ubicación",
+      "latitud": "Latitud",
+      "longitud": "Longitud"
+    },
+    "cifras": {
+      "pais": "País {codigo}",
+      "existencias": "Existencias totales",
+      "corrales": "Corrales",
+      "llegaFase2": "Llega en la fase 2"
+    },
+    "datos": {
+      "titulo": "Datos del rancho",
+      "produccion": {
+        "carne": "Producción de carne",
+        "leche": "Producción de leche",
+        "mixto": "Producción de mixto"
+      },
+      "produccionDe": "Producción de {tipo}",
+      "coordenadas": "Coordenadas",
+      "sinUbicacion": "Sin ubicación cargada",
+      "monedaIdioma": "Moneda e Idioma",
+      "unidades": "Unidades",
+      "unidadesValor": "Peso: {peso} · Superficie: {superficie}",
+      "zonaHoraria": "Zona Horaria y Fecha",
+      "franjaPrecio": "Franja de Precio",
+      "auditoria": "Auditoría",
+      "creadoEl": "Creado el {fecha}",
+      "modificadoEl": "Última modificación el {fecha}"
+    },
+    "lugar": {
+      "titulo": "Tu lugar en el rancho",
+      "socio": "Como socio ves toda la información del rancho, sin modificarla.",
+      "colaborador": "Como colaborador entras a los módulos de tu tipo. Llegan con la fase 2.",
+      "verEquipo": "Ver el equipo"
+    },
+    "sinRancho": {
+      "titulo": "Todavía no hay rancho",
+      "texto": "Este usuario no pertenece a ningún rancho. El propietario es quien lo crea."
+    },
+    "formulario": {
+      "editar": "Editar rancho",
+      "crear": "Crear mi rancho",
+      "nombreEjemplo": "Ej. Rancho El Cerrito",
+      "superficieAyuda": "En hectáreas.",
+      "latitudAyuda": "Opcional. Se llena sola al marcar en el mapa.",
+      "longitudAyuda": "Opcional. Si cargas una, carga las dos.",
+      "guardarCambios": "Guardar cambios",
+      "crearRancho": "Crear rancho"
+    },
+    "soloPropietario": "Solo el propietario puede crear o editar el rancho."
+  },
+  "perfil": {
+    "titulo": "Mi perfil",
+    "rotulo": "Tu cuenta",
+    "roles": {
+      "propietario": "Propietario",
+      "socio": "Socio",
+      "colaborador": "Colaborador",
+      "admin_plataforma": "Admin de plataforma"
+    },
+    "datos": {
+      "titulo": "Tus datos",
+      "nombre": "Nombre y apellido",
+      "correo": "Correo",
+      "correoAyuda": "Es con el que entras. Cambiarlo exige confirmar el nuevo, y eso llega más adelante.",
+      "pais": "País",
+      "sinPais": "Sin país registrado",
+      "paisAyuda": "Define idioma, moneda y unidades. Se cambia desde los ajustes del país.",
+      "rol": "Rol",
+      "rancho": "Rancho",
+      "sinRancho": "Todavía sin rancho",
+      "desde": "En el sistema desde",
+      "deshacer": "Deshacer",
+      "guardarCambios": "Guardar cambios"
+    },
+    "contrasena": {
+      "titulo": "Contraseña",
+      "actual": "Contraseña actual",
+      "nueva": "Contraseña nueva",
+      "repetir": "Repite la nueva",
+      "noCoincide": "No coincide con la nueva.",
+      "cambiando": "Cambiando…",
+      "cambiar": "Cambiar contraseña"
+    },
+    "idioma": {
+      "titulo": "Idioma",
+      "explicacion": "En qué idioma ves el sistema.",
+      "segunPais": "Según mi país",
+      "segunPaisDetalle": "{idioma}, el de {pais}",
+      "tuRancho": "tu rancho"
+    }
+  },
+  "mapa": {
+    "ariaLienzo": "Mapa para marcar la ubicación del rancho. También puedes escribir la latitud y la longitud a mano.",
+    "sinImagenes": "No se pudieron cargar las imágenes del mapa. Revisa la conexión, o escribe la latitud y la longitud a mano.",
+    "usarMiUbicacion": "Usar mi ubicación",
+    "marcadoEn": "Marcado en {lat}, {lon}",
+    "tocaElMapa": "Toca el mapa para marcar dónde está el rancho.",
+    "sinGeolocalizacion": "Este navegador no puede dar tu ubicación.",
+    "errorUbicacion": "No se pudo obtener tu ubicación."
+  },
+  "guia": {
+    "errorCarga": "No se pudo cargar la guía: {error}",
+    "progresoAria": "Pasos de la guía completos",
+    "progreso": "{completos} de {total} pasos completos",
+    "seguirDespues": "Seguir después",
+    "titulo": {
+      "terminada": "Tu rancho quedó configurado",
+      "enMarcha": "Deja tu rancho andando"
+    },
+    "pausada": {
+      "titulo": "Dejaste la guía para después",
+      "progreso": "{completos} de {total} pasos completos. Sigue desde donde quedaste.",
+      "retomar": "Retomar la guía"
+    },
+    "estados": {
+      "pendiente": "Pendiente",
+      "enCurso": "En curso",
+      "completo": "Completo"
+    },
+    "paso": {
+      "integrantes": {
+        "uno": "{n} integrante ya en el equipo",
+        "otros": "{n} integrantes ya en el equipo"
+      },
+      "cargados": "{n} cargados",
+      "llegaEnFase": "Llega en la fase {fase}",
+      "empezar": "Empezar",
+      "continuar": "Continuar",
+      "reabrir": "Reabrir",
+      "listo": "Listo"
+    }
+  },
+  "correos": {
+    "plantilla": {
+      "abrirEnlace": "Abrir el enlace",
+      "botonNoFunciona": "Si el botón no funciona, copia esta dirección en tu navegador:",
+      "marca": "Gestión de Ganado",
+      "pie": "Sistema de Gestión de Ganado · Este mensaje se envió automáticamente."
+    },
+    "verificacion": {
+      "asunto": "Confirma tu correo — Sistema de Gestión de Ganado",
+      "cuerpo": "Hola {nombre},\n\nPara activar tu cuenta y empezar a usar el sistema, confirma tu correo\ndesde este enlace. Vence en 24 horas.\n\nSi no creaste ninguna cuenta, puedes ignorar este mensaje.",
+      "boton": "Confirmar mi correo"
+    },
+    "restablecimiento": {
+      "asunto": "Tu contraseña temporal — Sistema de Gestión de Ganado",
+      "cuerpo": "Hola {nombre},\n\n{autor} restableció tu contraseña. Entra con la clave temporal\nde abajo. El sistema te va a pedir que la cambies antes de dejarte\nhacer cualquier otra cosa.",
+      "destacado": "Contraseña temporal: {clave}"
+    },
+    "recuperacion": {
+      "asunto": "Recuperación de contraseña — Sistema de Gestión de Ganado",
+      "cuerpo": "Hola {nombre},\n\nSolicitaste recuperar tu contraseña. Usa el botón de abajo para crear una nueva.\n\nEste enlace caducará en 1 hora. Si no fuiste tú, puedes ignorar este correo.",
+      "boton": "Crear una contraseña nueva"
+    },
+    "alta": {
+      "asunto": "Te sumaron a un rancho — Sistema de Gestión de Ganado",
+      "cuerpo": "Hola {nombre},\n\n{autor} te dio de alta como {rol} en su rancho.\nEntra con tu correo y la contraseña temporal de abajo. La primera vez\nel sistema te va a pedir que la cambies por una tuya.\n\nSi no esperabas este mensaje, puedes ignorarlo.",
+      "destacado": "Contraseña temporal: {clave}",
+      "roles": {
+        "socio": "socio",
+        "colaborador": "colaborador"
+      }
+    }
+  },
+  "admin": {
+    "menu": "Soporte",
+    "rotulo": "Admin de plataforma",
+    "titulo": "Soporte a los ranchos",
+    "noEsTuRol": {
+      "titulo": "Esta parte es del Admin de plataforma",
+      "texto": "Desde acá el soporte de la plataforma entra a los ranchos. Tu cuenta no tiene ese rol."
+    },
+    "intro": "Desde acá entras a cualquier rancho para dar soporte. Para entrar escribes por qué: cada entrada queda en el registro y el propietario la ve en su panel. Adentro puedes lo mismo que el propietario, hasta que salgas o pasen ocho horas.",
+    "sigueAdentro": "Sigues dentro de {rancho}. Cuando termines, sal desde la banda de arriba.",
+    "vistas": "Qué ver",
+    "ranchos": {
+      "titulo": "Ranchos de la plataforma",
+      "pestana": "Ranchos",
+      "buscar": "Buscar",
+      "buscarEjemplo": "Rancho, propietario, correo o lugar",
+      "ninguno": "Todavía no hay ranchos en la plataforma.",
+      "sinResultados": "Ningún rancho coincide con la búsqueda.",
+      "ubicacion": "{localidad}, {departamento} · {pais}",
+      "integrantes": {
+        "uno": "{n} integrante",
+        "otros": "{n} integrantes"
+      },
+      "entrar": "Entrar",
+      "motivo": "¿Por qué entras?",
+      "motivoEjemplo": "Ej. El propietario no puede dar de alta a su veterinario",
+      "motivoAyuda": "Al menos {n} caracteres. Queda en el registro y lo ve el propietario.",
+      "entrando": "Entrando…",
+      "entrarAlRancho": "Entrar al rancho"
+    },
+    "registro": {
+      "titulo": "Registro de accesos",
+      "pestana": "Registro",
+      "ninguno": "Nadie del soporte entró a ningún rancho todavía.",
+      "minutos": {
+        "uno": "{n} minuto",
+        "otros": "{n} minutos"
+      },
+      "quienDonde": "{admin} en {rancho}"
+    },
+    "estado": {
+      "abierto": "Abierto",
+      "cerrado": "Cerrado",
+      "vencido": "Venció"
+    },
+    "banda": {
+      "texto": "Estás dentro de <b>{rancho}</b> como Admin de plataforma. Todo lo que hagas queda a tu nombre.",
+      "motivo": "Motivo: {motivo}",
+      "salir": "Salir del rancho",
+      "saliendo": "Saliendo…"
+    },
+    "deMiRancho": {
+      "titulo": "Soporte de la plataforma",
+      "intro": "Cada vez que alguien del soporte entra a tu rancho queda registrado: quién, cuándo y por qué.",
+      "nadie": "Nadie del soporte de la plataforma entró a tu rancho."
+    }
+  }
+}

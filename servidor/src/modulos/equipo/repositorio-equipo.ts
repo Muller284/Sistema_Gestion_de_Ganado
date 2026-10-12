@@ -26,12 +26,6 @@ export interface MiembroEquipo {
   creado_por_nombre: string | null;
 }
 
-export interface TipoColaborador {
-  id: string;
-  nombre: string;
-  es_predefinido: boolean;
-}
-
 const SELECCION_MIEMBRO = `
   SELECT u.id, u.nombre, u.correo, u.rol, u.estado,
          u.tipo_colaborador_id, t.nombre AS tipo_colaborador,
@@ -64,19 +58,6 @@ export class RepositorioEquipo {
       [id, ranchoId],
     );
     return resultado.rows[0] ?? null;
-  }
-
-  /** Los cuatro predefinidos, que son de todos, mas los propios del rancho. */
-  async tipos(ranchoId: string): Promise<TipoColaborador[]> {
-    const resultado = await this.bd.query(
-      `SELECT id, nombre, es_predefinido
-         FROM tipos_colaborador
-        WHERE eliminado_en IS NULL
-          AND (rancho_id IS NULL OR rancho_id = $1)
-        ORDER BY es_predefinido DESC, nombre`,
-      [ranchoId],
-    );
-    return resultado.rows;
   }
 
   async tipoDisponible(tipoId: string, ranchoId: string): Promise<boolean> {

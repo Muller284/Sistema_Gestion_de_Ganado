@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 import { BarraDemostracion, Cargando } from './componentes';
 import { PaginaEquipo } from './paginas/equipo/PaginaEquipo';
+import { PaginaTipos } from './paginas/equipo/PaginaTipos';
 import { PaginaIngreso } from './paginas/ingreso/PaginaIngreso';
 import { PaginaPerfil } from './paginas/perfil/PaginaPerfil';
 import { PaginaLanding } from './paginas/landing/PaginaLanding';
@@ -19,7 +20,9 @@ import { PaginaVerificacion } from './paginas/verificacion/PaginaVerificacion';
 import { PaginaCambioContrasena } from './paginas/contrasena/PaginaCambioContrasena';
 import { PaginaSolicitarRecuperacion } from './paginas/contrasena/PaginaSolicitarRecuperacion';
 import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestablecerContrasena';
-import { api, hayAlguienDentro, type EstadoCuenta } from './servicios/api';
+import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
+import { api, hayAlguienDentro, soporteActual, type EstadoCuenta } from './servicios/api';
+import { cambiarIdioma } from './servicios/idioma';
 
 /**
  * El enrutador y el portero del cliente.
@@ -40,12 +43,22 @@ import { api, hayAlguienDentro, type EstadoCuenta } from './servicios/api';
  * Bloquear solo en el cliente no bloquea nada: cualquiera puede llamar al
  * servidor sin pasar por la pantalla.
  *
+ * EL IDIOMA (HU-25)
+ * La respuesta de /usuarios/yo trae el idioma de la cuenta (el elegido o el
+ * de su país). Cada vez que llega, se aplica: así quien entra ve el sistema
+ * en su idioma sin tocar nada.
+ *
+ * EL ADMIN DE PLATAFORMA (HU-24)
+ * No tiene rancho propio. Su pantalla de inicio es /admin; a /rancho solo
+ * llega después de entrar a uno a dar soporte.
+ *
  *   /                        la landing. Es lo primero que se ve siempre,
  *                            haya sesion o no; con sesion, el boton de
  *                            arriba dice "Ir a mi rancho".
  *   /rancho                  el panel del rancho (HU-15), detras del portero
  *   /equipo                  el equipo del rancho (HU-17), detras del portero
- *   /perfil                  mis datos (nombre y contraseña), detras del portero
+ *   /perfil                  mis datos (nombre, idioma y contraseña), detras del portero
+ *   /admin                   el Admin de plataforma: ranchos y registro de accesos (HU-24)
  *   /ingreso                 entrar con correo y contraseña (HU-08)
  *   /registro                crear cuenta de propietario (HU-06)
  *   /verificar               confirmar el correo (HU-07)
@@ -74,6 +87,7 @@ function Sistema() {
   // y la landing no necesita cuenta.
   const preguntarPorLaCuenta = useCallback(async () => {
     const estado = hayAlguienDentro() ? await api.yo().catch(() => null) : null;
+    if (estado?.idioma) cambiarIdioma(estado.idioma);
     setCuenta(estado);
     setCargando(false);
   }, []);
@@ -98,6 +112,7 @@ function Sistema() {
     void (async () => {
       const estado = hayAlguienDentro() ? await api.yo().catch(() => null) : null;
       if (!vigente) return;
+      if (estado?.idioma) cambiarIdioma(estado.idioma);
       setCuenta(estado);
       setCargando(false);
     })();
@@ -152,8 +167,13 @@ function Sistema() {
         {/* Las pantallas del sistema. Pasan todas por el mismo portero: sin
             sesion, al ingreso; sin correo confirmado o con clave temporal,
             a resolver eso primero. */}
-        <Route path="/rancho" element={adentro(<PaginaRancho />)} />
+        <Route
+          path="/rancho"
+          element={adentro(esAdminSinRancho() ? <Navigate to="/admin" replace /> : <PaginaRancho />)}
+        />
+        <Route path="/admin" element={adentro(<PaginaAdmin />)} />
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
+        <Route path="/equipo/tipos" element={adentro(<PaginaTipos />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}
@@ -164,6 +184,11 @@ function Sistema() {
       <BarraDemostracion />
     </>
   );
+
+  /** HU-24. El Admin de plataforma, si no entró a ningún rancho, va a su pantalla. */
+  function esAdminSinRancho() {
+    return cuenta?.rol === 'admin_plataforma' && !soporteActual();
+  }
 
   /** Una pantalla del sistema: sin nadie adentro, al ingreso. */
   function adentro(pantalla: ReactNode) {

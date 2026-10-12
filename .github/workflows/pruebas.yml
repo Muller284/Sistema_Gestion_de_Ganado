@@ -105,6 +105,10 @@ jobs:
         working-directory: cliente
         run: npm run lint
 
+      - name: Pruebas del cliente
+        working-directory: cliente
+        run: npm test
+
       - name: Compilar
         working-directory: cliente
         run: npm run build

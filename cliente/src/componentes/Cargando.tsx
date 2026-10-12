@@ -1,3 +1,5 @@
+import { t } from '../servicios/idioma';
+
 /**
  * HU-05 · Estado de carga.
  *
@@ -8,7 +10,7 @@
 export function Cargando({ lineas = 3 }: { lineas?: number }) {
   return (
     <div className="col g12" aria-busy="true" aria-live="polite">
-      <span className="solo-lectores">Cargando…</span>
+      <span className="solo-lectores">{t('comun.cargando')}</span>
       <div className="esqueleto esqueleto-titulo" />
       {Array.from({ length: lineas }).map((_, indice) => (
         <div key={indice} className="esqueleto esqueleto-linea" />

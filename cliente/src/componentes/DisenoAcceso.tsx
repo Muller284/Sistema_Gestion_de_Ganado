@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
+import { t, tJsx } from '../servicios/idioma';
 import { Icono, type NombreIcono } from './Iconos';
 import { Marca } from './Marca';
 import { PasosDeAlta } from './PasosDeAlta';
+import { SelectorIdioma } from './SelectorIdioma';
 
 /**
  * El marco de las pantallas de acceso, tal como está en los mockups:
@@ -39,20 +41,19 @@ export function DisenoAcceso({
 
         <div>
           <h2 className="acceso__titular">
-            Tu rancho entero,
-            <br />
-            en el bolsillo
+            {tJsx('acceso.marco.titular', { salto: () => <br /> })}
           </h2>
-          <p className="acceso__bajada">
-            Animales, corrales, vacunas y pesajes. Desde el celular, aunque no
-            haya señal.
-          </p>
+          <p className="acceso__bajada">{t('acceso.marco.bajada')}</p>
         </div>
 
-        <p className="acceso__pie">© 2026 Gestión de Ganado</p>
+        <p className="acceso__pie">{t('acceso.marco.pie')}</p>
       </aside>
 
       <main className="acceso__contenido">
+        {/* HU-25: antes de entrar no hay cuenta de dónde sacar el idioma. */}
+        <div className="acceso__idioma">
+          <SelectorIdioma />
+        </div>
         <div className="acceso__columna">
           {paso && <PasosDeAlta actual={paso} />}
           {icono && (

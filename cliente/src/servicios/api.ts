@@ -5,6 +5,8 @@
  * Soporta autenticación mediante token de acceso firmado y renovación automática
  * mediante token de refresco revocable (vida de 30 días sin actividad).
  */
+import { idiomaActual } from './idioma';
+
 const BASE = import.meta.env.VITE_API ?? 'http://localhost:3000';
 
 const CLAVE_TOKEN_ACCESO = 'ganado_token_acceso';
@@ -34,7 +36,45 @@ export function guardarSesion(
   }
 }
 
+/**
+ * HU-24 · El rancho al que entró el Admin de plataforma a dar soporte.
+ *
+ * Vive en sessionStorage: se termina al cerrar la pestaña, y cada pestaña
+ * puede estar en un rancho distinto. Mientras está, cada petición lleva la
+ * cabecera x-rancho-soporte y el servidor comprueba que el acceso siga
+ * abierto y registrado.
+ */
+export interface Soporte {
+  accesoId: string;
+  ranchoId: string;
+  rancho: string;
+  motivo: string;
+}
+
+const CLAVE_SOPORTE = 'ganado_soporte';
+export const EVENTO_SOPORTE = 'soporte-cambiado';
+
+export function soporteActual(): Soporte | null {
+  try {
+    const guardado = sessionStorage.getItem(CLAVE_SOPORTE);
+    return guardado ? (JSON.parse(guardado) as Soporte) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function guardarSoporte(soporte: Soporte | null) {
+  try {
+    if (soporte) sessionStorage.setItem(CLAVE_SOPORTE, JSON.stringify(soporte));
+    else sessionStorage.removeItem(CLAVE_SOPORTE);
+  } catch {
+    // Sin almacenamiento no se puede entrar a dar soporte; el servidor igual lo impide.
+  }
+  window.dispatchEvent(new CustomEvent(EVENTO_SOPORTE));
+}
+
 export function limpiarSesionLocal() {
+  guardarSoporte(null);
   localStorage.removeItem(CLAVE_TOKEN_ACCESO);
   localStorage.removeItem(CLAVE_TOKEN_REFRESCO);
   localStorage.removeItem(CLAVE_USUARIO);
@@ -76,12 +116,17 @@ async function pedir<T>(
   esReintento = false,
 ): Promise<T> {
   const token = tokenAccesoActual();
+  const soporte = soporteActual();
   const respuesta = await fetch(`${BASE}${ruta}`, {
     ...opciones,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       'x-usuario-id': usuarioActual(),
+      // HU-25: el servidor contesta sus mensajes en este idioma.
+      'Accept-Language': idiomaActual(),
+      // HU-24. Las rutas /admin son del Admin fuera de cualquier rancho.
+      ...(soporte && !ruta.startsWith('/admin/') ? { 'x-rancho-soporte': soporte.ranchoId } : {}),
       ...(opciones.headers ?? {}),
     },
   });
@@ -116,6 +161,12 @@ async function pedir<T>(
   }
 
   if (!respuesta.ok) {
+    // HU-24: el acceso de soporte venció o se cerró en otra pestaña. Se
+    // olvida y se vuelve a la lista de ranchos.
+    if (cuerpo?.motivo === 'soporte_vencido') {
+      guardarSoporte(null);
+      window.location.hash = '#/admin';
+    }
     const mensaje = cuerpo?.message ?? `Error ${respuesta.status}`;
     throw new Error(Array.isArray(mensaje) ? mensaje.join(', ') : mensaje);
   }
@@ -187,10 +238,14 @@ export interface EstadoCuenta {
   correo_verificado: boolean;
   debe_cambiar_contrasena: boolean;
   pendiente: 'verificar_correo' | 'cambiar_contrasena' | null;
+  /** HU-25. El idioma con el que trabaja, y el que eligió (nulo: el de su país). */
+  idioma: string;
+  idioma_elegido: string | null;
 }
 
 export interface EstadoRancho {
-  usuario: { id: string; nombre: string; rol: string };
+  /** soporte: es el Admin de plataforma, dentro del rancho (HU-24). */
+  usuario: { id: string; nombre: string; rol: string; soporte?: boolean };
   tieneRancho: boolean;
   rancho: Rancho | null;
 }
@@ -210,10 +265,37 @@ export interface MiembroEquipo {
   creado_por_nombre: string | null;
 }
 
+/** HU-20 · Qué puede un tipo en un módulo. */
+export type NivelPermiso = 'ninguno' | 'ver' | 'editar';
+
+export interface PermisoDeModulo {
+  modulo: string;
+  nombre: string;
+  nivel: NivelPermiso;
+}
+
 export interface TipoColaborador {
   id: string;
   nombre: string;
   es_predefinido: boolean;
+  /** Un predefinido que el propietario ajustó para su rancho. */
+  ajustado: boolean;
+  /** Cuántos colaboradores del rancho lo tienen. */
+  colaboradores: number;
+  /** Los ocho módulos, en orden. */
+  permisos: PermisoDeModulo[];
+}
+
+export interface DatosTipo {
+  id?: string;
+  nombre?: string;
+  permisos: Record<string, NivelPermiso>;
+}
+
+export interface RespuestaTipo {
+  tipo: TipoColaborador;
+  mensaje: string;
+  afectados?: number;
 }
 
 export interface DatosAltaMiembro {
@@ -261,6 +343,38 @@ export interface PerfilUsuario {
   tipo_colaborador: string | null;
   creado_en: string;
   modificado_en: string;
+  /** HU-25. El que usa, el que eligió (nulo: el del país) y el de su país. */
+  idioma: string;
+  idioma_elegido: string | null;
+  idioma_del_pais: string;
+}
+
+/** HU-24 · Un rancho en la lista del Admin de plataforma. */
+export interface RanchoParaSoporte {
+  id: string;
+  nombre: string;
+  departamento: string;
+  localidad: string;
+  pais_codigo: string;
+  pais: string | null;
+  propietario: string;
+  propietario_correo: string;
+  integrantes: number;
+  creado_en: string;
+  acceso_abierto: string | null;
+}
+
+/** HU-24 · Una fila del registro de accesos. */
+export interface AccesoAdmin {
+  id: string;
+  admin_id: string;
+  admin: string;
+  rancho_id: string;
+  rancho: string;
+  motivo: string;
+  entrado_en: string;
+  salido_en: string | null;
+  estado: 'abierto' | 'cerrado' | 'vencido';
 }
 
 export const api = {
@@ -380,6 +494,22 @@ export const api = {
       body: JSON.stringify({ estado }),
     }),
 
+  // HU-20 · Tipos de colaborador
+  modulosConPermisos: () => pedir<{ codigo: string; nombre: string }[]>('/equipo/modulos'),
+  crearTipo: (datos: DatosTipo) =>
+    pedir<RespuestaTipo>('/equipo/tipos', { method: 'POST', body: JSON.stringify(datos) }),
+  actualizarTipo: (id: string, datos: DatosTipo) =>
+    pedir<RespuestaTipo>(`/equipo/tipos/${id}`, { method: 'PUT', body: JSON.stringify(datos) }),
+  restablecerTipo: (id: string) =>
+    pedir<RespuestaTipo>(`/equipo/tipos/${id}/restablecer`, { method: 'POST' }),
+  eliminarTipo: (id: string) =>
+    pedir<{ mensaje: string }>(`/equipo/tipos/${id}`, { method: 'DELETE' }),
+  asignarTipo: (usuarioId: string, tipoId: string) =>
+    pedir<{ tipo_colaborador_id: string; tipo_colaborador: string; mensaje: string }>(
+      `/equipo/${usuarioId}/tipo`,
+      { method: 'PATCH', body: JSON.stringify({ tipo_colaborador_id: tipoId }) },
+    ),
+
   // HU-16 · Guia de configuracion
   guia: () => pedir<EstadoGuia>('/guia'),
   visitarPaso: (paso: ClavePaso) =>
@@ -393,9 +523,21 @@ export const api = {
 
   // Mi perfil
   perfil: () => pedir<PerfilUsuario>('/usuarios/yo/perfil'),
-  actualizarPerfil: (datos: { nombre: string }) =>
+  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null }) =>
     pedir<{ perfil: PerfilUsuario; mensaje: string }>('/usuarios/yo/perfil', {
       method: 'PATCH',
       body: JSON.stringify(datos),
     }),
+
+  // HU-24 · Admin de plataforma
+  adminRanchos: () => pedir<RanchoParaSoporte[]>('/admin/ranchos'),
+  entrarARancho: (ranchoId: string, motivo: string) =>
+    pedir<{ acceso: AccesoAdmin; mensaje: string }>(`/admin/ranchos/${ranchoId}/accesos`, {
+      method: 'POST',
+      body: JSON.stringify({ motivo }),
+    }),
+  salirDeRancho: (accesoId: string) =>
+    pedir<{ mensaje: string }>(`/admin/accesos/${accesoId}/salida`, { method: 'POST' }),
+  accesosAdmin: () => pedir<AccesoAdmin[]>('/admin/accesos'),
+  accesosDeMiRancho: () => pedir<AccesoAdmin[]>('/admin/accesos/de-mi-rancho'),
 };

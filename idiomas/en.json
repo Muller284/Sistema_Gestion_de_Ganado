@@ -1,0 +1,1226 @@
+{
+  "_idioma": {
+    "codigo": "en",
+    "nombre": "English"
+  },
+  "comun": {
+    "cargando": "Loading…",
+    "cancelar": "Cancel",
+    "guardar": "Save",
+    "guardando": "Saving…",
+    "volver": "Back",
+    "cerrar": "Close",
+    "idioma": "Language",
+    "enumerar": "{primeros} and {ultimo}",
+    "contrasena": {
+      "largo": "eight characters",
+      "mayuscula": "one uppercase letter",
+      "numero": "one number",
+      "falta": "It still needs at least {faltas}.",
+      "necesita": "The password needs at least {faltas}.",
+      "reglas": "At least 8 characters, with one uppercase letter and one number."
+    }
+  },
+  "servidor": {
+    "comun": {
+      "enumerar": "{primeros} and {ultimo}"
+    },
+    "admin": {
+      "soporteVencido": "Your support access to this ranch has ended or was never opened. Enter again from the list of ranches.",
+      "motivoCorto": "Write why you are entering, at least {n} characters long. It is kept in the access log.",
+      "motivoLargo": "The reason can't be longer than {n} characters.",
+      "ranchoNoExiste": "That ranch doesn't exist.",
+      "entraste": "You entered {rancho}. This access has been logged.",
+      "saliste": "You left the ranch. The access was closed in the log.",
+      "yaSaliste": "That access was already closed.",
+      "soloAdmin": "This section is only for the platform Admin.",
+      "soloPropietarioVeAccesos": "Only the ranch owner can see the support access log."
+    },
+    "perfil": {
+      "terminaDeActivar": "Finish activating your account before editing your profile.",
+      "nadaQueCambiar": "Nothing was sent to change.",
+      "nombreVacio": "The name can't be empty.",
+      "nombreLargo": "The name can't be longer than {n} characters.",
+      "idiomaNoExiste": "That language isn't available. The available ones are: {disponibles}.",
+      "guardado": "Your details were saved.",
+      "idiomaGuardado": "Done, the system is now in English."
+    },
+    "datos": {
+      "faltan": "Some required information is missing: {faltantes}.",
+      "campos": {
+        "nombre": "name",
+        "correo": "email",
+        "contrasena": "password",
+        "pais": "country",
+        "rol": "role",
+        "tipoColaborador": "collaborator type"
+      },
+      "correoInvalido": "That email address doesn't look valid.",
+      "usuarioNoExiste": "That user doesn't exist.",
+      "primeroElRancho": "You need to create the ranch first.",
+      "soloPropietario": "Only the owner can {accion}.",
+      "noEsDeTuRancho": "That person isn't part of your ranch.",
+      "tipoNoExiste": "That collaborator type doesn't exist on your ranch.",
+      "correoEnOtroRancho": "This email is already registered on another ranch. For security, each team member can work on only one ranch.",
+      "contrasenaOculta": "For security, the password isn't shown here. Only its owner receives it."
+    },
+    "roles": {
+      "propietario": "owner",
+      "socio": "partner",
+      "colaborador": "collaborator",
+      "admin_plataforma": "platform admin"
+    },
+    "registro": {
+      "correoLargo": "The email address can be at most {n} characters long.",
+      "paisNoExiste": "That country doesn't exist.",
+      "correoRepetido": "There's already an account with that email. If it's yours, sign in or recover your password.",
+      "creada": "Account created. We sent you an email to confirm your address. The link expires in 24 hours."
+    },
+    "usuarios": {
+      "soloPropietarioRegistra": "Only the owner can register new staff.",
+      "correoNoValido": "The email you entered isn't valid.",
+      "validacionSuperada": "All checks passed. The user can be added to the ranch."
+    },
+    "sesion": {
+      "faltanCredenciales": "Please enter your email and password.",
+      "bloqueada": {
+        "uno": "Your account is temporarily locked after too many failed attempts. Please try again in {n} minute.",
+        "otros": "Your account is temporarily locked after too many failed attempts. Please try again in {n} minutes."
+      },
+      "credencialesIncorrectas": "Incorrect email or password.",
+      "suspendida": "This account is suspended.",
+      "faltaRefresco": "The refresh token is missing.",
+      "revocada": "This session has been revoked or is no longer valid.",
+      "expirada": "Your session expired after 30 days of inactivity. Please sign in again.",
+      "usuarioInactivo": "User not found or inactive.",
+      "cerrada": "You've been signed out.",
+      "tokenInvalido": "Invalid or expired access token.",
+      "sinCredencial": "No credentials were provided. Sign in or send a valid token.",
+      "usuarioNoActivo": "That user doesn't exist or isn't active."
+    },
+    "portero": {
+      "correoSinVerificar": "Confirm your email to start using the system. You can ask us to resend the link.",
+      "debeCambiarContrasena": "Change your temporary password to start using the system."
+    },
+    "contrasena": {
+      "faltanAmbas": "Both your current and your new password are required.",
+      "actualIncorrecta": "Your current password is incorrect.",
+      "igualTemporal": "Your new password can't be the same as the temporary one.",
+      "igualActual": "Your new password must be different from your current one.",
+      "actualizadaYaPuedes": "Password updated. You're all set to use the system.",
+      "actualizada": "Password updated.",
+      "soloPropietarioRestablece": "Only the owner can reset their team's passwords.",
+      "usuarioAjeno": "That user isn't part of your ranch.",
+      "usaElCambio": "To change your own password, use Change password instead of a reset.",
+      "temporalEnviada": "A temporary password was sent to {correo}.",
+      "correoObligatorio": "Email is required.",
+      "recuperacionPedida": "If that email is registered, you'll receive a recovery link.",
+      "faltanTokenYNueva": "The token and the new password are required.",
+      "enlaceExpirado": "This recovery link has expired. Please request a new one.",
+      "enlaceInvalido": "This recovery link is invalid or has already been used.",
+      "recuperada": "Your password has been reset. You can sign in now."
+    },
+    "verificacion": {
+      "faltaEnlace": "The confirmation link is missing.",
+      "vencido": "This link has expired. Request a new one from the sign-in screen.",
+      "invalido": "This link is invalid or has already been used.",
+      "confirmado": "Email confirmed. You're all set to use the system.",
+      "faltaCorreo": "The email is missing.",
+      "reenviado": "If that email has an unconfirmed account, we've sent it a new link."
+    },
+    "equipo": {
+      "soloVen": "Only the owner and partners can see the team. If you need it, ask the owner.",
+      "acciones": {
+        "alta": "add someone to the team",
+        "estado": "suspend or reactivate someone"
+      },
+      "rolInvalido": "The role must be partner or collaborator. There's only one owner, and the Platform admin isn't created from a ranch.",
+      "tipoSoloColaboradores": "A collaborator type can only be assigned to collaborators.",
+      "yaEsDelEquipo": "That person is already on your team.",
+      "correoRegistrado": "That email is already registered.",
+      "alta": "{nombre} is now on the team. We sent their temporary password to {correo}.",
+      "estadoInvalido": "The status must be active or suspended.",
+      "propietarioNoSeSuspende": "The owner can't be suspended.",
+      "suspendido": "{nombre} has been suspended and can't sign in until you reactivate them.",
+      "reactivado": "{nombre} can sign in again."
+    },
+    "tipos": {
+      "acciones": {
+        "crear": "create collaborator types",
+        "cambiar": "change collaborator types",
+        "restablecer": "reset collaborator types",
+        "eliminar": "delete collaborator types",
+        "asignar": "change a collaborator's type"
+      },
+      "yaTienes": "You already have a type called “{nombre}”.",
+      "creado": "Done! You can now assign the “{nombre}” type to your collaborators.",
+      "predefinidoSinRenombrar": "Built-in types can't be renamed. If you want a different name, create your own type.",
+      "guardados": {
+        "cero": "You saved the permissions for “{nombre}”.",
+        "uno": "You saved the permissions for “{nombre}”. The collaborator who has it is already working with them.",
+        "otros": "You saved the permissions for “{nombre}”. The {n} collaborators who have it are already working with them."
+      },
+      "soloPredefinidosRestablecen": "Only built-in types have default permissions to go back to.",
+      "restablecido": "“{nombre}” is back to its default permissions.",
+      "predefinidoNoSeElimina": "Built-in types can't be deleted.",
+      "enUso": {
+        "uno": "A collaborator has this type. Change their type before deleting it.",
+        "otros": "{n} collaborators have this type. Change their type before deleting it."
+      },
+      "eliminado": "You deleted the “{nombre}” type.",
+      "faltaTipo": "The collaborator type is missing.",
+      "soloColaboradores": "A type can only be assigned to collaborators.",
+      "asignado": "{persona}'s type is now {tipo}.",
+      "sinNombre": "Give the type a name.",
+      "yaExiste": "A type called “{nombre}” already exists.",
+      "faltanPermisos": "Permissions are missing: choose which modules this type can view or edit.",
+      "moduloNoExiste": "The “{modulo}” module doesn't exist.",
+      "nivelInvalido": "The permission for “{modulo}” must be ninguno (none), ver (view) or editar (edit).",
+      "algunModulo": "Choose at least one module this type can view.",
+      "soloVen": "Only the owner and partners can see collaborator types.",
+      "predefinidos": {
+        "veterinario": "Veterinarian",
+        "encargadoCampo": "Field manager",
+        "encargadoAlmacen": "Warehouse manager",
+        "administrativo": "Administrative staff"
+      }
+    },
+    "guia": {
+      "pasos": {
+        "animales": {
+          "nombre": "Add your animals",
+          "descripcion": "One by one or by importing your Excel spreadsheet."
+        },
+        "corrales": {
+          "nombre": "Set up your pens",
+          "descripcion": "With their capacity, so the system can warn you when one fills up."
+        },
+        "vacunas": {
+          "nombre": "Define your vaccines",
+          "descripcion": "Your health schedule, so you get reminders before each one is due."
+        },
+        "equipo": {
+          "nombre": "Bring in your team",
+          "descripcion": "Partners who see everything and collaborators who record their own work."
+        }
+      },
+      "pausaInvalida": "Say whether the guide is paused (pausada: true or false).",
+      "pasoNoExiste": "That step isn't part of the guide.",
+      "noDisponible": "That step isn't available yet: it arrives in phase {fase}.",
+      "soloPropietario": "The setup guide is managed by the owner."
+    },
+    "ranchos": {
+      "campoObligatorio": "The {campo} field is required.",
+      "campoLargo": "The {campo} field can be at most {n} characters long.",
+      "campos": {
+        "nombre": "name",
+        "departamento": "department",
+        "localidad": "locality",
+        "tipoProduccion": "production type",
+        "pais": "country"
+      },
+      "superficie": "The area is required and must be a number greater than zero.",
+      "ubicacionIncompleta": "The location is optional, but if you add it, it needs both latitude and longitude.",
+      "latitud": "Latitude must be between -90 and 90.",
+      "longitud": "Longitude must be between -180 and 180.",
+      "tipoProduccion": "The production type must be one of: {tipos}.",
+      "paisNoExiste": "The country {pais} isn't in the catalog.",
+      "soloPropietarioCrea": "Only the owner can create the ranch. Your role is {rol}.",
+      "yaTienes": "You already have a ranch. Each account manages a single ranch.",
+      "sinRancho": "You haven't created a ranch yet.",
+      "noExiste": "There's no ranch with that ID.",
+      "soloPropietarioEdita": "Only the owner can edit the ranch.",
+      "soloPropietarioDaDeBaja": "Only the owner can deactivate the ranch.",
+      "dadoDeBaja": "Ranch deactivated."
+    }
+  },
+  "acceso": {
+    "marco": {
+      "titular": "Your whole ranch,<salto></salto>right in your pocket",
+      "bajada": "Animals, pens, vaccines and weighings. Right from your phone, even with no signal.",
+      "pie": "© 2026 Gestión de Ganado"
+    },
+    "pasos": {
+      "cuenta": "Account",
+      "correo": "Email",
+      "rancho": "Ranch",
+      "progreso": "Step {actual} of {total}"
+    },
+    "espera": {
+      "detenida": "We stopped checking. Reload the page once you've confirmed.",
+      "viva": "This screen updates on its own as soon as you confirm."
+    },
+    "comun": {
+      "correo": "Email",
+      "correoEjemplo": "you@example.com",
+      "contrasena": "Password",
+      "contrasenaNueva": "New password",
+      "repetirNueva": "Repeat the new password",
+      "alMenos8": "At least 8 characters",
+      "ayudaContrasena": "Use at least 8 characters, with one uppercase letter and one number.",
+      "noCoinciden": "The two passwords don't match.",
+      "enlaceDesarrollo": "In development, the email is written to the server console. Here's the link: <enlace>open it here</enlace>."
+    },
+    "ingreso": {
+      "titulo": "Welcome back",
+      "subtitulo": "Enter your credentials to start managing your ranch.",
+      "sinCuenta": "Don't have an account yet? <enlace>Create one, it's free for 10 days</enlace>",
+      "faltanDatos": "Please enter your email and password.",
+      "incorrectos": "Incorrect email or password.",
+      "contrasenaEjemplo": "Your password",
+      "olvido": "Forgot your password?",
+      "ingresando": "Signing in…",
+      "ingresar": "Sign in"
+    },
+    "registro": {
+      "titulo": "Create your account",
+      "subtitulo": "10 days with every feature. No card needed.",
+      "nota": "When the 10 days are up, your account moves to the Free plan. Nothing gets locked and you don't lose anything.",
+      "nombre": "Full name",
+      "nombreEjemplo": "e.g. Aaron Vargas",
+      "pais": "Country",
+      "paisAyuda": "Sets the language, currency and units of measurement. You can change it later.",
+      "terminos": "I accept the terms of service and the privacy policy.",
+      "creando": "Creating…",
+      "crear": "Create account",
+      "yaTienes": "Already have an account? <enlace>Sign in</enlace>",
+      "revisa": {
+        "titulo": "Check your email",
+        "subtitulo": "We sent a confirmation link to {correo}.",
+        "nota": "The link expires in 24 hours. If it doesn't arrive, you can request another one.",
+        "creada": "Account created for {nombre}.",
+        "confirma": "Confirm your email to activate the account. Until then, you can't sign in.",
+        "pedirOtro": "Didn't get it? Send another"
+      }
+    },
+    "verificacion": {
+      "confirmando": {
+        "titulo": "Confirming your email",
+        "subtitulo": "Just a moment."
+      },
+      "confirmado": {
+        "titulo": "Email confirmed",
+        "subtitulo": "Your account is now active.",
+        "nota": "You can now create your ranch and start adding animals.",
+        "listo": "All set. You can start using the system.",
+        "crearRancho": "Create my ranch"
+      },
+      "pendiente": {
+        "titulo": "Confirm your email",
+        "subtitulo": "You can't sign in until you confirm it.",
+        "nota": "The link expires after 24 hours. Requesting a new one cancels the previous one.",
+        "texto": "We sent you a confirmation link. If it expired or never arrived, request a new one.",
+        "correo": "Your account email",
+        "enviando": "Sending…",
+        "reenviar": "Resend the link"
+      }
+    },
+    "contrasena": {
+      "cambio": {
+        "titulo": "Change your password",
+        "subtituloConNombre": "{nombre}, you signed in with a temporary password.",
+        "subtitulo": "You signed in with a temporary password.",
+        "nota": "You can't use the rest of the system until you change it.",
+        "aviso": "Nobody else knows your new password, not even the ranch owner. That's what makes the record of who entered each piece of data meaningful.",
+        "temporal": "Temporary password",
+        "temporalEjemplo": "The one you were sent",
+        "igualTemporal": "Your new password can't be the same as the temporary one.",
+        "igualTemporalCampo": "It can't be the same as the temporary one.",
+        "guardarYEntrar": "Save and continue"
+      },
+      "restablecer": {
+        "titulo": "Create your new password",
+        "nota": "Choose a strong password you can remember.",
+        "enlaceInvalido": "The recovery link is invalid or incomplete.",
+        "guardando": "Saving...",
+        "guardar": "Save password",
+        "exito": {
+          "titulo": "Password recovered!",
+          "nota": "Your password has been updated successfully.",
+          "texto": "You can now sign in with your new password.",
+          "ingresar": "Sign in with the new one"
+        },
+        "invalido": {
+          "titulo": "Invalid link",
+          "nota": "We can't recover your password.",
+          "texto": "The security code is missing. Make sure you click the full link we sent to your email.",
+          "volverInicio": "Back to home"
+        }
+      },
+      "solicitar": {
+        "titulo": "Recover your password",
+        "nota": "Enter your email and we'll send you a link to recover it.",
+        "faltaCorreo": "Please enter your email address.",
+        "correo": "Email address",
+        "correoEjemplo": "example@email.com",
+        "enviando": "Sending link...",
+        "enviar": "Send link",
+        "exito": {
+          "titulo": "Check your inbox",
+          "nota": "If your email is registered, we've sent you instructions.",
+          "texto": "Click the link we sent you to create a new password. Keep in mind the link expires in 1 hour.",
+          "volverIngresar": "Back to sign in"
+        }
+      }
+    }
+  },
+  "app": {
+    "nombreSistema": "Gestión de Ganado",
+    "sinRancho": "No ranch yet",
+    "miPerfil": "My profile",
+    "fase": "Phase {n}",
+    "llegaEnFase": "Coming in phase {n}",
+    "modulos": {
+      "inicio": "My ranch",
+      "animales": "Animals",
+      "corrales": "Pens",
+      "sanidad": "Health",
+      "pesajes": "Weighings",
+      "equipo": "Team"
+    },
+    "cuenta": {
+      "titulo": "Account",
+      "plan": "Professional plan",
+      "medidor": "Animals used in your plan",
+      "usados": "{porcentaje}% of animals used"
+    },
+    "menuUsuario": {
+      "cuentaDe": "{nombre}'s account",
+      "rol": "Role",
+      "rancho": "Ranch",
+      "irAMiRancho": "Go to my ranch",
+      "cerrando": "Signing out…",
+      "cerrarSesion": "Sign out"
+    },
+    "demo": {
+      "etiqueta": "Demo",
+      "usuario": "User the system is shown as",
+      "elegirCuenta": "Choose an account…",
+      "empezarDeCero": "Start from scratch",
+      "provisional": "Temporary: shows each role without knowing their passwords.",
+      "cuentas": {
+        "carlos": "Carlos · owner with a ranch",
+        "mariaRene": "María René · partner",
+        "ariel": "Ariel · owner without a ranch",
+        "lucia": "Lucía · email not confirmed",
+        "ruben": "Rubén · with a temporary password",
+        "admin": "Admin · platform support"
+      }
+    }
+  },
+  "sistemaDiseno": {
+    "titulo": "Design system",
+    "intro": "HU-05 · Everything you can use on a screen. If something isn't here, don't build it by hand: add it here first.",
+    "colores": {
+      "titulo": "Colors",
+      "nota": "Caravana gold is used only for plans, subscriptions and plan limits. Never for a regular action.",
+      "nombres": {
+        "corral800": "Corral 800",
+        "corral600": "Corral 600",
+        "corral400": "Corral 400",
+        "corral100": "Corral 100",
+        "caravana500": "Caravana 500",
+        "caravana100": "Caravana 100",
+        "arena900": "Arena 900",
+        "arena600": "Arena 600",
+        "arena300": "Arena 300",
+        "arena100": "Arena 100",
+        "exito": "Success",
+        "advertencia": "Warning",
+        "error": "Error",
+        "informacion": "Info"
+      }
+    },
+    "tipografia": {
+      "titulo": "Typography",
+      "titulos": "Outfit · headings",
+      "texto": "Inter · body text",
+      "identificadores": "IBM Plex Mono · identifiers",
+      "ejemplo": "The ranch is the root of isolation: no query can ever return data from another ranch."
+    },
+    "botones": {
+      "titulo": "Buttons",
+      "crearRancho": "Create ranch",
+      "editar": "Edit",
+      "darDeBaja": "Deactivate",
+      "deshabilitado": "Disabled",
+      "mejorarPlan": "Upgrade plan"
+    },
+    "campos": {
+      "titulo": "Fields",
+      "nombreRancho": "Ranch name",
+      "superficie": "Area",
+      "superficieAyuda": "In hectares.",
+      "correo": "Email",
+      "correoError": "An account with that email already exists.",
+      "correoEjemplo": "ariel@example.com",
+      "caravana": "Ear tag",
+      "tipoProduccion": "Production type",
+      "carne": "Beef",
+      "leche": "Dairy",
+      "mixto": "Mixed",
+      "pais": "Country"
+    },
+    "tarjeta": {
+      "titulo": "Card with header, body and footer",
+      "ubicacion": "Location",
+      "caravanas": "Ear tags"
+    },
+    "insignias": {
+      "titulo": "Badges",
+      "neutra": "Neutral",
+      "activo": "Active",
+      "sinVerificar": "Unverified",
+      "suspendido": "Suspended",
+      "soloLectura": "Read only",
+      "planProfesional": "Professional plan"
+    },
+    "iconos": {
+      "titulo": "Icons",
+      "texto": "They come from <enlace>Lucide</enlace>, under the ISC license. The paths are copied into <dato>{archivo}</dato>, so there's no dependency to install. Use them with <dato>{ejemplo}</dato> and they take on the color of the surrounding text."
+    },
+    "alertas": {
+      "titulo": "Alerts",
+      "ranchoCreado": "Ranch created.",
+      "unSoloRancho": "An account can manage only one ranch.",
+      "confirmaCorreo": "Confirm your email to start using the system.",
+      "soloPropietario": "Only the owner can create or edit the ranch."
+    },
+    "vacio": {
+      "titulo": "Empty state",
+      "sinAnimales": "You don't have any animals yet",
+      "texto": "Add your first one or import them from an Excel file.",
+      "registrar": "Add animal"
+    },
+    "carga": {
+      "titulo": "Loading state"
+    }
+  },
+  "roles": {
+    "propietario": "Owner",
+    "socio": "Partner",
+    "colaborador": "Collaborator",
+    "admin_plataforma": "Platform admin"
+  },
+  "niveles": {
+    "ninguno": "No access",
+    "ver": "View",
+    "editar": "Edit"
+  },
+  "modulos": {
+    "animales": {
+      "nombre": "Animals",
+      "detalle": "Animal records, new arrivals and status"
+    },
+    "corrales": {
+      "nombre": "Pens",
+      "detalle": "Pens, occupancy and movements"
+    },
+    "sanidad": {
+      "nombre": "Health",
+      "detalle": "Vaccines, treatments and diagnoses"
+    },
+    "pesajes": {
+      "nombre": "Weighings",
+      "detalle": "Weighings and weight gain"
+    },
+    "importacion": {
+      "nombre": "Import",
+      "detalle": "Upload Excel or CSV spreadsheets"
+    },
+    "almacen": {
+      "nombre": "Warehouse",
+      "detalle": "Supplies, vaccines and feed in stock"
+    },
+    "equipo": {
+      "nombre": "Team",
+      "detalle": "See who's part of the ranch"
+    },
+    "planes": {
+      "nombre": "Plans",
+      "detalle": "The ranch's plan and billing"
+    }
+  },
+  "equipo": {
+    "titulo": "Team",
+    "rotulo": "Your team",
+    "invitado": "Guest",
+    "acciones": {
+      "tipos": "Types and permissions",
+      "agregar": "Add member"
+    },
+    "sinPermiso": "This section isn't available for your role",
+    "sinRancho": {
+      "titulo": "Create your ranch first",
+      "texto": "Your team works inside a ranch. Once you've created it, come back here to add your partners and collaborators.",
+      "accion": "Create my ranch"
+    },
+    "cifras": {
+      "activos": {
+        "rotulo": "Can sign in",
+        "detalle": "Active members, including you"
+      },
+      "socios": {
+        "rotulo": "Partners",
+        "detalle": "See everything, can't make changes"
+      },
+      "colaboradores": {
+        "rotulo": "Collaborators",
+        "detalle": "Record what their type allows"
+      },
+      "suspendidos": {
+        "rotulo": "Suspended",
+        "detalle": "Can't sign in"
+      }
+    },
+    "vacio": {
+      "titulo": "You're working solo for now",
+      "texto": "Add your partners so they can see how the ranch is doing, and your collaborators so they can record their work. Everyone signs in with their own account.",
+      "accion": "Add your first member"
+    },
+    "lista": {
+      "titulo": "Members",
+      "filtrar": "Filter members",
+      "sinResultados": "No one matches this filter."
+    },
+    "filtros": {
+      "todos": "All",
+      "socio": "Partners",
+      "colaborador": "Collaborators",
+      "suspendido": "Suspended"
+    },
+    "soloPropietario": "Only the owner can add, suspend or reactivate members.",
+    "estados": {
+      "suspendido": "Suspended",
+      "sinEntrar": "Hasn't signed in yet",
+      "activo": "Active"
+    },
+    "cambioTipo": {
+      "grupo": "Change {nombre}'s type",
+      "lista": "Collaborator type"
+    },
+    "fila": {
+      "tipo": "Type",
+      "tipoAyuda": "Change which modules they can access",
+      "clave": "New password",
+      "claveAyuda": "We'll email them a new temporary password",
+      "reactivar": "Reactivate",
+      "reactivando": "Reactivating…",
+      "suspender": "Suspend",
+      "suspendiendo": "Suspending…"
+    },
+    "confirmar": {
+      "grupo": "Confirm suspending {nombre}",
+      "texto": "Their sessions will be closed and they won't be able to sign in."
+    },
+    "alta": {
+      "titulo": "New member",
+      "cerrar": "Close the form",
+      "faltaTipo": "Choose what type of collaborator they are: it decides which modules they can access.",
+      "nombre": "Full name",
+      "nombreEjemplo": "E.g. Jorge Soliz",
+      "correo": "Email",
+      "correoEjemplo": "name@email.com",
+      "correoAyuda": "Their temporary password will be sent here.",
+      "rol": "Role",
+      "roles": {
+        "socio": "Sees all of the ranch's information, without changing it.",
+        "colaborador": "Records their own work, depending on their type: health, weighings, field work…"
+      },
+      "tipo": "Collaborator type",
+      "tipoAyuda": "The type decides which modules they can access. It starts with view-only permission.",
+      "elegirTipo": "Choose a type…",
+      "predefinidos": "Built-in",
+      "propios": "Your ranch's",
+      "tipoSinAcceso": "This type doesn't have access to any module yet",
+      "resumenTipo": "{resumen}. <enlace>View or change types</enlace>",
+      "nota": "We'll email them a temporary password, and they'll change it the first time they sign in. You won't see it: that way, everything they record is under their own name.",
+      "enviar": "Add member",
+      "enviando": "Adding…"
+    }
+  },
+  "tipos": {
+    "titulo": "Collaborator types",
+    "predefinidos": {
+      "veterinario": "Veterinarian",
+      "encargadoCampo": "Field manager",
+      "encargadoAlmacen": "Warehouse manager",
+      "administrativo": "Administrative staff"
+    },
+    "resumen": {
+      "edita": "Can edit {modulos}",
+      "ve": "Can view {modulos}"
+    },
+    "colaboradores": {
+      "cero": "Nobody has it yet",
+      "uno": "1 collaborator",
+      "otros": "{n} collaborators"
+    },
+    "acciones": {
+      "integrantes": "Members",
+      "nuevo": "New type"
+    },
+    "sinRancho": "Collaborator types belong to each ranch. Once you've created yours, come back here.",
+    "intro": "Every collaborator has a type, and the type decides which modules they can see and where they can record data. <b>If you change a type, it changes for everyone who has it.</b>",
+    "propios": {
+      "titulo": "Your ranch's types",
+      "vacio": "You haven't created any types of your own yet. If none of the four below fits someone on your team, build one tailored to them.",
+      "crear": "Create a type"
+    },
+    "deFabrica": {
+      "titulo": "Built-in",
+      "nota": "These come with the system. You can adjust their permissions: the change only applies to your ranch, and you can always go back to the defaults."
+    },
+    "soloPropietario": "Only the owner can create types or change their permissions.",
+    "tarjeta": {
+      "confirmarGrupo": "Confirm deleting {nombre}",
+      "confirmar": "Delete “{nombre}”?",
+      "eliminar": "Delete",
+      "eliminando": "Deleting…",
+      "restablecer": "Restore defaults",
+      "restableciendo": "Restoring…",
+      "enUso": "Someone on your team has this type: change their type before deleting it",
+      "editar": "Edit permissions",
+      "sinAcceso": "No access to {modulos}."
+    },
+    "insignias": {
+      "ajustado": "Adjusted",
+      "predefinido": "Built-in",
+      "propio": "Custom"
+    },
+    "editor": {
+      "tituloPermisos": "{nombre} permissions",
+      "tituloNuevo": "New collaborator type",
+      "faltaNombre": "Give the type a name.",
+      "faltaModulo": "Choose at least one module this type can view.",
+      "nombre": "Type name",
+      "nombreEjemplo": "For example: Milker, Tractor driver, Accountant",
+      "nombrePredefinido": "Built-in types can't be renamed. If you need a different one, create your own type.",
+      "matriz": "What they can do in each module",
+      "permisoEn": "Permission for {modulo}",
+      "ayuda": "“Edit” includes viewing. With no access, the module won't even show up in their menu.",
+      "alcance": {
+        "uno": "One collaborator has this type: the change applies to them as soon as you save.",
+        "otros": "{n} collaborators have this type: the change applies to all of them as soon as you save."
+      },
+      "guardar": "Save permissions",
+      "crear": "Create type"
+    }
+  },
+  "landing": {
+    "marca": "Gestión de Ganado",
+    "menu": {
+      "secciones": "Sections",
+      "funciones": "Features",
+      "asistente": "Assistant",
+      "comoEmpieza": "How it starts",
+      "planes": "Plans",
+      "preguntas": "FAQ",
+      "irAMiRancho": "Go to my ranch",
+      "ingresar": "Log in",
+      "probarGratis": "Try it free",
+      "abrir": "Open menu",
+      "cerrar": "Close menu"
+    },
+    "portada": {
+      "pastilla": "For producers in any country",
+      "titulo": "Your whole ranch, <resaltado>in your pocket</resaltado>",
+      "bajada": "Animals, pens, vaccines and weighings in one place. Work with your team, record from the pen even without signal, and ask whatever you need to know in your own words.",
+      "probar": "Try it free for 10 days",
+      "yaTengoCuenta": "I already have an account",
+      "sinTarjeta": "No card needed",
+      "sigueGratis": "Stay free afterwards",
+      "exportas": "Export your data whenever you want"
+    },
+    "vitrina": {
+      "barra": "Estancia La Esperanza · Dashboard",
+      "animales": "Active animals",
+      "animalesNota": "+12 this month",
+      "corrales": "Pens",
+      "corralesNota": "1 over capacity",
+      "vacunas": "Vaccines due soon",
+      "vacunasNota": "this week",
+      "grafico": "Daily gain · feedlot group",
+      "filas": {
+        "novillo": "Brangus · Steer",
+        "vaquilla": "Nelore · Heifer",
+        "toro": "Criollo · Bull"
+      },
+      "activo": "Active",
+      "vendido": "Sold",
+      "sinSenal": "No signal at the pen",
+      "sinSenalNota": "3 weighings saved, they'll sync on their own",
+      "pregunta": "Which pen is gaining the least?",
+      "respuesta": "El Bajo: 410 g/day, 22% less than the rest."
+    },
+    "diferenciales": {
+      "rotulo": "Why not a spreadsheet",
+      "titulo": "Three things a notebook can't do",
+      "equipo": {
+        "titulo": "Built for teamwork",
+        "texto": "Hand off the workload to your collaborators and share information with your partners, without losing control. Every record keeps track of who entered it and when."
+      },
+      "sinInternet": {
+        "titulo": "Works offline",
+        "texto": "From your phone, record animals, vaccines, weighings and chute work with no signal. The data syncs on its own when the connection comes back."
+      },
+      "asistente": {
+        "titulo": "An assistant that knows your ranch",
+        "texto": "Ask in plain words, no filters or reports. It only reads your ranch's data: it doesn't search the internet and doesn't change anything."
+      }
+    },
+    "funciones": {
+      "rotulo": "Features",
+      "titulo": "All your ranch work, organized",
+      "bajada": "Everything that's scattered today across notebooks, spreadsheets and everyone's memory, in one place with the full history.",
+      "lista": {
+        "animales": {
+          "titulo": "Animals",
+          "texto": "A profile and full history for every animal, with an ear tag that's unique within the ranch."
+        },
+        "corrales": {
+          "titulo": "Pens",
+          "texto": "Capacity, occupancy and an alert when a pen goes over its limit."
+        },
+        "sanidad": {
+          "titulo": "Health",
+          "texto": "Your own vaccination schedules, a calendar and reminders before each one is due."
+        },
+        "pesajes": {
+          "titulo": "Weighings",
+          "texto": "Daily gain is calculated for you. Compare groups and spot the one that isn't gaining in time."
+        },
+        "importa": {
+          "titulo": "Import your spreadsheet",
+          "texto": "Upload your Excel file as it is: the system recognizes the columns and shows you any errors before importing."
+        },
+        "tusDatos": {
+          "titulo": "Your data is yours",
+          "texto": "Download it to Excel whenever you want. Nothing is truly deleted: anything you remove can still be looked up."
+        }
+      }
+    },
+    "asistente": {
+      "rotulo": "AI-powered assistant",
+      "titulo": "Ask the way you'd ask your foreman",
+      "bajada": "There's no fixed list of questions and no filters to learn. The assistant builds the query on your ranch's data and answers in seconds.",
+      "reglas": {
+        "soloLee": "It only reads your ranch. It never sees data from other accounts.",
+        "noModifica": "It doesn't add, change or delete anything.",
+        "colaboradores": "It only answers each collaborator about their own modules."
+      },
+      "ejemplosEtiqueta": "Example questions",
+      "autor": "Assistant",
+      "nota": "Example answers with made-up data.",
+      "ejemplos": {
+        "terneros": {
+          "pregunta": "How many male calves born this year do I have in the north pen?",
+          "respuesta": "You have 14 male calves born in 2026 in the North pen. The most recent is ear tag 0561, born on September 3."
+        },
+        "vacunaVencida": {
+          "pregunta": "Which animals have a vaccine that's been overdue for more than a month?",
+          "respuesta": "There are 4 animals, all for foot-and-mouth disease: 0447, 0512, 0520 and 0533. They're in the El Bajo pen."
+        },
+        "ganancia": {
+          "pregunta": "What was the daily gain of the feedlot group over the last 90 days?",
+          "respuesta": "The feedlot group gained an average of 780 g per day. That's 9% more than in the previous 90 days."
+        },
+        "veterinario": {
+          "pregunta": "What did the vet give ear tag 447 in the last year?",
+          "respuesta": "Three treatments: foot-and-mouth in March, anthrax in April and a dewormer in August. Dr. Rojas recorded them."
+        },
+        "peorCorral": {
+          "pregunta": "Which pen has been gaining less than the rest?",
+          "respuesta": "El Bajo: 410 g per day, 22% below the average of the other pens."
+        }
+      }
+    },
+    "comoEmpieza": {
+      "rotulo": "How it starts",
+      "titulo": "From zero to a running ranch, without calling anyone",
+      "bajada": "No salespeople, no installation. Sign up, confirm your email and within minutes you're entering your herd.",
+      "crearCuenta": "Create my account",
+      "pasos": {
+        "cuenta": {
+          "titulo": "Create your account",
+          "texto": "Name, email, password and country. Your country sets the language, currency and units."
+        },
+        "correo": {
+          "titulo": "Confirm your email",
+          "texto": "You'll get a link. Open it and your account is active."
+        },
+        "rancho": {
+          "titulo": "Create your ranch",
+          "texto": "Name, area, type of production and, if you like, its location on the map."
+        },
+        "guia": {
+          "titulo": "Follow the guide",
+          "texto": "Animals, pens, vaccines and team, step by step and at your own pace."
+        }
+      }
+    },
+    "planes": {
+      "rotulo": "Plans",
+      "titulo": "Pay for the size of your team, not for record-keeping",
+      "bajada": "You start with 10 days of the Professional plan, no card needed. If you don't choose anything, you move to the Free plan: your account isn't locked and you don't lose any data.",
+      "formaDePago": "Billing period",
+      "mensual": "Monthly",
+      "anual": "Yearly <ahorro>−20%</ahorro>",
+      "preciosPara": "Prices for",
+      "cinta": "Your first 10 days",
+      "paraSiempre": "forever",
+      "porMes": "/ month",
+      "porAnio": "/ year",
+      "probar": "Try it free for 10 days",
+      "empezar": "Get started",
+      "nota": "Prices in US dollars. Each account manages one ranch. Where it says “unlimited”, a fair use policy applies.",
+      "detalleGratis": "No expiration and no card needed.",
+      "detalleMensual": "Or USD {monto} if you pay for the whole year.",
+      "detalleAnual": "That's USD {monto} per month.",
+      "franjas": {
+        "A": "United States, Canada, Europe and Oceania",
+        "B": "Argentina, Brazil, Chile, Uruguay, Mexico and Colombia",
+        "C": "Bolivia, Paraguay, Peru and Central America"
+      },
+      "lista": {
+        "gratis": {
+          "nombre": "Free",
+          "para": "To start organizing a small herd.",
+          "incluye": {
+            "equipo": "2 partners and 3 collaborators",
+            "limites": "Up to 50 animals and 3 pens",
+            "asistente": "Assistant: 10 questions a month",
+            "importa": "Import up to 100 rows a month",
+            "historial": "History for the last 12 months",
+            "sinConexion": "Offline app"
+          }
+        },
+        "productor": {
+          "nombre": "Producer",
+          "para": "For the family producer with a small team.",
+          "incluye": {
+            "equipo": "5 partners and 8 collaborators",
+            "limites": "Up to 400 animals and 20 pens",
+            "asistente": "Assistant: 150 questions a month",
+            "excel": "Import and export to Excel",
+            "historial": "Full history",
+            "soporte": "Email support"
+          }
+        },
+        "profesional": {
+          "nombre": "Professional",
+          "para": "For the ranch that already works with a foreman and a vet.",
+          "incluye": {
+            "equipo": "12 partners and 25 collaborators",
+            "limites": "Up to 2,000 animals and 100 pens",
+            "asistente": "Assistant: 600 questions a month",
+            "excel": "Import and export to Excel",
+            "historial": "Full history",
+            "soporte": "Priority support"
+          }
+        },
+        "empresa": {
+          "nombre": "Enterprise",
+          "para": "For the agribusiness with several teams.",
+          "incluye": {
+            "equipo": "30 partners and 60 collaborators",
+            "limites": "Unlimited animals and pens",
+            "asistente": "Unlimited assistant for owners",
+            "excel": "Import and export to Excel",
+            "historial": "Full history",
+            "soporte": "Dedicated support channel"
+          }
+        }
+      }
+    },
+    "preguntas": {
+      "rotulo": "FAQ",
+      "titulo": "What everyone asks before getting started",
+      "lista": {
+        "finPrueba": {
+          "p": "What happens when the 10-day trial ends?",
+          "r": "Your account moves to the Free plan on its own. It isn't locked, you don't lose any data and you can upgrade whenever you want."
+        },
+        "internet": {
+          "p": "Do I need internet to use it?",
+          "r": "For the web, yes. From your phone you can record animals, vaccines, weighings and pen moves with no signal: they're saved on the phone and sync on their own when the connection comes back."
+        },
+        "excel": {
+          "p": "Can I bring over what I already have in Excel?",
+          "r": "Yes. Upload your spreadsheet as it is and the system recognizes the columns by their names. It only asks about the ones it couldn't identify, and before importing it shows you any errors and duplicates."
+        },
+        "privacidad": {
+          "p": "Can another producer see my animals?",
+          "r": "No. Each ranch is kept separate right down to the database, and there are automated tests that try to read another ranch's data and must fail. The assistant can't leave your ranch either."
+        },
+        "irme": {
+          "p": "What if I want to leave?",
+          "r": "Export everything to Excel at any time. If you cancel, your account stays read-only for at least 12 months so you can keep looking up and exporting your information."
+        }
+      }
+    },
+    "cierre": {
+      "titulo": "Start today with your herd",
+      "bajada": "10 days with every feature. No card, no commitment.",
+      "crearCuenta": "Create my account",
+      "ingresar": "Log in"
+    },
+    "pie": {
+      "enlaces": "Footer links",
+      "crearCuenta": "Create account",
+      "ingresar": "Log in",
+      "recuperar": "Recover password",
+      "sistemaDiseno": "Design system",
+      "derechos": "© 2026 {marca}"
+    }
+  },
+  "rancho": {
+    "miRancho": "My ranch",
+    "rotulo": "Ranch overview",
+    "invitado": "Guest",
+    "hectareas": "{n} ha",
+    "acciones": {
+      "editar": "Edit",
+      "darDeBaja": "Deactivate"
+    },
+    "confirmarBaja": "Deactivate \"{nombre}\"? No information will be deleted.",
+    "avisos": {
+      "actualizado": "Ranch updated.",
+      "creado": "Ranch created.",
+      "dadoDeBaja": "Ranch deactivated. The record stays in the database."
+    },
+    "tipos": {
+      "carne": "Beef",
+      "leche": "Dairy",
+      "mixto": "Mixed"
+    },
+    "campos": {
+      "nombre": "Name",
+      "departamento": "State / department",
+      "localidad": "Town",
+      "superficie": "Area",
+      "tipoProduccion": "Production type",
+      "pais": "Country",
+      "ubicacion": "Location",
+      "latitud": "Latitude",
+      "longitud": "Longitude"
+    },
+    "cifras": {
+      "pais": "Country {codigo}",
+      "existencias": "Total livestock",
+      "corrales": "Pens",
+      "llegaFase2": "Coming in phase 2"
+    },
+    "datos": {
+      "titulo": "Ranch details",
+      "produccion": {
+        "carne": "Beef production",
+        "leche": "Dairy production",
+        "mixto": "Mixed production"
+      },
+      "produccionDe": "{tipo} production",
+      "coordenadas": "Coordinates",
+      "sinUbicacion": "No location set",
+      "monedaIdioma": "Currency and language",
+      "unidades": "Units",
+      "unidadesValor": "Weight: {peso} · Area: {superficie}",
+      "zonaHoraria": "Time zone and date",
+      "franjaPrecio": "Price tier",
+      "auditoria": "Audit trail",
+      "creadoEl": "Created on {fecha}",
+      "modificadoEl": "Last modified on {fecha}"
+    },
+    "lugar": {
+      "titulo": "Your place on the ranch",
+      "socio": "As a partner, you can see all of the ranch's information, but not change it.",
+      "colaborador": "As a collaborator, you work in the modules for your type. They arrive in phase 2.",
+      "verEquipo": "View the team"
+    },
+    "sinRancho": {
+      "titulo": "No ranch yet",
+      "texto": "This user doesn't belong to any ranch. The owner is the one who creates it."
+    },
+    "formulario": {
+      "editar": "Edit ranch",
+      "crear": "Create my ranch",
+      "nombreEjemplo": "e.g. El Cerrito Ranch",
+      "superficieAyuda": "In hectares.",
+      "latitudAyuda": "Optional. Filled in automatically when you mark the map.",
+      "longitudAyuda": "Optional. If you enter one, enter both.",
+      "guardarCambios": "Save changes",
+      "crearRancho": "Create ranch"
+    },
+    "soloPropietario": "Only the owner can create or edit the ranch."
+  },
+  "perfil": {
+    "titulo": "My profile",
+    "rotulo": "Your account",
+    "roles": {
+      "propietario": "Owner",
+      "socio": "Partner",
+      "colaborador": "Collaborator",
+      "admin_plataforma": "Platform admin"
+    },
+    "datos": {
+      "titulo": "Your details",
+      "nombre": "Full name",
+      "correo": "Email",
+      "correoAyuda": "This is the one you sign in with. Changing it requires confirming the new one, and that's coming later.",
+      "pais": "Country",
+      "sinPais": "No country on file",
+      "paisAyuda": "Sets the language, currency and units. You can change it from the country settings.",
+      "rol": "Role",
+      "rancho": "Ranch",
+      "sinRancho": "No ranch yet",
+      "desde": "Member since",
+      "deshacer": "Undo",
+      "guardarCambios": "Save changes"
+    },
+    "contrasena": {
+      "titulo": "Password",
+      "actual": "Current password",
+      "nueva": "New password",
+      "repetir": "Repeat the new one",
+      "noCoincide": "Doesn't match the new password.",
+      "cambiando": "Changing…",
+      "cambiar": "Change password"
+    },
+    "idioma": {
+      "titulo": "Language",
+      "explicacion": "The language you see the system in.",
+      "segunPais": "Based on my country",
+      "segunPaisDetalle": "{idioma}, the one for {pais}",
+      "tuRancho": "your ranch"
+    }
+  },
+  "mapa": {
+    "ariaLienzo": "Map to mark the ranch's location. You can also type the latitude and longitude yourself.",
+    "sinImagenes": "The map images couldn't be loaded. Check your connection, or type the latitude and longitude yourself.",
+    "usarMiUbicacion": "Use my location",
+    "marcadoEn": "Marked at {lat}, {lon}",
+    "tocaElMapa": "Tap the map to mark where the ranch is.",
+    "sinGeolocalizacion": "This browser can't provide your location.",
+    "errorUbicacion": "We couldn't get your location."
+  },
+  "guia": {
+    "errorCarga": "The guide couldn't be loaded: {error}",
+    "progresoAria": "Guide steps completed",
+    "progreso": "{completos} of {total} steps completed",
+    "seguirDespues": "Continue later",
+    "titulo": {
+      "terminada": "Your ranch is all set up",
+      "enMarcha": "Get your ranch up and running"
+    },
+    "pausada": {
+      "titulo": "You left the guide for later",
+      "progreso": "{completos} of {total} steps completed. Pick up where you left off.",
+      "retomar": "Resume the guide"
+    },
+    "estados": {
+      "pendiente": "Pending",
+      "enCurso": "In progress",
+      "completo": "Complete"
+    },
+    "paso": {
+      "integrantes": {
+        "uno": "{n} member already on the team",
+        "otros": "{n} members already on the team"
+      },
+      "cargados": "{n} added",
+      "llegaEnFase": "Coming in phase {fase}",
+      "empezar": "Start",
+      "continuar": "Continue",
+      "reabrir": "Reopen",
+      "listo": "Done"
+    }
+  },
+  "correos": {
+    "plantilla": {
+      "abrirEnlace": "Open the link",
+      "botonNoFunciona": "If the button doesn't work, copy this address into your browser:",
+      "marca": "Gestión de Ganado",
+      "pie": "Sistema de Gestión de Ganado · This message was sent automatically."
+    },
+    "verificacion": {
+      "asunto": "Confirm your email — Sistema de Gestión de Ganado",
+      "cuerpo": "Hi {nombre},\n\nTo activate your account and start using the system, confirm your email\nwith this link. It expires in 24 hours.\n\nIf you didn't create an account, you can ignore this message.",
+      "boton": "Confirm my email"
+    },
+    "restablecimiento": {
+      "asunto": "Your temporary password — Sistema de Gestión de Ganado",
+      "cuerpo": "Hi {nombre},\n\n{autor} reset your password. Sign in with the temporary password\nbelow. The system will ask you to change it before you can\ndo anything else.",
+      "destacado": "Temporary password: {clave}"
+    },
+    "recuperacion": {
+      "asunto": "Password recovery — Sistema de Gestión de Ganado",
+      "cuerpo": "Hi {nombre},\n\nYou asked to recover your password. Use the button below to create a new one.\n\nThis link expires in 1 hour. If this wasn't you, you can ignore this email.",
+      "boton": "Create a new password"
+    },
+    "alta": {
+      "asunto": "You've been added to a ranch — Sistema de Gestión de Ganado",
+      "cuerpo": "Hi {nombre},\n\n{autor} added you to their ranch as a {rol}.\nSign in with your email and the temporary password below. The first time,\nthe system will ask you to change it to one of your own.\n\nIf you weren't expecting this message, you can ignore it.",
+      "destacado": "Temporary password: {clave}",
+      "roles": {
+        "socio": "partner",
+        "colaborador": "collaborator"
+      }
+    }
+  },
+  "admin": {
+    "menu": "Support",
+    "rotulo": "Platform admin",
+    "titulo": "Ranch support",
+    "noEsTuRol": {
+      "titulo": "This section is for the platform admin",
+      "texto": "This is where platform support enters the ranches. Your account doesn't have that role."
+    },
+    "intro": "From here you can enter any ranch to give support. To enter, you write why: every entry is kept in the log and the owner sees it on their dashboard. Inside, you can do the same as the owner until you leave or eight hours pass.",
+    "sigueAdentro": "You are still inside {rancho}. When you're done, leave from the bar at the top.",
+    "vistas": "What to show",
+    "ranchos": {
+      "titulo": "Ranches on the platform",
+      "pestana": "Ranches",
+      "buscar": "Search",
+      "buscarEjemplo": "Ranch, owner, email or place",
+      "ninguno": "There are no ranches on the platform yet.",
+      "sinResultados": "No ranch matches your search.",
+      "ubicacion": "{localidad}, {departamento} · {pais}",
+      "integrantes": {
+        "uno": "{n} member",
+        "otros": "{n} members"
+      },
+      "entrar": "Enter",
+      "motivo": "Why are you entering?",
+      "motivoEjemplo": "e.g. The owner can't add their veterinarian",
+      "motivoAyuda": "At least {n} characters. It is kept in the log and the owner can see it.",
+      "entrando": "Entering…",
+      "entrarAlRancho": "Enter the ranch"
+    },
+    "registro": {
+      "titulo": "Access log",
+      "pestana": "Log",
+      "ninguno": "Nobody from support has entered a ranch yet.",
+      "minutos": {
+        "uno": "{n} minute",
+        "otros": "{n} minutes"
+      },
+      "quienDonde": "{admin} in {rancho}"
+    },
+    "estado": {
+      "abierto": "Open",
+      "cerrado": "Closed",
+      "vencido": "Expired"
+    },
+    "banda": {
+      "texto": "You are inside <b>{rancho}</b> as platform admin. Everything you do is recorded under your name.",
+      "motivo": "Reason: {motivo}",
+      "salir": "Leave the ranch",
+      "saliendo": "Leaving…"
+    },
+    "deMiRancho": {
+      "titulo": "Platform support",
+      "intro": "Every time someone from support enters your ranch it is logged: who, when and why.",
+      "nadie": "Nobody from platform support has entered your ranch."
+    }
+  }
+}

@@ -7,8 +7,9 @@ import {
 import { randomUUID } from 'crypto';
 import { RepositorioUsuario } from './repositorio-usuario';
 import { ServicioVerificacion } from './servicio-verificacion';
-import { cifrarContrasena, enumerar, revisarContrasena } from '../../comun/contrasenas';
+import { cifrarContrasena, revisarContrasena } from '../../comun/contrasenas';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
+import { enIdioma, enumerarEn, idiomasDisponibles, t } from '../../comun/idioma';
 
 /**
  * HU-06 · Registro de propietario.
@@ -38,42 +39,40 @@ export class ServicioUsuario {
     const paisCodigo = texto(cuerpo?.pais_codigo).toUpperCase();
 
     const faltantes: string[] = [];
-    if (!nombre) faltantes.push('nombre');
-    if (!correo) faltantes.push('correo');
-    if (!contrasena) faltantes.push('contraseña');
-    if (!paisCodigo) faltantes.push('país');
+    if (!nombre) faltantes.push(t('servidor.datos.campos.nombre'));
+    if (!correo) faltantes.push(t('servidor.datos.campos.correo'));
+    if (!contrasena) faltantes.push(t('servidor.datos.campos.contrasena'));
+    if (!paisCodigo) faltantes.push(t('servidor.datos.campos.pais'));
     if (faltantes.length > 0) {
-      throw new BadRequestException(`Faltan datos obligatorios: ${enumerar(faltantes)}.`);
+      throw new BadRequestException(
+        t('servidor.datos.faltan', { faltantes: enumerarEn(faltantes) }),
+      );
     }
 
     if (nombre.length > LARGO_NOMBRE) {
-      throw new BadRequestException(
-        `El nombre no puede pasar de ${LARGO_NOMBRE} caracteres.`,
-      );
+      throw new BadRequestException(t('servidor.perfil.nombreLargo', { n: LARGO_NOMBRE }));
     }
     if (correo.length > LARGO_CORREO) {
-      throw new BadRequestException(
-        `El correo no puede pasar de ${LARGO_CORREO} caracteres.`,
-      );
+      throw new BadRequestException(t('servidor.registro.correoLargo', { n: LARGO_CORREO }));
     }
     if (!FORMA_CORREO.test(correo)) {
-      throw new BadRequestException('El correo no tiene un formato válido.');
+      throw new BadRequestException(t('servidor.datos.correoInvalido'));
     }
 
     const faltas = revisarContrasena(contrasena);
     if (faltas.length > 0) {
-      throw new BadRequestException(`La contraseña necesita al menos ${enumerar(faltas)}.`);
+      throw new BadRequestException(
+        t('comun.contrasena.necesita', { faltas: enumerarEn(faltas) }),
+      );
     }
 
     if (!(await this.repositorio.existePais(paisCodigo))) {
-      throw new BadRequestException('El país indicado no existe.');
+      throw new BadRequestException(t('servidor.registro.paisNoExiste'));
     }
 
     // Tercer criterio de HU-06. 
     if (await this.repositorio.existeCorreo(correo)) {
-      throw new ConflictException(
-        'Ya existe una cuenta con ese correo. Si es tuya, inicia sesión o recupera la contraseña.',
-      );
+      throw new ConflictException(t('servidor.registro.correoRepetido'));
     }
 
     const id = esUuid(cuerpo?.id) ? cuerpo.id : randomUUID();
@@ -89,9 +88,7 @@ export class ServicioUsuario {
       });
     } catch (error: any) {
       if (error?.code === '23505' && error?.constraint === 'ux_usuarios_correo') {
-        throw new ConflictException(
-          'Ya existe una cuenta con ese correo. Si es tuya, inicia sesión o recupera la contraseña.',
-        );
+        throw new ConflictException(t('servidor.registro.correoRepetido'));
       }
       throw error;
     }
@@ -105,8 +102,7 @@ export class ServicioUsuario {
     return {
       usuario,
       siguiente: 'verificar_correo',
-      mensaje:
-        'Cuenta creada. Te enviamos un correo para confirmar tu dirección. El enlace vence en 24 horas.',
+      mensaje: t('servidor.registro.creada'),
       enlace_verificacion: emitido.enlace,
     };
   }
@@ -114,31 +110,61 @@ export class ServicioUsuario {
   /** Mi perfil: lo que ve cada usuario de si mismo. */
   async perfil(quien: UsuarioActual) {
     const perfil = await this.repositorio.perfil(quien.id);
-    if (!perfil) throw new ForbiddenException('El usuario no existe.');
+    if (!perfil) throw new ForbiddenException(t('servidor.datos.usuarioNoExiste'));
     return perfil;
   }
 
   /**
-   * Mi perfil: por ahora se edita el nombre. El correo no, porque cambiarlo
+   * Mi perfil: el nombre y el idioma (HU-25). El correo no, porque cambiarlo
    * exige confirmar el nuevo (HU-07) y eso es otra historia; el pais tampoco
    * desde aca, porque es el criterio 2 de HU-14 (Brian).
+   *
+   * Cada dato es opcional: se cambia lo que venga. idioma nulo o vacio vuelve
+   * a usar el del pais (criterio 2 de HU-25: "se toma del pais y se puede
+   * cambiar").
    */
   async actualizarPerfil(cuerpo: any, quien: UsuarioActual) {
     // Mismas salidas que el portero: con esto pendiente no se edita nada.
     if (!quien.correoVerificado || quien.debeCambiarContrasena) {
-      throw new ForbiddenException('Termina de activar tu cuenta antes de editar tu perfil.');
+      throw new ForbiddenException(t('servidor.perfil.terminaDeActivar'));
     }
 
-    const nombre = texto(cuerpo?.nombre);
-    if (!nombre) {
-      throw new BadRequestException('El nombre no puede quedar vacío.');
-    }
-    if (nombre.length > LARGO_NOMBRE) {
-      throw new BadRequestException(`El nombre no puede pasar de ${LARGO_NOMBRE} caracteres.`);
+    const cambiaNombre = cuerpo && 'nombre' in cuerpo;
+    const cambiaIdioma = cuerpo && 'idioma' in cuerpo;
+    if (!cambiaNombre && !cambiaIdioma) {
+      throw new BadRequestException(t('servidor.perfil.nadaQueCambiar'));
     }
 
-    await this.repositorio.cambiarNombre(quien.id, nombre);
-    return { perfil: await this.repositorio.perfil(quien.id), mensaje: 'Tus datos quedaron guardados.' };
+    let nombre: string | null = null;
+    if (cambiaNombre) {
+      nombre = texto(cuerpo.nombre);
+      if (!nombre) {
+        throw new BadRequestException(t('servidor.perfil.nombreVacio'));
+      }
+      if (nombre.length > LARGO_NOMBRE) {
+        throw new BadRequestException(t('servidor.perfil.nombreLargo', { n: LARGO_NOMBRE }));
+      }
+    }
+
+    let idioma: string | null = null;
+    if (cambiaIdioma) {
+      idioma = texto(cuerpo.idioma).toLowerCase() || null;
+      if (idioma && !idiomasDisponibles().includes(idioma)) {
+        throw new BadRequestException(
+          t('servidor.perfil.idiomaNoExiste', { disponibles: idiomasDisponibles().join(', ') }),
+        );
+      }
+    }
+
+    if (cambiaNombre) await this.repositorio.cambiarNombre(quien.id, nombre!);
+    if (cambiaIdioma) await this.repositorio.cambiarIdioma(quien.id, idioma);
+
+    const perfil = await this.repositorio.perfil(quien.id);
+    // El mensaje sale en el idioma nuevo: es lo primero que se lee en el.
+    const mensaje = enIdioma(perfil.idioma, () =>
+      t(cambiaIdioma && !cambiaNombre ? 'servidor.perfil.idiomaGuardado' : 'servidor.perfil.guardado'),
+    );
+    return { perfil, mensaje };
   }
 
   /**
@@ -146,26 +172,24 @@ export class ServicioUsuario {
    */
   async altaColaborador(cuerpo: any, quien: UsuarioActual) {
     if (quien.rol !== 'propietario') {
-      throw new ForbiddenException('Solo el propietario puede registrar nuevo personal.');
+      throw new ForbiddenException(t('servidor.usuarios.soloPropietarioRegistra'));
     }
 
     const correo = texto(cuerpo?.correo).toLowerCase();
     
     if (!correo || !FORMA_CORREO.test(correo)) {
-      throw new BadRequestException('El correo proporcionado no es válido.');
+      throw new BadRequestException(t('servidor.usuarios.correoNoValido'));
     }
 
     // HU-13 Criterio 2: Si el correo ya está registrado, se rechaza con un mensaje claro.
     if (await this.repositorio.existeCorreo(correo)) {
-      throw new ConflictException(
-        'Este correo ya está registrado en otro rancho. Por seguridad, cada integrante puede trabajar en un solo establecimiento.',
-      );
+      throw new ConflictException(t('servidor.datos.correoEnOtroRancho'));
     }
 
     // NOTA: Aquí irá la lógica de insertar al colaborador en la base de datos (HU-21),
     // pero la regla de negocio de la HU-13 ya está cubierta por la validación de arriba.
 
-    return { mensaje: 'Validación superada. El usuario puede ser agregado al rancho.' };
+    return { mensaje: t('servidor.usuarios.validacionSuperada') };
   }
 }
 

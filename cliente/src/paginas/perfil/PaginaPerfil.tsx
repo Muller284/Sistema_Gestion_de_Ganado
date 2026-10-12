@@ -10,7 +10,8 @@ import {
   Tarjeta,
 } from '../../componentes';
 import { api, type PerfilUsuario } from '../../servicios/api';
-import { inicial } from '../../servicios/texto';
+import { IDIOMAS, cambiarIdioma, existe, localeActual, t } from '../../servicios/idioma';
+import { enumerar, faltasDeContrasena, inicial } from '../../servicios/texto';
 
 /**
  * Mi perfil. Se llega tocando el usuario al pie del menú lateral o desde el
@@ -18,6 +19,7 @@ import { inicial } from '../../servicios/texto';
  *
  * QUÉ SE PUEDE CAMBIAR
  *   el nombre       acá mismo.
+ *   el idioma       el de su país o uno elegido (HU-25).
  *   la contraseña   con la actual y la nueva (el mismo servicio de HU-10).
  * QUÉ NO, Y POR QUÉ
  *   el correo       cambiarlo exige confirmar el nuevo (HU-07); se ve, pero
@@ -27,28 +29,13 @@ import { inicial } from '../../servicios/texto';
  *   rol y rancho    los decide el propietario, no uno mismo.
  */
 
-const ROLES: Record<string, string> = {
-  propietario: 'Propietario',
-  socio: 'Socio',
-  colaborador: 'Colaborador',
-  admin_plataforma: 'Admin de plataforma',
-};
-
-function faltasDeContrasena(contrasena: string): string[] {
-  const faltas: string[] = [];
-  if (contrasena.length < 8) faltas.push('ocho caracteres');
-  if (!/[A-ZÁÉÍÓÚÑ]/.test(contrasena)) faltas.push('una mayúscula');
-  if (!/[0-9]/.test(contrasena)) faltas.push('un número');
-  return faltas;
-}
-
-function enumerar(partes: string[]): string {
-  if (partes.length <= 1) return partes.join('');
-  return `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
+/** El nombre del rol en el idioma actual; si no lo conocemos, el código tal cual. */
+function nombreRol(rol: string): string {
+  return existe(`perfil.roles.${rol}`) ? t(`perfil.roles.${rol}`) : rol;
 }
 
 function fecha(valor: string): string {
-  return new Date(valor).toLocaleDateString('es', {
+  return new Date(valor).toLocaleDateString(localeActual(), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -77,11 +64,11 @@ export function PaginaPerfil() {
   return (
     <DisenoApp
       activo="perfil"
-      ruta={['Mi perfil']}
+      ruta={[t('perfil.titulo')]}
       usuario={usuario}
       rancho={perfil?.rancho ?? null}
-      rotulo="Tu cuenta"
-      titulo="Mi perfil"
+      rotulo={t('perfil.rotulo')}
+      titulo={t('perfil.titulo')}
     >
       <div className="col g24">
         {error && <Alerta variante="error">{error}</Alerta>}
@@ -95,7 +82,7 @@ export function PaginaPerfil() {
                 <h2 className="h2">{perfil.nombre}</h2>
                 <span className="cuerpo c-500">{perfil.correo}</span>
                 <div className="fila g8">
-                  <Insignia variante="exito">{ROLES[perfil.rol] ?? perfil.rol}</Insignia>
+                  <Insignia variante="exito">{nombreRol(perfil.rol)}</Insignia>
                   {perfil.tipo_colaborador && (
                     <Insignia variante="neutro">{perfil.tipo_colaborador}</Insignia>
                   )}
@@ -113,6 +100,8 @@ export function PaginaPerfil() {
               <DatosPersonales perfil={perfil} alGuardar={setPerfil} />
               <CambioDeContrasena />
             </div>
+
+            <PreferenciaIdioma perfil={perfil} />
           </>
         )}
       </div>
@@ -152,13 +141,13 @@ function DatosPersonales({
   }
 
   return (
-    <Tarjeta titulo="Tus datos">
+    <Tarjeta titulo={t('perfil.datos.titulo')}>
       <form className="col g16" onSubmit={guardar}>
         {error && <Alerta variante="error">{error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
 
         <CampoTexto
-          etiqueta="Nombre y apellido"
+          etiqueta={t('perfil.datos.nombre')}
           obligatorio
           maxLength={150}
           autoComplete="name"
@@ -169,35 +158,35 @@ function DatosPersonales({
           }}
         />
         <CampoTexto
-          etiqueta="Correo"
+          etiqueta={t('perfil.datos.correo')}
           value={perfil.correo}
           disabled
-          ayuda="Es con el que entras. Cambiarlo exige confirmar el nuevo, y eso llega más adelante."
+          ayuda={t('perfil.datos.correoAyuda')}
         />
         <CampoTexto
-          etiqueta="País"
-          value={perfil.pais ?? 'Sin país registrado'}
+          etiqueta={t('perfil.datos.pais')}
+          value={perfil.pais ?? t('perfil.datos.sinPais')}
           disabled
-          ayuda="Define idioma, moneda y unidades. Se cambia desde los ajustes del país."
+          ayuda={t('perfil.datos.paisAyuda')}
         />
 
         <dl className="datos perfil__datos">
-          <dt>Rol</dt>
-          <dd>{ROLES[perfil.rol] ?? perfil.rol}</dd>
-          <dt>Rancho</dt>
-          <dd>{perfil.rancho ?? 'Todavía sin rancho'}</dd>
-          <dt>En el sistema desde</dt>
+          <dt>{t('perfil.datos.rol')}</dt>
+          <dd>{nombreRol(perfil.rol)}</dd>
+          <dt>{t('perfil.datos.rancho')}</dt>
+          <dd>{perfil.rancho ?? t('perfil.datos.sinRancho')}</dd>
+          <dt>{t('perfil.datos.desde')}</dt>
           <dd>{fecha(perfil.creado_en)}</dd>
         </dl>
 
         <div className="fila g8 perfil__botones">
           {cambio && (
             <Boton type="button" variante="secundario" onClick={() => setNombre(perfil.nombre)} disabled={guardando}>
-              Deshacer
+              {t('perfil.datos.deshacer')}
             </Boton>
           )}
           <Boton type="submit" variante="primario" disabled={!cambio || guardando}>
-            {guardando ? 'Guardando…' : 'Guardar cambios'}
+            {guardando ? t('comun.guardando') : t('perfil.datos.guardarCambios')}
           </Boton>
         </div>
       </form>
@@ -236,32 +225,32 @@ function CambioDeContrasena() {
   }
 
   return (
-    <Tarjeta titulo="Contraseña">
+    <Tarjeta titulo={t('perfil.contrasena.titulo')}>
       <form className="col g16" onSubmit={cambiar}>
         {error && <Alerta variante="error">{error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
 
         <CampoTexto
-          etiqueta="Contraseña actual"
+          etiqueta={t('perfil.contrasena.actual')}
           type="password"
           autoComplete="current-password"
           value={actual}
           onChange={(e) => setActual(e.target.value)}
         />
         <CampoTexto
-          etiqueta="Contraseña nueva"
+          etiqueta={t('perfil.contrasena.nueva')}
           type="password"
           autoComplete="new-password"
-          ayuda="Al menos 8 caracteres, con una mayúscula y un número."
-          error={nueva && faltas.length > 0 ? `Falta al menos ${enumerar(faltas)}.` : undefined}
+          ayuda={t('comun.contrasena.reglas')}
+          error={nueva && faltas.length > 0 ? t('comun.contrasena.falta', { faltas: enumerar(faltas) }) : undefined}
           value={nueva}
           onChange={(e) => setNueva(e.target.value)}
         />
         <CampoTexto
-          etiqueta="Repite la nueva"
+          etiqueta={t('perfil.contrasena.repetir')}
           type="password"
           autoComplete="new-password"
-          error={noCoinciden ? 'No coincide con la nueva.' : undefined}
+          error={noCoinciden ? t('perfil.contrasena.noCoincide') : undefined}
           value={repetir}
           onChange={(e) => setRepetir(e.target.value)}
         />
@@ -269,10 +258,81 @@ function CambioDeContrasena() {
         <div className="fila g8 perfil__botones">
           <Boton type="submit" variante="primario" disabled={!listo || enviando}>
             <Icono nombre="llave" tamano={18} />
-            {enviando ? 'Cambiando…' : 'Cambiar contraseña'}
+            {enviando ? t('perfil.contrasena.cambiando') : t('perfil.contrasena.cambiar')}
           </Boton>
         </div>
       </form>
+    </Tarjeta>
+  );
+}
+
+/**
+ * HU-25 · Criterio 2: "El idioma se toma del país elegido y se puede cambiar."
+ *
+ * La primera opción es seguir al país: si la persona nunca eligió, es la que
+ * está marcada. Elegir un idioma lo guarda en la cuenta, así vale en
+ * cualquier computadora donde entre. Al guardar, toda la pantalla se vuelve a
+ * dibujar en el idioma nuevo: ese es el aviso de que se guardó.
+ */
+function PreferenciaIdioma({ perfil }: { perfil: PerfilUsuario }) {
+  const [elegido, setElegido] = useState(perfil.idioma_elegido ?? '');
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState('');
+
+  const nombreDe = (codigo: string) =>
+    IDIOMAS.find((idioma) => idioma.codigo === codigo)?.nombre ?? codigo;
+
+  async function elegir(valor: string) {
+    setElegido(valor);
+    setError('');
+    setGuardando(true);
+    try {
+      const respuesta = await api.actualizarPerfil({ idioma: valor || null });
+      cambiarIdioma(respuesta.perfil.idioma, { recordar: true });
+    } catch (err) {
+      setError((err as Error).message);
+      setElegido(perfil.idioma_elegido ?? '');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  const opciones = [
+    {
+      valor: '',
+      nombre: t('perfil.idioma.segunPais'),
+      detalle: t('perfil.idioma.segunPaisDetalle', {
+        idioma: nombreDe(perfil.idioma_del_pais),
+        pais: perfil.pais ?? t('perfil.idioma.tuRancho'),
+      }),
+    },
+    ...IDIOMAS.map((idioma) => ({ valor: idioma.codigo, nombre: idioma.nombre, detalle: '' })),
+  ];
+
+  return (
+    <Tarjeta titulo={t('perfil.idioma.titulo')}>
+      <fieldset className="perfil__idiomas" disabled={guardando}>
+        <legend className="cuerpo c-600">{t('perfil.idioma.explicacion')}</legend>
+        {error && <Alerta variante="error">{error}</Alerta>}
+        {opciones.map((opcion) => (
+          <label
+            key={opcion.valor || 'pais'}
+            className={elegido === opcion.valor ? 'perfil__idioma elegido' : 'perfil__idioma'}
+          >
+            <input
+              type="radio"
+              name="idioma"
+              value={opcion.valor}
+              checked={elegido === opcion.valor}
+              onChange={() => void elegir(opcion.valor)}
+            />
+            <span className="col">
+              <strong>{opcion.nombre}</strong>
+              {opcion.detalle && <span className="pie c-500">{opcion.detalle}</span>}
+            </span>
+          </label>
+        ))}
+      </fieldset>
     </Tarjeta>
   );
 }

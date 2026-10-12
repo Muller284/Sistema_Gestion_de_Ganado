@@ -11,11 +11,12 @@ import { ServicioCorreo } from '../../comun/servicio-correo';
 import {
   cifrarContrasena,
   claveTemporal,
-  enumerar,
   revisarContrasena,
   verificarContrasena,
 } from '../../comun/contrasenas';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
+import { actuaComoPropietario } from '../../comun/permisos-rol';
+import { enIdioma, enumerarEn, t } from '../../comun/idioma';
 
 /**
  * HU-10 · Cambio obligatorio de contraseña.
@@ -44,33 +45,31 @@ export class ServicioContrasena {
     const nueva = typeof cuerpo?.contrasena_nueva === 'string' ? cuerpo.contrasena_nueva : '';
 
     if (!actual || !nueva) {
-      throw new BadRequestException(
-        'Hacen falta la contraseña actual y la nueva.',
-      );
+      throw new BadRequestException(t('servidor.contrasena.faltanAmbas'));
     }
 
     const usuario = await this.usuarios.porId(quien.id);
-    if (!usuario) throw new NotFoundException('El usuario no existe.');
+    if (!usuario) throw new NotFoundException(t('servidor.datos.usuarioNoExiste'));
 
     // Se pide la actual aunque el usuario ya este identificado: es lo que
     // impide que alguien que encontro una sesion abierta cambie la clave.
     if (!(await verificarContrasena(actual, usuario.contrasena_hash))) {
-      throw new UnauthorizedException('La contraseña actual no es correcta.');
+      throw new UnauthorizedException(t('servidor.contrasena.actualIncorrecta'));
     }
 
     // Segundo criterio.
     if (actual === nueva) {
       throw new BadRequestException(
         usuario.debe_cambiar_contrasena
-          ? 'La contraseña nueva no puede ser igual a la temporal.'
-          : 'La contraseña nueva tiene que ser distinta de la actual.',
+          ? t('servidor.contrasena.igualTemporal')
+          : t('servidor.contrasena.igualActual'),
       );
     }
 
     const faltas = revisarContrasena(nueva);
     if (faltas.length > 0) {
       throw new BadRequestException(
-        `La contraseña necesita al menos ${enumerar(faltas)}.`,
+        t('comun.contrasena.necesita', { faltas: enumerarEn(faltas) }),
       );
     }
 
@@ -82,8 +81,8 @@ export class ServicioContrasena {
 
     return {
       mensaje: usuario.debe_cambiar_contrasena
-        ? 'Contraseña actualizada. Ya puedes usar el sistema.'
-        : 'Contraseña actualizada.',
+        ? t('servidor.contrasena.actualizadaYaPuedes')
+        : t('servidor.contrasena.actualizada'),
     };
   }
 
@@ -97,22 +96,18 @@ export class ServicioContrasena {
    * "creado por" no probaria nada.
    */
   async restablecer(usuarioId: string, quien: UsuarioActual) {
-    if (quien.rol !== 'propietario') {
-      throw new ForbiddenException(
-        'Solo el propietario puede restablecer la contraseña de su equipo.',
-      );
+    if (!actuaComoPropietario(quien)) {
+      throw new ForbiddenException(t('servidor.contrasena.soloPropietarioRestablece'));
     }
 
     const usuario = await this.usuarios.porId(usuarioId);
     if (!usuario || usuario.rancho_id !== quien.ranchoId) {
       // Mismo mensaje que si no existiera: un propietario no tiene por que
       // poder averiguar quien pertenece a otro rancho.
-      throw new NotFoundException('Ese usuario no pertenece a tu rancho.');
+      throw new NotFoundException(t('servidor.contrasena.usuarioAjeno'));
     }
     if (usuario.id === quien.id) {
-      throw new BadRequestException(
-        'Para cambiar tu propia contraseña usa el cambio de contraseña, no el restablecimiento.',
-      );
+      throw new BadRequestException(t('servidor.contrasena.usaElCambio'));
     }
 
     const temporal = claveTemporal();
@@ -122,22 +117,20 @@ export class ServicioContrasena {
       quien.id,
     );
 
-    await this.correo.enviar({
-      para: usuario.correo,
-      asunto: 'Tu contraseña temporal — Sistema de Gestión de Ganado',
-      cuerpo: [
-        `Hola ${usuario.nombre},`,
-        '',
-        `${quien.nombre} restableció tu contraseña. Entra con la clave temporal`,
-        'de abajo. El sistema te va a pedir que la cambies antes de dejarte',
-        'hacer cualquier otra cosa.',
-      ].join('\n'),
-      destacado: `Contraseña temporal: ${temporal}`,
-    });
+    // El correo va en el idioma de quien lo recibe, no en el del propietario.
+    const idiomaDelUsuario = await this.usuarios.idiomaDe(usuario.id);
+    await enIdioma(idiomaDelUsuario, () =>
+      this.correo.enviar({
+        para: usuario.correo,
+        asunto: t('correos.restablecimiento.asunto'),
+        cuerpo: t('correos.restablecimiento.cuerpo', { nombre: usuario.nombre, autor: quien.nombre }),
+        destacado: t('correos.restablecimiento.destacado', { clave: temporal }),
+      }),
+    );
 
     return {
-      mensaje: `Se le envió una contraseña temporal a ${usuario.correo}.`,
-      aviso: 'Por seguridad, la contraseña no se muestra acá. Solo la recibe su dueño.',
+      mensaje: t('servidor.contrasena.temporalEnviada', { correo: usuario.correo }),
+      aviso: t('servidor.datos.contrasenaOculta'),
     };
   }
 
@@ -148,12 +141,12 @@ export class ServicioContrasena {
   async solicitarRecuperacion(cuerpo: any) {
     const correo = cuerpo?.correo;
     if (!correo) {
-      throw new BadRequestException('El correo es obligatorio.');
+      throw new BadRequestException(t('servidor.contrasena.correoObligatorio'));
     }
 
     const usuario = await this.usuarios.porCorreo(correo);
     if (!usuario) {
-      return { mensaje: 'Si el correo está registrado, recibirás un enlace de recuperación.' };
+      return { mensaje: t('servidor.contrasena.recuperacionPedida') };
     }
 
     const { token } = await this.tokens.emitir(
@@ -167,20 +160,14 @@ export class ServicioContrasena {
 
     await this.correo.enviar({
       para: usuario.correo,
-      asunto: 'Recuperación de contraseña — Sistema de Gestión de Ganado',
-      cuerpo: [
-        `Hola ${usuario.nombre},`,
-        '',
-        'Solicitaste recuperar tu contraseña. Usa el botón de abajo para crear una nueva.',
-        '',
-        'Este enlace caducará en 1 hora. Si no fuiste tú, puedes ignorar este correo.',
-      ].join('\n'),
+      asunto: t('correos.recuperacion.asunto'),
+      cuerpo: t('correos.recuperacion.cuerpo', { nombre: usuario.nombre }),
       // El enlace va aparte para que el correo lo muestre como botón.
       destacado: enlace,
-      textoBoton: 'Crear una contraseña nueva',
+      textoBoton: t('correos.recuperacion.boton'),
     });
 
-    return { mensaje: 'Si el correo está registrado, recibirás un enlace de recuperación.' };
+    return { mensaje: t('servidor.contrasena.recuperacionPedida') };
   }
 
   /**
@@ -192,7 +179,7 @@ export class ServicioContrasena {
     const nueva = cuerpo?.contrasena_nueva;
 
     if (!token || !nueva) {
-      throw new BadRequestException('El token y la nueva contraseña son obligatorios.');
+      throw new BadRequestException(t('servidor.contrasena.faltanTokenYNueva'));
     }
 
     const usuarioId = await this.tokens.consumir(token, 'recuperacion_contrasena');
@@ -200,20 +187,22 @@ export class ServicioContrasena {
     if (!usuarioId) {
       const estabaVencido = await this.tokens.estabaVencido(token, 'recuperacion_contrasena');
       if (estabaVencido) {
-        throw new BadRequestException('El enlace de recuperación ha expirado. Solicita uno nuevo.');
+        throw new BadRequestException(t('servidor.contrasena.enlaceExpirado'));
       }
-      throw new BadRequestException('El enlace de recuperación es inválido o ya fue utilizado.');
+      throw new BadRequestException(t('servidor.contrasena.enlaceInvalido'));
     }
 
     const faltas = revisarContrasena(nueva);
     if (faltas.length > 0) {
-      throw new BadRequestException(`La contraseña necesita al menos ${enumerar(faltas)}.`);
+      throw new BadRequestException(
+        t('comun.contrasena.necesita', { faltas: enumerarEn(faltas) }),
+      );
     }
 
     const hash = await cifrarContrasena(nueva);
 
     await this.usuarios.cambiarContrasena(usuarioId, hash, usuarioId);
 
-    return { mensaje: 'Contraseña recuperada con éxito. Ya puedes iniciar sesión.' };
+    return { mensaje: t('servidor.contrasena.recuperada') };
   }
 }
