@@ -142,14 +142,16 @@ export class ServicioUsuario {
   }
 
   /**
-   * HU-13: Un usuario, un solo rancho (Alta de colaboradores)
+   * HU-13 y HU-18: Alta de colaboradores con permisos iniciales de solo consulta.
    */
   async altaColaborador(cuerpo: any, quien: UsuarioActual) {
-    if (quien.rol !== 'propietario') {
-      throw new ForbiddenException('Solo el propietario puede registrar nuevo personal.');
+    if (quien.rol !== 'propietario' && quien.rol !== 'admin') {
+      throw new ForbiddenException('Solo el propietario o administrador pueden registrar nuevo personal.');
     }
 
+    const nombre = texto(cuerpo?.nombre);
     const correo = texto(cuerpo?.correo).toLowerCase();
+    const contrasena = typeof cuerpo?.contrasena === 'string' ? cuerpo.contrasena : 'Temporal123*';
     
     if (!correo || !FORMA_CORREO.test(correo)) {
       throw new BadRequestException('El correo proporcionado no es válido.');
@@ -162,10 +164,33 @@ export class ServicioUsuario {
       );
     }
 
-    // NOTA: Aquí irá la lógica de insertar al colaborador en la base de datos (HU-21),
-    // pero la regla de negocio de la HU-13 ya está cubierta por la validación de arriba.
+    const id = randomUUID();
 
-    return { mensaje: 'Validación superada. El usuario puede ser agregado al rancho.' };
+    // HU-18: Permisos iniciales estrictos de solo consulta (edición en false por defecto)
+    const permisosIniciales = {
+      animales: { ver: true, editar: false },
+      corrales: { ver: true, editar: false },
+      sanidad: { ver: true, editar: false },
+      pesajes: { ver: true, editar: false },
+      importacion: { ver: true, editar: false },
+      almacen: { ver: true, editar: false },
+      equipo: { ver: true, editar: false },
+      planes: { ver: true, editar: false },
+    };
+
+    // Guardamos el colaborador en la base de datos asociado al rancho del propietario
+    await this.repositorio.crearColaborador({
+      id,
+      ranchoId: quien.ranchoId,
+      nombre: nombre || 'Colaborador',
+      correo,
+      contrasenaHash: await cifrarContrasena(contrasena),
+      rol: 'colaborador',
+      permisos: JSON.stringify(permisosIniciales),
+      estado: 'activo'
+    });
+
+    return { mensaje: 'Colaborador registrado con éxito con permisos iniciales de solo consulta (HU-18).' };
   }
 }
 

@@ -85,6 +85,41 @@ export class RepositorioUsuario {
     return resultado.rows[0];
   }
 
+  /**
+   * HU-13 y HU-18: Crea un colaborador asociado al rancho con permisos y contraseña temporal.
+   */
+  async crearColaborador(datos: {
+    id: string;
+    ranchoId: string | null;
+    nombre: string;
+    correo: string;
+    contrasenaHash: string;
+    rol: string;
+    permisos: string;
+    estado: string;
+  }): Promise<any> {
+    const resultado = await this.bd.query(
+      `INSERT INTO usuarios
+         (id, rancho_id, nombre, correo, contrasena_hash,
+          rol, permisos, estado, correo_verificado, debe_cambiar_contrasena, creado_en, modificado_en)
+       VALUES
+         ($1, $2, $3, $4, $5,
+          $6, $7::jsonb, $8, TRUE, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       RETURNING id, nombre, correo, rol, rancho_id, estado, creado_en`,
+      [
+        datos.id,
+        datos.ranchoId,
+        datos.nombre,
+        datos.correo,
+        datos.contrasenaHash,
+        datos.rol,
+        datos.permisos,
+        datos.estado,
+      ],
+    );
+    return resultado.rows[0];
+  }
+
   /** La ficha que necesitan HU-07 y HU-10 para decidir. */
   async porId(id: string): Promise<any | null> {
     const resultado = await this.bd.query(
@@ -295,4 +330,3 @@ export class RepositorioUsuario {
     };
   }
 }
-

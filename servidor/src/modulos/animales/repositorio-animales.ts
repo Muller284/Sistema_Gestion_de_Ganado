@@ -6,7 +6,20 @@ import { randomUUID } from 'crypto';
 export class RepositorioAnimales {
   constructor(private dataSource: DataSource) {}
 
-  async crear(ranchoId: string, datos: { identificador: string; nombre?: string; raza?: string; sexo: string; corral?: string; peso?: number; categoria: string }, usuarioId: string) {
+  async crear(
+    ranchoId: string, 
+    datos: { 
+      identificador: string; 
+      tipo_identificador: string; 
+      nombre?: string; 
+      raza?: string; 
+      sexo: string; 
+      corral?: string; 
+      peso?: number; 
+      categoria: string 
+    }, 
+    usuarioId: string
+  ) {
     const existente = await this.dataSource.query(
       'SELECT id FROM animales WHERE rancho_id = $1 AND identificador = $2',
       [ranchoId, datos.identificador]
@@ -16,16 +29,16 @@ export class RepositorioAnimales {
       throw new Error('Ya existe un animal con este identificador en el rancho.');
     }
 
-    // Generamos un UUID válido compatible con el tipo de datos UUID de PostgreSQL
     const id = randomUUID();
     
     await this.dataSource.query(
-      `INSERT INTO animales (id, rancho_id, identificador, nombre, raza, sexo, corral, peso, categoria, creado_por) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      `INSERT INTO animales (id, rancho_id, identificador, tipo_identificador, nombre, raza, sexo, corral, peso, categoria, creado_por) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         id,
         ranchoId,
         datos.identificador,
+        datos.tipo_identificador || 'caravana', // Valor por defecto si no viene especificado
         datos.nombre || null,
         datos.raza || null,
         datos.sexo,
