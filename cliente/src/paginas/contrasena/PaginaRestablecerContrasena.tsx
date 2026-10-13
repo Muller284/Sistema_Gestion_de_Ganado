@@ -44,6 +44,7 @@ export function PaginaRestablecerContrasena() {
       // Limpieza local y emisión de evento instantáneo para otras pestañas
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
+      // eslint-disable-next-line react-hooks/purity
       localStorage.setItem('sesion_expirada', Date.now().toString());
 
       setExito(true);

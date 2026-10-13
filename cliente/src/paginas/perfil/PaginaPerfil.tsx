@@ -14,11 +14,6 @@ import { api, type Pais, type PerfilUsuario } from '../../servicios/api';
 import { IDIOMAS, cambiarIdioma, existe, localeActual, t } from '../../servicios/idioma';
 import { enumerar, faltasDeContrasena, inicial } from '../../servicios/texto';
 
-/**
- * Mi perfil. Se llega tocando el usuario al pie del menú lateral o desde el
- * menú de la cuenta, arriba a la derecha.
- */
-
 function nombreRol(rol: string): string {
   return existe(`perfil.roles.${rol}`) ? t(`perfil.roles.${rol}`) : rol;
 }
@@ -112,7 +107,6 @@ function DatosPersonales({
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
 
-  // Cargamos el catálogo de países al montar el componente
   useEffect(() => {
     let vigente = true;
     api
@@ -140,7 +134,7 @@ function DatosPersonales({
     setAviso('');
     setGuardando(true);
     try {
-      const respuesta = await (api.actualizarPerfil as any)({
+      const respuesta = await api.actualizarPerfil({
         nombre: nombre.trim(),
         pais_codigo: paisCodigo || null,
       });
@@ -178,7 +172,6 @@ function DatosPersonales({
           ayuda={t('perfil.datos.correoAyuda')}
         />
         
-        {/* HU-14: Selector editable de país en los ajustes de perfil */}
         <CampoLista
           etiqueta={t('perfil.datos.pais')}
           obligatorio

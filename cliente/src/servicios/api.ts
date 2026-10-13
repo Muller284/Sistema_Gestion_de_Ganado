@@ -36,14 +36,6 @@ export function guardarSesion(
   }
 }
 
-/**
- * HU-24 · El rancho al que entró el Admin de plataforma a dar soporte.
- *
- * Vive en sessionStorage: se termina al cerrar la pestaña, y cada pestaña
- * puede estar en un rancho distinto. Mientras está, cada petición lleva la
- * cabecera x-rancho-soporte y el servidor comprueba que el acceso siga
- * abierto y registrado.
- */
 export interface Soporte {
   accesoId: string;
   ranchoId: string;
@@ -68,7 +60,7 @@ export function guardarSoporte(soporte: Soporte | null) {
     if (soporte) sessionStorage.setItem(CLAVE_SOPORTE, JSON.stringify(soporte));
     else sessionStorage.removeItem(CLAVE_SOPORTE);
   } catch {
-    // Sin almacenamiento no se puede entrar a dar soporte; el servidor igual lo impide.
+    // Sin almacenamiento no se puede entrar a dar soporte.
   }
   window.dispatchEvent(new CustomEvent(EVENTO_SOPORTE));
 }
@@ -85,19 +77,10 @@ export function tieneSesionActiva(): boolean {
   return Boolean(tokenAccesoActual() || tokenRefrescoActual());
 }
 
-/**
- * Si en este navegador hay alguien adentro: con sesión de verdad (HU-08) o
- * elegido en la barra de demostración. Es lo que decide si en "/" se ve la
- * landing o el sistema.
- *
- * No mira VITE_USUARIO_DEMO a propósito: si lo mirara, con el .env de
- * desarrollo nadie vería nunca la landing.
- */
 export function hayAlguienDentro(): boolean {
   return tieneSesionActiva() || Boolean(localStorage.getItem('usuario-id'));
 }
 
-/** Usuario con el que se trabaja si no hay sesión formal o en modo demostración. */
 export function usuarioActual(): string {
   return (
     localStorage.getItem('usuario-id') ??
@@ -123,9 +106,7 @@ async function pedir<T>(
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       'x-usuario-id': usuarioActual(),
-      // HU-25: el servidor contesta sus mensajes en este idioma.
       'Accept-Language': idiomaActual(),
-      // HU-24. Las rutas /admin son del Admin fuera de cualquier rancho.
       ...(soporte && !ruta.startsWith('/admin/') ? { 'x-rancho-soporte': soporte.ranchoId } : {}),
       ...(opciones.headers ?? {}),
     },
@@ -134,7 +115,6 @@ async function pedir<T>(
   const texto = await respuesta.text();
   const cuerpo = texto ? JSON.parse(texto) : null;
 
-  // HU-12: Renovación transparente si el token de acceso expiró (401)
   if (
     respuesta.status === 401 &&
     !esReintento &&
@@ -161,8 +141,6 @@ async function pedir<T>(
   }
 
   if (!respuesta.ok) {
-    // HU-24: el acceso de soporte venció o se cerró en otra pestaña. Se
-    // olvida y se vuelve a la lista de ranchos.
     if (cuerpo?.motivo === 'soporte_vencido') {
       guardarSoporte(null);
       window.location.hash = '#/admin';
@@ -228,7 +206,6 @@ export interface RespuestaIngreso {
   };
 }
 
-/** Lo que el cliente consulta para saber si la cuenta está lista (HU-07, HU-10). */
 export interface EstadoCuenta {
   id: string;
   nombre: string;
@@ -238,19 +215,16 @@ export interface EstadoCuenta {
   correo_verificado: boolean;
   debe_cambiar_contrasena: boolean;
   pendiente: 'verificar_correo' | 'cambiar_contrasena' | null;
-  /** HU-25. El idioma con el que trabaja, y el que eligió (nulo: el de su país). */
   idioma: string;
   idioma_elegido: string | null;
 }
 
 export interface EstadoRancho {
-  /** soporte: es el Admin de plataforma, dentro del rancho (HU-24). */
   usuario: { id: string; nombre: string; rol: string; soporte?: boolean };
   tieneRancho: boolean;
   rancho: Rancho | null;
 }
 
-/** HU-17 · Un integrante del equipo del rancho. */
 export interface MiembroEquipo {
   id: string;
   nombre: string;
@@ -259,13 +233,11 @@ export interface MiembroEquipo {
   estado: 'activo' | 'suspendido';
   tipo_colaborador_id: string | null;
   tipo_colaborador: string | null;
-  /** Todavia no entro a cambiar su contraseña temporal. */
   debe_cambiar_contrasena: boolean;
   creado_en: string;
   creado_por_nombre: string | null;
 }
 
-/** HU-20 · Qué puede un tipo en un módulo. */
 export type NivelPermiso = 'ninguno' | 'ver' | 'editar';
 
 export interface PermisoDeModulo {
@@ -278,11 +250,8 @@ export interface TipoColaborador {
   id: string;
   nombre: string;
   es_predefinido: boolean;
-  /** Un predefinido que el propietario ajustó para su rancho. */
   ajustado: boolean;
-  /** Cuántos colaboradores del rancho lo tienen. */
   colaboradores: number;
-  /** Los ocho módulos, en orden. */
   permisos: PermisoDeModulo[];
 }
 
@@ -306,7 +275,6 @@ export interface DatosAltaMiembro {
   tipo_colaborador_id?: string;
 }
 
-/** HU-16 · La guia de configuracion. */
 export type ClavePaso = 'animales' | 'corrales' | 'vacunas' | 'equipo';
 
 export interface PasoGuia {
@@ -317,7 +285,6 @@ export interface PasoGuia {
   disponible: boolean;
   ruta: string | null;
   estado: 'pendiente' | 'en_curso' | 'completo';
-  /** Cuantos registros tiene ya ese paso (integrantes, animales...). */
   datos: number;
 }
 
@@ -330,7 +297,6 @@ export interface EstadoGuia {
   terminada: boolean;
 }
 
-/** Mi perfil. */
 export interface PerfilUsuario {
   id: string;
   nombre: string;
@@ -343,13 +309,11 @@ export interface PerfilUsuario {
   tipo_colaborador: string | null;
   creado_en: string;
   modificado_en: string;
-  /** HU-25. El que usa, el que eligió (nulo: el del país) y el de su país. */
   idioma: string;
   idioma_elegido: string | null;
   idioma_del_pais: string;
 }
 
-/** HU-24 · Un rancho en la lista del Admin de plataforma. */
 export interface RanchoParaSoporte {
   id: string;
   nombre: string;
@@ -364,7 +328,6 @@ export interface RanchoParaSoporte {
   acceso_abierto: string | null;
 }
 
-/** HU-24 · Una fila del registro de accesos. */
 export interface AccesoAdmin {
   id: string;
   admin_id: string;
@@ -380,21 +343,18 @@ export interface AccesoAdmin {
 export const api = {
   paises: () => pedir<Pais[]>('/paises'),
 
-  // HU-06: Registro
   registrar: (datos: Record<string, unknown>) =>
     pedir<RespuestaRegistro>('/usuarios/registro', {
       method: 'POST',
       body: JSON.stringify(datos),
     }),
 
-  // HU-08: Inicio de sesión
   ingresar: (credenciales: { correo: string; contrasena: string }) =>
     pedir<RespuestaIngreso>('/usuarios/ingreso', {
       method: 'POST',
       body: JSON.stringify(credenciales),
     }),
 
-  // HU-12: Manejo de sesión y cierre
   refrescar: (token_refresco: string) =>
     pedir<RespuestaIngreso>('/usuarios/refresco', {
       method: 'POST',
@@ -415,7 +375,6 @@ export const api = {
     }
   },
 
-  // HU-07: Verificación de correo
   yo: () => pedir<EstadoCuenta>('/usuarios/yo'),
   verificarCorreo: (token: string) =>
     pedir<{ mensaje: string }>('/usuarios/verificacion', {
@@ -431,7 +390,6 @@ export const api = {
       },
     ),
 
-  // HU-10: Contraseñas
   cambiarMiContrasena: (actual: string, nueva: string) =>
     pedir<{ mensaje: string }>('/usuarios/mi-contrasena', {
       method: 'POST',
@@ -446,7 +404,6 @@ export const api = {
       { method: 'POST' },
     ),
 
-  // Ranchos
   miRancho: () => pedir<EstadoRancho>('/ranchos/mio'),
   crear: (datos: Record<string, unknown>) =>
     pedir<Rancho>('/ranchos', {
@@ -461,7 +418,6 @@ export const api = {
   darDeBaja: (id: string) =>
     pedir<{ mensaje: string }>(`/ranchos/${id}`, { method: 'DELETE' }),
 
-  // HU-09
   solicitarRecuperacion: (correo: string) =>
     pedir<{ mensaje: string }>('/usuarios/recuperacion-contrasena', {
       method: 'POST',
@@ -473,14 +429,12 @@ export const api = {
       body: JSON.stringify({ token, contrasena_nueva }),
     }),
 
-  // HU-13
   agregarColaborador: (datos: { correo: string; nombre?: string; rol?: string }) =>
     pedir<{ mensaje: string }>('/usuarios/colaboradores', {
       method: 'POST',
       body: JSON.stringify(datos),
     }),
 
-  // HU-17 · Equipo
   equipo: () => pedir<MiembroEquipo[]>('/equipo'),
   tiposColaborador: () => pedir<TipoColaborador[]>('/equipo/tipos'),
   darDeAltaMiembro: (datos: DatosAltaMiembro) =>
@@ -494,7 +448,6 @@ export const api = {
       body: JSON.stringify({ estado }),
     }),
 
-  // HU-20 · Tipos de colaborador
   modulosConPermisos: () => pedir<{ codigo: string; nombre: string }[]>('/equipo/modulos'),
   crearTipo: (datos: DatosTipo) =>
     pedir<RespuestaTipo>('/equipo/tipos', { method: 'POST', body: JSON.stringify(datos) }),
@@ -510,7 +463,6 @@ export const api = {
       { method: 'PATCH', body: JSON.stringify({ tipo_colaborador_id: tipoId }) },
     ),
 
-  // HU-16 · Guia de configuracion
   guia: () => pedir<EstadoGuia>('/guia'),
   visitarPaso: (paso: ClavePaso) =>
     pedir<EstadoGuia>(`/guia/pasos/${paso}/visita`, { method: 'POST' }),
@@ -521,15 +473,13 @@ export const api = {
   pausarGuia: (pausada: boolean) =>
     pedir<EstadoGuia>('/guia/pausa', { method: 'POST', body: JSON.stringify({ pausada }) }),
 
-  // Mi perfil
   perfil: () => pedir<PerfilUsuario>('/usuarios/yo/perfil'),
-  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null }) =>
+  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null; pais_codigo?: string | null }) =>
     pedir<{ perfil: PerfilUsuario; mensaje: string }>('/usuarios/yo/perfil', {
       method: 'PATCH',
       body: JSON.stringify(datos),
     }),
 
-  // HU-24 · Admin de plataforma
   adminRanchos: () => pedir<RanchoParaSoporte[]>('/admin/ranchos'),
   entrarARancho: (ranchoId: string, motivo: string) =>
     pedir<{ acceso: AccesoAdmin; mensaje: string }>(`/admin/ranchos/${ranchoId}/accesos`, {
@@ -541,7 +491,6 @@ export const api = {
   accesosAdmin: () => pedir<AccesoAdmin[]>('/admin/accesos'),
   accesosDeMiRancho: () => pedir<AccesoAdmin[]>('/admin/accesos/de-mi-rancho'),
 
-  // HU-27 y HU-29 · Módulo de Animales
   registrarAnimal: (datos: Record<string, unknown>) =>
     pedir<{ animal: any; mensaje: string }>('/animales', {
       method: 'POST',
