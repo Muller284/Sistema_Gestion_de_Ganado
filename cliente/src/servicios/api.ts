@@ -377,6 +377,36 @@ export interface AccesoAdmin {
   estado: 'abierto' | 'cerrado' | 'vencido';
 }
 
+// HU-40 a HU-45 · Importacion de ganado. Mismos nombres que devuelve el servidor.
+export interface PlantillaImportacion {
+  encabezados: string[];
+  ejemplo: string;
+  contenidoCsv: string;
+}
+
+export interface ErrorDeFila {
+  fila: number;
+  caravana?: string;
+  error: string;
+}
+
+export interface ValidacionImportacion {
+  total: number;
+  validas: number;
+  con_errores: number;
+  duplicados: number;
+  errores: ErrorDeFila[];
+  filas_duplicadas: string[];
+}
+
+export type EstrategiaDuplicados = 'omitir' | 'actualizar';
+
+export interface ResultadoImportacion {
+  exito: boolean;
+  mensaje: string;
+  resumen: { total_procesados: number; insertados: number; actualizados: number; omitidos: number };
+}
+
 export const api = {
   paises: () => pedir<Pais[]>('/paises'),
 
@@ -542,16 +572,15 @@ export const api = {
   accesosDeMiRancho: () => pedir<AccesoAdmin[]>('/admin/accesos/de-mi-rancho'),
 
   // HU-40 a HU-45 · Importacion de ganado
-  plantillaImportacion: () =>
-    pedir<{ encabezados: string[]; ejemplo: string; contenidoCsv: string }>('/importacion/plantilla'),
-  validarImportacion: (datos: { csv?: string; filas?: any[] }) =>
-    pedir<any>('/importacion/validar', {
+  plantillaImportacion: () => pedir<PlantillaImportacion>('/importacion/plantilla'),
+  validarImportacion: (csv: string) =>
+    pedir<ValidacionImportacion>('/importacion/validar', {
       method: 'POST',
-      body: JSON.stringify(datos),
+      body: JSON.stringify({ csv }),
     }),
-  ejecutarImportacion: (datos: { csv?: string; filas?: any[]; estrategia_duplicados: string }) =>
-    pedir<any>('/importacion/ejecutar', {
+  ejecutarImportacion: (csv: string, estrategia_duplicados: EstrategiaDuplicados) =>
+    pedir<ResultadoImportacion>('/importacion/ejecutar', {
       method: 'POST',
-      body: JSON.stringify(datos),
+      body: JSON.stringify({ csv, estrategia_duplicados }),
     }),
 };

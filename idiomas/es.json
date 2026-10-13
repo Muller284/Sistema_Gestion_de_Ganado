@@ -232,6 +232,17 @@
       "soloPropietarioEdita": "Solo el propietario puede editar el rancho.",
       "soloPropietarioDaDeBaja": "Solo el propietario puede dar de baja el rancho.",
       "dadoDeBaja": "Rancho dado de baja."
+    },
+    "importacion": {
+      "sinContenido": "Envía el contenido del CSV o la lista de filas para validar.",
+      "caravanaObligatoria": "La caravana es obligatoria.",
+      "caravanaRepetida": "Esa caravana está repetida dentro del mismo archivo.",
+      "sexoInvalido": "El sexo tiene que ser macho (M) o hembra (H).",
+      "pesoInvalido": "El peso actual tiene que ser un número positivo.",
+      "sinRancho": "Necesitas un rancho activo para importar animales.",
+      "socioSoloLectura": "Como socio tienes acceso de solo consulta: no puedes importar animales.",
+      "archivoConErrores": "El archivo tiene {cantidad} fila(s) con errores. Corrígelas antes de importar.",
+      "completada": "Importación completada: {insertados} nuevo(s), {actualizados} actualizado(s) y {omitidos} omitido(s)."
     }
   },
   "acceso": {
@@ -1222,6 +1233,37 @@
       "titulo": "Soporte de la plataforma",
       "intro": "Cada vez que alguien del soporte entra a tu rancho queda registrado: quién, cuándo y por qué.",
       "nadie": "Nadie del soporte de la plataforma entró a tu rancho."
+    }
+  },
+  "importacion": {
+    "titulo": "Importar ganado",
+    "rotulo": "Importación masiva",
+    "soloConsulta": "Como socio tienes acceso de solo consulta: puedes ver el ganado, pero no importar animales.",
+    "plantilla": {
+      "titulo": "1. Descarga la plantilla",
+      "texto": "Es un CSV con las columnas exactas que espera el sistema y tres filas de ejemplo.",
+      "boton": "Descargar plantilla CSV"
+    },
+    "archivo": {
+      "titulo": "2. Sube tu archivo",
+      "etiqueta": "Archivo CSV"
+    },
+    "validacion": {
+      "titulo": "3. Revisa los datos",
+      "validas": "{cantidad} animal(es) listos para importar de {total}.",
+      "errores": "{cantidad} fila(s) con errores. Corrígelas en el archivo y vuelve a subirlo.",
+      "fila": "Fila {fila}",
+      "duplicados": "Estas caravanas ya existen en tu rancho: {caravanas}. ¿Qué hacemos con ellas?",
+      "omitir": "Omitirlas",
+      "actualizar": "Actualizar sus datos",
+      "confirmar": "Confirmar e importar"
+    },
+    "resultado": {
+      "titulo": "Importación terminada",
+      "insertados": "Nuevos",
+      "actualizados": "Actualizados",
+      "omitidos": "Omitidos",
+      "otra": "Hacer otra importación"
     }
   }
 }

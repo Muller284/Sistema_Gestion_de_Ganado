@@ -38,7 +38,7 @@ const MODULOS: Modulo[] = [
   { clave: 'pesajes', nombre: 'app.modulos.pesajes', icono: 'balanza', fase: 3 },
   // HU-17. Llegó antes que su fase: el alta del equipo es del Sprint 2.
   { clave: 'equipo', nombre: 'app.modulos.equipo', icono: 'equipo', ruta: '/equipo' },
-  { clave: 'importacion', nombre: 'app.modulos.importacion', icono: 'animal', ruta: '/importacion' },
+  { clave: 'importacion', nombre: 'app.modulos.importacion', icono: 'planilla', ruta: '/importacion' },
 ];
 
 interface Propiedades {

@@ -76,8 +76,9 @@ async function ejecutarPruebas() {
   await prueba('Criterio 1: El socio puede ver la lista del equipo', async () => {
     const { estado, cuerpo } = await pedir('/equipo', {}, SOCIO_ID);
     assert.strictEqual(estado, 200);
-    assert.ok(Array.isArray(cuerpo.miembros));
-    assert.ok(cuerpo.miembros.length >= 2);
+    // Desde HU-20, GET /equipo devuelve la lista directa, sin envolver en { miembros }.
+    assert.ok(Array.isArray(cuerpo));
+    assert.ok(cuerpo.length >= 2);
   });
 
   // 2. Modificaciones denegadas

@@ -1,137 +1,223 @@
-import { useState } from 'react';
-import { api } from '../../servicios/api';
-import { DisenoApp } from '../../componentes/DisenoApp';
+import { useEffect, useState, type ChangeEvent } from 'react';
+import {
+  Alerta,
+  Boton,
+  Campo,
+  Cargando,
+  Dato,
+  Datos,
+  DisenoApp,
+  Icono,
+  Segmentos,
+  Tarjeta,
+} from '../../componentes';
+import {
+  api,
+  type EstadoRancho,
+  type EstrategiaDuplicados,
+  type ResultadoImportacion,
+  type ValidacionImportacion,
+} from '../../servicios/api';
+import { t } from '../../servicios/idioma';
+
+/**
+ * HU-40 a HU-45 · Importación de ganado por CSV.
+ *
+ * Tres pasos en la misma pantalla: bajar la plantilla, subir el archivo y
+ * revisar lo que el servidor validó antes de confirmar. Si hay caravanas que
+ * ya existen en el rancho, se elige si se omiten o se actualizan.
+ *
+ * El socio ve la pantalla pero no puede importar (HU-21). El servidor también
+ * lo rechaza: esto es comodidad, no seguridad.
+ */
 export function PaginaImportacion() {
-  const usuarioRaw = localStorage.getItem('ganado_usuario');
-  const usuario = usuarioRaw ? JSON.parse(usuarioRaw) : { nombre: 'Usuario', rol: 'propietario' };
+  const [rancho, setRancho] = useState<EstadoRancho | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [csv, setCsv] = useState('');
+  const [validacion, setValidacion] = useState<ValidacionImportacion | null>(null);
+  const [estrategia, setEstrategia] = useState<EstrategiaDuplicados>('omitir');
+  const [resultado, setResultado] = useState<ResultadoImportacion | null>(null);
+  const [error, setError] = useState('');
+  const [ocupado, setOcupado] = useState(false);
 
-  const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [validacion, setValidacion] = useState<any>(null);
-  const [estrategia, setEstrategia] = useState<'omitir' | 'actualizar'>('omitir');
-  const [resultado, setResultado] = useState<any>(null);
+  useEffect(() => {
+    let vigente = true;
+    api
+      .miRancho()
+      .then((estado) => vigente && setRancho(estado))
+      .catch((err: Error) => vigente && setError(err.message))
+      .finally(() => vigente && setCargando(false));
+    return () => {
+      vigente = false;
+    };
+  }, []);
 
-  // Rol de solo lectura
-  const esSocio = usuario.rol === 'socio';
+  const usuario = rancho?.usuario ?? { nombre: t('equipo.invitado'), rol: '—' };
+  const esSocio = rancho?.usuario.rol === 'socio';
 
-  const descargarPlantilla = async () => {
-    const res = await api.plantillaImportacion();
-    const blob = new Blob([res.contenidoCsv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'plantilla_ganado.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleArchivo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setCsvFile(file);
-      const text = await file.text();
-      const res = await api.validarImportacion({ csv: text });
-      setValidacion(res);
+  async function descargarPlantilla() {
+    setError('');
+    try {
+      const plantilla = await api.plantillaImportacion();
+      const blob = new Blob([plantilla.contenidoCsv], { type: 'text/csv;charset=utf-8;' });
+      const enlace = document.createElement('a');
+      enlace.href = URL.createObjectURL(blob);
+      enlace.download = 'plantilla_ganado.csv';
+      enlace.click();
+      URL.revokeObjectURL(enlace.href);
+    } catch (err) {
+      setError((err as Error).message);
     }
-  };
+  }
 
-  const procesar = async () => {
-    if (!csvFile) return;
-    const text = await csvFile.text();
-    const res = await api.ejecutarImportacion({ csv: text, estrategia_duplicados: estrategia });
-    setResultado(res);
-  };
+  async function alElegirArchivo(evento: ChangeEvent<HTMLInputElement>) {
+    const archivo = evento.target.files?.[0];
+    if (!archivo) return;
+    setError('');
+    setValidacion(null);
+    setOcupado(true);
+    try {
+      const texto = await archivo.text();
+      setCsv(texto);
+      setValidacion(await api.validarImportacion(texto));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function importar() {
+    setError('');
+    setOcupado(true);
+    try {
+      setResultado(await api.ejecutarImportacion(csv, estrategia));
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  function reiniciar() {
+    setCsv('');
+    setValidacion(null);
+    setResultado(null);
+    setEstrategia('omitir');
+  }
 
   return (
     <DisenoApp
       activo="importacion"
-      ruta={['Mi rancho', 'Importación Masiva (CSV)']}
-      titulo="Importar Ganado"
+      ruta={[t('app.modulos.inicio'), t('importacion.titulo')]}
       usuario={usuario}
+      rancho={rancho?.rancho?.nombre ?? null}
+      rotulo={t('importacion.rotulo')}
+      titulo={t('importacion.titulo')}
     >
-      {esSocio ? (
-        <div className="tarjeta mt-8">
-          <div style={{ padding: '24px', textAlign: 'center', color: '#854d0e', backgroundColor: '#fef08a', borderRadius: '8px' }}>
-            <strong>Acceso Restringido:</strong> Tu rol de Socio tiene acceso de solo lectura y no puede importar animales.
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '32px' }}>
-          
-          {!resultado ? (
-            <>
-              <div className="tarjeta" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>1. Descargar Plantilla</h3>
-                <p style={{ marginBottom: '16px', color: '#4b5563' }}>Descarga la plantilla oficial en CSV con las columnas exactas para subir tus animales.</p>
-                <button 
-                  onClick={descargarPlantilla}
-                  style={{ background: '#166534', color: 'white', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', border: 'none' }}
-                >
-                  Descargar Plantilla CSV
-                </button>
-              </div>
+      <div className="col g24">
+        {cargando && <Cargando lineas={4} />}
+        {error && <Alerta variante="error">{error}</Alerta>}
+        {!cargando && esSocio && <Alerta variante="info">{t('importacion.soloConsulta')}</Alerta>}
 
-              <div className="tarjeta" style={{ padding: '24px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>2. Subir Archivo</h3>
-                <input type="file" accept=".csv" onChange={handleArchivo} style={{ display: 'block', width: '100%', padding: '16px', border: '2px dashed #cbd5e1', borderRadius: '8px' }} />
-              </div>
+        {!cargando && !esSocio && resultado && (
+          <Tarjeta
+            titulo={t('importacion.resultado.titulo')}
+            pie={
+              <Boton variante="secundario" onClick={reiniciar}>
+                {t('importacion.resultado.otra')}
+              </Boton>
+            }
+          >
+            <Alerta variante="exito">{resultado.mensaje}</Alerta>
+            <Datos>
+              <Dato nombre={t('importacion.resultado.insertados')}>{resultado.resumen.insertados}</Dato>
+              <Dato nombre={t('importacion.resultado.actualizados')}>{resultado.resumen.actualizados}</Dato>
+              <Dato nombre={t('importacion.resultado.omitidos')}>{resultado.resumen.omitidos}</Dato>
+            </Datos>
+          </Tarjeta>
+        )}
 
-              {validacion && (
-                <div className="tarjeta" style={{ padding: '24px' }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>3. Validación de Datos</h3>
-                  <p style={{ color: '#166534', fontWeight: 'bold' }}>✅ {validacion.validos} animales válidos listos para importar.</p>
-                  
-                  {validacion.duplicados && validacion.duplicados.length > 0 && (
-                    <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '8px' }}>
-                      <h4 style={{ fontWeight: 'bold', marginBottom: '8px' }}>¡Atención! Se detectaron duplicados</h4>
-                      <p style={{ marginBottom: '12px' }}>La caravana <strong>{validacion.duplicados[0].caravana}</strong> ya existe en el rancho.</p>
-                      
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                          <input type="radio" checked={estrategia === 'omitir'} onChange={() => setEstrategia('omitir')} />
-                          Omitir duplicados (no registrar los repetidos)
-                        </label>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                          <input type="radio" checked={estrategia === 'actualizar'} onChange={() => setEstrategia('actualizar')} />
-                          Actualizar existentes (sobreescribir datos del animal actual)
-                        </label>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <button 
-                    onClick={procesar}
-                    style={{ marginTop: '24px', background: '#166534', color: 'white', padding: '12px 24px', borderRadius: '4px', cursor: 'pointer', border: 'none', fontWeight: 'bold', width: '100%' }}
+        {!cargando && !esSocio && !resultado && (
+          <>
+            <Tarjeta titulo={t('importacion.plantilla.titulo')}>
+              <p className="cuerpo c-600">{t('importacion.plantilla.texto')}</p>
+              <Boton variante="secundario" onClick={descargarPlantilla}>
+                <Icono nombre="descargar" tamano={18} />
+                {t('importacion.plantilla.boton')}
+              </Boton>
+            </Tarjeta>
+
+            <Tarjeta titulo={t('importacion.archivo.titulo')}>
+              <Campo etiqueta={t('importacion.archivo.etiqueta')}>
+                {(id) => (
+                  <input id={id} type="file" accept=".csv,text/csv" onChange={alElegirArchivo} disabled={ocupado} />
+                )}
+              </Campo>
+            </Tarjeta>
+
+            {validacion && (
+              <Tarjeta
+                titulo={t('importacion.validacion.titulo')}
+                pie={
+                  <Boton
+                    variante="primario"
+                    onClick={importar}
+                    disabled={ocupado || validacion.con_errores > 0 || validacion.validas === 0}
                   >
-                    Confirmar y Procesar Importación
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="tarjeta" style={{ padding: '32px', textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
-              <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#166534', marginBottom: '16px' }}>¡Importación Exitosa!</h3>
-              <p style={{ fontSize: '18px', marginBottom: '8px' }}>
-                <strong>{resultado.importados}</strong> animales registrados.
-              </p>
-              <p style={{ fontSize: '18px', marginBottom: '8px', color: '#854d0e' }}>
-                <strong>{resultado.omitidos}</strong> duplicados omitidos.
-              </p>
-              <p style={{ fontSize: '18px', marginBottom: '24px', color: '#1e40af' }}>
-                <strong>{resultado.actualizados}</strong> actualizados.
-              </p>
-              
-              <button 
-                onClick={() => { setResultado(null); setValidacion(null); setCsvFile(null); }}
-                style={{ background: '#e2e8f0', color: '#1e293b', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', border: 'none', fontWeight: 'bold' }}
+                    {t('importacion.validacion.confirmar')}
+                  </Boton>
+                }
               >
-                Realizar otra importación
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+                <div className="col g16">
+                  <Alerta variante={validacion.validas > 0 ? 'exito' : 'adv'}>
+                    {t('importacion.validacion.validas', {
+                      cantidad: validacion.validas,
+                      total: validacion.total,
+                    })}
+                  </Alerta>
+
+                  {validacion.con_errores > 0 && (
+                    <Alerta variante="error">
+                      {t('importacion.validacion.errores', { cantidad: validacion.con_errores })}
+                    </Alerta>
+                  )}
+                  {validacion.errores.length > 0 && (
+                    <Datos>
+                      {validacion.errores.map((fila) => (
+                        <Dato key={fila.fila} nombre={t('importacion.validacion.fila', { fila: fila.fila })}>
+                          {fila.error}
+                        </Dato>
+                      ))}
+                    </Datos>
+                  )}
+
+                  {validacion.filas_duplicadas.length > 0 && (
+                    <>
+                      <Alerta variante="adv">
+                        {t('importacion.validacion.duplicados', {
+                          caravanas: validacion.filas_duplicadas.join(', '),
+                        })}
+                      </Alerta>
+                      <Segmentos
+                        etiqueta={t('importacion.validacion.duplicados', {
+                          caravanas: validacion.filas_duplicadas.join(', '),
+                        })}
+                        valor={estrategia}
+                        alCambiar={setEstrategia}
+                        opciones={[
+                          { clave: 'omitir', nombre: t('importacion.validacion.omitir') },
+                          { clave: 'actualizar', nombre: t('importacion.validacion.actualizar') },
+                        ]}
+                      />
+                    </>
+                  )}
+                </div>
+              </Tarjeta>
+            )}
+          </>
+        )}
+      </div>
     </DisenoApp>
   );
 }

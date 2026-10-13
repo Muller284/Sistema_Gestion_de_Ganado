@@ -4,6 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
+import { t } from '../../comun/idioma';
 
 export interface FilaAnimalImportacion {
   caravana: string;
@@ -94,7 +95,7 @@ export class ServicioImportacion {
     } else if (filasEntrada.length > 0) {
       filasParaValidar = filasEntrada;
     } else {
-      throw new BadRequestException('Debes enviar el contenido CSV o la lista de filas para validar.');
+      throw new BadRequestException(t('servidor.importacion.sinContenido'));
     }
 
     const errores: { fila: number; caravana?: string; error: string }[] = [];
@@ -109,19 +110,19 @@ export class ServicioImportacion {
       const caravana = String(fila.caravana || '').trim();
 
       if (!caravana) {
-        errores.push({ fila: numFila, error: 'La caravana es obligatoria.' });
+        errores.push({ fila: numFila, error: t('servidor.importacion.caravanaObligatoria') });
         return;
       }
 
       if (caravanasVistasEnArchivo.has(caravana)) {
-        errores.push({ fila: numFila, caravana, error: 'Caravana duplicada dentro del mismo archivo.' });
+        errores.push({ fila: numFila, caravana, error: t('servidor.importacion.caravanaRepetida') });
         return;
       }
       caravanasVistasEnArchivo.add(caravana);
 
       const sexo = String(fila.sexo || '').trim().toLowerCase();
       if (!sexo || !['macho', 'hembra', 'm', 'h'].includes(sexo)) {
-        errores.push({ fila: numFila, caravana, error: 'El sexo debe ser macho (M) o hembra (H).' });
+        errores.push({ fila: numFila, caravana, error: t('servidor.importacion.sexoInvalido') });
         return;
       }
 
@@ -129,7 +130,7 @@ export class ServicioImportacion {
       if (fila.peso_actual !== undefined && fila.peso_actual !== null && fila.peso_actual !== '') {
         pesoNum = Number(fila.peso_actual);
         if (isNaN(pesoNum) || pesoNum <= 0) {
-          errores.push({ fila: numFila, caravana, error: 'El peso actual debe ser un número positivo.' });
+          errores.push({ fila: numFila, caravana, error: t('servidor.importacion.pesoInvalido') });
           return;
         }
       }
@@ -168,7 +169,7 @@ export class ServicioImportacion {
 
     if (validacion.con_errores > 0) {
       throw new BadRequestException(
-        `El archivo contiene ${validacion.con_errores} fila(s) con errores. Corrige el archivo antes de importar.`,
+        t('servidor.importacion.archivoConErrores', { cantidad: validacion.con_errores }),
       );
     }
 
@@ -197,7 +198,7 @@ export class ServicioImportacion {
 
     return {
       exito: true,
-      mensaje: `Importación completada: ${insertados} insertado(s), ${actualizados} actualizado(s), ${omitidos} omitido(s).`,
+      mensaje: t('servidor.importacion.completada', { insertados, actualizados, omitidos }),
       resumen: {
         total_procesados: validacion.validas,
         insertados,
@@ -234,11 +235,11 @@ export class ServicioImportacion {
 
   private verificarPermiso(usuario: UsuarioActual) {
     if (!usuario.ranchoId) {
-      throw new ForbiddenException('Debes tener un rancho activo para gestionar animales.');
+      throw new ForbiddenException(t('servidor.importacion.sinRancho'));
     }
     // El rol socio solo tiene permisos de lectura (HU-21)
     if (usuario.rol === 'socio') {
-      throw new ForbiddenException('El rol Socio tiene acceso de solo lectura y no puede importar animales.');
+      throw new ForbiddenException(t('servidor.importacion.socioSoloLectura'));
     }
   }
 }

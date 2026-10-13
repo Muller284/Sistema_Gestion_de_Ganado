@@ -232,6 +232,17 @@
       "soloPropietarioEdita": "Only the owner can edit the ranch.",
       "soloPropietarioDaDeBaja": "Only the owner can deactivate the ranch.",
       "dadoDeBaja": "Ranch deactivated."
+    },
+    "importacion": {
+      "sinContenido": "Send the CSV content or the list of rows to validate.",
+      "caravanaObligatoria": "The ear tag is required.",
+      "caravanaRepetida": "That ear tag is repeated within the same file.",
+      "sexoInvalido": "Sex must be male (M) or female (H).",
+      "pesoInvalido": "Current weight must be a positive number.",
+      "sinRancho": "You need an active ranch to import animals.",
+      "socioSoloLectura": "As a partner you have read-only access: you can't import animals.",
+      "archivoConErrores": "The file has {cantidad} row(s) with errors. Fix them before importing.",
+      "completada": "Import finished: {insertados} new, {actualizados} updated and {omitidos} skipped."
     }
   },
   "acceso": {
@@ -1222,6 +1233,37 @@
       "titulo": "Platform support",
       "intro": "Every time someone from support enters your ranch it is logged: who, when and why.",
       "nadie": "Nobody from platform support has entered your ranch."
+    }
+  },
+  "importacion": {
+    "titulo": "Import cattle",
+    "rotulo": "Bulk import",
+    "soloConsulta": "As a partner you have read-only access: you can see the cattle, but not import animals.",
+    "plantilla": {
+      "titulo": "1. Download the template",
+      "texto": "A CSV with the exact columns the system expects and three sample rows.",
+      "boton": "Download CSV template"
+    },
+    "archivo": {
+      "titulo": "2. Upload your file",
+      "etiqueta": "CSV file"
+    },
+    "validacion": {
+      "titulo": "3. Review the data",
+      "validas": "{cantidad} animal(s) ready to import out of {total}.",
+      "errores": "{cantidad} row(s) with errors. Fix them in the file and upload it again.",
+      "fila": "Row {fila}",
+      "duplicados": "These ear tags already exist on your ranch: {caravanas}. What should we do with them?",
+      "omitir": "Skip them",
+      "actualizar": "Update their data",
+      "confirmar": "Confirm and import"
+    },
+    "resultado": {
+      "titulo": "Import finished",
+      "insertados": "New",
+      "actualizados": "Updated",
+      "omitidos": "Skipped",
+      "otra": "Run another import"
     }
   }
 }
