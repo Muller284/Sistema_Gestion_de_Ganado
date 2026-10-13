@@ -201,6 +201,12 @@ export function PaginaRancho() {
   // HU-14: Obtenemos los metadatos del país seleccionado actualmente
   const datosPaisActual = paises.find((p) => p.codigo === rancho?.pais_codigo);
 
+  // Extensión para leer campos de autoría por nombre
+  const ranchoExtendido = rancho as Rancho & {
+    creado_por_nombre?: string;
+    modificado_por_nombre?: string;
+  };
+
   return (
     <DisenoApp
       ruta={[t('rancho.miRancho'), nombreRol(usuario.rol)]}
@@ -302,12 +308,12 @@ export function PaginaRancho() {
                     {datosPaisActual?.franja_precio ?? '—'}
                   </Dato>
 
-                  {/* HU-23: Auditoría y autoría de datos */}
+                  {/* HU-23: Auditoría y autoría de datos con nombres de usuario */}
                   <Dato nombre={t('rancho.datos.auditoria')}>
                     <div className="texto-secundario">
-                      {t('rancho.datos.creadoEl', { fecha: fechaHora(rancho.creado_en) })}
+                      Creado por: <strong>{ranchoExtendido.creado_por_nombre || 'Sistema'}</strong> el {fechaHora(rancho.creado_en)}
                       <br />
-                      {t('rancho.datos.modificadoEl', { fecha: fechaHora(rancho.modificado_en) })}
+                      Modificado por: <strong>{ranchoExtendido.modificado_por_nombre || '—'}</strong> el {fechaHora(rancho.modificado_en)}
                     </div>
                   </Dato>
                 </Datos>

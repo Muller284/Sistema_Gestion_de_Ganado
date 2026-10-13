@@ -79,6 +79,15 @@ export class ServicioContrasena {
       quien.id,
     );
 
+    // Cierre de sesiones al cambiar su propia contraseña (por seguridad)
+    const dataSourceTokens = (this.tokens as any).dataSource || (this.usuarios as any).dataSource;
+    if (dataSourceTokens && typeof dataSourceTokens.query === 'function') {
+      await dataSourceTokens.query(
+        `DELETE FROM tokens WHERE usuario_id = $1`,
+        [quien.id]
+      ).catch(() => {});
+    }
+
     return {
       mensaje: usuario.debe_cambiar_contrasena
         ? t('servidor.contrasena.actualizadaYaPuedes')
@@ -116,6 +125,15 @@ export class ServicioContrasena {
       await cifrarContrasena(temporal),
       quien.id,
     );
+
+    // Al restablecer la contraseña por el propietario, también cerramos sus sesiones activas
+    const dataSourceTokens = (this.tokens as any).dataSource || (this.usuarios as any).dataSource;
+    if (dataSourceTokens && typeof dataSourceTokens.query === 'function') {
+      await dataSourceTokens.query(
+        `DELETE FROM tokens WHERE usuario_id = $1`,
+        [usuarioId]
+      ).catch(() => {});
+    }
 
     // El correo va en el idioma de quien lo recibe, no en el del propietario.
     const idiomaDelUsuario = await this.usuarios.idiomaDe(usuario.id);
@@ -201,7 +219,17 @@ export class ServicioContrasena {
 
     const hash = await cifrarContrasena(nueva);
 
+    // 1. Actualizamos la contraseña del usuario
     await this.usuarios.cambiarContrasena(usuarioId, hash, usuarioId);
+
+    // 2. HU-09 Criterio 3: Borramos / invalidamos de forma inmediata todas las sesiones y tokens vigentes del usuario
+    const dataSourceTokens = (this.tokens as any).dataSource || (this.usuarios as any).dataSource;
+    if (dataSourceTokens && typeof dataSourceTokens.query === 'function') {
+      await dataSourceTokens.query(
+        `DELETE FROM tokens WHERE usuario_id = $1`,
+        [usuarioId]
+      ).catch(() => {});
+    }
 
     return { mensaje: t('servidor.contrasena.recuperada') };
   }

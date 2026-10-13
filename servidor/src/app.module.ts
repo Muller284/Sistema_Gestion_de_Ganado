@@ -10,11 +10,12 @@ import { ModuloEquipo } from './modulos/equipo/modulo-equipo';
 import { ModuloGuia } from './modulos/guia/modulo-guia';
 import { ModuloTipos } from './modulos/tipos/modulo-tipos';
 import { ModuloAdmin } from './modulos/admin/modulo-admin';
+import { ModuloAnimales } from './modulos/animales/modulo-animales'; // Módulo de animales (HU-27 y HU-29)
 
 @Module({
   imports: [
     // El .env vive en la raiz del proyecto, no en servidor/. Sin envFilePath
-    // el servidor no encontraba DATABASE_URL al arrancar fuera de Docker.
+    // el servidor no encontraba DATABASE_URL al arrancar fuera deDocker.
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../.env', '.env'] }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -38,6 +39,7 @@ import { ModuloAdmin } from './modulos/admin/modulo-admin';
     ModuloGuia, // HU-16
     ModuloTipos, // HU-20
     ModuloAdmin, // HU-24
+    ModuloAnimales, // HU-27 y HU-29
   ],
 })
 export class AppModule {}

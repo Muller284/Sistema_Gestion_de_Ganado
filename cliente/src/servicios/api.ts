@@ -167,7 +167,7 @@ async function pedir<T>(
       guardarSoporte(null);
       window.location.hash = '#/admin';
     }
-    const mensaje = cuerpo?.message ?? `Error ${respuesta.status}`;
+    const mensaje = cuerpo?.message ?? cuerpo?.mensaje ?? `Error ${respuesta.status}`;
     throw new Error(Array.isArray(mensaje) ? mensaje.join(', ') : mensaje);
   }
   return cuerpo as T;
@@ -540,4 +540,12 @@ export const api = {
     pedir<{ mensaje: string }>(`/admin/accesos/${accesoId}/salida`, { method: 'POST' }),
   accesosAdmin: () => pedir<AccesoAdmin[]>('/admin/accesos'),
   accesosDeMiRancho: () => pedir<AccesoAdmin[]>('/admin/accesos/de-mi-rancho'),
+
+  // HU-27 y HU-29 · Módulo de Animales
+  registrarAnimal: (datos: Record<string, unknown>) =>
+    pedir<{ animal: any; mensaje: string }>('/animales', {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+  listarAnimales: () => pedir<any[]>('/animales'),
 };

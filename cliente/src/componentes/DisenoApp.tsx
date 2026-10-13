@@ -11,12 +11,6 @@ import { MenuUsuario } from './MenuUsuario';
  * El marco de las pantallas internas, tal como está en los mockups: menú
  * lateral verde oscuro, barra superior blanca y el contenido sobre el fondo
  * arena.
- *
- * LOS MÓDULOS QUE TODAVÍA NO EXISTEN SE VEN, PERO NO SE PUEDEN ABRIR.
- * Animales, corrales, sanidad, pesajes y el asistente son de las fases 2 y 3.
- * Aparecen apagados, con la fase a la que pertenecen. Es lo mismo que pide
- * HU-16 para la guía de configuración: dejar visible lo que viene, en lugar de
- * un menú que crece de golpe y no se entiende.
  */
 
 interface Modulo {
@@ -32,7 +26,7 @@ interface Modulo {
 
 const MODULOS: Modulo[] = [
   { clave: 'inicio', nombre: 'app.modulos.inicio', icono: 'casa', ruta: '/rancho' },
-  { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', fase: 2 },
+  { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', ruta: '/animales' }, // Habilitado
   { clave: 'corrales', nombre: 'app.modulos.corrales', icono: 'corral', fase: 2 },
   { clave: 'sanidad', nombre: 'app.modulos.sanidad', icono: 'sanidad', fase: 3 },
   { clave: 'pesajes', nombre: 'app.modulos.pesajes', icono: 'balanza', fase: 3 },
@@ -147,24 +141,24 @@ export function DisenoApp({
         <div className="espaciador" />
 
         {!esAdmin && (
-        <div className="bloque-cuenta">
-          <span className="titulo">{t('app.cuenta.titulo')}</span>
-          <span className="plan">
-            <Icono nombre="plan" tamano={16} />
-            {t('app.cuenta.plan')}
-          </span>
-          <div
-            className="medidor"
-            role="progressbar"
-            aria-valuenow={76}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={t('app.cuenta.medidor')}
-          >
-            <span style={{ width: '76%' }} />
+          <div className="bloque-cuenta">
+            <span className="titulo">{t('app.cuenta.titulo')}</span>
+            <span className="plan">
+              <Icono nombre="plan" tamano={16} />
+              {t('app.cuenta.plan')}
+            </span>
+            <div
+              className="medidor"
+              role="progressbar"
+              aria-valuenow={76}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={t('app.cuenta.medidor')}
+            >
+              <span style={{ width: '76%' }} />
+            </div>
+            <span className="detalle">{t('app.cuenta.usados', { porcentaje: 76 })}</span>
           </div>
-          <span className="detalle">{t('app.cuenta.usados', { porcentaje: 76 })}</span>
-        </div>
         )}
 
         {/* Abre "Mi perfil". Es un enlace de verdad, como los modulos: se

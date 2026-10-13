@@ -35,11 +35,13 @@ import { ServicioTipos } from './servicio-tipos';
 export class ControladorTipos {
   constructor(private readonly servicio: ServicioTipos) {}
 
+  @UseGuards(GuardiaCuentaLista)
   @Get('modulos')
   async modulos(@Req() peticion: any) {
     return this.servicio.modulos(peticion.usuarioActual);
   }
 
+  @UseGuards(GuardiaCuentaLista)
   @Get('tipos')
   async listar(@Req() peticion: any) {
     return this.servicio.listar(peticion.usuarioActual);
@@ -50,9 +52,11 @@ export class ControladorTipos {
     return this.servicio.crear(cuerpo, peticion.usuarioActual);
   }
 
-  @Put('tipos/:id')
+ @Put('tipos/:id')
   async actualizar(@Param('id') id: string, @Body() cuerpo: any, @Req() peticion: any) {
-    return this.servicio.actualizar(id, cuerpo, peticion.usuarioActual);
+    // Si necesitas respaldar la obtención del usuario por si viene en cabeceras o token:
+    const usuario = peticion.usuarioActual || peticion.usuario;
+    return this.servicio.actualizar(id, cuerpo, usuario);
   }
 
   @Post('tipos/:id/restablecer')

@@ -21,6 +21,8 @@ import { PaginaCambioContrasena } from './paginas/contrasena/PaginaCambioContras
 import { PaginaSolicitarRecuperacion } from './paginas/contrasena/PaginaSolicitarRecuperacion';
 import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestablecerContrasena';
 import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
+// Tu módulo de animales integrado sobre la base de main
+import { PaginaAnimales } from './paginas/animales/PaginaAnimales';
 import { api, hayAlguienDentro, soporteActual, type EstadoCuenta } from './servicios/api';
 import { cambiarIdioma } from './servicios/idioma';
 
@@ -175,6 +177,9 @@ function Sistema() {
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
         <Route path="/equipo/tipos" element={adentro(<PaginaTipos />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
+
+        {/* Módulo de Animales agregado sobre main */}
+        <Route path="/animales" element={adentro(<PaginaAnimales />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}
         <Route path="*" element={<Navigate to="/" replace />} />

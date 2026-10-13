@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Alerta, Boton, CampoTexto, DisenoAcceso,  } from '../../componentes';
+import { Alerta, Boton, CampoTexto, DisenoAcceso } from '../../componentes';
 import { api } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { enumerar, faltasDeContrasena } from '../../servicios/texto';
@@ -12,9 +12,6 @@ export function PaginaRestablecerContrasena() {
   const [exito, setExito] = useState(false);
   const [enviando, setEnviando] = useState(false);
 
-  // El token viene en la direccion: /#/recuperar-contrasena?token=...
-  // Con HashRouter la consulta vive DENTRO de la almohadilla, asi que
-  // window.location.search llega vacio. Se lee con el enrutador.
   const [parametros] = useSearchParams();
   const token = parametros.get('token');
   const navegar = useNavigate();
@@ -43,6 +40,12 @@ export function PaginaRestablecerContrasena() {
     setEnviando(true);
     try {
       await api.ejecutarRecuperacion(token, nueva);
+
+      // Limpieza local y emisión de evento instantáneo para otras pestañas
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      localStorage.setItem('sesion_expirada', Date.now().toString());
+
       setExito(true);
     } catch (err) {
       setError((err as Error).message);
@@ -51,7 +54,6 @@ export function PaginaRestablecerContrasena() {
     }
   }
 
-  // Pantalla de éxito tras cambiar la contraseña
   if (exito) {
     return (
       <DisenoAcceso
@@ -69,7 +71,6 @@ export function PaginaRestablecerContrasena() {
     );
   }
 
-  // Protección: Si alguien entra a la página sin un token en la URL
   if (!token) {
     return (
       <DisenoAcceso
@@ -87,7 +88,6 @@ export function PaginaRestablecerContrasena() {
     );
   }
 
-  // Pantalla normal del formulario
   return (
     <DisenoAcceso
       icono="llave"

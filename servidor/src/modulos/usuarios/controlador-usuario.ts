@@ -1,35 +1,11 @@
-import { Body, Controller, Get, Headers, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Patch, Post, HttpException, HttpStatus } from '@nestjs/common';
 import { ServicioUsuario } from './servicio-usuario';
 import { ServicioVerificacion } from './servicio-verificacion';
 import { ServicioContrasena } from './servicio-contrasena';
 import { ServicioSesion } from './servicio-sesion';
 import { RepositorioUsuarioActual } from '../../comun/repositorio-usuario-actual';
+import { DataSource } from 'typeorm';
 
-/**
- * Endpoints del modulo de usuarios.
- *
- *   POST /usuarios/registro                     HU-06, crear la cuenta
- *   POST /usuarios/ingreso                      HU-08, inicio de sesión
- *   POST /usuarios/refresco                     HU-12, refrescar sesión
- *   POST /usuarios/cierre                       HU-12, cierre de sesión
- *   GET  /usuarios/yo                           el estado de mi cuenta
- *   GET  /usuarios/yo/perfil                    mis datos, para "Mi perfil"
- *   PATCH /usuarios/yo/perfil                   cambiar mi nombre
- *   POST /usuarios/verificacion                 HU-07, confirmar el correo
- *   POST /usuarios/verificacion/reenvio         HU-07, pedir otro enlace
- *   POST /usuarios/mi-contrasena                HU-10, cambiar la mia
- *   POST /usuarios/:id/restablecer-contrasena   HU-10, el propietario fuerza
- *   POST /usuarios/recuperacion-contrasena      HU-09, pedir recuperar acceso
- *   POST /usuarios/recuperacion-contrasena/ejecutar HU-09, usar el enlace
- *   POST /usuarios/colaboradores                HU-13, alta de un integrante
- *
- * NINGUNO LLEVA EL GUARDIA GuardiaCuentaLista, a proposito: este controlador
- * es justamente la salida para las dos situaciones que el guardia bloquea. Si
- * el portero cerrara tambien la salida, la cuenta quedaria encerrada.
- *
- * GET /usuarios/yo si necesita saber quien pide, pero no exige que la cuenta
- * este lista: es lo que el cliente consulta para saber a que pantalla mandar.
- */
 @Controller('usuarios')
 export class ControladorUsuario {
   constructor(
@@ -38,6 +14,7 @@ export class ControladorUsuario {
     private readonly contrasenas: ServicioContrasena,
     private readonly sesiones: ServicioSesion,
     private readonly usuarios: RepositorioUsuarioActual,
+    private readonly dataSource: DataSource, // <--- Inyectamos DataSource aquí directamente
   ) {}
 
   @Post('registro')
@@ -88,10 +65,8 @@ export class ControladorUsuario {
       rancho_id: usuario.ranchoId,
       correo_verificado: usuario.correoVerificado,
       debe_cambiar_contrasena: usuario.debeCambiarContrasena,
-      /** HU-25. El idioma con el que trabaja y el que eligio (nulo: el del pais). */
       idioma: usuario.idioma,
       idioma_elegido: usuario.idiomaElegido,
-      /** Lo que el cliente tiene que resolver antes de dejarlo pasar. */
       pendiente: !usuario.correoVerificado
         ? 'verificar_correo'
         : usuario.debeCambiarContrasena
@@ -144,7 +119,6 @@ export class ControladorUsuario {
     @Headers('x-usuario-id') usuarioId?: string,
     @Headers('x-rancho-soporte') ranchoSoporte?: string,
   ) {
-    // HU-24: el Admin en soporte tambien puede restablecer una clave.
     const usuario = await this.usuarios.aplicarSoporte(
       await this.usuarios.resolver(auth || usuarioId),
       ranchoSoporte,
@@ -152,28 +126,16 @@ export class ControladorUsuario {
     return this.contrasenas.restablecer(id, usuario);
   }
 
-  /**
-   * HU-09: Endpoint para pedir el enlace al correo.
-   * La url será: http://localhost:3000/usuarios/recuperacion-contrasena
-   */
   @Post('recuperacion-contrasena')
   async solicitarRecuperacion(@Body() cuerpo: any) {
     return this.contrasenas.solicitarRecuperacion(cuerpo);
   }
 
-  /**
-   * HU-09: Endpoint para guardar la contraseña nueva.
-   * La url será: http://localhost:3000/usuarios/recuperacion-contrasena/ejecutar
-   */
   @Post('recuperacion-contrasena/ejecutar')
   async ejecutarRecuperacion(@Body() cuerpo: any) {
     return this.contrasenas.ejecutarRecuperacion(cuerpo);
   }
 
-  /**
-   * HU-13: Endpoint para dar de alta a un colaborador en el rancho.
-   * La url será: http://localhost:3000/usuarios/colaboradores
-   */
   @Post('colaboradores')
   async altaColaborador(
     @Body() cuerpo: any,
@@ -182,5 +144,39 @@ export class ControladorUsuario {
   ) {
     const usuario = await this.usuarios.resolver(auth || usuarioId);
     return this.servicio.altaColaborador(cuerpo, usuario);
+  }
+
+  /**
+   * HU-18: Endpoint para actualizar y persistir los permisos de un colaborador en la base de datos.
+   */
+  @Patch(':id/permisos')
+  async actualizarPermisos(
+    @Param('id') id: string,
+    @Body() cuerpo: any,
+    @Headers('authorization') auth?: string,
+    @Headers('x-usuario-id') usuarioId?: string,
+  ) {
+    const usuarioActual = await this.usuarios.resolver(auth || usuarioId);
+    
+    if (
+      usuarioActual.rol !== 'propietario' && 
+      usuarioActual.rol !== 'admin' && 
+      usuarioActual.rol !== 'admin_plataforma'
+    ) {
+      throw new HttpException(
+        { mensaje: 'Acción no autorizada. Solo el Propietario o Administrador pueden modificar permisos.' },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
+    const permisosJson = typeof cuerpo.permisos === 'string' ? cuerpo.permisos : JSON.stringify(cuerpo.permisos);
+
+    // Usamos el DataSource inyectado correctamente en el controlador
+    await this.dataSource.query(
+      `UPDATE usuarios SET permisos = $1 WHERE id = $2 AND rancho_id = $3`,
+      [permisosJson, id, usuarioActual.ranchoId]
+    );
+
+    return { mensaje: 'Permisos actualizados y guardados en la base de datos correctamente.' };
   }
 }

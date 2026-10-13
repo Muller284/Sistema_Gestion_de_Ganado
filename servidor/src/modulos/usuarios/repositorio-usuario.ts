@@ -169,6 +169,7 @@ export class RepositorioUsuario {
       [id, nombre],
     );
   }
+  
 
   /** HU-25. Nulo vuelve a usar el idioma del pais. */
   async cambiarIdioma(id: string, idioma: string | null): Promise<void> {
