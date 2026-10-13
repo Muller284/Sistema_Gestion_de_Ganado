@@ -60,18 +60,25 @@ export class ControladorAnimales {
         );
       }
 
-      // Se incluye fecha_nacimiento en el registro
+      // Capturamos el identificador de cualquiera de las variantes enviadas por el formulario
+      const identificadorValor = datos.identificador || datos.caravana || datos.numero;
+      if (!identificadorValor) {
+        throw new HttpException({ mensaje: 'El identificador es obligatorio.' }, HttpStatus.BAD_REQUEST);
+      }
+
+      // Se incluye identificador y fecha_nacimiento en el registro
       const animal = await this.dataSource.query(
-        `INSERT INTO animales (rancho_id, nombre, raza, sexo, categoria, corral_asignado, peso_inicial, fecha_nacimiento, creado_por) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+        `INSERT INTO animales (rancho_id, identificador, nombre, raza, sexo, categoria, corral_asignado, peso_inicial, fecha_nacimiento, creado_por) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
         [
           ranchoId, 
+          identificadorValor,
           datos.nombre, 
           datos.raza, 
           datos.sexo, 
           datos.categoria, 
-          datos.corralAsignado || datos.corral_asignado, 
-          datos.pesoInicial || datos.peso_inicial, 
+          datos.corralAsignado || datos.corral_asignado || datos.corral, 
+          datos.pesoInicial || datos.peso_inicial || datos.peso, 
           datos.fechaNacimiento || datos.fecha_nacimiento || null, 
           usuarioId
         ]
@@ -241,9 +248,16 @@ export class ControladorAnimales {
 
     const ranchoIdReal = usuarioDb[0].rancho_id;
 
-    return await this.dataSource.query(
-      `SELECT * FROM animales WHERE rancho_id = $1 AND (estado IS NULL OR estado != 'inactivo') ORDER BY id DESC`,
+    const animalesDb = await this.dataSource.query(
+      `SELECT *, 
+              COALESCE(corral, corral_asignado) AS corral, 
+              COALESCE(peso, peso_inicial) AS peso 
+         FROM animales 
+        WHERE rancho_id = $1 AND (estado IS NULL OR estado != 'inactivo') 
+        ORDER BY id DESC`,
       [ranchoIdReal]
     );
+
+    return animalesDb;
   }
 }

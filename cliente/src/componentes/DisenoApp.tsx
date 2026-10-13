@@ -7,49 +7,34 @@ import { inicial } from '../servicios/texto';
 import { existe, t, tJsx } from '../servicios/idioma';
 import { MenuUsuario } from './MenuUsuario';
 
-/**
- * El marco de las pantallas internas, tal como está en los mockups: menú
- * lateral verde oscuro, barra superior blanca y el contenido sobre el fondo
- * arena.
- */
-
 interface Modulo {
   clave: string;
-  /** Clave del nombre en el archivo de idioma; se traduce al dibujar. */
   nombre: string;
   icono: NombreIcono;
-  /** A dónde lleva. Solo los módulos que ya existen la tienen. */
   ruta?: string;
-  /** Cuando está, el módulo se ve apagado y dice de qué fase es. */
   fase?: number;
 }
 
 const MODULOS: Modulo[] = [
   { clave: 'inicio', nombre: 'app.modulos.inicio', icono: 'casa', ruta: '/rancho' },
-  { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', ruta: '/animales' }, // Habilitado
+  { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', ruta: '/animales' },
   { clave: 'corrales', nombre: 'app.modulos.corrales', icono: 'corral', fase: 2 },
   { clave: 'sanidad', nombre: 'app.modulos.sanidad', icono: 'sanidad', fase: 3 },
   { clave: 'pesajes', nombre: 'app.modulos.pesajes', icono: 'balanza', fase: 3 },
-  // HU-17. Llegó antes que su fase: el alta del equipo es del Sprint 2.
   { clave: 'equipo', nombre: 'app.modulos.equipo', icono: 'equipo', ruta: '/equipo' },
 ];
 
 interface Propiedades {
-  /** Qué módulo está abierto. */
   activo?: string;
-  /** El rastro de la barra superior: "Mi rancho · Propietario". */
   ruta: string[];
-  usuario: { nombre: string; rol: string; correo?: string };
+  usuario: { nombre: string; rol: string; correo?: string; permisos?: any; tipo_colaborador_id?: string };
   rancho?: string | null;
-  /** Rótulo chico arriba del título. */
   rotulo?: string;
   titulo: string;
-  /** Botones a la derecha del título. */
   acciones?: ReactNode;
   children: ReactNode;
 }
 
-/** El nombre del rol en el idioma actual. Si no es un rol conocido ("—"), tal cual. */
 function nombreDelRol(rol: string): string {
   return existe(`roles.${rol}`) ? t(`roles.${rol}`) : rol;
 }
@@ -70,11 +55,48 @@ export function DisenoApp({
   acciones,
   children,
 }: Propiedades) {
-  // HU-24. El Admin de plataforma ve su entrada de Soporte; los módulos del
-  // rancho, solo si entró a uno.
   const esAdmin = usuario.rol === 'admin_plataforma';
   const soporte = esAdmin ? soporteActual() : null;
-  const modulos = esAdmin && !soporte ? [] : MODULOS;
+
+  let modulosDisponibles = esAdmin && !soporte ? [] : MODULOS;
+
+  // Filtrar los módulos del menú dinámicamente según permisos del usuario o tipo de colaborador
+  if (!esAdmin && usuario.rol !== 'propietario' && usuario.rol !== 'admin') {
+    try {
+      const u = usuario as any;
+      // Intentamos extraer los permisos de las props, de la cuenta o del almacenamiento local si estuvieran guardados
+      let permisosObj = u?.permisos || u?.tipo_colaborador?.permisos;
+      
+      if (!permisosObj) {
+        const cuentaLocal = localStorage.getItem('ganado_cuenta') || localStorage.getItem('cuenta');
+        if (cuentaLocal) {
+          const parsed = JSON.parse(cuentaLocal);
+          permisosObj = parsed?.permisos || parsed?.tipo_colaborador?.permisos;
+        }
+      }
+
+      if (typeof permisosObj === 'string') {
+        permisosObj = JSON.parse(permisosObj);
+      }
+      
+      if (permisosObj && typeof permisosObj === 'object') {
+        modulosDisponibles = modulosDisponibles.filter((modulo) => {
+          if (modulo.clave === 'inicio' || modulo.clave === 'equipo') return true;
+          const permisoModulo = permisosObj[modulo.clave];
+          
+          // Si el módulo está explícitamente configurado con ver: false o sin acceso, se oculta del menú
+          if (permisoModulo && (permisoModulo.ver === false || permisoModulo === false)) {
+            return false;
+          }
+          return true;
+        });
+      }
+    } catch {
+      // Si ocurre algún fallo al parsear, se mantiene la lista por defecto
+    }
+  }
+
+  const modulos = modulosDisponibles;
 
   return (
     <div className="app">
@@ -111,8 +133,6 @@ export function DisenoApp({
             </>
           );
 
-          // Los modulos de fases futuras no son enlaces: un enlace que no
-          // lleva a ningun lado confunde y el teclado se para en el igual.
           if (modulo.fase) {
             return (
               <span
@@ -161,8 +181,6 @@ export function DisenoApp({
           </div>
         )}
 
-        {/* Abre "Mi perfil". Es un enlace de verdad, como los modulos: se
-            puede abrir en otra pestaña y el teclado llega igual. */}
         <NavLink
           to="/perfil"
           className={({ isActive }) => (isActive ? 'usuario activo' : 'usuario')}
@@ -215,18 +233,12 @@ export function DisenoApp({
   );
 }
 
-/**
- * HU-24. Mientras el Admin está dentro de un rancho, una banda arriba de todo
- * lo recuerda: en qué rancho está, por qué entró y cómo salir. Nadie tiene
- * que confundir el modo soporte con su propia cuenta.
- */
 function BandaSoporte({ soporte }: { soporte: NonNullable<ReturnType<typeof soporteActual>> }) {
   const navegar = useNavigate();
   const [saliendo, setSaliendo] = useState(false);
 
   async function salir() {
     setSaliendo(true);
-    // Aunque el servidor no conteste, aca se sale igual: el acceso vence solo.
     await api.salirDeRancho(soporte.accesoId).catch(() => undefined);
     guardarSoporte(null);
     navegar('/admin');
@@ -247,7 +259,6 @@ function BandaSoporte({ soporte }: { soporte: NonNullable<ReturnType<typeof sopo
   );
 }
 
-/** Tarjeta de una cifra, como las del panel de los mockups. */
 export function Cifra({
   rotulo,
   valor,
@@ -257,7 +268,6 @@ export function Cifra({
   rotulo: string;
   valor: ReactNode;
   detalle?: string;
-  /** Va arriba a la derecha, apagado. Dice de qué es la cifra de un vistazo. */
   icono?: NombreIcono;
 }) {
   return (
@@ -278,29 +288,17 @@ function prefiereQuieto(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-/**
- * El número de una cifra, contando desde cero hasta su valor.
- *
- * Solo cuenta si el texto empieza por un número: "850.5 ha" cuenta, "Carne" y
- * "—" se escriben tal cual. Dura medio segundo y respeta a quien pidió que las
- * cosas no se muevan.
- */
 function Contador({ texto }: { texto: string }) {
   const coincidencia = /^(-?\d+(?:[.,]\d+)?)(.*)$/.exec(texto.trim());
   const destino = coincidencia ? Number(coincidencia[1].replace(',', '.')) : null;
   const resto = coincidencia ? coincidencia[2] : '';
   const decimales = coincidencia?.[1].includes('.') ? 1 : 0;
 
-  // Se lee antes de dibujar, no dentro del efecto: asi el primer numero que
-  // se pinta ya es el correcto para quien pidio que nada se mueva.
   const quieto = prefiereQuieto();
   const [actual, setActual] = useState(() =>
     quieto || destino === null ? (destino ?? 0) : 0,
   );
   const cuadro = useRef(0);
-  // Lo que se esta mostrando en este momento. Cuando el valor cambia (se sumo
-  // alguien al equipo), se cuenta desde aca y no desde cero: volver a cero
-  // parece que la pantalla se recargo.
   const mostrado = useRef(0);
 
   useEffect(() => {
@@ -311,7 +309,6 @@ function Contador({ texto }: { texto: string }) {
     const arranque = performance.now();
     const paso = (ahora: number) => {
       const avance = Math.min(1, (ahora - arranque) / DURACION);
-      // Empieza rápido y frena al final, que es como se lee mejor.
       const suave = 1 - (1 - avance) ** 3;
       const valor = desde + (destino - desde) * suave;
       mostrado.current = valor;

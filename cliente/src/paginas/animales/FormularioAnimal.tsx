@@ -5,6 +5,30 @@ interface Props {
   alTerminar: () => void;
 }
 
+type PayloadAnimal = Record<string, unknown> & {
+  identificador: string;
+  caravana: string;
+  numero: string;
+  sexo: string;
+  categoria: string;
+  estado: string;
+  nombre?: string;
+  raza?: string;
+  fechaNacimiento?: string;
+  corral?: string;
+  corralAsignado?: string;
+  corral_id?: string;
+  peso?: number;
+  pesoInicial?: number;
+  peso_inicial?: number;
+};
+
+interface ErrorApi {
+  response?: { data?: { mensaje?: string } };
+  mensaje?: string;
+  message?: string;
+}
+
 export function FormularioAnimal({ alTerminar }: Props) {
   const [identificador, setIdentificador] = useState('');
   const [nombre, setNombre] = useState('');
@@ -21,7 +45,8 @@ export function FormularioAnimal({ alTerminar }: Props) {
     e.preventDefault();
     setError('');
 
-    if (!identificador.trim()) {
+    const valorIdentificador = identificador.trim();
+    if (!valorIdentificador) {
       setError('El identificador (caravana) es obligatorio.');
       return;
     }
@@ -29,8 +54,11 @@ export function FormularioAnimal({ alTerminar }: Props) {
     try {
       setGuardando(true);
       
-      const payload: any = {
-        identificador: identificador.trim(),
+      // Enviamos todas las variantes posibles del campo para asegurar que el backend lo reciba sí o sí
+      const payload: PayloadAnimal = {
+        identificador: valorIdentificador,
+        caravana: valorIdentificador,
+        numero: valorIdentificador,
         sexo: sexo.toLowerCase(),
         categoria: categoria.toLowerCase(),
         estado: 'activo'
@@ -39,17 +67,24 @@ export function FormularioAnimal({ alTerminar }: Props) {
       if (nombre.trim()) payload.nombre = nombre.trim();
       if (raza.trim()) payload.raza = raza.trim();
       if (fechaNacimiento) payload.fechaNacimiento = fechaNacimiento;
-      if (corral.trim()) payload.corralAsignado = corral.trim();
-      if (peso) payload.pesoInicial = Number(peso);
+      if (corral.trim()) {
+        payload.corral = corral.trim();
+        payload.corralAsignado = corral.trim();
+        payload.corral_id = corral.trim();
+      }
+      if (peso) {
+        payload.peso = Number(peso);
+        payload.pesoInicial = Number(peso);
+        payload.peso_inicial = Number(peso);
+      }
 
-      // Usamos el cliente api oficial en lugar de fetch manual con cabeceras falsas
       await api.registrarAnimal(payload);
 
       alTerminar();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error al registrar animal:', err);
-      // Extraemos limpiamente el mensaje del servidor o de la excepción
-      const mensajeServidor = err.response?.data?.mensaje || err.mensaje || err.message || 'Hubo un error al guardar el animal.';
+      const errorApi = (typeof err === 'object' && err !== null ? err : {}) as ErrorApi;
+      const mensajeServidor = errorApi.response?.data?.mensaje || errorApi.mensaje || errorApi.message || 'Hubo un error al guardar el animal.';
       setError(mensajeServidor);
     } finally {
       setGuardando(false);

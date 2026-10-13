@@ -1,4 +1,6 @@
-005_fase2_animales_corrales.sql-- 1. Tabla de Corrales (HU-36)
+BEGIN;
+
+-- 1. Tabla de Corrales (HU-36)
 CREATE TABLE IF NOT EXISTS corrales (
     id SERIAL PRIMARY KEY,
     rancho_id INT NOT NULL,
@@ -28,3 +30,5 @@ CREATE TABLE IF NOT EXISTS movimientos_corral (
     corral_destino_id INT REFERENCES corrales(id),
     fecha_movimiento TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+COMMIT;

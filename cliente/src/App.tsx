@@ -178,8 +178,33 @@ function Sistema() {
         <Route path="/equipo/tipos" element={adentro(<PaginaTipos />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
-        {/* Módulo de Animales agregado sobre main */}
-        <Route path="/animales" element={adentro(<PaginaAnimales />)} />
+        {/* Módulo de Animales protegido por permisos (HU-19) */}
+        <Route
+          path="/animales"
+          element={
+            adentro(
+              (() => {
+                if (cuenta?.rol === 'propietario' || cuenta?.rol === 'admin' || cuenta?.rol === 'admin_plataforma') {
+                  return <PaginaAnimales />;
+                }
+                try {
+                  const c = cuenta as any;
+                  const permisos = c?.permisos || c?.tipo_colaborador?.permisos;
+                  let permisosObj = permisos;
+                  if (typeof permisosObj === 'string') {
+                    permisosObj = JSON.parse(permisosObj);
+                  }
+                  if (permisosObj && permisosObj.animales && permisosObj.animales.ver === false) {
+                    return <Navigate to="/rancho" replace />;
+                  }
+                } catch {
+                  // Si hay error en la lectura de permisos, se permite por defecto
+                }
+                return <PaginaAnimales />;
+              })()
+            )
+          }
+        />
 
         {/* Cualquier otra direccion vuelve al principio. */}
         <Route path="*" element={<Navigate to="/" replace />} />

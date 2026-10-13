@@ -138,8 +138,8 @@ export class RepositorioUsuario {
   }
 
   /**
-   * La ficha de "Mi perfil". Sin contrasena_hash, como todo lo que sale de
-   * aca salvo buscarParaAutenticar.
+   * La ficha de "Mi perfil". Incluye los permisos del tipo de colaborador
+   * para que el frontend pueda ocultar los módulos inhabilitados.
    */
   async perfil(id: string): Promise<any | null> {
     const resultado = await this.bd.query(
@@ -149,6 +149,7 @@ export class RepositorioUsuario {
               COALESCE(p.idioma, pr.idioma, 'es') AS idioma_del_pais,
               COALESCE(u.idioma, p.idioma, pr.idioma, 'es') AS idioma,
               r.nombre AS rancho, t.nombre AS tipo_colaborador,
+              t.permisos AS permisos,
               u.creado_en, u.modificado_en
          FROM usuarios u
          LEFT JOIN paises p ON p.codigo = u.pais_codigo
@@ -169,7 +170,6 @@ export class RepositorioUsuario {
       [id, nombre],
     );
   }
-  
 
   /** HU-25. Nulo vuelve a usar el idioma del pais. */
   async cambiarIdioma(id: string, idioma: string | null): Promise<void> {
@@ -177,6 +177,13 @@ export class RepositorioUsuario {
       `UPDATE usuarios SET idioma = $2, modificado_por = $1
         WHERE id = $1 AND eliminado_en IS NULL`,
       [id, idioma],
+    );
+  }
+
+  async cambiarPais(usuarioId: string, paisCodigo: string) {
+    await this.bd.query(
+      'UPDATE usuarios SET pais_codigo = $1, modificado_en = CURRENT_TIMESTAMP WHERE id = $2',
+      [paisCodigo, usuarioId],
     );
   }
 
@@ -326,4 +333,3 @@ export class RepositorioUsuario {
     };
   }
 }
-

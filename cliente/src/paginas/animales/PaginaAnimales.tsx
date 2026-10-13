@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { DisenoApp } from '../../componentes/DisenoApp';
 import { FormularioAnimal } from './FormularioAnimal';
 
@@ -98,22 +98,7 @@ export function PaginaAnimales() {
   const puedeEditar = sesion.puedeEditar;
   const esPropietarioOAdmin = rolUsuario === 'propietario' || rolUsuario === 'admin';
 
-  useEffect(() => {
-    cargarAnimales();
-  }, []);
-
-  useEffect(() => {
-    if (animalSeleccionado) {
-      setNombreEdit(animalSeleccionado.nombre || '');
-      setRazaEdit(animalSeleccionado.raza || '');
-      setCorralEdit(animalSeleccionado.corral || '');
-      setPesoEdit(animalSeleccionado.peso?.toString() || '');
-      setEditando(false);
-      setConfirmarEliminar(false);
-    }
-  }, [animalSeleccionado]);
-
-  const cargarAnimales = async () => {
+  const cargarAnimales = useCallback(async () => {
     try {
       setCargando(true);
       const token = localStorage.getItem('ganado_token_acceso') || localStorage.getItem('token') || '';
@@ -136,6 +121,21 @@ export function PaginaAnimales() {
     } finally {
       setCargando(false);
     }
+  }, [sesion.id, sesion.ranchoId, rolUsuario, puedeEditar]);
+
+  useEffect(() => {
+    void cargarAnimales();
+  }, [cargarAnimales]);
+
+  const seleccionarAnimal = (animal: Animal) => {
+    setAnimalSeleccionado(animal);
+    setNombreEdit(animal.nombre || '');
+    setRazaEdit(animal.raza || '');
+    setCorralEdit(animal.corral || '');
+    setPesoEdit(animal.peso?.toString() || '');
+    setEditando(false);
+    setConfirmarEliminar(false);
+    setVista('detalle');
   };
 
   const guardarEdicion = async (e: React.FormEvent) => {
@@ -647,10 +647,7 @@ export function PaginaAnimales() {
                       {animalesFiltrados.map((animal) => (
                         <tr 
                           key={animal.id} 
-                          onClick={() => {
-                            setAnimalSeleccionado(animal);
-                            setVista('detalle');
-                          }}
+                          onClick={() => seleccionarAnimal(animal)}
                           style={{ borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}
                           title="Haz clic para ver la ficha detallada del animal"
                         >
