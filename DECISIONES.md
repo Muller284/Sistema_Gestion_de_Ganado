@@ -897,3 +897,210 @@ recargaba.
   "Crear una contraseña nueva". Antes todos decían "Confirmar mi correo";
 - el correo de recuperación (HU-09) manda el enlace como botón y no como
   texto suelto.
+
+---
+
+## 31. Los tipos de colaborador (HU-20)
+
+**Fecha:** 1 de octubre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+HU-20 era de Favio y pasó a Aaron cuando Favio dejó el equipo.
+
+**Los predefinidos se ajustan por rancho, no para todos.** Los cuatro tipos
+predefinidos son globales (una fila para todos los ranchos). Si un propietario
+cambiara los permisos del veterinario sobre esas filas, se los cambiaría al
+veterinario de todos los ranchos. La migración 005 agrega `rancho_id` a
+`permisos_tipo`:
+- `rancho_id` nulo: los permisos de fábrica de un predefinido;
+- `rancho_id` de un rancho: un tipo propio, o un predefinido que ese rancho
+  ajustó.
+Si el rancho tiene filas para un tipo, valen esas; si no, las de fábrica. Al
+ajustar se guardan las ocho filas, aunque sea sin acceso, para que "le saco
+todo" no se confunda con "nunca lo toqué". "Volver a los de fábrica" da de baja
+las filas del rancho.
+
+**La regla vive en una vista: `permisos_tipo_vigentes`.** Devuelve, por rancho,
+tipo y módulo, qué puede el tipo. **Brian: para HU-19 no hace falta volver a
+calcular nada.** Lo que puede una persona por su tipo es:
+
+```sql
+SELECT v.modulo_codigo, v.puede_ver, v.puede_editar
+  FROM usuarios u
+  JOIN permisos_tipo_vigentes v
+    ON v.rancho_id = u.rancho_id AND v.tipo_colaborador_id = u.tipo_colaborador_id
+ WHERE u.id = $1
+```
+
+y a eso se le suma lo de `permisos_usuario`. HU-20 solo define los permisos;
+hacerlos respetar en cada módulo es HU-19.
+
+**Criterio 3 sin copiar nada.** Los permisos son del tipo, no de cada persona:
+cambiarlos alcanza solo a todos los que lo tienen. La pantalla avisa antes de
+guardar a cuántos colaboradores les llega el cambio, y la respuesta lo repite.
+
+**Qué se puede con cada tipo.** Un predefinido no cambia de nombre ni se
+elimina; sus permisos se ajustan y se restablecen. Uno propio cambia de nombre
+y de permisos, y se elimina (baja lógica) solo si nadie lo tiene: antes hay que
+cambiarles el tipo a sus colaboradores, desde la fila de cada uno en Equipo
+(`PATCH /equipo/:id/tipo`). Un tipo tiene que dejar ver al menos un módulo. El
+nombre no se repite dentro del rancho ni con un predefinido, sin distinguir
+mayúsculas. Crear tipos no depende del plan (los planes son de la fase 4).
+
+**Rutas.** `GET /equipo/modulos`, `GET/POST /equipo/tipos`,
+`PUT/DELETE /equipo/tipos/:id`, `POST /equipo/tipos/:id/restablecer` y
+`PATCH /equipo/:id/tipo`. `GET /equipo/tipos` ya existía para el formulario de
+alta: sigue devolviendo lo mismo, más los permisos y la cantidad de
+colaboradores. Ahora lo ven el propietario y los socios, no el colaborador.
+
+**Pantalla `/equipo/tipos`.** Se llega desde "Tipos y permisos" en Equipo. Cada
+tipo es una tarjeta con lo que ve y edita; al editarla se convierte en el
+editor, con un segmento por módulo (Sin acceso · Ve · Edita). El formulario de
+alta muestra qué puede el tipo elegido.
+
+**Las semillas limpian los tipos propios.** Si alguien creó tipos en los
+ranchos de prueba, `npm run sembrar` fallaba al borrar esos ranchos. Ahora los
+borra antes (a sus colaboradores los pasa a encargado de campo).
+
+**Para conversar con Brian (HU-18).** El formulario de alta dice "arranca solo
+con permiso de consulta", pero un tipo puede traer permiso de edición. Hay que
+decidir si HU-18 apaga la edición del tipo hasta que el propietario la
+confirme, o si el tipo ya cuenta como esa confirmación.
+
+---
+
+## 32. Mantenimiento técnico al quedar tres
+
+**Fecha:** 1 de octubre de 2026 · **Responsable:** Aaron
+
+Favio dejó el equipo. El repositorio, la integración continua y las
+dependencias, que eran su rol, pasan a Aaron (tarjeta "MT - Mantenimiento
+técnico" en Trello).
+
+**Dependencias.** `npm update` dentro de los rangos de `package.json` y
+`npm audit fix` en servidor y cliente: quedan con **0 vulnerabilidades**. Se
+quitó `@nestjs/mau` del servidor: no lo usa nada (es la herramienta de
+despliegue pago de NestJS) y era el único camino de la vulnerabilidad alta de
+`tmp` que quedaba. Los archivos de bloqueo quedan completos, con las entradas
+de `@emnapi`: **el PR #11 de Brian ya no hace falta** y se puede cerrar.
+TypeScript 7 y `@types/node` 26 no se actualizaron: son versiones mayores y
+hay que probarlas con calma.
+
+**Integración continua.** El trabajo del cliente ahora también corre sus
+pruebas (`npm test`, vitest); antes solo revisaba el estilo y compilaba.
+
+**Pruebas que se pueden repetir.** `cuenta.test.js` confirmaba el correo de
+Lucía y cambiaba la clave de Rubén, así que una segunda corrida sin volver a
+sembrar fallaba en siete pruebas. Ahora los devuelve al estado de la semilla
+antes de empezar.
+
+**`.env.ejemplo`.** Se agregó `JWT_SECRETO` (HU-12): el servidor ya la leía,
+pero no estaba en el ejemplo, y sin ella se firma con una clave que está en el
+código.
+
+**Docker.** Como cambió `package-lock.json`, hay que reconstruir la imagen del
+servidor con `docker compose up -d --build -V`. La `-V` descarta el
+`node_modules` viejo que guarda el volumen anónimo; sin ella el contenedor
+sigue con las dependencias anteriores.
+
+**Pendiente.** El repositorio está en la cuenta de GitHub de Favio. Hay que
+pedirle que lo transfiera o que le dé a Aaron permisos de administrador, para
+poder tocar la protección de `main` y los secretos sin depender de él.
+
+---
+
+## 33. El Admin de plataforma entra a los ranchos con un acceso registrado (HU-24)
+
+**Fecha:** 6 de octubre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+**El Admin no tiene rancho, entra a uno.** Su pantalla es `/admin`: la lista de
+todos los ranchos (criterio 1) y el registro de accesos. Para ver uno por
+dentro, elige el rancho y escribe por qué entra (al menos 10 caracteres). Eso
+abre una fila en `accesos_admin` (migración 006) con quién, a qué rancho, por
+qué y cuándo (criterio 3). Desde ahí el cliente manda la cabecera
+`x-rancho-soporte` en cada petición, y `GuardiaCuentaLista` comprueba que haya
+un acceso abierto de ese Admin a ese rancho antes de dejarlo trabajar adentro.
+**Sin acceso abierto no ve nada**: no hay forma de entrar sin quedar
+registrado.
+
+**Adentro puede lo mismo que el propietario.** "Acceso completo para dar
+soporte" quiere decir poder arreglar, no solo mirar. Los servicios que
+preguntaban `rol === 'propietario'` ahora preguntan `actuaComoPropietario()`
+(`comun/permisos-rol.ts`). Lo que haga queda a su nombre (HU-23): el
+`creado_por` es el Admin, no el propietario. Crear un rancho sigue siendo solo
+del propietario. **Brian: en HU-19, el Admin en soporte tiene que pasar todos
+los controles de módulo igual que el propietario.**
+
+**El acceso se cierra solo.** Al salir (botón en la banda de arriba) se guarda
+`salido_en`. Si el Admin se olvida, el acceso vence a las 8 horas. Entrar de
+nuevo al mismo rancho cierra el anterior: cada entrada tiene su propio motivo.
+
+**El propietario lo ve.** En su panel aparece quién del soporte entró, cuándo y
+por qué (`GET /admin/accesos/de-mi-rancho`). No es un criterio, pero un
+registro que solo ve quien entra no protege a nadie.
+
+**Criterio 2 ya se cumplía**: el alta del equipo solo acepta socio o
+colaborador y el registro siempre crea un propietario. Ahora hay pruebas que lo
+comprueban, incluso con el Admin en soporte intentando dar de alta a otro Admin.
+
+**De paso:** el controlador de ranchos resolvía al usuario leyendo solo
+`x-usuario-id` e ignoraba el token de sesión (HU-12). Ahora usa el usuario que
+ya resolvió el portero.
+
+La barra de demostración suma la cuenta del Admin de las semillas.
+
+---
+
+## 34. Los textos en archivos de idioma: español e inglés (HU-25)
+
+**Fecha:** 6 de octubre de 2026 · **Responsable:** Aaron · **Sprint:** 2
+
+**Un archivo por idioma, en la raíz: `idiomas/es.json`, `idiomas/en.json`.** Lo
+leen el cliente (la interfaz) y el servidor (sus mensajes, bajo `servidor.*`, y
+los correos, bajo `correos.*`). Están en la raíz y no dentro de `cliente/` o
+`servidor/` porque son de los dos.
+
+**Agregar un idioma = sumar un archivo (criterio 3).** Se copia `es.json` con
+otro nombre (por ejemplo `pt.json`), se cambia `_idioma` y se traducen los
+textos. El cliente descubre los archivos con `import.meta.glob` y el servidor
+lee la carpeta al arrancar: aparece solo en el selector y se acepta en Mi
+perfil. Las pruebas comprueban que el idioma nuevo tenga todas las claves.
+
+**Cómo se escribe un texto nuevo (para todos):**
+- En el cliente: `t('equipo.titulo')`, con datos `t('x', { nombre })`, con
+  cantidad `tn('x', n)` (claves `.uno` y `.otros`), y con partes destacadas
+  `tJsx('x', { b: (s) => <strong>{s}</strong> })`. Todo en
+  `servicios/idioma.ts`. Fechas y números con `localeActual()`.
+- En el servidor: `t('servidor.modulo.clave', { ... })` de `comun/idioma.ts`.
+- Se agrega la clave en `es.json` **y** en `en.json`. Si falta en uno, las
+  pruebas fallan (`cliente/pruebas/idiomas.test.ts` y
+  `servidor/pruebas/idiomas.test.js`). También fallan si queda un texto escrito
+  directo en una pantalla o en una excepción del servidor.
+- No guardar textos traducidos en constantes a nivel de módulo: se guarda la
+  clave y se traduce al dibujar.
+
+**Qué idioma se usa (criterio 2).** Con sesión: el que la persona eligió en Mi
+perfil; si no eligió, el de su país; si no tiene país propio (socios y
+colaboradores), el del país de su rancho (migración 007, columna
+`usuarios.idioma`). Lo resuelve el servidor y llega en `/usuarios/yo`. Sin
+sesión: el elegido en el selector (se recuerda en el navegador), o el del
+navegador, o español.
+
+**El servidor contesta en el idioma de la interfaz.** El cliente manda
+`Accept-Language` en cada petición; un middleware lo guarda mientras dura la
+petición (AsyncLocalStorage) y `t()` lo usa sin tener que pasarlo de mano en
+mano. Los correos salen en el idioma de quien hace la acción, salvo el
+restablecimiento de contraseña, que sale en el idioma de quien lo recibe.
+
+**El español no cambió:** los textos se movieron tal cual estaban; las pruebas
+del servidor siguen comparando los mismos mensajes. Los nombres de los tipos
+predefinidos se traducen; los tipos propios, los nombres de países y los
+datos que escribe la gente, no. El nombre del producto, "Gestión de Ganado", se
+mantiene en todos los idiomas.
+
+**Docker.** Como el contenedor del servidor solo ve `servidor/`, en
+`docker-compose.yml` se monta `idiomas/` aparte y se le indica con
+`CARPETA_IDIOMAS`. Fuera de Docker el servidor encuentra la carpeta solo.
+
+**Para Brian y Romina:** a partir de ahora las pantallas nuevas (animales,
+corrales, importación) se escriben con `t()` desde el principio. Si se escribe
+un texto directo, la prueba del cliente lo marca.

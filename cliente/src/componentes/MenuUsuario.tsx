@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../servicios/api';
+import { api, soporteActual } from '../servicios/api';
+import { SelectorIdioma } from './SelectorIdioma';
 import { inicial } from '../servicios/texto';
 import { Icono } from './Iconos';
+import { existe, t } from '../servicios/idioma';
 
 /**
  * El círculo con la inicial, arriba a la derecha, ahora es un botón de verdad.
@@ -24,6 +26,11 @@ interface Propiedades {
   rol: string;
   rancho?: string | null;
   correo?: string;
+}
+
+/** El nombre del rol en el idioma actual. Si no es un rol conocido ("—"), tal cual. */
+function nombreDelRol(rol: string): string {
+  return existe(`roles.${rol}`) ? t(`roles.${rol}`) : rol;
 }
 
 export function MenuUsuario({ nombre, rol, rancho, correo }: Propiedades) {
@@ -67,7 +74,7 @@ export function MenuUsuario({ nombre, rol, rancho, correo }: Propiedades) {
         onClick={() => setAbierto((previo) => !previo)}
         aria-haspopup="menu"
         aria-expanded={abierto}
-        aria-label={`Cuenta de ${nombre}`}
+        aria-label={t('app.menuUsuario.cuentaDe', { nombre })}
       >
         {inicial(nombre)}
       </button>
@@ -78,26 +85,38 @@ export function MenuUsuario({ nombre, rol, rancho, correo }: Propiedades) {
             <span className="avatar-inicial">{inicial(nombre)}</span>
             <span>
               <strong>{nombre}</strong>
-              <span className="pie c-500">{correo ?? rol}</span>
+              <span className="pie c-500">{correo ?? nombreDelRol(rol)}</span>
             </span>
           </div>
 
           <dl className="menu-usuario__datos">
-            <dt>Rol</dt>
-            <dd>{rol}</dd>
-            <dt>Rancho</dt>
-            <dd>{rancho ?? 'Sin rancho todavía'}</dd>
+            <dt>{t('app.menuUsuario.rol')}</dt>
+            <dd>{nombreDelRol(rol)}</dd>
+            <dt>{t('app.menuUsuario.rancho')}</dt>
+            <dd>{rancho ?? t('app.sinRancho')}</dd>
           </dl>
 
-          <Link
-            className="menu-usuario__accion"
-            to="/rancho"
-            role="menuitem"
-            onClick={() => setAbierto(false)}
-          >
-            <Icono nombre="casa" tamano={18} />
-            Ir a mi rancho
-          </Link>
+          {rol === 'admin_plataforma' && !soporteActual() ? (
+            <Link
+              className="menu-usuario__accion"
+              to="/admin"
+              role="menuitem"
+              onClick={() => setAbierto(false)}
+            >
+              <Icono nombre="escudo" tamano={18} />
+              {t('admin.menu')}
+            </Link>
+          ) : (
+            <Link
+              className="menu-usuario__accion"
+              to="/rancho"
+              role="menuitem"
+              onClick={() => setAbierto(false)}
+            >
+              <Icono nombre="casa" tamano={18} />
+              {t('app.menuUsuario.irAMiRancho')}
+            </Link>
+          )}
 
           <Link
             className="menu-usuario__accion"
@@ -106,8 +125,13 @@ export function MenuUsuario({ nombre, rol, rancho, correo }: Propiedades) {
             onClick={() => setAbierto(false)}
           >
             <Icono nombre="persona" tamano={18} />
-            Mi perfil
+            {t('app.miPerfil')}
           </Link>
+
+          {/* HU-25: el idioma a mano, sin ir hasta Mi perfil. */}
+          <div className="menu-usuario__idioma">
+            <SelectorIdioma />
+          </div>
 
           <button
             type="button"
@@ -117,7 +141,7 @@ export function MenuUsuario({ nombre, rol, rancho, correo }: Propiedades) {
             onClick={cerrarSesion}
           >
             <Icono nombre="salir" tamano={18} />
-            {saliendo ? 'Cerrando…' : 'Cerrar sesión'}
+            {saliendo ? t('app.menuUsuario.cerrando') : t('app.menuUsuario.cerrarSesion')}
           </button>
         </div>
       )}

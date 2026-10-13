@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Icono } from './Iconos';
+import { t } from '../servicios/idioma';
 
 /**
  * HU-15 · El mapa para marcar dónde está el rancho.
@@ -149,7 +150,7 @@ export function MapaUbicacion({ latitud, longitud, alElegir }: Propiedades) {
   function usarMiUbicacion() {
     setAviso('');
     if (!navigator.geolocation) {
-      setAviso('Este navegador no puede dar tu ubicación.');
+      setAviso(t('mapa.sinGeolocalizacion'));
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -161,7 +162,7 @@ export function MapaUbicacion({ latitud, longitud, alElegir }: Propiedades) {
         mapa.current?.setView(punto, ACERCAMIENTO_DE_CERCA);
         alElegir(punto[0], punto[1]);
       },
-      () => setAviso('No se pudo obtener tu ubicación.'),
+      () => setAviso(t('mapa.errorUbicacion')),
       { enableHighAccuracy: true, timeout: 10000 },
     );
   }
@@ -172,25 +173,22 @@ export function MapaUbicacion({ latitud, longitud, alElegir }: Propiedades) {
         ref={caja}
         className="mapa__lienzo"
         role="application"
-        aria-label="Mapa para marcar la ubicación del rancho. También puedes escribir la latitud y la longitud a mano."
+        aria-label={t('mapa.ariaLienzo')}
       />
 
       {sinImagenes && (
-        <p className="pie c-500">
-          No se pudieron cargar las imágenes del mapa. Revisa la conexión, o
-          escribe la latitud y la longitud a mano.
-        </p>
+        <p className="pie c-500">{t('mapa.sinImagenes')}</p>
       )}
 
       <div className="mapa__pie">
         <button type="button" className="btn btn-fantasma" onClick={usarMiUbicacion}>
           <Icono nombre="ubicacion" tamano={18} />
-          Usar mi ubicación
+          {t('mapa.usarMiUbicacion')}
         </button>
         <span className="pie c-500">
           {lat !== null && lon !== null
-            ? `Marcado en ${lat}, ${lon}`
-            : 'Toca el mapa para marcar dónde está el rancho.'}
+            ? t('mapa.marcadoEn', { lat, lon })
+            : t('mapa.tocaElMapa')}
         </span>
       </div>
 

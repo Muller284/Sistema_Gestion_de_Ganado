@@ -88,6 +88,9 @@ export class ControladorUsuario {
       rancho_id: usuario.ranchoId,
       correo_verificado: usuario.correoVerificado,
       debe_cambiar_contrasena: usuario.debeCambiarContrasena,
+      /** HU-25. El idioma con el que trabaja y el que eligio (nulo: el del pais). */
+      idioma: usuario.idioma,
+      idioma_elegido: usuario.idiomaElegido,
       /** Lo que el cliente tiene que resolver antes de dejarlo pasar. */
       pendiente: !usuario.correoVerificado
         ? 'verificar_correo'
@@ -139,8 +142,13 @@ export class ControladorUsuario {
     @Param('id') id: string,
     @Headers('authorization') auth?: string,
     @Headers('x-usuario-id') usuarioId?: string,
+    @Headers('x-rancho-soporte') ranchoSoporte?: string,
   ) {
-    const usuario = await this.usuarios.resolver(auth || usuarioId);
+    // HU-24: el Admin en soporte tambien puede restablecer una clave.
+    const usuario = await this.usuarios.aplicarSoporte(
+      await this.usuarios.resolver(auth || usuarioId),
+      ranchoSoporte,
+    );
     return this.contrasenas.restablecer(id, usuario);
   }
 

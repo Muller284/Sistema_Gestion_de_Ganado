@@ -8,6 +8,8 @@ import { ModuloPais } from './modulos/paises/modulo-pais';
 import { ModuloUsuario } from './modulos/usuarios/modulo-usuario';
 import { ModuloEquipo } from './modulos/equipo/modulo-equipo';
 import { ModuloGuia } from './modulos/guia/modulo-guia';
+import { ModuloTipos } from './modulos/tipos/modulo-tipos';
+import { ModuloAdmin } from './modulos/admin/modulo-admin';
 import { ModuloImportacion } from './modulos/importacion/modulo-importacion';
 
 @Module({
@@ -35,6 +37,8 @@ import { ModuloImportacion } from './modulos/importacion/modulo-importacion';
     ModuloUsuario,
     ModuloEquipo, // HU-17
     ModuloGuia, // HU-16
+    ModuloTipos, // HU-20
+    ModuloAdmin, // HU-24
     ModuloImportacion, // HU-40 a HU-45 (Romina)
   ],
 })

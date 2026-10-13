@@ -6,11 +6,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { cifrarContrasena, claveTemporal, enumerar } from '../../comun/contrasenas';
+import { cifrarContrasena, claveTemporal } from '../../comun/contrasenas';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { ServicioCorreo } from '../../comun/servicio-correo';
 import { RepositorioSesion } from '../usuarios/repositorio-sesion';
 import { RepositorioEquipo } from './repositorio-equipo';
+import { actuaComoPropietario } from '../../comun/permisos-rol';
+import { enumerarEn, t } from '../../comun/idioma';
 
 /**
  * HU-17 · Alta de socios y colaboradores.
@@ -44,9 +46,10 @@ const LARGO_CORREO = 150;
 const FORMA_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const ROLES_QUE_SE_DAN_DE_ALTA = ['socio', 'colaborador'] as const;
 
+/** Claves del nombre de cada rol en el correo de alta. */
 const NOMBRE_ROL: Record<string, string> = {
-  socio: 'socio',
-  colaborador: 'colaborador',
+  socio: 'correos.alta.roles.socio',
+  colaborador: 'correos.alta.roles.colaborador',
 };
 
 @Injectable()
@@ -59,20 +62,14 @@ export class ServicioEquipo {
 
   async listar(quien: UsuarioActual) {
     const ranchoId = this.ranchoDe(quien);
-    if (quien.rol !== 'propietario' && quien.rol !== 'socio') {
-      throw new ForbiddenException(
-        'El equipo lo ven el propietario y los socios. Si lo necesitas, pídeselo al propietario.',
-      );
+    if (quien.rol !== 'socio' && !actuaComoPropietario(quien)) {
+      throw new ForbiddenException(t('servidor.equipo.soloVen'));
     }
     return this.equipo.listar(ranchoId);
   }
 
-  async tipos(quien: UsuarioActual) {
-    return this.equipo.tipos(this.ranchoDe(quien));
-  }
-
   async alta(cuerpo: any, quien: UsuarioActual) {
-    const ranchoId = this.soloPropietario(quien, 'dar de alta a alguien');
+    const ranchoId = this.soloPropietario(quien, 'servidor.equipo.acciones.alta');
 
     const nombre = texto(cuerpo?.nombre);
     const correo = texto(cuerpo?.correo).toLowerCase();
@@ -81,30 +78,30 @@ export class ServicioEquipo {
 
     // Criterio 1: nombre, correo, rol y, si es colaborador, el tipo.
     const faltantes: string[] = [];
-    if (!nombre) faltantes.push('nombre');
-    if (!correo) faltantes.push('correo');
-    if (!rol) faltantes.push('rol');
-    if (rol === 'colaborador' && !tipoId) faltantes.push('tipo de colaborador');
+    if (!nombre) faltantes.push(t('servidor.datos.campos.nombre'));
+    if (!correo) faltantes.push(t('servidor.datos.campos.correo'));
+    if (!rol) faltantes.push(t('servidor.datos.campos.rol'));
+    if (rol === 'colaborador' && !tipoId) faltantes.push(t('servidor.datos.campos.tipoColaborador'));
     if (faltantes.length > 0) {
-      throw new BadRequestException(`Faltan datos obligatorios: ${enumerar(faltantes)}.`);
+      throw new BadRequestException(
+        t('servidor.datos.faltan', { faltantes: enumerarEn(faltantes) }),
+      );
     }
 
     if (nombre.length > LARGO_NOMBRE) {
-      throw new BadRequestException(`El nombre no puede pasar de ${LARGO_NOMBRE} caracteres.`);
+      throw new BadRequestException(t('servidor.perfil.nombreLargo', { n: LARGO_NOMBRE }));
     }
     if (correo.length > LARGO_CORREO || !FORMA_CORREO.test(correo)) {
-      throw new BadRequestException('El correo no tiene un formato válido.');
+      throw new BadRequestException(t('servidor.datos.correoInvalido'));
     }
     if (!(ROLES_QUE_SE_DAN_DE_ALTA as readonly string[]).includes(rol)) {
-      throw new BadRequestException(
-        'El rol tiene que ser socio o colaborador. El propietario es uno solo y el Admin no se crea desde un rancho.',
-      );
+      throw new BadRequestException(t('servidor.equipo.rolInvalido'));
     }
     if (rol === 'socio' && tipoId) {
-      throw new BadRequestException('El tipo de colaborador solo se asigna a colaboradores.');
+      throw new BadRequestException(t('servidor.equipo.tipoSoloColaboradores'));
     }
     if (tipoId && !(await this.equipo.tipoDisponible(tipoId, ranchoId))) {
-      throw new BadRequestException('Ese tipo de colaborador no existe en tu rancho.');
+      throw new BadRequestException(t('servidor.datos.tipoNoExiste'));
     }
 
     // Criterio 3 (y regla de HU-13): un correo, un solo rancho.
@@ -112,8 +109,8 @@ export class ServicioEquipo {
     if (dueno.existe) {
       throw new ConflictException(
         dueno.ranchoId === ranchoId
-          ? 'Esa persona ya es parte de tu equipo.'
-          : 'Este correo ya está registrado en otro rancho. Por seguridad, cada integrante puede trabajar en un solo establecimiento.',
+          ? t('servidor.equipo.yaEsDelEquipo')
+          : t('servidor.datos.correoEnOtroRancho'),
       );
     }
 
@@ -136,49 +133,45 @@ export class ServicioEquipo {
     } catch (error: any) {
       // Dos altas del mismo correo al mismo tiempo: la base es la que decide.
       if (error?.code === '23505') {
-        throw new ConflictException('Ese correo ya está registrado.');
+        throw new ConflictException(t('servidor.equipo.correoRegistrado'));
       }
       throw error;
     }
 
     await this.correo.enviar({
       para: correo,
-      asunto: 'Te sumaron a un rancho — Sistema de Gestión de Ganado',
-      cuerpo: [
-        `Hola ${nombre},`,
-        '',
-        `${quien.nombre} te dio de alta como ${NOMBRE_ROL[rol]} en su rancho.`,
-        'Entra con tu correo y la contraseña temporal de abajo. La primera vez',
-        'el sistema te va a pedir que la cambies por una tuya.',
-        '',
-        'Si no esperabas este mensaje, puedes ignorarlo.',
-      ].join('\n'),
-      destacado: `Contraseña temporal: ${temporal}`,
+      asunto: t('correos.alta.asunto'),
+      cuerpo: t('correos.alta.cuerpo', {
+        nombre,
+        autor: quien.nombre,
+        rol: t(NOMBRE_ROL[rol]),
+      }),
+      destacado: t('correos.alta.destacado', { clave: temporal }),
     });
 
     return {
       miembro,
-      mensaje: `${nombre} ya es parte del equipo. Le enviamos su contraseña temporal a ${correo}.`,
-      aviso: 'Por seguridad, la contraseña no se muestra acá. Solo la recibe su dueño.',
+      mensaje: t('servidor.equipo.alta', { nombre, correo }),
+      aviso: t('servidor.datos.contrasenaOculta'),
     };
   }
 
   /** Criterio 4. Suspender cierra en el acto todas sus sesiones. */
   async cambiarEstado(usuarioId: string, cuerpo: any, quien: UsuarioActual) {
-    const ranchoId = this.soloPropietario(quien, 'suspender o reactivar a alguien');
+    const ranchoId = this.soloPropietario(quien, 'servidor.equipo.acciones.estado');
     const estado = texto(cuerpo?.estado);
 
     if (estado !== 'activo' && estado !== 'suspendido') {
-      throw new BadRequestException('El estado tiene que ser activo o suspendido.');
+      throw new BadRequestException(t('servidor.equipo.estadoInvalido'));
     }
 
     const miembro = await this.equipo.miembro(usuarioId, ranchoId);
     if (!miembro) {
       // Mismo mensaje exista o no en otro rancho: no se revela quien es de quien.
-      throw new NotFoundException('Esa persona no pertenece a tu rancho.');
+      throw new NotFoundException(t('servidor.datos.noEsDeTuRancho'));
     }
     if (miembro.rol === 'propietario') {
-      throw new BadRequestException('El propietario no se puede suspender.');
+      throw new BadRequestException(t('servidor.equipo.propietarioNoSeSuspende'));
     }
 
     const actualizado = await this.equipo.cambiarEstado(usuarioId, ranchoId, estado, quien.id);
@@ -193,22 +186,23 @@ export class ServicioEquipo {
       miembro: actualizado,
       mensaje:
         estado === 'suspendido'
-          ? `${miembro.nombre} quedó suspendido. No puede entrar hasta que lo reactives.`
-          : `${miembro.nombre} puede volver a entrar.`,
+          ? t('servidor.equipo.suspendido', { nombre: miembro.nombre })
+          : t('servidor.equipo.reactivado', { nombre: miembro.nombre }),
     };
   }
 
   private ranchoDe(quien: UsuarioActual): string {
     if (!quien.ranchoId) {
-      throw new ForbiddenException('Primero hay que crear el rancho.');
+      throw new ForbiddenException(t('servidor.datos.primeroElRancho'));
     }
     return quien.ranchoId;
   }
 
+  /** accion es la clave del texto de la accion: "Solo el propietario puede {accion}." */
   private soloPropietario(quien: UsuarioActual, accion: string): string {
     const ranchoId = this.ranchoDe(quien);
-    if (quien.rol !== 'propietario') {
-      throw new ForbiddenException(`Solo el propietario puede ${accion}.`);
+    if (!actuaComoPropietario(quien)) {
+      throw new ForbiddenException(t('servidor.datos.soloPropietario', { accion: t(accion) }));
     }
     return ranchoId;
   }

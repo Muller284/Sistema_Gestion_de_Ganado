@@ -97,6 +97,23 @@ export class RepositorioUsuario {
     return resultado.rows[0] ?? null;
   }
 
+  /**
+   * HU-25. El idioma con el que trabaja alguien: el que eligio, el de su pais
+   * o el del pais de su rancho. Para mandarle un correo que pidio otro.
+   */
+  async idiomaDe(id: string): Promise<string | null> {
+    const resultado = await this.bd.query(
+      `SELECT COALESCE(u.idioma, pu.idioma, pr.idioma) AS idioma
+         FROM usuarios u
+         LEFT JOIN paises pu ON pu.codigo = u.pais_codigo
+         LEFT JOIN ranchos r ON r.id = u.rancho_id
+         LEFT JOIN paises pr ON pr.codigo = r.pais_codigo
+        WHERE u.id = $1 AND u.eliminado_en IS NULL`,
+      [id],
+    );
+    return resultado.rows[0]?.idioma ?? null;
+  }
+
   async porCorreo(correo: string): Promise<any | null> {
     const resultado = await this.bd.query(
       `SELECT id, nombre, correo, correo_verificado
@@ -128,11 +145,15 @@ export class RepositorioUsuario {
     const resultado = await this.bd.query(
       `SELECT u.id, u.nombre, u.correo, u.rol, u.estado,
               u.pais_codigo, p.nombre AS pais,
+              u.idioma AS idioma_elegido,
+              COALESCE(p.idioma, pr.idioma, 'es') AS idioma_del_pais,
+              COALESCE(u.idioma, p.idioma, pr.idioma, 'es') AS idioma,
               r.nombre AS rancho, t.nombre AS tipo_colaborador,
               u.creado_en, u.modificado_en
          FROM usuarios u
          LEFT JOIN paises p ON p.codigo = u.pais_codigo
          LEFT JOIN ranchos r ON r.id = u.rancho_id AND r.eliminado_en IS NULL
+         LEFT JOIN paises pr ON pr.codigo = r.pais_codigo
          LEFT JOIN tipos_colaborador t ON t.id = u.tipo_colaborador_id
         WHERE u.id = $1 AND u.eliminado_en IS NULL`,
       [id],
@@ -146,6 +167,15 @@ export class RepositorioUsuario {
       `UPDATE usuarios SET nombre = $2, modificado_por = $1
         WHERE id = $1 AND eliminado_en IS NULL`,
       [id, nombre],
+    );
+  }
+
+  /** HU-25. Nulo vuelve a usar el idioma del pais. */
+  async cambiarIdioma(id: string, idioma: string | null): Promise<void> {
+    await this.bd.query(
+      `UPDATE usuarios SET idioma = $2, modificado_por = $1
+        WHERE id = $1 AND eliminado_en IS NULL`,
+      [id, idioma],
     );
   }
 

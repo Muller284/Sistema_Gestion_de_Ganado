@@ -22,4 +22,5 @@ export { MenuUsuario } from './MenuUsuario';
 export { IconoMarca, Marca } from './Marca';
 export { PasosDeAlta } from './PasosDeAlta';
 export { Segmentos, type OpcionSegmento } from './Segmentos';
+export { SelectorIdioma } from './SelectorIdioma';
 export { Dato, Datos, Tarjeta } from './Tarjeta';

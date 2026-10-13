@@ -1,3 +1,4 @@
+import { t } from '../servicios/idioma';
 import { Icono } from './Iconos';
 
 /**
@@ -14,18 +15,21 @@ import { Icono } from './Iconos';
  * correo antes de tener cuenta.
  */
 
-const PASOS = ['Cuenta', 'Correo', 'Rancho'];
+const PASOS = ['acceso.pasos.cuenta', 'acceso.pasos.correo', 'acceso.pasos.rancho'];
 
 export function PasosDeAlta({ actual }: { actual: 1 | 2 | 3 }) {
   return (
-    <ol className="pasos-alta" aria-label={`Paso ${actual} de ${PASOS.length}`}>
-      {PASOS.map((nombre, indice) => {
+    <ol
+      className="pasos-alta"
+      aria-label={t('acceso.pasos.progreso', { actual, total: PASOS.length })}
+    >
+      {PASOS.map((clave, indice) => {
         const numero = indice + 1;
         const estado =
           numero < actual ? 'hecho' : numero === actual ? 'actual' : 'futuro';
 
         return (
-          <li key={nombre} className={estado} aria-current={estado === 'actual'}>
+          <li key={clave} className={estado} aria-current={estado === 'actual'}>
             <span className="marca">
               {estado === 'hecho' ? (
                 <Icono nombre="exito" tamano={16} />
@@ -33,7 +37,7 @@ export function PasosDeAlta({ actual }: { actual: 1 | 2 | 3 }) {
                 numero
               )}
             </span>
-            {nombre}
+            {t(clave)}
           </li>
         );
       })}

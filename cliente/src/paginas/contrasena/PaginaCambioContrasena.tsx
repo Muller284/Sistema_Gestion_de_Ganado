@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Alerta, Boton, CampoTexto, DisenoAcceso, Icono } from '../../componentes';
 import { api } from '../../servicios/api';
+import { t } from '../../servicios/idioma';
+import { enumerar, faltasDeContrasena } from '../../servicios/texto';
 
 /**
  * HU-10 · Cambio obligatorio de contraseña.
@@ -14,19 +16,6 @@ import { api } from '../../servicios/api';
  * Las tres reglas de la contraseña son las mismas de HU-06, y tambien estan
  * en el servidor. Acá se comprueban para no hacerle perder el viaje al usuario.
  */
-
-function faltasDeContrasena(contrasena: string): string[] {
-  const faltas: string[] = [];
-  if (contrasena.length < 8) faltas.push('ocho caracteres');
-  if (!/[A-ZÁÉÍÓÚÑ]/.test(contrasena)) faltas.push('una mayúscula');
-  if (!/[0-9]/.test(contrasena)) faltas.push('un número');
-  return faltas;
-}
-
-function enumerar(partes: string[]): string {
-  if (partes.length <= 1) return partes.join('');
-  return `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
-}
 
 interface Propiedades {
   nombre?: string;
@@ -51,15 +40,15 @@ export function PaginaCambioContrasena({ nombre, alTerminar }: Propiedades) {
     setError('');
 
     if (igualALaTemporal) {
-      setError('La contraseña nueva no puede ser igual a la temporal.');
+      setError(t('acceso.contrasena.cambio.igualTemporal'));
       return;
     }
     if (faltas.length > 0) {
-      setError(`La contraseña necesita al menos ${enumerar(faltas)}.`);
+      setError(t('comun.contrasena.necesita', { faltas: enumerar(faltas) }));
       return;
     }
     if (nueva !== repetir) {
-      setError('Las dos contraseñas no coinciden.');
+      setError(t('acceso.comun.noCoinciden'));
       return;
     }
 
@@ -77,61 +66,58 @@ export function PaginaCambioContrasena({ nombre, alTerminar }: Propiedades) {
   return (
     <DisenoAcceso
       icono="llave"
-      titulo="Cambia tu contraseña"
+      titulo={t('acceso.contrasena.cambio.titulo')}
       subtitulo={
         nombre
-          ? `${nombre}, entraste con una contraseña temporal.`
-          : 'Entraste con una contraseña temporal.'
+          ? t('acceso.contrasena.cambio.subtituloConNombre', { nombre })
+          : t('acceso.contrasena.cambio.subtitulo')
       }
-      nota="Hasta que la cambies no puedes usar el resto del sistema."
+      nota={t('acceso.contrasena.cambio.nota')}
     >
       <div className="col g16">
         {error && <Alerta variante="error">{error}</Alerta>}
 
-        <Alerta variante="adv">
-          Nadie más conoce tu contraseña nueva, ni siquiera el propietario del
-          rancho. Por eso el registro de quién cargó cada dato tiene valor.
-        </Alerta>
+        <Alerta variante="adv">{t('acceso.contrasena.cambio.aviso')}</Alerta>
 
         <form onSubmit={guardar} className="col g16">
           <CampoTexto
-            etiqueta="Contraseña temporal"
+            etiqueta={t('acceso.contrasena.cambio.temporal')}
             obligatorio
             type="password"
             autoComplete="current-password"
-            placeholder="La que te enviaron"
+            placeholder={t('acceso.contrasena.cambio.temporalEjemplo')}
             value={actual}
             onChange={(e) => setActual(e.target.value)}
           />
           <CampoTexto
-            etiqueta="Contraseña nueva"
+            etiqueta={t('acceso.comun.contrasenaNueva')}
             obligatorio
             type="password"
             autoComplete="new-password"
-            placeholder="Al menos 8 caracteres"
-            ayuda="Usa al menos 8 caracteres, con una mayúscula y un número."
+            placeholder={t('acceso.comun.alMenos8')}
+            ayuda={t('acceso.comun.ayudaContrasena')}
             error={
               igualALaTemporal
-                ? 'No puede ser igual a la temporal.'
+                ? t('acceso.contrasena.cambio.igualTemporalCampo')
                 : tocada && faltas.length > 0
-                  ? `Falta al menos ${enumerar(faltas)}.`
+                  ? t('comun.contrasena.falta', { faltas: enumerar(faltas) })
                   : undefined
             }
             value={nueva}
             onChange={(e) => setNueva(e.target.value)}
           />
           <CampoTexto
-            etiqueta="Repetir la contraseña nueva"
+            etiqueta={t('acceso.comun.repetirNueva')}
             obligatorio
             type="password"
             autoComplete="new-password"
-            error={noCoinciden ? 'Las dos contraseñas no coinciden.' : undefined}
+            error={noCoinciden ? t('acceso.comun.noCoinciden') : undefined}
             value={repetir}
             onChange={(e) => setRepetir(e.target.value)}
           />
           <Boton type="submit" variante="primario" bloque disabled={enviando}>
             <Icono nombre="entrar" tamano={18} />
-            {enviando ? 'Guardando…' : 'Guardar y entrar'}
+            {enviando ? t('comun.guardando') : t('acceso.contrasena.cambio.guardarYEntrar')}
           </Boton>
         </form>
       </div>

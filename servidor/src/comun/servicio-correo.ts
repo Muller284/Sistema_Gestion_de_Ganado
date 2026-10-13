@@ -1,4 +1,5 @@
 import { Global, Injectable, Module } from '@nestjs/common';
+import { idiomaActual, t } from './idioma';
 
 /**
  * Envio de correo (HU-07, HU-09 y HU-17).
@@ -142,6 +143,10 @@ function cuerpoDeTexto(mensaje: MensajeCorreo): string {
 /**
  * El correo con los colores del sistema de diseño.
  *
+ * Los textos fijos de la plantilla salen de idiomas/ (correos.plantilla), en
+ * el idioma con el que se arma el correo: el de la peticion, o el que se haya
+ * puesto con enIdioma().
+ *
  * Va todo con estilos escritos dentro de cada etiqueta, y no con clases: los
  * programas de correo descartan las hojas de estilo. Es el unico lugar del
  * proyecto donde se escriben colores a mano, y los valores son los mismos de
@@ -156,9 +161,9 @@ function cuerpoHtml(mensaje: MensajeCorreo): string {
            <a href="${mensaje.destacado}"
               style="display:inline-block;background:#1D5B4B;color:#FFFFFF;
                      text-decoration:none;padding:12px 24px;border-radius:8px;
-                     font-weight:600;font-size:15px">${escapar(mensaje.textoBoton ?? 'Abrir el enlace')}</a>
+                     font-weight:600;font-size:15px">${escapar(mensaje.textoBoton ?? t('correos.plantilla.abrirEnlace'))}</a>
            <p style="margin:16px 0 0;font-size:13px;line-height:18px;color:#8C8478">
-             Si el botón no funciona, copia esta dirección en tu navegador:<br>
+             ${escapar(t('correos.plantilla.botonNoFunciona'))}<br>
              <span style="color:#1D5B4B;word-break:break-all">${mensaje.destacado}</span>
            </p>
          </td></tr>`
@@ -171,14 +176,14 @@ function cuerpoHtml(mensaje: MensajeCorreo): string {
          </td></tr>`;
 
   return `<!doctype html>
-<html lang="es"><body style="margin:0;padding:24px;background:#F4F1EB;
+<html lang="${idiomaActual()}"><body style="margin:0;padding:24px;background:#F4F1EB;
       font-family:Helvetica,Arial,sans-serif;color:#2E2A25">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
          style="max-width:560px;margin:0 auto;background:#FFFFFF;border-radius:12px;
                 overflow:hidden;border:1px solid #E7E2D9">
     <tr><td style="background:#123A30;padding:20px 32px">
       <span style="color:#FFFFFF;font-size:17px;font-weight:700;letter-spacing:-.2px">
-        Gestión de Ganado
+        ${escapar(t('correos.plantilla.marca'))}
       </span>
     </td></tr>
     <tr><td style="padding:32px 32px 8px;font-size:15px;line-height:24px;white-space:pre-line">
@@ -187,7 +192,7 @@ function cuerpoHtml(mensaje: MensajeCorreo): string {
     ${destacado}
     <tr><td style="background:#FAF8F5;border-top:1px solid #E7E2D9;padding:16px 32px;
                    font-size:12px;line-height:16px;color:#8C8478">
-      Sistema de Gestión de Ganado · Este mensaje se envió automáticamente.
+      ${escapar(t('correos.plantilla.pie'))}
     </td></tr>
   </table>
 </body></html>`;

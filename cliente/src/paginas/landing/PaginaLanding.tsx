@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Icono, IconoMarca, type NombreIcono } from '../../componentes';
+import { Icono, IconoMarca, SelectorIdioma, type NombreIcono } from '../../componentes';
 import { hayAlguienDentro } from '../../servicios/api';
+import { t, tJsx } from '../../servicios/idioma';
 import {
   FRANJAS,
   PLANES,
   franjaDelNavegador,
+  loQueIncluye,
+  nombreDeFranja,
+  nombreDelPlan,
+  paraQuienEs,
   precioDelPlan,
   type ClaveFranja,
   type Periodo,
@@ -26,6 +31,11 @@ import {
  * Los tres diferenciales, los planes con sus límites, los precios, las
  * franjas regionales y las preguntas del asistente son los de la Propuesta
  * v4. Si allá cambia un número, se cambia en planes.ts y en ningún otro lado.
+ *
+ * LOS TEXTOS ESTÁN EN EL ARCHIVO DE IDIOMA (HU-25)
+ * Todo lo que se lee está bajo landing.* en idiomas/<idioma>.json. Las listas
+ * de esta página guardan solo claves y se traducen al dibujar, nunca al cargar
+ * el módulo.
  *
  * LAS ANCLAS NO SON ENLACES CON #
  * El enrutador usa la almohadilla (#/registro). Un enlace a "#planes" lo
@@ -130,12 +140,13 @@ function Encabezado({
  * Cabecera
  * ======================================================================== */
 
+/** id de la sección en la página → clave de su nombre en landing.menu. */
 const SECCIONES = [
-  { id: 'funciones', nombre: 'Funciones' },
-  { id: 'asistente', nombre: 'Asistente' },
-  { id: 'como-empieza', nombre: 'Cómo empieza' },
-  { id: 'planes', nombre: 'Planes' },
-  { id: 'preguntas', nombre: 'Preguntas' },
+  { id: 'funciones', clave: 'funciones' },
+  { id: 'asistente', clave: 'asistente' },
+  { id: 'como-empieza', clave: 'comoEmpieza' },
+  { id: 'planes', clave: 'planes' },
+  { id: 'preguntas', clave: 'preguntas' },
 ];
 
 function Cabecera() {
@@ -164,28 +175,29 @@ function Cabecera() {
           <span className="lp-marca__icono">
             <IconoMarca tamano={18} />
           </span>
-          Gestión de Ganado
+          {t('landing.marca')}
         </button>
 
-        <nav className={abierto ? 'lp-menu abierto' : 'lp-menu'} aria-label="Secciones">
+        <nav className={abierto ? 'lp-menu abierto' : 'lp-menu'} aria-label={t('landing.menu.secciones')}>
           {SECCIONES.map((s) => (
             <button key={s.id} type="button" onClick={() => elegir(s.id)}>
-              {s.nombre}
+              {t(`landing.menu.${s.clave}`)}
             </button>
           ))}
           <div className="lp-menu__acciones">
+            <SelectorIdioma />
             {adentro ? (
               <Link className="btn btn-primario" to="/rancho">
                 <Icono nombre="casa" tamano={18} />
-                Ir a mi rancho
+                {t('landing.menu.irAMiRancho')}
               </Link>
             ) : (
               <>
                 <Link className="btn btn-fantasma" to="/ingreso">
-                  Ingresar
+                  {t('landing.menu.ingresar')}
                 </Link>
                 <Link className="btn btn-primario" to="/registro">
-                  Probar gratis
+                  {t('landing.menu.probarGratis')}
                 </Link>
               </>
             )}
@@ -195,7 +207,7 @@ function Cabecera() {
         <button
           type="button"
           className="lp-hamburguesa"
-          aria-label={abierto ? 'Cerrar el menú' : 'Abrir el menú'}
+          aria-label={abierto ? t('landing.menu.cerrar') : t('landing.menu.abrir')}
           aria-expanded={abierto}
           onClick={() => setAbierto((previo) => !previo)}
         >
@@ -217,37 +229,35 @@ function Portada() {
         <div className="lp-portada__texto">
           <p className="lp-pastilla">
             <Icono nombre="ubicacion" tamano={16} />
-            Para productores de cualquier país
+            {t('landing.portada.pastilla')}
           </p>
           <h1 className="lp-portada__titulo">
-            Tu rancho entero, <span>en el bolsillo</span>
+            {tJsx('landing.portada.titulo', { resaltado: (s) => <span>{s}</span> })}
           </h1>
           <p className="lp-portada__bajada">
-            Animales, corrales, vacunas y pesajes en un solo lugar. Trabaja con
-            tu equipo, registra desde el corral aunque no haya señal y pregunta
-            lo que necesites saber con tus propias palabras.
+            {t('landing.portada.bajada')}
           </p>
           <div className="lp-portada__acciones">
             <Link className="btn btn-primario lp-btn-grande" to="/registro">
-              Probar 10 días gratis
+              {t('landing.portada.probar')}
               <Icono nombre="flecha" tamano={18} />
             </Link>
             <Link className="btn btn-secundario lp-btn-grande" to="/ingreso">
-              Ya tengo cuenta
+              {t('landing.portada.yaTengoCuenta')}
             </Link>
           </div>
           <ul className="lp-garantias">
             <li>
               <Icono nombre="exito" tamano={16} />
-              Sin tarjeta
+              {t('landing.portada.sinTarjeta')}
             </li>
             <li>
               <Icono nombre="exito" tamano={16} />
-              Después sigues gratis
+              {t('landing.portada.sigueGratis')}
             </li>
             <li>
               <Icono nombre="exito" tamano={16} />
-              Tus datos se exportan cuando quieras
+              {t('landing.portada.exportas')}
             </li>
           </ul>
         </div>
@@ -274,30 +284,30 @@ function Vitrina() {
           <span />
           <span />
           <span />
-          <p>Estancia La Esperanza · Panel</p>
+          <p>{t('landing.vitrina.barra')}</p>
         </div>
 
         <div className="lp-ventana__cuerpo">
           <div className="lp-ventana__cifras">
             <div className="lp-mini-cifra">
-              <p>Animales activos</p>
+              <p>{t('landing.vitrina.animales')}</p>
               <strong>248</strong>
-              <span className="insignia ins-exito">+12 este mes</span>
+              <span className="insignia ins-exito">{t('landing.vitrina.animalesNota')}</span>
             </div>
             <div className="lp-mini-cifra">
-              <p>Corrales</p>
+              <p>{t('landing.vitrina.corrales')}</p>
               <strong>6</strong>
-              <span className="insignia ins-neutro">1 excedido</span>
+              <span className="insignia ins-neutro">{t('landing.vitrina.corralesNota')}</span>
             </div>
             <div className="lp-mini-cifra">
-              <p>Vacunas por vencer</p>
+              <p>{t('landing.vitrina.vacunas')}</p>
               <strong>12</strong>
-              <span className="insignia ins-adv">esta semana</span>
+              <span className="insignia ins-adv">{t('landing.vitrina.vacunasNota')}</span>
             </div>
           </div>
 
           <div className="lp-grafico">
-            <p>Ganancia diaria · lote de engorde</p>
+            <p>{t('landing.vitrina.grafico')}</p>
             <div className="lp-grafico__barras">
               {pesos.map((alto, i) => (
                 <span key={i} style={{ height: `${alto}%` }} />
@@ -307,15 +317,15 @@ function Vitrina() {
 
           <ul className="lp-filas">
             {[
-              ['0447', 'Brangus · Novillo', 'activo'],
-              ['0512', 'Nelore · Vaquilla', 'activo'],
-              ['0398', 'Criollo · Toro', 'vendido'],
+              ['0447', 'novillo', 'activo'],
+              ['0512', 'vaquilla', 'activo'],
+              ['0398', 'toro', 'vendido'],
             ].map(([caravana, detalle, estado]) => (
               <li key={caravana}>
                 <span className="dato">{caravana}</span>
-                <span className="flex1">{detalle}</span>
+                <span className="flex1">{t(`landing.vitrina.filas.${detalle}`)}</span>
                 <span className={`insignia ins-${estado}`}>
-                  {estado === 'activo' ? 'Activo' : 'Vendido'}
+                  {estado === 'activo' ? t('landing.vitrina.activo') : t('landing.vitrina.vendido')}
                 </span>
               </li>
             ))}
@@ -328,8 +338,8 @@ function Vitrina() {
           <Icono nombre="sin-senal" tamano={18} />
         </span>
         <div>
-          <strong>Sin señal en el corral</strong>
-          <p>3 pesajes guardados, se suben solos</p>
+          <strong>{t('landing.vitrina.sinSenal')}</strong>
+          <p>{t('landing.vitrina.sinSenalNota')}</p>
         </div>
       </div>
 
@@ -338,8 +348,8 @@ function Vitrina() {
           <Icono nombre="asistente" tamano={18} />
         </span>
         <div>
-          <strong>¿Qué corral engorda peor?</strong>
-          <p>El Bajo: 410 g/día, 22 % menos que el resto.</p>
+          <strong>{t('landing.vitrina.pregunta')}</strong>
+          <p>{t('landing.vitrina.respuesta')}</p>
         </div>
       </div>
     </div>
@@ -350,25 +360,11 @@ function Vitrina() {
  * Los tres diferenciales
  * ======================================================================== */
 
-const DIFERENCIALES: { icono: NombreIcono; titulo: string; texto: string }[] = [
-  {
-    icono: 'equipo',
-    titulo: 'Se trabaja en equipo',
-    texto:
-      'Delegas la carga en tus colaboradores y compartes la información con tus socios, sin perder el control. Cada dato guarda quién lo registró y cuándo.',
-  },
-  {
-    icono: 'sin-senal',
-    titulo: 'Funciona sin internet',
-    texto:
-      'Desde el celular registras animales, vacunas, pesajes y movimientos en la manga, sin señal. Los datos suben solos cuando vuelve la conexión.',
-  },
-  {
-    icono: 'asistente',
-    titulo: 'Un asistente que conoce tu rancho',
-    texto:
-      'Pregunta con palabras normales, sin filtros ni reportes. Solo lee los datos de tu rancho: no consulta internet y no modifica nada.',
-  },
+/** Textos en landing.diferenciales.<clave>.{titulo,texto}. */
+const DIFERENCIALES: { icono: NombreIcono; clave: string }[] = [
+  { icono: 'equipo', clave: 'equipo' },
+  { icono: 'sin-senal', clave: 'sinInternet' },
+  { icono: 'asistente', clave: 'asistente' },
 ];
 
 function Diferenciales() {
@@ -376,21 +372,21 @@ function Diferenciales() {
     <section className="lp-seccion lp-seccion--blanca">
       <div className="lp-ancho">
         <Encabezado
-          rotulo="Por qué no una planilla"
-          titulo="Tres cosas que un cuaderno no puede hacer"
+          rotulo={t('landing.diferenciales.rotulo')}
+          titulo={t('landing.diferenciales.titulo')}
         />
         <div className="lp-tres">
           {DIFERENCIALES.map((d) => (
             <article
-              key={d.titulo}
+              key={d.clave}
               className="lp-diferencial"
               data-aparece
             >
               <span className="lp-emblema">
                 <Icono nombre={d.icono} tamano={24} />
               </span>
-              <h3>{d.titulo}</h3>
-              <p>{d.texto}</p>
+              <h3>{t(`landing.diferenciales.${d.clave}.titulo`)}</h3>
+              <p>{t(`landing.diferenciales.${d.clave}.texto`)}</p>
             </article>
           ))}
         </div>
@@ -403,37 +399,14 @@ function Diferenciales() {
  * Funciones
  * ======================================================================== */
 
-const FUNCIONES: { icono: NombreIcono; titulo: string; texto: string }[] = [
-  {
-    icono: 'animal',
-    titulo: 'Animales',
-    texto: 'La ficha y el historial completo de cada animal, con su caravana única dentro del rancho.',
-  },
-  {
-    icono: 'corral',
-    titulo: 'Corrales',
-    texto: 'Capacidad, ocupación y un aviso cuando un corral se pasa de su límite.',
-  },
-  {
-    icono: 'sanidad',
-    titulo: 'Sanidad',
-    texto: 'Tus propios esquemas de vacunación, un calendario y avisos antes de cada vencimiento.',
-  },
-  {
-    icono: 'balanza',
-    titulo: 'Pesajes',
-    texto: 'La ganancia diaria se calcula sola. Compara lotes y detecta a tiempo el que no engorda.',
-  },
-  {
-    icono: 'planilla',
-    titulo: 'Importa tu planilla',
-    texto: 'Sube tu Excel como está: el sistema reconoce las columnas y te muestra los errores antes de cargar.',
-  },
-  {
-    icono: 'descargar',
-    titulo: 'Tus datos son tuyos',
-    texto: 'Bájalos a Excel cuando quieras. Nada se borra de verdad: lo dado de baja se puede consultar.',
-  },
+/** Textos en landing.funciones.lista.<clave>.{titulo,texto}. */
+const FUNCIONES: { icono: NombreIcono; clave: string }[] = [
+  { icono: 'animal', clave: 'animales' },
+  { icono: 'corral', clave: 'corrales' },
+  { icono: 'sanidad', clave: 'sanidad' },
+  { icono: 'balanza', clave: 'pesajes' },
+  { icono: 'planilla', clave: 'importa' },
+  { icono: 'descargar', clave: 'tusDatos' },
 ];
 
 function Funciones() {
@@ -441,14 +414,14 @@ function Funciones() {
     <section className="lp-seccion" id="funciones">
       <div className="lp-ancho">
         <Encabezado
-          rotulo="Funciones"
-          titulo="Todo el trabajo del campo, ordenado"
-          bajada="Lo que hoy está repartido entre cuadernos, planillas y la memoria de cada uno, en un solo lugar y con el historial completo."
+          rotulo={t('landing.funciones.rotulo')}
+          titulo={t('landing.funciones.titulo')}
+          bajada={t('landing.funciones.bajada')}
         />
         <div className="lp-rejilla-funciones">
           {FUNCIONES.map((f) => (
             <article
-              key={f.titulo}
+              key={f.clave}
               className="lp-funcion"
               data-aparece
             >
@@ -456,8 +429,8 @@ function Funciones() {
                 <Icono nombre={f.icono} tamano={22} />
               </span>
               <div>
-                <h3>{f.titulo}</h3>
-                <p>{f.texto}</p>
+                <h3>{t(`landing.funciones.lista.${f.clave}.titulo`)}</h3>
+                <p>{t(`landing.funciones.lista.${f.clave}.texto`)}</p>
               </div>
             </article>
           ))}
@@ -471,33 +444,16 @@ function Funciones() {
  * Asistente
  * ======================================================================== */
 
-/** Las preguntas son las de la propuesta. Las respuestas son de ejemplo. */
-const PREGUNTAS_ASISTENTE = [
-  {
-    pregunta: '¿Cuántos terneros machos nacidos este año tengo en el corral norte?',
-    respuesta: 'Tienes 14 terneros machos nacidos en 2026 en el corral Norte. El más reciente es la caravana 0561, nacido el 3 de septiembre.',
-  },
-  {
-    pregunta: '¿Qué animales tienen la vacuna vencida hace más de un mes?',
-    respuesta: 'Son 4 animales, todos de aftosa: 0447, 0512, 0520 y 0533. Están en el corral El Bajo.',
-  },
-  {
-    pregunta: '¿Cuál fue la ganancia diaria del lote de engorde en los últimos 90 días?',
-    respuesta: 'El lote de engorde ganó en promedio 780 g por día. Es un 9 % más que en los 90 días anteriores.',
-  },
-  {
-    pregunta: '¿Qué le aplicó el veterinario a la caravana 447 en el último año?',
-    respuesta: 'Tres aplicaciones: aftosa en marzo, carbunclo en abril y un antiparasitario en agosto. Las registró el Dr. Rojas.',
-  },
-  {
-    pregunta: '¿Qué corral viene engordando peor que el resto?',
-    respuesta: 'El Bajo: 410 g por día, un 22 % por debajo del promedio de los otros corrales.',
-  },
-];
+/**
+ * Las preguntas son las de la propuesta. Las respuestas son de ejemplo.
+ * Textos en landing.asistente.ejemplos.<clave>.{pregunta,respuesta}.
+ */
+const PREGUNTAS_ASISTENTE = ['terneros', 'vacunaVencida', 'ganancia', 'veterinario', 'peorCorral'];
 
 function Asistente() {
   const [elegida, setElegida] = useState(0);
   const actual = PREGUNTAS_ASISTENTE[elegida];
+  const pregunta = (clave: string) => t(`landing.asistente.ejemplos.${clave}.pregunta`);
 
   return (
     <section className="lp-seccion lp-seccion--oscura" id="asistente">
@@ -505,37 +461,37 @@ function Asistente() {
         <div className="lp-asistente__texto">
           <Encabezado
             claro
-            rotulo="Asistente con inteligencia artificial"
-            titulo="Pregunta como le preguntarías a tu capataz"
-            bajada="No hay una lista cerrada de preguntas ni filtros que aprender. El asistente arma la consulta sobre los datos de tu rancho y te responde en segundos."
+            rotulo={t('landing.asistente.rotulo')}
+            titulo={t('landing.asistente.titulo')}
+            bajada={t('landing.asistente.bajada')}
           />
           <ul className="lp-asistente__reglas" data-aparece>
             <li>
               <Icono nombre="escudo" tamano={18} />
-              Solo lee tu rancho. Nunca ve datos de otras cuentas.
+              {t('landing.asistente.reglas.soloLee')}
             </li>
             <li>
               <Icono nombre="escudo" tamano={18} />
-              No da de alta, no modifica y no borra nada.
+              {t('landing.asistente.reglas.noModifica')}
             </li>
             <li>
               <Icono nombre="escudo" tamano={18} />
-              A cada colaborador le responde solo sobre sus módulos.
+              {t('landing.asistente.reglas.colaboradores')}
             </li>
           </ul>
         </div>
 
         <div className="lp-chat" data-aparece>
-          <div className="lp-chat__sugerencias" role="group" aria-label="Preguntas de ejemplo">
-            {PREGUNTAS_ASISTENTE.map((p, i) => (
+          <div className="lp-chat__sugerencias" role="group" aria-label={t('landing.asistente.ejemplosEtiqueta')}>
+            {PREGUNTAS_ASISTENTE.map((clave, i) => (
               <button
-                key={p.pregunta}
+                key={clave}
                 type="button"
                 className={i === elegida ? 'activa' : undefined}
                 aria-pressed={i === elegida}
                 onClick={() => setElegida(i)}
               >
-                {p.pregunta}
+                {pregunta(clave)}
               </button>
             ))}
           </div>
@@ -543,16 +499,16 @@ function Asistente() {
           {/* La clave obliga a React a rehacer las burbujas y así vuelven a
               entrar con su animación al cambiar de pregunta. */}
           <div className="lp-chat__conversacion" key={elegida} aria-live="polite">
-            <p className="lp-burbuja lp-burbuja--pregunta">{actual.pregunta}</p>
+            <p className="lp-burbuja lp-burbuja--pregunta">{pregunta(actual)}</p>
             <div className="lp-burbuja lp-burbuja--respuesta">
               <span className="lp-burbuja__autor">
                 <Icono nombre="asistente" tamano={14} />
-                Asistente
+                {t('landing.asistente.autor')}
               </span>
-              <p>{actual.respuesta}</p>
+              <p>{t(`landing.asistente.ejemplos.${actual}.respuesta`)}</p>
             </div>
           </div>
-          <p className="lp-chat__nota">Respuestas de ejemplo con datos ficticios.</p>
+          <p className="lp-chat__nota">{t('landing.asistente.nota')}</p>
         </div>
       </div>
     </section>
@@ -563,11 +519,12 @@ function Asistente() {
  * Cómo empieza
  * ======================================================================== */
 
-const PASOS: { icono: NombreIcono; titulo: string; texto: string }[] = [
-  { icono: 'persona-mas', titulo: 'Crea tu cuenta', texto: 'Nombre, correo, contraseña y país. El país define idioma, moneda y unidades.' },
-  { icono: 'correo', titulo: 'Confirma tu correo', texto: 'Te llega un enlace. Al abrirlo, la cuenta queda activa.' },
-  { icono: 'ubicacion', titulo: 'Crea tu rancho', texto: 'Nombre, superficie, tipo de producción y, si quieres, su lugar en el mapa.' },
-  { icono: 'regla', titulo: 'Sigue la guía', texto: 'Animales, corrales, vacunas y equipo, paso a paso y a tu ritmo.' },
+/** Textos en landing.comoEmpieza.pasos.<clave>.{titulo,texto}. */
+const PASOS: { icono: NombreIcono; clave: string }[] = [
+  { icono: 'persona-mas', clave: 'cuenta' },
+  { icono: 'correo', clave: 'correo' },
+  { icono: 'ubicacion', clave: 'rancho' },
+  { icono: 'regla', clave: 'guia' },
 ];
 
 function ComoEmpieza() {
@@ -575,25 +532,25 @@ function ComoEmpieza() {
     <section className="lp-seccion lp-seccion--blanca" id="como-empieza">
       <div className="lp-ancho">
         <Encabezado
-          rotulo="Cómo empieza"
-          titulo="De cero a tu rancho andando, sin llamar a nadie"
-          bajada="No hay vendedores ni instalaciones. Te registras, confirmas el correo y en unos minutos estás cargando tu rodeo."
+          rotulo={t('landing.comoEmpieza.rotulo')}
+          titulo={t('landing.comoEmpieza.titulo')}
+          bajada={t('landing.comoEmpieza.bajada')}
         />
         <ol className="lp-pasos">
           {PASOS.map((p, i) => (
-            <li key={p.titulo} data-aparece>
+            <li key={p.clave} data-aparece>
               <span className="lp-pasos__numero">{i + 1}</span>
               <span className="lp-pasos__icono">
                 <Icono nombre={p.icono} tamano={20} />
               </span>
-              <h3>{p.titulo}</h3>
-              <p>{p.texto}</p>
+              <h3>{t(`landing.comoEmpieza.pasos.${p.clave}.titulo`)}</h3>
+              <p>{t(`landing.comoEmpieza.pasos.${p.clave}.texto`)}</p>
             </li>
           ))}
         </ol>
         <div className="lp-centro" data-aparece>
           <Link className="btn btn-primario lp-btn-grande" to="/registro">
-            Crear mi cuenta
+            {t('landing.comoEmpieza.crearCuenta')}
             <Icono nombre="flecha" tamano={18} />
           </Link>
         </div>
@@ -614,20 +571,20 @@ function Planes() {
     <section className="lp-seccion" id="planes">
       <div className="lp-ancho">
         <Encabezado
-          rotulo="Planes"
-          titulo="Pagas por el tamaño de tu equipo, no por anotar"
-          bajada="Empiezas con 10 días del plan Profesional, sin tarjeta. Si no eliges nada, pasas al plan Gratis: la cuenta no se bloquea y no pierdes ningún dato."
+          rotulo={t('landing.planes.rotulo')}
+          titulo={t('landing.planes.titulo')}
+          bajada={t('landing.planes.bajada')}
         />
 
         <div className="lp-planes__controles" data-aparece>
-          <div className="lp-segmentos" role="group" aria-label="Forma de pago">
+          <div className="lp-segmentos" role="group" aria-label={t('landing.planes.formaDePago')}>
             <button
               type="button"
               aria-pressed={periodo === 'mes'}
               className={periodo === 'mes' ? 'activo' : undefined}
               onClick={() => setPeriodo('mes')}
             >
-              Mensual
+              {t('landing.planes.mensual')}
             </button>
             <button
               type="button"
@@ -635,16 +592,18 @@ function Planes() {
               className={periodo === 'anio' ? 'activo' : undefined}
               onClick={() => setPeriodo('anio')}
             >
-              Anual <span className="lp-ahorro">−20 %</span>
+              {tJsx('landing.planes.anual', {
+                ahorro: (s) => <span className="lp-ahorro">{s}</span>,
+              })}
             </button>
           </div>
 
           <label className="lp-region">
-            <span>Precios para</span>
+            <span>{t('landing.planes.preciosPara')}</span>
             <select value={franja} onChange={(e) => setFranja(e.target.value as ClaveFranja)}>
               {FRANJAS.map((f) => (
                 <option key={f.clave} value={f.clave}>
-                  {f.nombre}
+                  {nombreDeFranja(f)}
                 </option>
               ))}
             </select>
@@ -663,25 +622,29 @@ function Planes() {
               >
                 {plan.destacado && (
                   <span className="insignia ins-plan lp-plan__cinta">
-                    Tus primeros 10 días
+                    {t('landing.planes.cinta')}
                   </span>
                 )}
-                <h3>{plan.nombre}</h3>
-                <p className="lp-plan__para">{plan.para}</p>
+                <h3>{nombreDelPlan(plan)}</h3>
+                <p className="lp-plan__para">{paraQuienEs(plan)}</p>
                 <p className="lp-plan__precio">
                   <span className="lp-plan__moneda">USD</span>
                   <strong>{precio.monto}</strong>
                   <span className="lp-plan__periodo">
-                    {precio.gratis ? 'para siempre' : periodo === 'mes' ? '/ mes' : '/ año'}
+                    {precio.gratis
+                      ? t('landing.planes.paraSiempre')
+                      : periodo === 'mes'
+                        ? t('landing.planes.porMes')
+                        : t('landing.planes.porAnio')}
                   </span>
                 </p>
                 <p className="lp-plan__detalle">{precio.detalle}</p>
 
                 <ul>
-                  {plan.incluye.map((linea) => (
-                    <li key={linea}>
+                  {loQueIncluye(plan).map((linea) => (
+                    <li key={linea.clave}>
                       <Icono nombre="exito" tamano={16} />
-                      {linea}
+                      {linea.texto}
                     </li>
                   ))}
                 </ul>
@@ -692,7 +655,7 @@ function Planes() {
                   }
                   to="/registro"
                 >
-                  {plan.destacado ? 'Probar 10 días gratis' : 'Empezar'}
+                  {plan.destacado ? t('landing.planes.probar') : t('landing.planes.empezar')}
                 </Link>
               </article>
             );
@@ -700,8 +663,7 @@ function Planes() {
         </div>
 
         <p className="lp-planes__nota" data-aparece>
-          Precios en dólares estadounidenses. Cada cuenta maneja un rancho.
-          Donde dice «sin límite» se aplica una política de uso razonable.
+          {t('landing.planes.nota')}
         </p>
       </div>
     </section>
@@ -712,42 +674,22 @@ function Planes() {
  * Preguntas frecuentes
  * ======================================================================== */
 
-const PREGUNTAS = [
-  {
-    p: '¿Qué pasa cuando terminan los 10 días de prueba?',
-    r: 'Tu cuenta pasa sola al plan Gratis. No se bloquea, no pierdes ningún dato y puedes mejorar el plan cuando quieras.',
-  },
-  {
-    p: '¿Necesito internet para usarlo?',
-    r: 'Para la web, sí. Desde el celular puedes registrar animales, vacunas, pesajes y movimientos de corral sin señal: se guardan en el teléfono y se suben solos cuando vuelve la conexión.',
-  },
-  {
-    p: '¿Puedo traer lo que ya tengo en Excel?',
-    r: 'Sí. Subes tu planilla como está y el sistema reconoce las columnas por su nombre. Solo te pregunta por las que no pudo identificar, y antes de cargar te muestra los errores y los repetidos.',
-  },
-  {
-    p: '¿Otro productor puede ver mis animales?',
-    r: 'No. Cada rancho está separado desde la base de datos, y hay pruebas automáticas que intentan leer datos de otro rancho y tienen que fallar. El asistente tampoco puede salir de tu rancho.',
-  },
-  {
-    p: '¿Y si quiero irme?',
-    r: 'Exporta todo a Excel en cualquier momento. Si cancelas, la cuenta queda en solo lectura al menos 12 meses para que sigas consultando y exportando tu información.',
-  },
-];
+/** Textos en landing.preguntas.lista.<clave>.{p,r}. */
+const PREGUNTAS = ['finPrueba', 'internet', 'excel', 'privacidad', 'irme'];
 
 function Preguntas() {
   return (
     <section className="lp-seccion lp-seccion--blanca" id="preguntas">
       <div className="lp-ancho lp-angosto">
-        <Encabezado rotulo="Preguntas" titulo="Lo que todos preguntan antes de empezar" />
+        <Encabezado rotulo={t('landing.preguntas.rotulo')} titulo={t('landing.preguntas.titulo')} />
         <div className="lp-preguntas" data-aparece>
-          {PREGUNTAS.map((item) => (
-            <details key={item.p}>
+          {PREGUNTAS.map((clave) => (
+            <details key={clave}>
               <summary>
-                {item.p}
+                {t(`landing.preguntas.lista.${clave}.p`)}
                 <Icono nombre="desplegar" tamano={20} />
               </summary>
-              <p>{item.r}</p>
+              <p>{t(`landing.preguntas.lista.${clave}.r`)}</p>
             </details>
           ))}
         </div>
@@ -765,16 +707,16 @@ function Cierre() {
     <section className="lp-cierre">
       <div className="lp-ancho lp-cierre__caja" data-aparece>
         <div>
-          <h2>Empieza hoy con tu rodeo</h2>
-          <p>10 días con todas las funciones. Sin tarjeta y sin compromiso.</p>
+          <h2>{t('landing.cierre.titulo')}</h2>
+          <p>{t('landing.cierre.bajada')}</p>
         </div>
         <div className="lp-cierre__acciones">
           <Link className="btn lp-btn-grande lp-btn-claro" to="/registro">
-            Crear mi cuenta
+            {t('landing.cierre.crearCuenta')}
             <Icono nombre="flecha" tamano={18} />
           </Link>
           <Link className="btn lp-btn-grande lp-btn-contorno" to="/ingreso">
-            Ingresar
+            {t('landing.cierre.ingresar')}
           </Link>
         </div>
       </div>
@@ -788,15 +730,15 @@ function Pie() {
       <div className="lp-ancho lp-pie__fila">
         <span className="lp-pie__marca">
           <IconoMarca tamano={16} />
-          Gestión de Ganado
+          {t('landing.marca')}
         </span>
-        <nav aria-label="Enlaces del pie">
-          <Link to="/registro">Crear cuenta</Link>
-          <Link to="/ingreso">Ingresar</Link>
-          <Link to="/solicitar-recuperacion">Recuperar contraseña</Link>
-          <Link to="/sistema-diseno">Sistema de diseño</Link>
+        <nav aria-label={t('landing.pie.enlaces')}>
+          <Link to="/registro">{t('landing.pie.crearCuenta')}</Link>
+          <Link to="/ingreso">{t('landing.pie.ingresar')}</Link>
+          <Link to="/solicitar-recuperacion">{t('landing.pie.recuperar')}</Link>
+          <Link to="/sistema-diseno">{t('landing.pie.sistemaDiseno')}</Link>
         </nav>
-        <span className="lp-pie__derechos">© 2026 Gestión de Ganado</span>
+        <span className="lp-pie__derechos">{t('landing.pie.derechos', { marca: t('landing.marca') })}</span>
       </div>
     </footer>
   );

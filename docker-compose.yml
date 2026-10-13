@@ -33,6 +33,10 @@ services:
       # servicio 'postgres'. Sin esto, el servidor levantado con docker compose
       # usaba el DATABASE_URL del .env, que apunta a localhost, y no conectaba.
       DATABASE_URL: postgresql://${DB_USUARIO}:${DB_CONTRASENA}@postgres:5432/${DB_NOMBRE}
+      # HU-25: los archivos de idioma viven en idiomas/, en la raiz, porque
+      # los comparten el cliente y el servidor. Al contenedor solo le llega
+      # servidor/, asi que se monta aparte.
+      CARPETA_IDIOMAS: /idiomas
     ports:
       - "${PUERTO_SERVIDOR:-3000}:3000"
     depends_on:
@@ -41,6 +45,7 @@ services:
     volumes:
       - ./servidor:/app
       - /app/node_modules
+      - ./idiomas:/idiomas:ro
     command: npm run start:dev
 
 volumes:

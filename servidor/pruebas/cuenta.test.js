@@ -61,6 +61,29 @@ async function pedir(ruta, opciones = {}, usuarioId) {
   return { estado: respuesta.status, cuerpo };
 }
 
+async function volverAlEstadoDeLaSemilla() {
+  await pool.query('DELETE FROM sesiones WHERE usuario_id = ANY($1::uuid[])', [
+    [SIN_VERIFICAR, CON_TEMPORAL],
+  ]);
+  await pool.query('DELETE FROM tokens WHERE usuario_id = ANY($1::uuid[])', [
+    [SIN_VERIFICAR, CON_TEMPORAL],
+  ]);
+  await pool.query(
+    'UPDATE usuarios SET correo_verificado = FALSE, debe_cambiar_contrasena = FALSE WHERE id = $1',
+    [SIN_VERIFICAR],
+  );
+  // El mismo hash de la semilla: es la clave temporal de arriba.
+  await pool.query(
+    `UPDATE usuarios
+        SET contrasena_hash = $2, debe_cambiar_contrasena = TRUE, correo_verificado = TRUE
+      WHERE id = $1`,
+    [
+      CON_TEMPORAL,
+      'scrypt$16384$8$1$BC9d4mFQrtZ0nYkACIKRyw==$5/wJKm80OOXZWPd+yeeUet5biHEBEEjXa7HikSDAkrM=',
+    ],
+  );
+}
+
 function tokenDelEnlace(enlace) {
   return new URL(enlace).hash.split('token=')[1];
 }
@@ -69,6 +92,11 @@ async function ejecutarPruebas() {
   console.log('================================================================');
   console.log('  HU-07 VERIFICACION DE CORREO · HU-10 CAMBIO DE CONTRASEÑA');
   console.log('================================================================\n');
+
+  // Las pruebas confirman el correo de Lucia y cambian la clave de Ruben. Sin
+  // esto, una segunda corrida sin volver a sembrar fallaba en siete pruebas.
+  // Se los deja como los deja la semilla.
+  await volverAlEstadoDeLaSemilla();
 
   // ==========================================================================
   // HU-07

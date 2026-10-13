@@ -9,6 +9,7 @@ for (const ruta of [join(__dirname, '..', '..', '.env'), join(__dirname, '..', '
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { middlewareIdioma } from './comun/idioma';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -16,6 +17,10 @@ async function bootstrap() {
   // El cliente de Vite corre en otro puerto (5173), asi que el navegador
   // bloquearia las llamadas sin esto.
   app.enableCors({ origin: true });
+
+  // HU-25: cada peticion trabaja en el idioma que pide el cliente
+  // (Accept-Language), para que los mensajes vuelvan en ese idioma.
+  app.use(middlewareIdioma);
 
   const puerto = process.env.PUERTO_SERVIDOR ?? process.env.PORT ?? 3000;
   await app.listen(puerto);
