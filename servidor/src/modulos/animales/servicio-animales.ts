@@ -170,9 +170,9 @@ export class ServicioAnimales {
     };
   }
 
-  /** HU-34. */
+  /** HU-34. Solo el propietario y el Admin dan de baja (HU-18, criterio 3). */
   async darDeBaja(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
+    const ranchoId = this.permisos.exigirEliminar(quien, 'animales');
     const actual = await this.vigente(id, ranchoId);
     await this.animales.marcarBaja(actual.id, ranchoId, true, quien.id);
     return { mensaje: t('servidor.animales.dadoDeBaja', { identificador: actual.identificador }) };
@@ -180,7 +180,7 @@ export class ServicioAnimales {
 
   /** HU-34. Si otro animal vigente tomo su identificador, no se puede. */
   async restaurar(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
+    const ranchoId = this.permisos.exigirEliminar(quien, 'animales');
     const actual = await this.existente(id, ranchoId);
     if (actual.eliminado_en) {
       if (await this.animales.identificadorOcupado(actual.identificador, ranchoId, actual.id)) {

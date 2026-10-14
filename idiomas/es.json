@@ -252,7 +252,8 @@
       "soloPropietario": "Solo el propietario puede cambiar los permisos de los socios.",
       "modulosInvalidos": "La lista de módulos no es válida.",
       "noEsSocio": "Esa persona no es socia de tu rancho.",
-      "guardados": "Listo, guardamos los módulos que puede editar."
+      "guardados": "Listo, guardamos los módulos que puede editar.",
+      "soloPropietarioElimina": "Dar de baja en {modulo} es solo del propietario del rancho: pídeselo."
     },
     "corrales": {
       "sinNombre": "Ponle un nombre al corral.",

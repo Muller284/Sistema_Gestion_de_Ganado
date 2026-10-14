@@ -144,6 +144,12 @@ async function ejecutarPruebas() {
     assert.strictEqual(estado, 201);
   });
 
+  await prueba('HU-18: un colaborador con edicion de corrales no los da de baja', async () => {
+    const { estado, cuerpo } = await pedir('DELETE', `/corrales/${corral.id}`, undefined, CAMPO_A);
+    assert.strictEqual(estado, 403);
+    assert.strictEqual(cuerpo.motivo, 'solo_propietario_elimina');
+  });
+
   await prueba('HU-34: con animales adentro no se da de baja', async () => {
     const { estado } = await pedir('DELETE', `/corrales/${corral.id}`);
     assert.strictEqual(estado, 409);

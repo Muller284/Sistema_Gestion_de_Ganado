@@ -30,7 +30,7 @@ import {
   hoyEn,
   type Regional,
 } from '../../servicios/unidades';
-import { nivel, useContextoGanado, usuarioDe } from '../ganado/contexto';
+import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/contexto';
 import { FormularioFicha } from './FormularioFicha';
 
 /**
@@ -79,6 +79,8 @@ export function PaginaFichaAnimal() {
   }, [id, version]);
 
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
+  // HU-18, criterio 3: dar de baja y restaurar, solo el propietario y el Admin.
+  const eliminable = puedeEliminar(contexto);
   const animal = ficha?.animal;
   const vigente = Boolean(animal && !animal.eliminado_en);
 
@@ -149,10 +151,12 @@ export function PaginaFichaAnimal() {
                           <Icono nombre="lapiz" tamano={16} />
                           {t('animales.ficha.editar')}
                         </Boton>
-                        <Boton variante="fantasma" onClick={() => setConfirmandoBaja(true)}>
-                          <Icono nombre="archivar" tamano={16} />
-                          {t('animales.ficha.darDeBaja')}
-                        </Boton>
+                        {eliminable && (
+                          <Boton variante="fantasma" onClick={() => setConfirmandoBaja(true)}>
+                            <Icono nombre="archivar" tamano={16} />
+                            {t('animales.ficha.darDeBaja')}
+                          </Boton>
+                        )}
                       </>
                     )}
                     {vigente && confirmandoBaja && (
@@ -172,7 +176,7 @@ export function PaginaFichaAnimal() {
                         </Boton>
                       </>
                     )}
-                    {!vigente && (
+                    {!vigente && eliminable && (
                       <Boton
                         variante="primario"
                         onClick={() => alHacer(() => api.restaurarAnimal(animal.id))}

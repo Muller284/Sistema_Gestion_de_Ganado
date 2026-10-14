@@ -252,7 +252,8 @@
       "soloPropietario": "Only the owner can change the partners' permissions.",
       "modulosInvalidos": "The list of modules is not valid.",
       "noEsSocio": "That person is not a partner of your ranch.",
-      "guardados": "Done, we saved the modules they can edit."
+      "guardados": "Done, we saved the modules they can edit.",
+      "soloPropietarioElimina": "Only the ranch owner can remove records in {modulo}. Ask them to do it."
     },
     "corrales": {
       "sinNombre": "Give the pen a name.",
