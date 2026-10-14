@@ -232,6 +232,71 @@
       "soloPropietarioEdita": "Solo el propietario puede editar el rancho.",
       "soloPropietarioDaDeBaja": "Solo el propietario puede dar de baja el rancho.",
       "dadoDeBaja": "Rancho dado de baja."
+    },
+    "importacion": {
+      "sinContenido": "Envía el contenido del CSV o la lista de filas para validar.",
+      "caravanaObligatoria": "La caravana es obligatoria.",
+      "caravanaRepetida": "Esa caravana está repetida dentro del mismo archivo.",
+      "sexoInvalido": "El sexo tiene que ser macho (M) o hembra (H).",
+      "pesoInvalido": "El peso actual tiene que ser un número positivo.",
+      "sinRancho": "Necesitas un rancho activo para importar animales.",
+      "socioSoloLectura": "Como socio tienes acceso de solo consulta: no puedes importar animales.",
+      "archivoConErrores": "El archivo tiene {cantidad} fila(s) con errores. Corrígelas antes de importar.",
+      "completada": "Importación completada: {insertados} nuevo(s), {actualizados} actualizado(s) y {omitidos} omitido(s)."
+    },
+    "permisos": {
+      "sinRancho": "Todavía no perteneces a ningún rancho.",
+      "sinAcceso": "No tienes acceso a {modulo}. Lo usan el propietario, los socios y los colaboradores cuyo tipo lo tiene habilitado: pídele al propietario que lo habilite para tu tipo.",
+      "sinEdicion": "Puedes consultar {modulo}, pero no modificarlo. Para cargar datos tu tipo de colaborador necesita permiso de edición: pídeselo al propietario.",
+      "socioSoloConsulta": "Como socio puedes consultar {modulo}, pero no modificarlo. Si necesitas cargar datos, pídele al propietario que te habilite este módulo.",
+      "soloPropietario": "Solo el propietario puede cambiar los permisos de los socios.",
+      "modulosInvalidos": "La lista de módulos no es válida.",
+      "noEsSocio": "Esa persona no es socia de tu rancho.",
+      "guardados": "Listo, guardamos los módulos que puede editar."
+    },
+    "corrales": {
+      "sinNombre": "Ponle un nombre al corral.",
+      "nombreLargo": "El nombre no puede pasar de {n} caracteres.",
+      "nombreOcupado": "Ya tienes un corral llamado «{nombre}».",
+      "capacidadInvalida": "La capacidad tiene que ser un número entero mayor que cero.",
+      "superficieInvalida": "La superficie tiene que ser un número mayor que cero.",
+      "noExiste": "Ese corral no existe en tu rancho.",
+      "creado": "Listo, creaste el corral «{nombre}».",
+      "guardado": "Guardaste los cambios de «{nombre}».",
+      "conAnimales": "«{nombre}» tiene {n} animal(es) adentro. Muévelos a otro corral antes de darlo de baja.",
+      "dadoDeBaja": "Diste de baja el corral «{nombre}». Puedes restaurarlo cuando quieras.",
+      "restaurado": "«{nombre}» volvió a estar vigente."
+    },
+    "animales": {
+      "sinIdentificador": "El identificador es obligatorio.",
+      "tipoIdentificadorInvalido": "El tipo de identificador tiene que ser caravana, número interno o RFID.",
+      "identificadorOcupado": "Ya hay un animal con el identificador «{identificador}» en tu rancho.",
+      "sexoInvalido": "El sexo tiene que ser macho o hembra.",
+      "categoriaInvalida": "Elige la categoría de la lista.",
+      "fechaInvalida": "La fecha no es válida.",
+      "nacimientoFuturo": "La fecha de nacimiento no puede ser futura.",
+      "fechaFutura": "La fecha no puede ser futura.",
+      "origenInvalido": "El origen tiene que ser nacido en el rancho, comprado u otro.",
+      "pesoInvalido": "El peso tiene que ser un número mayor que cero.",
+      "corralInvalido": "Ese corral no existe en tu rancho o está dado de baja.",
+      "textoLargo": "El texto no puede pasar de {n} caracteres.",
+      "noExiste": "Ese animal no existe en tu rancho.",
+      "creado": "Listo, registraste el animal {identificador}.",
+      "guardado": "Guardaste la ficha de {identificador}.",
+      "mismoCorral": "El animal ya está en ese corral.",
+      "movido": "Moviste a {identificador}.",
+      "estadoInvalido": "El estado tiene que ser activo, vendido, muerto o archivado.",
+      "mismoEstado": "El animal ya tiene ese estado.",
+      "sinMotivo": "Escribe el motivo del cambio.",
+      "estadoCambiado": "{identificador} ahora está {estado}.",
+      "estados": {
+        "activo": "activo",
+        "vendido": "vendido",
+        "muerto": "muerto",
+        "archivado": "archivado"
+      },
+      "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
+      "restaurado": "{identificador} volvió a estar vigente."
     }
   },
   "acceso": {
@@ -376,7 +441,8 @@
       "corrales": "Corrales",
       "sanidad": "Sanidad",
       "pesajes": "Pesajes",
-      "equipo": "Equipo"
+      "equipo": "Equipo",
+      "importacion": "Importar ganado"
     },
     "cuenta": {
       "titulo": "Cuenta",
@@ -607,7 +673,9 @@
       "reactivar": "Reactivar",
       "reactivando": "Reactivando…",
       "suspender": "Suspender",
-      "suspendiendo": "Suspendiendo…"
+      "suspendiendo": "Suspendiendo…",
+      "permisos": "Permisos",
+      "permisosAyuda": "Elegir en qué módulos puede editar este socio"
     },
     "confirmar": {
       "grupo": "Confirmar suspensión de {nombre}",
@@ -1222,5 +1290,205 @@
       "intro": "Cada vez que alguien del soporte entra a tu rancho queda registrado: quién, cuándo y por qué.",
       "nadie": "Nadie del soporte de la plataforma entró a tu rancho."
     }
+  },
+  "importacion": {
+    "titulo": "Importar ganado",
+    "rotulo": "Importación masiva",
+    "soloConsulta": "Como socio tienes acceso de solo consulta: puedes ver el ganado, pero no importar animales.",
+    "plantilla": {
+      "titulo": "1. Descarga la plantilla",
+      "texto": "Es un CSV con las columnas exactas que espera el sistema y tres filas de ejemplo.",
+      "boton": "Descargar plantilla CSV"
+    },
+    "archivo": {
+      "titulo": "2. Sube tu archivo",
+      "etiqueta": "Archivo CSV"
+    },
+    "validacion": {
+      "titulo": "3. Revisa los datos",
+      "validas": "{cantidad} animal(es) listos para importar de {total}.",
+      "errores": "{cantidad} fila(s) con errores. Corrígelas en el archivo y vuelve a subirlo.",
+      "fila": "Fila {fila}",
+      "duplicados": "Estas caravanas ya existen en tu rancho: {caravanas}. ¿Qué hacemos con ellas?",
+      "omitir": "Omitirlas",
+      "actualizar": "Actualizar sus datos",
+      "confirmar": "Confirmar e importar"
+    },
+    "resultado": {
+      "titulo": "Importación terminada",
+      "insertados": "Nuevos",
+      "actualizados": "Actualizados",
+      "omitidos": "Omitidos",
+      "otra": "Hacer otra importación"
+    }
+  },
+  "unidades": {
+    "peso": {
+      "kg": "kg",
+      "lb": "lb"
+    },
+    "superficie": {
+      "ha": "ha",
+      "acre": "acres"
+    }
+  },
+  "corrales": {
+    "titulo": "Corrales",
+    "rotulo": "Mi rancho",
+    "nuevo": "Nuevo corral",
+    "soloConsulta": "Puedes consultar los corrales, pero no crearlos ni modificarlos.",
+    "vistas": {
+      "etiqueta": "Qué corrales ver",
+      "vigentes": "Vigentes",
+      "bajas": "Dados de baja"
+    },
+    "vacio": {
+      "titulo": "Todavía no hay corrales",
+      "texto": "Crea el primero con su nombre y, si quieres, su capacidad y superficie.",
+      "textoConsulta": "Cuando el propietario cree corrales, los vas a ver acá."
+    },
+    "sinSuperficie": "Sin superficie cargada",
+    "ocupacion": "{n} de {capacidad} animales",
+    "ocupacionSinTope": "{n} animales · sin tope",
+    "sobrepoblado": "Sobrepoblado",
+    "deBaja": "Dado de baja",
+    "editar": "Editar",
+    "darDeBaja": "Dar de baja",
+    "restaurar": "Restaurar",
+    "confirmarBaja": "¿Dar de baja «{nombre}»? Podrás restaurarlo después.",
+    "formulario": {
+      "nuevo": "Nuevo corral",
+      "editar": "Editar «{nombre}»",
+      "nombre": "Nombre",
+      "nombreEjemplo": "Corral Norte",
+      "capacidad": "Capacidad (animales)",
+      "capacidadAyuda": "Opcional. Sin capacidad no hay aviso de sobrepoblación.",
+      "superficie": "Superficie ({unidad})",
+      "superficieAyuda": "Opcional."
+    }
+  },
+  "animales": {
+    "titulo": "Animales",
+    "rotulo": "Mi rancho",
+    "nuevo": "Registrar animal",
+    "soloConsulta": "Puedes consultar los animales y sus fichas, pero no cargar ni modificar datos.",
+    "vistas": {
+      "etiqueta": "Qué animales ver",
+      "activo": "Activos",
+      "vendido": "Vendidos",
+      "muerto": "Muertos",
+      "archivado": "Archivados",
+      "todos": "Todos",
+      "bajas": "Dados de baja"
+    },
+    "vacio": {
+      "titulo": "No hay animales para mostrar",
+      "texto": "Registra el primero con su identificador y los datos de su ficha.",
+      "textoVista": "Prueba con otro estado."
+    },
+    "verFicha": "Ver ficha",
+    "deBaja": "Dado de baja",
+    "sinCorral": "Sin corral",
+    "estados": {
+      "activo": "Activo",
+      "vendido": "Vendido",
+      "muerto": "Muerto",
+      "archivado": "Archivado"
+    },
+    "sexos": {
+      "macho": "Macho",
+      "hembra": "Hembra"
+    },
+    "origenes": {
+      "nacido": "Nacido en el rancho",
+      "comprado": "Comprado",
+      "otro": "Otro"
+    },
+    "tiposIdentificador": {
+      "caravana": "Caravana",
+      "interno": "Número interno",
+      "rfid": "RFID"
+    },
+    "categorias": {
+      "ternero": "Ternero",
+      "ternera": "Ternera",
+      "torito": "Torito",
+      "vaquilla": "Vaquilla",
+      "novillo": "Novillo",
+      "vaca": "Vaca",
+      "toro": "Toro",
+      "buey": "Buey"
+    },
+    "campos": {
+      "identificador": "Identificador",
+      "identificadorEjemplo": "4471",
+      "tipoIdentificador": "Tipo de identificador",
+      "nombre": "Nombre",
+      "raza": "Raza",
+      "razaEjemplo": "Nelore",
+      "sexo": "Sexo",
+      "categoria": "Categoría",
+      "nacimiento": "Fecha de nacimiento",
+      "origen": "Origen",
+      "peso": "Peso ({unidad})",
+      "pesoActual": "Peso",
+      "corral": "Corral",
+      "corralAyuda": "Opcional: puedes asignarlo después.",
+      "corralActual": "Corral actual",
+      "elegir": "Elegir…",
+      "sinCategoria": "Sin categoría",
+      "sinOrigen": "Sin especificar"
+    },
+    "formulario": {
+      "nuevo": "Registrar animal",
+      "editar": "Editar la ficha de {identificador}"
+    },
+    "ficha": {
+      "rotulo": "Ficha del animal",
+      "titulo": "Animal {identificador}",
+      "volver": "Volver a animales",
+      "datos": "Datos",
+      "editar": "Editar ficha",
+      "darDeBaja": "Dar de baja",
+      "restaurar": "Restaurar",
+      "confirmarBaja": "¿Dar de baja a {identificador}? Podrás restaurarlo después.",
+      "registro": "Registró {nombre}",
+      "mover": {
+        "titulo": "Mover de corral",
+        "destino": "Nuevo corral",
+        "ayuda": "Hoy está en: {corral}.",
+        "sacar": "Sacarlo de todo corral",
+        "boton": "Mover"
+      },
+      "estado": {
+        "titulo": "Cambiar estado",
+        "nuevo": "Nuevo estado",
+        "fecha": "Fecha",
+        "motivo": "Motivo",
+        "motivoEjemplo": "Venta a feria",
+        "boton": "Cambiar estado",
+        "pregunta": "¿Confirmas que {identificador} pasa a {estado}? Dejará de contar como activo, pero su historia queda guardada.",
+        "confirmar": "Sí, cambiar estado"
+      },
+      "movimientos": {
+        "titulo": "Movimientos entre corrales",
+        "vacio": "Sin movimientos",
+        "vacioTexto": "Cuando lo muevas de corral, cada movimiento queda acá.",
+        "de": "De {origen} a {destino}"
+      },
+      "estados": {
+        "titulo": "Cambios de estado",
+        "vacio": "Nunca cambió de estado.",
+        "de": "{anterior} → {nuevo}"
+      }
+    }
+  },
+  "permisosSocio": {
+    "titulo": "Permisos del socio",
+    "tituloDe": "Permisos de {nombre}",
+    "volver": "Volver al equipo",
+    "modulos": "Módulos en los que puede editar",
+    "explicacion": "Como socio ve toda la información del rancho. Marca los módulos en los que además puede cargar y modificar datos.",
+    "soloPropietario": "Solo el propietario puede cambiar estos permisos."
   }
 }

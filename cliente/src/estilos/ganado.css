@@ -1,0 +1,86 @@
+/* ============================================================================
+ * SPRINT 2 · Animales y corrales
+ * ----------------------------------------------------------------------------
+ *   HU-36  el listado de corrales con su ocupación
+ *   HU-28  el listado y la ficha del animal
+ *   HU-33  el cambio de estado con confirmación
+ *   HU-39  el historial de movimientos entre corrales
+ *   HU-21  los permisos del socio
+ *
+ * Solo tokens. Tarjeta, insignia, botón, campo y aviso ya existen: acá está
+ * únicamente la lista con filas y el historial.
+ * ==========================================================================*/
+
+.ganado__lista {
+  margin: calc(var(--e-24) * -1);
+  padding: 0;
+  list-style: none;
+}
+
+.ganado__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-8) var(--e-16);
+  padding: var(--e-14) var(--e-24);
+  transition: background var(--t-rapido) var(--curva);
+}
+
+.ganado__fila + .ganado__fila { border-top: var(--borde) solid var(--arena-100); }
+.ganado__fila:hover { background: var(--arena-50); }
+.ganado__fila.de-baja { opacity: .6; }
+
+.ganado__principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  flex: 1;
+  min-width: 160px;
+}
+
+.ganado__dato {
+  min-width: 96px;
+  font-size: var(--t-etiqueta);
+  color: var(--arena-600);
+}
+
+.ganado__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+  margin-left: auto;
+}
+
+/* Historial de movimientos y de estados (HU-39 y HU-33). */
+.ganado__historial {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ganado__historial li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-4) var(--e-16);
+  padding: var(--e-10) 0;
+}
+
+.ganado__historial li + li { border-top: var(--borde) solid var(--arena-100); }
+
+.ganado__casillas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--e-12);
+}
+
+.ganado__casillas label {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  font-size: var(--t-etiqueta);
+}
+
+@media (max-width: 640px) {
+  .ganado__fila { padding: var(--e-12) var(--e-16); }
+  .ganado__acciones { margin-left: 0; }
+}

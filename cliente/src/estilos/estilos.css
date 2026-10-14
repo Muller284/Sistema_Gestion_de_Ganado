@@ -12,6 +12,7 @@
  *   componentes.css  boton, campo, tarjeta, insignia, estado vacio y alerta.
  *   movimiento.css   las transiciones y las animaciones de todo el sistema.
  *   equipo.css       el equipo (HU-17) y la guia de configuracion (HU-16).
+ *   ganado.css       animales y corrales (HU-28, HU-33, HU-36 y HU-39).
  *   landing.css      la pagina publica. Va al final porque usa las
  *                    animaciones que define movimiento.css.
  *
@@ -24,4 +25,5 @@
 @import './componentes.css';
 @import './movimiento.css';
 @import './equipo.css';
+@import './ganado.css';
 @import './landing.css';

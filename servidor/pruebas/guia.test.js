@@ -106,19 +106,22 @@ async function ejecutarPruebas() {
 
     await prueba('Los pasos de fases posteriores se ven, marcados como no disponibles', async () => {
       const { cuerpo } = await pedir('/guia', {}, ARIEL);
-      for (const clave of ['animales', 'corrales', 'vacunas']) {
+      // Animales y corrales llegaron en el Sprint 2 (HU-28 y HU-36): queda vacunas.
+      for (const clave of ['vacunas']) {
         const p = paso(cuerpo, clave);
         assert.strictEqual(p.disponible, false, `${clave} figura disponible`);
         assert.ok(p.fase > 1, `${clave} no dice en que fase llega`);
         assert.strictEqual(p.ruta, null, `${clave} lleva a una pantalla que no existe`);
       }
-      assert.strictEqual(paso(cuerpo, 'equipo').disponible, true);
+      for (const clave of ['animales', 'corrales', 'equipo']) {
+        assert.strictEqual(paso(cuerpo, clave).disponible, true, `${clave} no figura disponible`);
+      }
     });
 
     await prueba('Un paso no disponible no se puede marcar', async () => {
-      const { estado, cuerpo } = await post('/guia/pasos/animales/completar', ARIEL);
+      const { estado, cuerpo } = await post('/guia/pasos/vacunas/completar', ARIEL);
       assert.strictEqual(estado, 400);
-      assert.match(cuerpo.message, /fase 2/);
+      assert.match(cuerpo.message, /fase 3/);
     });
 
     await prueba('Un paso que no existe da 404', async () => {
@@ -133,7 +136,8 @@ async function ejecutarPruebas() {
       const { cuerpo } = await pedir('/guia', {}, ARIEL);
       assert.ok(cuerpo.pasos.every((p) => p.estado === 'pendiente'));
       assert.strictEqual(cuerpo.completos, 0);
-      assert.strictEqual(cuerpo.siguiente, 'equipo');
+      // Desde el Sprint 2 el primer paso disponible es animales.
+      assert.strictEqual(cuerpo.siguiente, 'animales');
     });
 
     await prueba('Abrir un paso lo deja en curso', async () => {

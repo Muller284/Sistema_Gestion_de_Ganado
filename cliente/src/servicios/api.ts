@@ -377,6 +377,119 @@ export interface AccesoAdmin {
   estado: 'abierto' | 'cerrado' | 'vencido';
 }
 
+// HU-40 a HU-45 · Importacion de ganado. Mismos nombres que devuelve el servidor.
+export interface PlantillaImportacion {
+  encabezados: string[];
+  ejemplo: string;
+  contenidoCsv: string;
+}
+
+export interface ErrorDeFila {
+  fila: number;
+  caravana?: string;
+  error: string;
+}
+
+export interface ValidacionImportacion {
+  total: number;
+  validas: number;
+  con_errores: number;
+  duplicados: number;
+  errores: ErrorDeFila[];
+  filas_duplicadas: string[];
+}
+
+export type EstrategiaDuplicados = 'omitir' | 'actualizar';
+
+export interface ResultadoImportacion {
+  exito: boolean;
+  mensaje: string;
+  resumen: { total_procesados: number; insertados: number; actualizados: number; omitidos: number };
+}
+
+// HU-21 y HU-22 · Lo que puede quien entró en cada módulo.
+export type NivelModulo = 'ninguno' | 'ver' | 'editar';
+export type MisPermisos = Record<string, NivelModulo>;
+
+// HU-36 · Corrales. La superficie viaja siempre en hectáreas (HU-26).
+export interface Corral {
+  id: string;
+  nombre: string;
+  capacidad: number | null;
+  superficie_ha: string | null;
+  ocupacion: number;
+  sobrepoblado: boolean;
+  eliminado_en: string | null;
+}
+
+export interface DatosCorral {
+  nombre: string;
+  capacidad: number | null;
+  superficie_ha: number | null;
+}
+
+// HU-28, HU-33, HU-34 y HU-39 · Animales. El peso viaja siempre en kilos.
+export type EstadoAnimal = 'activo' | 'vendido' | 'muerto' | 'archivado';
+export type Sexo = 'macho' | 'hembra';
+export type Origen = 'nacido' | 'comprado' | 'otro';
+export type TipoIdentificador = 'caravana' | 'interno' | 'rfid';
+
+export interface DatosFichaAnimal {
+  nombre: string | null;
+  raza: string | null;
+  sexo: Sexo;
+  categoria_codigo: string | null;
+  fecha_nacimiento: string | null;
+  origen: Origen | null;
+  peso_kg: number | null;
+}
+
+export interface Animal extends DatosFichaAnimal {
+  id: string;
+  identificador: string;
+  tipo_identificador: TipoIdentificador;
+  corral_id: string | null;
+  corral_nombre: string | null;
+  estado: EstadoAnimal;
+  creado_en: string;
+  eliminado_en: string | null;
+}
+
+export interface MovimientoCorral {
+  id: string;
+  fecha: string;
+  corral_origen_id: string | null;
+  corral_origen: string | null;
+  corral_destino_id: string | null;
+  corral_destino: string | null;
+  registrado_por: string | null;
+}
+
+export interface CambioEstado {
+  id: string;
+  estado_anterior: EstadoAnimal;
+  estado_nuevo: EstadoAnimal;
+  fecha: string;
+  motivo: string;
+  registrado_por: string | null;
+}
+
+export interface FichaAnimal {
+  animal: Animal;
+  movimientos: MovimientoCorral[];
+  estados: CambioEstado[];
+}
+
+export interface RespuestaAnimal {
+  animal: Animal;
+  mensaje: string;
+}
+
+export interface RespuestaCorral {
+  corral: Corral;
+  mensaje: string;
+}
+
 export const api = {
   paises: () => pedir<Pais[]>('/paises'),
 
@@ -540,4 +653,63 @@ export const api = {
     pedir<{ mensaje: string }>(`/admin/accesos/${accesoId}/salida`, { method: 'POST' }),
   accesosAdmin: () => pedir<AccesoAdmin[]>('/admin/accesos'),
   accesosDeMiRancho: () => pedir<AccesoAdmin[]>('/admin/accesos/de-mi-rancho'),
+
+  // HU-40 a HU-45 · Importacion de ganado
+  plantillaImportacion: () => pedir<PlantillaImportacion>('/importacion/plantilla'),
+  validarImportacion: (csv: string) =>
+    pedir<ValidacionImportacion>('/importacion/validar', {
+      method: 'POST',
+      body: JSON.stringify({ csv }),
+    }),
+  ejecutarImportacion: (csv: string, estrategia_duplicados: EstrategiaDuplicados) =>
+    pedir<ResultadoImportacion>('/importacion/ejecutar', {
+      method: 'POST',
+      body: JSON.stringify({ csv, estrategia_duplicados }),
+    }),
+  // HU-21 y HU-22 · Permisos por módulo
+  misPermisos: () => pedir<MisPermisos>('/permisos/mios'),
+  permisosSocio: (id: string) => pedir<{ modulos: string[] }>(`/permisos/socios/${id}`),
+  guardarPermisosSocio: (id: string, modulos: string[]) =>
+    pedir<{ modulos: string[]; mensaje: string }>(`/permisos/socios/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ modulos }),
+    }),
+
+  // HU-36 y HU-34 · Corrales
+  corrales: (conBajas = false) => pedir<Corral[]>(`/corrales${conBajas ? '?bajas=1' : ''}`),
+  crearCorral: (datos: DatosCorral) =>
+    pedir<RespuestaCorral>('/corrales', { method: 'POST', body: JSON.stringify(datos) }),
+  actualizarCorral: (id: string, datos: DatosCorral) =>
+    pedir<RespuestaCorral>(`/corrales/${id}`, { method: 'PATCH', body: JSON.stringify(datos) }),
+  bajaCorral: (id: string) => pedir<{ mensaje: string }>(`/corrales/${id}`, { method: 'DELETE' }),
+  restaurarCorral: (id: string) =>
+    pedir<RespuestaCorral>(`/corrales/${id}/restaurar`, { method: 'POST' }),
+
+  // HU-28, HU-33, HU-34 y HU-39 · Animales
+  categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
+  animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false) =>
+    pedir<Animal[]>(`/animales?estado=${estado}${conBajas ? '&bajas=1' : ''}`),
+  fichaAnimal: (id: string) => pedir<FichaAnimal>(`/animales/${id}`),
+  crearAnimal: (
+    datos: DatosFichaAnimal & {
+      identificador: string;
+      tipo_identificador: TipoIdentificador;
+      corral_id: string | null;
+    },
+  ) => pedir<RespuestaAnimal>('/animales', { method: 'POST', body: JSON.stringify(datos) }),
+  actualizarAnimal: (id: string, datos: DatosFichaAnimal) =>
+    pedir<RespuestaAnimal>(`/animales/${id}`, { method: 'PATCH', body: JSON.stringify(datos) }),
+  moverAnimal: (id: string, corralId: string | null) =>
+    pedir<RespuestaAnimal>(`/animales/${id}/movimientos`, {
+      method: 'POST',
+      body: JSON.stringify({ corral_id: corralId }),
+    }),
+  cambiarEstadoAnimal: (id: string, estado: EstadoAnimal, motivo: string, fecha: string) =>
+    pedir<RespuestaAnimal>(`/animales/${id}/estado`, {
+      method: 'POST',
+      body: JSON.stringify({ estado, motivo, fecha }),
+    }),
+  bajaAnimal: (id: string) => pedir<{ mensaje: string }>(`/animales/${id}`, { method: 'DELETE' }),
+  restaurarAnimal: (id: string) =>
+    pedir<RespuestaAnimal>(`/animales/${id}/restaurar`, { method: 'POST' }),
 };

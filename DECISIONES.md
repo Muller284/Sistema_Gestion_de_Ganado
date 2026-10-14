@@ -1104,3 +1104,50 @@ mantiene en todos los idiomas.
 **Para Brian y Romina:** a partir de ahora las pantallas nuevas (animales,
 corrales, importación) se escriben con `t()` desde el principio. Si se escribe
 un texto directo, la prueba del cliente lo marca.
+
+## 35. Corrales, ficha del animal y permisos por módulo (Sprint 2, Romina)
+
+Historias: HU-21, HU-22, HU-26, HU-28, HU-33, HU-34, HU-36 y HU-39.
+
+**La tabla `animales` nace en la migración 008, junto con corrales.** HU-28,
+HU-33, HU-34 y HU-39 son todas sobre animales y no se pueden probar sin la
+tabla. Ya trae lo que la revisión del Sprint 2 pidió para HU-27: `rancho_id`
+UUID, `tipo_identificador` (caravana, interno o RFID), índice único
+`(rancho_id, identificador)` entre los vigentes, autoría y baja lógica.
+**Brian:** el registro (HU-27) y el listado con filtros (HU-29) siguen siendo
+tuyos; usa esta tabla en lugar de crear otra 008. El alta y el listado que hay
+en `/animales` son lo mínimo para llegar a la ficha.
+
+**Unidades internas: kilos y hectáreas (HU-26).** Las columnas se llaman
+`peso_kg` y `superficie_ha` para que no haya duda. La pantalla convierte a
+libras o acres según `paises.unidad_peso` y `paises.unidad_superficie` del
+país del rancho, y al guardar convierte de vuelta. Las fechas solas
+(nacimiento, fecha del cambio de estado) se muestran con `paises.formato_fecha`
+sin pasar por la zona horaria; los momentos (un movimiento) se muestran en
+`paises.zona_horaria`. Todo vive en `cliente/src/servicios/unidades.ts`.
+
+**El corral de un animal solo cambia con un movimiento (HU-39).** No hay
+`UPDATE animales SET corral_id` suelto: `mover()` bloquea la fila, inserta el
+movimiento y actualiza el corral en la misma transacción. Así "el corral
+actual siempre coincide con el último movimiento" se cumple por construcción.
+El alta con corral registra un primer movimiento con origen nulo.
+
+**Estados (HU-33).** El estado vive en `animales.estado` y cada cambio queda
+en `cambios_estado_animal` con fecha y motivo (obligatorio). La confirmación es
+de la pantalla. El listado trae solo los activos salvo que se pida
+`?estado=...`. La ocupación de un corral cuenta solo animales activos.
+
+**Permisos por módulo, en el servidor (HU-21 y HU-22).**
+`servidor/src/comun/permisos-modulo.ts` decide el nivel (`ninguno`, `ver`,
+`editar`) de cada persona en cada módulo: el propietario y el Admin en soporte
+editan todo; el socio ve todo y edita solo lo que el propietario le habilitó
+en `permisos_usuario`; el colaborador tiene lo de su tipo
+(`permisos_tipo_vigentes`, decisión 31) más lo que tenga en `permisos_usuario`.
+Cada endpoint llama a `exigir(quien, modulo, nivel)`; el 403 lleva
+`motivo: 'sin_permiso_modulo'` y un mensaje que dice quién puede usar el
+módulo. El menú lateral pide `GET /permisos/mios`, pero es comodidad.
+**Brian:** HU-19 puede usar este mismo servicio en vez de las cabeceras.
+
+**La guía (HU-16) ya muestra animales y corrales disponibles**, como decía la
+decisión 28. Se ajustó `guia.test.js` en lo que cambió (vacunas sigue
+apagado).
