@@ -14,17 +14,7 @@ import { GuardiaCuentaLista } from '../../comun/guardia-cuenta-lista';
 import { ServicioAnimales } from './servicio-animales';
 
 /**
- * Animales (HU-28, HU-33, HU-34 y HU-39).
- *
- *   GET    /animales/categorias          el catalogo de categorias (HU-28)
- *   GET    /animales                     los activos; ?estado=todos|vendido|... ; ?bajas=1
- *   GET    /animales/:id                 la ficha, con movimientos y cambios de estado
- *   POST   /animales                     alta con la ficha y, si viene, el corral
- *   PATCH  /animales/:id                 la ficha (sin corral ni estado)
- *   POST   /animales/:id/movimientos     { corral_id }            (HU-39)
- *   POST   /animales/:id/estado          { estado, motivo, fecha? } (HU-33)
- *   DELETE /animales/:id                 baja logica             (HU-34)
- *   POST   /animales/:id/restaurar       deshace la baja         (HU-34)
+ * Animales (HU-28, HU-33, HU-34, HU-39 y HU-29).
  */
 @UseGuards(GuardiaCuentaLista)
 @Controller('animales')
@@ -40,9 +30,21 @@ export class ControladorAnimales {
   async listar(
     @Query('estado') estado: string | undefined,
     @Query('bajas') bajas: string | undefined,
+    @Query('busqueda') busqueda: string | undefined,
+    @Query('categoria') categoria: string | undefined,
+    @Query('sexo') sexo: string | undefined,
+    @Query('corral') corral: string | undefined,
     @Req() peticion: any,
   ) {
-    return this.servicio.listar(estado, bajas === '1' || bajas === 'true', peticion.usuarioActual);
+    return this.servicio.listar(
+      estado,
+      bajas === '1' || bajas === 'true',
+      busqueda,
+      categoria,
+      sexo,
+      corral,
+      peticion.usuarioActual,
+    );
   }
 
   @Get(':id')

@@ -4,6 +4,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
+import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
 
 export interface FilaAnimalImportacion {
@@ -32,7 +33,7 @@ export class ServicioImportacion {
   // Simulador de almacenamiento de animales por rancho para Fase 2 (HU-40 a HU-45)
   private readonly animalesPorRancho = new Map<string, Map<string, FilaAnimalImportacion>>();
 
-  constructor() {
+  constructor(private readonly permisos: PermisosModulo) {
     // Precargar animales de prueba para Rancho El Cerrito
     const ranchoCerrito = new Map<string, FilaAnimalImportacion>();
     ranchoCerrito.set('4471', {
@@ -83,8 +84,7 @@ export class ServicioImportacion {
   }
 
   async validar(cuerpo: any, usuario: UsuarioActual): Promise<ResultadoValidacion> {
-    this.verificarPermiso(usuario);
-    const ranchoId = usuario.ranchoId!;
+    const ranchoId = await this.permisos.exigir(usuario, 'importacion', 'editar');
     const csvTexto = typeof cuerpo?.csv === 'string' ? cuerpo.csv : '';
     const filasEntrada: any[] = Array.isArray(cuerpo?.filas) ? cuerpo.filas : [];
 
@@ -164,7 +164,7 @@ export class ServicioImportacion {
   }
 
   async ejecutar(cuerpo: any, usuario: UsuarioActual) {
-    this.verificarPermiso(usuario);
+    const ranchoId = await this.permisos.exigir(usuario, 'importacion', 'editar');
     const validacion = await this.validar(cuerpo, usuario);
 
     if (validacion.con_errores > 0) {
@@ -174,7 +174,6 @@ export class ServicioImportacion {
     }
 
     const estrategia = (cuerpo?.estrategia_duplicados || 'omitir').toLowerCase();
-    const ranchoId = usuario.ranchoId!;
     const mapaRancho = this.obtenerAnimalesDeRancho(ranchoId);
 
     let insertados = 0;
@@ -231,15 +230,5 @@ export class ServicioImportacion {
       this.animalesPorRancho.set(ranchoId, new Map());
     }
     return this.animalesPorRancho.get(ranchoId)!;
-  }
-
-  private verificarPermiso(usuario: UsuarioActual) {
-    if (!usuario.ranchoId) {
-      throw new ForbiddenException(t('servidor.importacion.sinRancho'));
-    }
-    // El rol socio solo tiene permisos de lectura (HU-21)
-    if (usuario.rol === 'socio') {
-      throw new ForbiddenException(t('servidor.importacion.socioSoloLectura'));
-    }
   }
 }
