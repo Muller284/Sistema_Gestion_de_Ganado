@@ -55,15 +55,15 @@ const CATALOGO: DefinicionPaso[] = [
   {
     clave: 'animales',
     fase: 2,
-    disponible: false,
-    ruta: null,
+    disponible: true,
+    ruta: '/animales',
     tabla: 'animales',
   },
   {
     clave: 'corrales',
     fase: 2,
-    disponible: false,
-    ruta: null,
+    disponible: true,
+    ruta: '/corrales',
     tabla: 'corrales',
   },
   {

@@ -11,6 +11,9 @@ import { ModuloGuia } from './modulos/guia/modulo-guia';
 import { ModuloTipos } from './modulos/tipos/modulo-tipos';
 import { ModuloAdmin } from './modulos/admin/modulo-admin';
 import { ModuloImportacion } from './modulos/importacion/modulo-importacion';
+import { ModuloPermisos } from './modulos/permisos/modulo-permisos';
+import { ModuloCorrales } from './modulos/corrales/modulo-corrales';
+import { ModuloAnimales } from './modulos/animales/modulo-animales';
 
 @Module({
   imports: [
@@ -40,6 +43,9 @@ import { ModuloImportacion } from './modulos/importacion/modulo-importacion';
     ModuloTipos, // HU-20
     ModuloAdmin, // HU-24
     ModuloImportacion, // HU-40 a HU-45 (Romina)
+    ModuloPermisos, // HU-21 y HU-22
+    ModuloCorrales, // HU-36
+    ModuloAnimales, // HU-28, HU-33, HU-34 y HU-39
   ],
 })
 export class AppModule {}

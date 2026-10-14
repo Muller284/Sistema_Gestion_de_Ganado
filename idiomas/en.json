@@ -243,6 +243,60 @@
       "socioSoloLectura": "As a partner you have read-only access: you can't import animals.",
       "archivoConErrores": "The file has {cantidad} row(s) with errors. Fix them before importing.",
       "completada": "Import finished: {insertados} new, {actualizados} updated and {omitidos} skipped."
+    },
+    "permisos": {
+      "sinRancho": "You don't belong to any ranch yet.",
+      "sinAcceso": "You don't have access to {modulo}. It's used by the owner, the partners and the collaborators whose type has it enabled: ask the owner to enable it for your type.",
+      "sinEdicion": "You can view {modulo}, but not change it. To enter data your collaborator type needs edit permission: ask the owner for it.",
+      "socioSoloConsulta": "As a partner you can view {modulo}, but not change it. If you need to enter data, ask the owner to enable this module for you.",
+      "soloPropietario": "Only the owner can change the partners' permissions.",
+      "modulosInvalidos": "The list of modules is not valid.",
+      "noEsSocio": "That person is not a partner of your ranch.",
+      "guardados": "Done, we saved the modules they can edit."
+    },
+    "corrales": {
+      "sinNombre": "Give the pen a name.",
+      "nombreLargo": "The name can't be longer than {n} characters.",
+      "nombreOcupado": "You already have a pen called “{nombre}”.",
+      "capacidadInvalida": "Capacity must be a whole number greater than zero.",
+      "superficieInvalida": "Area must be a number greater than zero.",
+      "noExiste": "That pen doesn't exist on your ranch.",
+      "creado": "Done, you created the pen “{nombre}”.",
+      "guardado": "You saved the changes to “{nombre}”.",
+      "conAnimales": "“{nombre}” has {n} animal(s) in it. Move them to another pen before removing it.",
+      "dadoDeBaja": "You removed the pen “{nombre}”. You can restore it whenever you want.",
+      "restaurado": "“{nombre}” is active again."
+    },
+    "animales": {
+      "sinIdentificador": "The identifier is required.",
+      "tipoIdentificadorInvalido": "The identifier type must be ear tag, internal number or RFID.",
+      "identificadorOcupado": "There's already an animal with the identifier “{identificador}” on your ranch.",
+      "sexoInvalido": "Sex must be male or female.",
+      "categoriaInvalida": "Choose the category from the list.",
+      "fechaInvalida": "The date is not valid.",
+      "nacimientoFuturo": "The birth date can't be in the future.",
+      "fechaFutura": "The date can't be in the future.",
+      "origenInvalido": "Origin must be born on the ranch, bought or other.",
+      "pesoInvalido": "Weight must be a number greater than zero.",
+      "corralInvalido": "That pen doesn't exist on your ranch or was removed.",
+      "textoLargo": "The text can't be longer than {n} characters.",
+      "noExiste": "That animal doesn't exist on your ranch.",
+      "creado": "Done, you registered animal {identificador}.",
+      "guardado": "You saved the record of {identificador}.",
+      "mismoCorral": "The animal is already in that pen.",
+      "movido": "You moved {identificador}.",
+      "estadoInvalido": "Status must be active, sold, dead or archived.",
+      "mismoEstado": "The animal already has that status.",
+      "sinMotivo": "Write the reason for the change.",
+      "estadoCambiado": "{identificador} is now {estado}.",
+      "estados": {
+        "activo": "active",
+        "vendido": "sold",
+        "muerto": "dead",
+        "archivado": "archived"
+      },
+      "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
+      "restaurado": "{identificador} is active again."
     }
   },
   "acceso": {
