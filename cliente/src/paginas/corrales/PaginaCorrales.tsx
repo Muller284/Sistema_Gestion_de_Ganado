@@ -20,7 +20,7 @@ import {
   superficieAMostrar,
   type Regional,
 } from '../../servicios/unidades';
-import { nivel, useContextoGanado, usuarioDe } from '../ganado/contexto';
+import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/contexto';
 
 /**
  * HU-36 · Creación de corrales.
@@ -170,6 +170,7 @@ export function PaginaCorrales() {
                         corral={corral}
                         regional={contexto.regional}
                         editable={puedeEditar && editando === null}
+                        eliminable={puedeEliminar(contexto)}
                         confirmando={confirmando === corral.id}
                         ocupado={ocupado === corral.id}
                         alEditar={() => abrir(corral.id)}
@@ -194,6 +195,8 @@ interface PropiedadesFila {
   corral: Corral;
   regional: Regional;
   editable: boolean;
+  /** Dar de baja y restaurar: solo el propietario y el Admin (HU-18). */
+  eliminable: boolean;
   confirmando: boolean;
   ocupado: boolean;
   alEditar: () => void;
@@ -207,6 +210,7 @@ function FilaCorral({
   corral,
   regional,
   editable,
+  eliminable,
   confirmando,
   ocupado,
   alEditar,
@@ -240,9 +244,11 @@ function FilaCorral({
       {editable && (
         <div className="ganado__acciones">
           {deBaja ? (
+            eliminable && (
             <Boton variante="secundario" onClick={alRestaurar} disabled={ocupado}>
               {t('corrales.restaurar')}
             </Boton>
+            )
           ) : confirmando ? (
             <>
               <span className="pie c-600">{t('corrales.confirmarBaja', { nombre: corral.nombre })}</span>
@@ -259,10 +265,12 @@ function FilaCorral({
                 <Icono nombre="lapiz" tamano={16} />
                 {t('corrales.editar')}
               </Boton>
-              <Boton variante="fantasma" onClick={alPedirBaja} disabled={ocupado}>
-                <Icono nombre="archivar" tamano={16} />
-                {t('corrales.darDeBaja')}
-              </Boton>
+              {eliminable && (
+                <Boton variante="fantasma" onClick={alPedirBaja} disabled={ocupado}>
+                  <Icono nombre="archivar" tamano={16} />
+                  {t('corrales.darDeBaja')}
+                </Boton>
+              )}
             </>
           )}
         </div>

@@ -75,7 +75,8 @@ export class ServicioCorrales {
 
   /** HU-34. Con animales adentro no: primero hay que moverlos. */
   async darDeBaja(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'corrales', 'editar');
+    // Solo el propietario y el Admin dan de baja (HU-18, criterio 3).
+    const ranchoId = this.permisos.exigirEliminar(quien, 'corrales');
     const actual = await this.vigente(id, ranchoId);
     if (actual.ocupacion > 0) {
       throw new ConflictException(
@@ -87,7 +88,7 @@ export class ServicioCorrales {
   }
 
   async restaurar(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'corrales', 'editar');
+    const ranchoId = this.permisos.exigirEliminar(quien, 'corrales');
     const actual = await this.corrales.uno(id, ranchoId);
     if (!actual) throw new NotFoundException(t('servidor.corrales.noExiste'));
     if (actual.eliminado_en) {

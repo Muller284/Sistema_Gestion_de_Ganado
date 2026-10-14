@@ -1148,6 +1148,12 @@ Cada endpoint llama a `exigir(quien, modulo, nivel)`; el 403 lleva
 módulo. El menú lateral pide `GET /permisos/mios`, pero es comodidad.
 **Brian:** HU-19 puede usar este mismo servicio en vez de las cabeceras.
 
+**Dar de baja y restaurar es solo del propietario y del Admin (HU-18,
+criterio 3).** Lo pidió la revisión de Aaron del 14/10 sobre HU-34: tener
+edición en un módulo no alcanza para eliminar. `PermisosModulo.exigirEliminar()`
+lo controla en animales y corrales (403 con `motivo: 'solo_propietario_elimina'`)
+y la pantalla esconde esos botones al resto.
+
 **La guía (HU-16) ya muestra animales y corrales disponibles**, como decía la
 decisión 28. Se ajustó `guia.test.js` en lo que cambió (vacunas sigue
 apagado).

@@ -243,6 +243,14 @@ async function ejecutarPruebas() {
   });
 
   // --- HU-34 ---------------------------------------------------------------
+  await prueba('HU-18: un colaborador con edicion no da de baja ni restaura (solo propietario y Admin)', async () => {
+    const baja = await pedir('DELETE', `/animales/${animal.id}`, undefined, CAMPO_A);
+    assert.strictEqual(baja.estado, 403);
+    assert.strictEqual(baja.cuerpo.motivo, 'solo_propietario_elimina');
+    const restaurar = await pedir('POST', `/animales/${animal.id}/restaurar`, undefined, CAMPO_A);
+    assert.strictEqual(restaurar.estado, 403);
+  });
+
   await prueba('HU-34 criterios 1 y 2: la baja marca la fila y la saca de las consultas', async () => {
     assert.strictEqual((await pedir('DELETE', `/animales/${animal.id}`)).estado, 200);
     const fila = await pool.query('SELECT eliminado_en FROM animales WHERE id = $1', [animal.id]);
