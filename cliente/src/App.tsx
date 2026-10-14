@@ -21,6 +21,10 @@ import { PaginaCambioContrasena } from './paginas/contrasena/PaginaCambioContras
 import { PaginaSolicitarRecuperacion } from './paginas/contrasena/PaginaSolicitarRecuperacion';
 import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestablecerContrasena';
 import { PaginaImportacion } from './paginas/importacion/PaginaImportacion';
+import { PaginaCorrales } from './paginas/corrales/PaginaCorrales';
+import { PaginaListaAnimales } from './paginas/animales/PaginaListaAnimales';
+import { PaginaFichaAnimal } from './paginas/animales/PaginaFichaAnimal';
+import { PaginaPermisosSocio } from './paginas/equipo/PaginaPermisosSocio';
 import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
 import { api, hayAlguienDentro, soporteActual, type EstadoCuenta } from './servicios/api';
 import { cambiarIdioma } from './servicios/idioma';
@@ -175,7 +179,11 @@ function Sistema() {
         <Route path="/admin" element={adentro(<PaginaAdmin />)} />
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
         <Route path="/equipo/tipos" element={adentro(<PaginaTipos />)} />
+        <Route path="/equipo/socios/:id/permisos" element={adentro(<PaginaPermisosSocio />)} />
         <Route path="/importacion" element={adentro(<PaginaImportacion />)} />
+        <Route path="/corrales" element={adentro(<PaginaCorrales />)} />
+        <Route path="/animales" element={adentro(<PaginaListaAnimales />)} />
+        <Route path="/animales/:id" element={adentro(<PaginaFichaAnimal />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { api, guardarSoporte, soporteActual } from '../servicios/api';
+import { api, guardarSoporte, soporteActual, type MisPermisos } from '../servicios/api';
 import { Icono, type NombreIcono } from './Iconos';
 import { IconoMarca } from './Marca';
 import { inicial } from '../servicios/texto';
@@ -32,8 +32,9 @@ interface Modulo {
 
 const MODULOS: Modulo[] = [
   { clave: 'inicio', nombre: 'app.modulos.inicio', icono: 'casa', ruta: '/rancho' },
-  { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', fase: 2 },
-  { clave: 'corrales', nombre: 'app.modulos.corrales', icono: 'corral', fase: 2 },
+  // HU-28 y HU-36. Llegaron en el Sprint 2.
+  { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', ruta: '/animales' },
+  { clave: 'corrales', nombre: 'app.modulos.corrales', icono: 'corral', ruta: '/corrales' },
   { clave: 'sanidad', nombre: 'app.modulos.sanidad', icono: 'sanidad', fase: 3 },
   { clave: 'pesajes', nombre: 'app.modulos.pesajes', icono: 'balanza', fase: 3 },
   // HU-17. Llegó antes que su fase: el alta del equipo es del Sprint 2.
@@ -61,6 +62,23 @@ function nombreDelRol(rol: string): string {
   return existe(`roles.${rol}`) ? t(`roles.${rol}`) : rol;
 }
 
+/**
+ * HU-22 · El menú muestra solo los módulos habilitados para quien entró.
+ * Inicio siempre; Equipo, para el propietario y los socios (HU-17); el resto,
+ * según GET /permisos/mios. Es comodidad: el servidor igual corta con 403.
+ *
+ * Se recuerda el último resultado por usuario para que el menú no parpadee
+ * al pasar de una pantalla a otra.
+ */
+let permisosRecordados: { usuario: string; permisos: MisPermisos } | null = null;
+
+function visible(modulo: Modulo, rol: string, permisos: MisPermisos | null): boolean {
+  if (modulo.clave === 'inicio') return true;
+  if (modulo.clave === 'equipo') return rol !== 'colaborador';
+  if (!permisos) return false;
+  return (permisos[modulo.clave] ?? 'ninguno') !== 'ninguno';
+}
+
 function iconoDelModulo(clave: string): NombreIcono {
   if (clave === 'perfil') return 'persona';
   if (clave === 'admin') return 'escudo';
@@ -81,7 +99,33 @@ export function DisenoApp({
   // rancho, solo si entró a uno.
   const esAdmin = usuario.rol === 'admin_plataforma';
   const soporte = esAdmin ? soporteActual() : null;
-  const modulos = esAdmin && !soporte ? [] : MODULOS;
+  const ranchoDeSoporte = soporte?.ranchoId ?? null;
+  const quien = `${usuario.nombre}|${usuario.rol}|${ranchoDeSoporte ?? ''}`;
+  const [permisos, setPermisos] = useState<MisPermisos | null>(
+    permisosRecordados?.usuario === quien ? permisosRecordados.permisos : null,
+  );
+
+  useEffect(() => {
+    // Sin rol todavía (la pantalla está cargando) o Admin fuera de un rancho:
+    // no hay nada que preguntar.
+    if (usuario.rol === '—' || (esAdmin && !ranchoDeSoporte)) return;
+    let vigente = true;
+    api
+      .misPermisos()
+      .then((respuesta) => {
+        permisosRecordados = { usuario: quien, permisos: respuesta };
+        if (vigente) setPermisos(respuesta);
+      })
+      .catch(() => {
+        // Sin rancho todavía: el menú queda en lo mínimo.
+      });
+    return () => {
+      vigente = false;
+    };
+  }, [quien, usuario.rol, esAdmin, ranchoDeSoporte]);
+
+  const modulos =
+    esAdmin && !soporte ? [] : MODULOS.filter((modulo) => visible(modulo, usuario.rol, permisos));
 
   return (
     <div className="app">

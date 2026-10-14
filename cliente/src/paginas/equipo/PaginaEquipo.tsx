@@ -528,6 +528,17 @@ function FilaMiembro({
                 <span className="equipo__texto-accion">{t('equipo.fila.tipo')}</span>
               </Boton>
             )}
+            {/* HU-21: en qué módulos puede editar el socio. */}
+            {miembro.rol === 'socio' && !suspendido && (
+              <Link
+                className="btn btn-fantasma"
+                to={`/equipo/socios/${miembro.id}/permisos`}
+                title={t('equipo.fila.permisosAyuda')}
+              >
+                <Icono nombre="escudo" tamano={16} />
+                <span className="equipo__texto-accion">{t('equipo.fila.permisos')}</span>
+              </Link>
+            )}
             {!suspendido && (
               <Boton
                 variante="fantasma"

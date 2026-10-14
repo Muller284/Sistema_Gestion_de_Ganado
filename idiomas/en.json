@@ -673,7 +673,9 @@
       "reactivar": "Reactivate",
       "reactivando": "Reactivating…",
       "suspender": "Suspend",
-      "suspendiendo": "Suspending…"
+      "suspendiendo": "Suspending…",
+      "permisos": "Permissions",
+      "permisosAyuda": "Choose which modules this partner can edit"
     },
     "confirmar": {
       "grupo": "Confirm suspending {nombre}",
@@ -1319,5 +1321,174 @@
       "omitidos": "Skipped",
       "otra": "Run another import"
     }
+  },
+  "unidades": {
+    "peso": {
+      "kg": "kg",
+      "lb": "lb"
+    },
+    "superficie": {
+      "ha": "ha",
+      "acre": "acres"
+    }
+  },
+  "corrales": {
+    "titulo": "Pens",
+    "rotulo": "My ranch",
+    "nuevo": "New pen",
+    "soloConsulta": "You can view the pens, but not create or change them.",
+    "vistas": {
+      "etiqueta": "Which pens to show",
+      "vigentes": "Active",
+      "bajas": "Removed"
+    },
+    "vacio": {
+      "titulo": "No pens yet",
+      "texto": "Create the first one with its name and, if you want, its capacity and area.",
+      "textoConsulta": "When the owner creates pens, you will see them here."
+    },
+    "sinSuperficie": "No area entered",
+    "ocupacion": "{n} of {capacidad} animals",
+    "ocupacionSinTope": "{n} animals · no limit",
+    "sobrepoblado": "Overcrowded",
+    "deBaja": "Removed",
+    "editar": "Edit",
+    "darDeBaja": "Remove",
+    "restaurar": "Restore",
+    "confirmarBaja": "Remove “{nombre}”? You can restore it later.",
+    "formulario": {
+      "nuevo": "New pen",
+      "editar": "Edit “{nombre}”",
+      "nombre": "Name",
+      "nombreEjemplo": "North pen",
+      "capacidad": "Capacity (animals)",
+      "capacidadAyuda": "Optional. Without a capacity there is no overcrowding warning.",
+      "superficie": "Area ({unidad})",
+      "superficieAyuda": "Optional."
+    }
+  },
+  "animales": {
+    "titulo": "Animals",
+    "rotulo": "My ranch",
+    "nuevo": "Register animal",
+    "soloConsulta": "You can view the animals and their records, but not enter or change data.",
+    "vistas": {
+      "etiqueta": "Which animals to show",
+      "activo": "Active",
+      "vendido": "Sold",
+      "muerto": "Dead",
+      "archivado": "Archived",
+      "todos": "All",
+      "bajas": "Removed"
+    },
+    "vacio": {
+      "titulo": "No animals to show",
+      "texto": "Register the first one with its identifier and record data.",
+      "textoVista": "Try another status."
+    },
+    "verFicha": "View record",
+    "deBaja": "Removed",
+    "sinCorral": "No pen",
+    "estados": {
+      "activo": "Active",
+      "vendido": "Sold",
+      "muerto": "Dead",
+      "archivado": "Archived"
+    },
+    "sexos": {
+      "macho": "Male",
+      "hembra": "Female"
+    },
+    "origenes": {
+      "nacido": "Born on the ranch",
+      "comprado": "Bought",
+      "otro": "Other"
+    },
+    "tiposIdentificador": {
+      "caravana": "Ear tag",
+      "interno": "Internal number",
+      "rfid": "RFID"
+    },
+    "categorias": {
+      "ternero": "Bull calf",
+      "ternera": "Heifer calf",
+      "torito": "Young bull",
+      "vaquilla": "Heifer",
+      "novillo": "Steer",
+      "vaca": "Cow",
+      "toro": "Bull",
+      "buey": "Ox"
+    },
+    "campos": {
+      "identificador": "Identifier",
+      "identificadorEjemplo": "4471",
+      "tipoIdentificador": "Identifier type",
+      "nombre": "Name",
+      "raza": "Breed",
+      "razaEjemplo": "Nelore",
+      "sexo": "Sex",
+      "categoria": "Category",
+      "nacimiento": "Birth date",
+      "origen": "Origin",
+      "peso": "Weight ({unidad})",
+      "pesoActual": "Weight",
+      "corral": "Pen",
+      "corralAyuda": "Optional: you can assign it later.",
+      "corralActual": "Current pen",
+      "elegir": "Choose…",
+      "sinCategoria": "No category",
+      "sinOrigen": "Not specified"
+    },
+    "formulario": {
+      "nuevo": "Register animal",
+      "editar": "Edit the record of {identificador}"
+    },
+    "ficha": {
+      "rotulo": "Animal record",
+      "titulo": "Animal {identificador}",
+      "volver": "Back to animals",
+      "datos": "Details",
+      "editar": "Edit record",
+      "darDeBaja": "Remove",
+      "restaurar": "Restore",
+      "confirmarBaja": "Remove {identificador}? You can restore it later.",
+      "registro": "Recorded by {nombre}",
+      "mover": {
+        "titulo": "Move to another pen",
+        "destino": "New pen",
+        "ayuda": "It is now in: {corral}.",
+        "sacar": "Take it out of every pen",
+        "boton": "Move"
+      },
+      "estado": {
+        "titulo": "Change status",
+        "nuevo": "New status",
+        "fecha": "Date",
+        "motivo": "Reason",
+        "motivoEjemplo": "Sold at auction",
+        "boton": "Change status",
+        "pregunta": "Do you confirm that {identificador} becomes {estado}? It will no longer count as active, but its history is kept.",
+        "confirmar": "Yes, change status"
+      },
+      "movimientos": {
+        "titulo": "Moves between pens",
+        "vacio": "No moves",
+        "vacioTexto": "When you move it to another pen, each move is kept here.",
+        "de": "From {origen} to {destino}"
+      },
+      "estados": {
+        "titulo": "Status changes",
+        "vacio": "Its status never changed.",
+        "de": "{anterior} → {nuevo}"
+      }
+    }
+  },
+  "permisosSocio": {
+    "titulo": "Partner permissions",
+    "tituloDe": "Permissions of {nombre}",
+    "volver": "Back to the team",
+    "modulos": "Modules they can edit",
+    "explicacion": "As a partner they see all the ranch information. Check the modules where they can also enter and change data.",
+    "soloPropietario": "Only the owner can change these permissions."
   }
 }
