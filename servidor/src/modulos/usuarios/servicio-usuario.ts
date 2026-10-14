@@ -13,12 +13,6 @@ import { enIdioma, enumerarEn, idiomasDisponibles, t } from '../../comun/idioma'
 
 /**
  * HU-06 · Registro de propietario.
- *
- * Los cuatro criterios de aceptacion viven aca:
- *   1. El formulario pide nombre, correo, contraseña y pais.
- *   2. La contraseña exige ocho caracteres, una mayuscula y un numero.
- *   3. No se permite registrar dos veces el mismo correo.
- *   4. Al registrarse queda automaticamente como propietario.
  */
 
 const LARGO_NOMBRE = 150;
@@ -70,7 +64,6 @@ export class ServicioUsuario {
       throw new BadRequestException(t('servidor.registro.paisNoExiste'));
     }
 
-    // Tercer criterio de HU-06. 
     if (await this.repositorio.existeCorreo(correo)) {
       throw new ConflictException(t('servidor.registro.correoRepetido'));
     }
@@ -115,23 +108,18 @@ export class ServicioUsuario {
   }
 
   /**
-   * Mi perfil: el nombre y el idioma (HU-25). El correo no, porque cambiarlo
-   * exige confirmar el nuevo (HU-07) y eso es otra historia; el pais tampoco
-   * desde aca, porque es el criterio 2 de HU-14 (Brian).
-   *
-   * Cada dato es opcional: se cambia lo que venga. idioma nulo o vacio vuelve
-   * a usar el del pais (criterio 2 de HU-25: "se toma del pais y se puede
-   * cambiar").
+   * Mi perfil: nombre, idioma (HU-25) y país (HU-14).
    */
   async actualizarPerfil(cuerpo: any, quien: UsuarioActual) {
-    // Mismas salidas que el portero: con esto pendiente no se edita nada.
     if (!quien.correoVerificado || quien.debeCambiarContrasena) {
       throw new ForbiddenException(t('servidor.perfil.terminaDeActivar'));
     }
 
     const cambiaNombre = cuerpo && 'nombre' in cuerpo;
     const cambiaIdioma = cuerpo && 'idioma' in cuerpo;
-    if (!cambiaNombre && !cambiaIdioma) {
+    const cambiaPais = cuerpo && 'pais_codigo' in cuerpo;
+
+    if (!cambiaNombre && !cambiaIdioma && !cambiaPais) {
       throw new BadRequestException(t('servidor.perfil.nadaQueCambiar'));
     }
 
@@ -156,20 +144,25 @@ export class ServicioUsuario {
       }
     }
 
+    let paisCodigo: string | null = null;
+    if (cambiaPais) {
+      paisCodigo = texto(cuerpo.pais_codigo).toUpperCase() || null;
+      if (paisCodigo && !(await this.repositorio.existePais(paisCodigo))) {
+        throw new BadRequestException(t('servidor.registro.paisNoExiste'));
+      }
+    }
+
     if (cambiaNombre) await this.repositorio.cambiarNombre(quien.id, nombre!);
     if (cambiaIdioma) await this.repositorio.cambiarIdioma(quien.id, idioma);
+    if (cambiaPais) await this.repositorio.cambiarPais(quien.id, paisCodigo!);
 
     const perfil = await this.repositorio.perfil(quien.id);
-    // El mensaje sale en el idioma nuevo: es lo primero que se lee en el.
     const mensaje = enIdioma(perfil.idioma, () =>
-      t(cambiaIdioma && !cambiaNombre ? 'servidor.perfil.idiomaGuardado' : 'servidor.perfil.guardado'),
+      t(cambiaIdioma && !cambiaNombre && !cambiaPais ? 'servidor.perfil.idiomaGuardado' : 'servidor.perfil.guardado'),
     );
     return { perfil, mensaje };
   }
 
-  /**
-   * HU-13: Un usuario, un solo rancho (Alta de colaboradores)
-   */
   async altaColaborador(cuerpo: any, quien: UsuarioActual) {
     if (quien.rol !== 'propietario') {
       throw new ForbiddenException(t('servidor.usuarios.soloPropietarioRegistra'));
@@ -181,13 +174,9 @@ export class ServicioUsuario {
       throw new BadRequestException(t('servidor.usuarios.correoNoValido'));
     }
 
-    // HU-13 Criterio 2: Si el correo ya está registrado, se rechaza con un mensaje claro.
     if (await this.repositorio.existeCorreo(correo)) {
       throw new ConflictException(t('servidor.datos.correoEnOtroRancho'));
     }
-
-    // NOTA: Aquí irá la lógica de insertar al colaborador en la base de datos (HU-21),
-    // pero la regla de negocio de la HU-13 ya está cubierta por la validación de arriba.
 
     return { mensaje: t('servidor.usuarios.validacionSuperada') };
   }

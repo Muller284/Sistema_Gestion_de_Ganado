@@ -634,9 +634,9 @@ export const api = {
   pausarGuia: (pausada: boolean) =>
     pedir<EstadoGuia>('/guia/pausa', { method: 'POST', body: JSON.stringify({ pausada }) }),
 
-  // Mi perfil
+  // Mi perfil (Actualizado para permitir nombre, idioma y pais_codigo)
   perfil: () => pedir<PerfilUsuario>('/usuarios/yo/perfil'),
-  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null }) =>
+  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null; pais_codigo?: string }) =>
     pedir<{ perfil: PerfilUsuario; mensaje: string }>('/usuarios/yo/perfil', {
       method: 'PATCH',
       body: JSON.stringify(datos),
@@ -685,10 +685,25 @@ export const api = {
   restaurarCorral: (id: string) =>
     pedir<RespuestaCorral>(`/corrales/${id}/restaurar`, { method: 'POST' }),
 
-  // HU-28, HU-33, HU-34 y HU-39 · Animales
+  // HU-28, HU-33, HU-34 y HU-39 · Animales (Actualizado para recibir parámetros de búsqueda y filtros)
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
-  animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false) =>
-    pedir<Animal[]>(`/animales?estado=${estado}${conBajas ? '&bajas=1' : ''}`),
+  animales: (
+    estado: EstadoAnimal | 'todos' = 'activo',
+    conBajas = false,
+    busqueda?: string,
+    categoria?: string,
+    sexo?: string,
+    corral?: string,
+  ) => {
+    const params = new URLSearchParams();
+    if (estado) params.append('estado', estado);
+    if (conBajas) params.append('bajas', '1');
+    if (busqueda) params.append('busqueda', busqueda);
+    if (categoria) params.append('categoria', categoria);
+    if (sexo) params.append('sexo', sexo);
+    if (corral) params.append('corral', corral);
+    return pedir<Animal[]>(`/animales?${params.toString()}`);
+  },
   fichaAnimal: (id: string) => pedir<FichaAnimal>(`/animales/${id}`),
   crearAnimal: (
     datos: DatosFichaAnimal & {

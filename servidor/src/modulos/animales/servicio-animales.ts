@@ -1,12 +1,14 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
+import { actuaComoPropietario } from '../../comun/permisos-rol';
 import { t } from '../../comun/idioma';
 import {
   RepositorioAnimales,
@@ -17,28 +19,6 @@ import {
 
 /**
  * Animales: la ficha y lo que le pasa a cada uno.
- *
- * HU-28 · Datos de la ficha
- *   1. El corral es opcional, porque los animales se cargan antes que los corrales.
- *   2. La categoria se elige de un catalogo, no se escribe libre.
- *   3. El sistema valida que la fecha de nacimiento no sea futura.
- *
- * HU-33 · Cambio de estado
- *   1. Los estados posibles son activo, vendido, muerto y archivado.
- *   2. El cambio pide confirmacion y registra la fecha y el motivo.
- *      (La confirmacion es de la pantalla; el servidor exige el motivo.)
- *   3. Un animal que no esta activo no aparece en el listado por defecto,
- *      pero se puede consultar.
- *
- * HU-34 · Baja logica: se marca, no se borra; no aparece en las consultas
- *         normales; se puede restaurar.
- *
- * HU-39 · Historial de movimientos: origen, destino, fecha y quien; se ve en
- *         la ficha; el corral actual coincide con el ultimo movimiento.
- *
- * El registro con identificador (HU-27) y el listado con filtros (HU-29) son
- * de Brian: aca solo esta lo minimo para que la ficha tenga de donde salir.
- * El peso llega y se guarda en kilos (HU-26).
  */
 
 const ESTADOS: readonly Estado[] = ['activo', 'vendido', 'muerto', 'archivado'];
@@ -59,8 +39,16 @@ export class ServicioAnimales {
     return this.animales.categorias();
   }
 
-  /** estado: 'todos' o uno de los cuatro. Sin nada, solo los activos (HU-33). */
-  async listar(estado: string | undefined, bajas: boolean, quien: UsuarioActual) {
+  /** estado: 'todos' o uno de los cuatro. Sin nada, solo los activos (HU-33). Con filtros y búsqueda (HU-29). */
+  async listar(
+    estado: string | undefined,
+    bajas: boolean,
+    busqueda: string | undefined,
+    categoria: string | undefined,
+    sexo: string | undefined,
+    corral: string | undefined,
+    quien: UsuarioActual,
+  ) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'ver');
     let estados: Estado[] | null = ['activo'];
     if (estado === 'todos') estados = null;
@@ -70,7 +58,7 @@ export class ServicioAnimales {
       }
       estados = [estado as Estado];
     }
-    return this.animales.listar(ranchoId, estados, bajas);
+    return this.animales.listar(ranchoId, estados, bajas, busqueda, categoria, sexo, corral);
   }
 
   /** La ficha completa: datos, movimientos (HU-39) y cambios de estado (HU-33). */
@@ -117,7 +105,6 @@ export class ServicioAnimales {
     };
   }
 
-  /** HU-28. El corral y el estado tienen su propio camino (mover, cambiarEstado). */
   async actualizar(id: string, cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
     const actual = await this.vigente(id, ranchoId);
@@ -129,7 +116,6 @@ export class ServicioAnimales {
     };
   }
 
-  /** HU-39. corral_id nulo saca al animal de todo corral. */
   async mover(id: string, cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
     const actual = await this.vigente(id, ranchoId);
@@ -142,7 +128,6 @@ export class ServicioAnimales {
     };
   }
 
-  /** HU-33. */
   async cambiarEstado(id: string, cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
     const actual = await this.vigente(id, ranchoId);
@@ -170,17 +155,21 @@ export class ServicioAnimales {
     };
   }
 
-  /** HU-34. */
   async darDeBaja(id: string, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
+    if (!actuaComoPropietario(quien)) {
+      throw new ForbiddenException(t('servidor.permisos.soloPropietario'));
+    }
     const actual = await this.vigente(id, ranchoId);
     await this.animales.marcarBaja(actual.id, ranchoId, true, quien.id);
     return { mensaje: t('servidor.animales.dadoDeBaja', { identificador: actual.identificador }) };
   }
 
-  /** HU-34. Si otro animal vigente tomo su identificador, no se puede. */
   async restaurar(id: string, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
+    if (!actuaComoPropietario(quien)) {
+      throw new ForbiddenException(t('servidor.permisos.soloPropietario'));
+    }
     const actual = await this.existente(id, ranchoId);
     if (actual.eliminado_en) {
       if (await this.animales.identificadorOcupado(actual.identificador, ranchoId, actual.id)) {
@@ -208,7 +197,6 @@ export class ServicioAnimales {
     return animal;
   }
 
-  /** HU-28. */
   private async validarFicha(cuerpo: any): Promise<DatosFicha> {
     const sexo = cuerpo?.sexo;
     if (sexo !== 'macho' && sexo !== 'hembra') {
@@ -254,7 +242,6 @@ export class ServicioAnimales {
     };
   }
 
-  /** HU-28, criterio 1: sin corral esta bien. Con corral, tiene que ser mio y vigente. */
   private async corralValido(valor: unknown, ranchoId: string): Promise<string | null> {
     if (valor === undefined || valor === null || valor === '') return null;
     if (typeof valor !== 'string' || !(await this.animales.corralVigente(valor, ranchoId))) {
@@ -264,7 +251,6 @@ export class ServicioAnimales {
   }
 }
 
-/** Texto opcional: recortado, vacio es nulo, y no mas largo que el maximo. */
 function texto(valor: unknown, maximo: number): string | null {
   if (typeof valor !== 'string') return null;
   const limpio = valor.trim();
@@ -275,7 +261,6 @@ function texto(valor: unknown, maximo: number): string | null {
   return limpio;
 }
 
-/** AAAA-MM-DD que exista de verdad (no 2026-02-31). */
 function fechaValida(valor: unknown): string | null {
   if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return null;
   const fecha = new Date(`${valor}T00:00:00Z`);

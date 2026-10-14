@@ -9,27 +9,10 @@ import {
   Insignia,
   Tarjeta,
 } from '../../componentes';
-import { api, type PerfilUsuario } from '../../servicios/api';
+import { api, type Pais, type PerfilUsuario } from '../../servicios/api';
 import { IDIOMAS, cambiarIdioma, existe, localeActual, t } from '../../servicios/idioma';
 import { enumerar, faltasDeContrasena, inicial } from '../../servicios/texto';
 
-/**
- * Mi perfil. Se llega tocando el usuario al pie del menú lateral o desde el
- * menú de la cuenta, arriba a la derecha.
- *
- * QUÉ SE PUEDE CAMBIAR
- *   el nombre       acá mismo.
- *   el idioma       el de su país o uno elegido (HU-25).
- *   la contraseña   con la actual y la nueva (el mismo servicio de HU-10).
- * QUÉ NO, Y POR QUÉ
- *   el correo       cambiarlo exige confirmar el nuevo (HU-07); se ve, pero
- *                   no se edita todavía.
- *   el país         es el criterio 2 de HU-14 (Brian): se cambia desde los
- *                   ajustes del país cuando esa parte exista.
- *   rol y rancho    los decide el propietario, no uno mismo.
- */
-
-/** El nombre del rol en el idioma actual; si no lo conocemos, el código tal cual. */
 function nombreRol(rol: string): string {
   return existe(`perfil.roles.${rol}`) ? t(`perfil.roles.${rol}`) : rol;
 }
@@ -117,11 +100,17 @@ function DatosPersonales({
   alGuardar: (perfil: PerfilUsuario) => void;
 }) {
   const [nombre, setNombre] = useState(perfil.nombre);
+  const [paisCodigo, setPaisCodigo] = useState(perfil.pais_codigo ?? '');
+  const [paises, setPaises] = useState<Pais[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
 
-  const cambio = nombre.trim() !== perfil.nombre;
+  useEffect(() => {
+    api.paises().then(setPaises).catch(() => {});
+  }, []);
+
+  const cambio = nombre.trim() !== perfil.nombre || paisCodigo !== (perfil.pais_codigo ?? '');
 
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
@@ -129,9 +118,13 @@ function DatosPersonales({
     setAviso('');
     setGuardando(true);
     try {
-      const respuesta = await api.actualizarPerfil({ nombre: nombre.trim() });
+      const respuesta = await api.actualizarPerfil({
+        nombre: nombre.trim(),
+        pais_codigo: paisCodigo || undefined,
+      });
       alGuardar(respuesta.perfil);
       setNombre(respuesta.perfil.nombre);
+      setPaisCodigo(respuesta.perfil.pais_codigo ?? '');
       setAviso(respuesta.mensaje);
     } catch (err) {
       setError((err as Error).message);
@@ -163,12 +156,27 @@ function DatosPersonales({
           disabled
           ayuda={t('perfil.datos.correoAyuda')}
         />
-        <CampoTexto
-          etiqueta={t('perfil.datos.pais')}
-          value={perfil.pais ?? t('perfil.datos.sinPais')}
-          disabled
-          ayuda={t('perfil.datos.paisAyuda')}
-        />
+
+        {/* Selector de país habilitado para cumplir con HU-14 */}
+        <div className="campo">
+          <label className="campo__etiqueta">{t('perfil.datos.pais')}</label>
+          <select
+            className="campo__control"
+            value={paisCodigo}
+            onChange={(e) => {
+              setPaisCodigo(e.target.value);
+              setAviso('');
+            }}
+          >
+            <option value="">{t('perfil.datos.sinPais')}</option>
+            {paises.map((pais) => (
+              <option key={pais.codigo} value={pais.codigo}>
+                {pais.nombre}
+              </option>
+            ))}
+          </select>
+          <span className="pie c-500">{t('perfil.datos.paisAyuda')}</span>
+        </div>
 
         <dl className="datos perfil__datos">
           <dt>{t('perfil.datos.rol')}</dt>
@@ -181,7 +189,15 @@ function DatosPersonales({
 
         <div className="fila g8 perfil__botones">
           {cambio && (
-            <Boton type="button" variante="secundario" onClick={() => setNombre(perfil.nombre)} disabled={guardando}>
+            <Boton
+              type="button"
+              variante="secundario"
+              onClick={() => {
+                setNombre(perfil.nombre);
+                setPaisCodigo(perfil.pais_codigo ?? '');
+              }}
+              disabled={guardando}
+            >
               {t('perfil.datos.deshacer')}
             </Boton>
           )}
@@ -266,14 +282,6 @@ function CambioDeContrasena() {
   );
 }
 
-/**
- * HU-25 · Criterio 2: "El idioma se toma del país elegido y se puede cambiar."
- *
- * La primera opción es seguir al país: si la persona nunca eligió, es la que
- * está marcada. Elegir un idioma lo guarda en la cuenta, así vale en
- * cualquier computadora donde entre. Al guardar, toda la pantalla se vuelve a
- * dibujar en el idioma nuevo: ese es el aviso de que se guardó.
- */
 function PreferenciaIdioma({ perfil }: { perfil: PerfilUsuario }) {
   const [elegido, setElegido] = useState(perfil.idioma_elegido ?? '');
   const [guardando, setGuardando] = useState(false);
@@ -289,6 +297,10 @@ function PreferenciaIdioma({ perfil }: { perfil: PerfilUsuario }) {
     try {
       const respuesta = await api.actualizarPerfil({ idioma: valor || null });
       cambiarIdioma(respuesta.perfil.idioma, { recordar: true });
+      // Sincronizamos el perfil global si viene en la respuesta
+      if (respuesta.perfil) {
+        setElegido(respuesta.perfil.idioma_elegido ?? '');
+      }
     } catch (err) {
       setError((err as Error).message);
       setElegido(perfil.idioma_elegido ?? '');

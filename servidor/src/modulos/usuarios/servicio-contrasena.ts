@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { RepositorioUsuario } from './repositorio-usuario';
 import { RepositorioToken } from './repositorio-token';
+import { RepositorioSesion } from './repositorio-sesion';
 import { ServicioCorreo } from '../../comun/servicio-correo';
 import {
   cifrarContrasena,
@@ -37,6 +38,7 @@ export class ServicioContrasena {
     private readonly usuarios: RepositorioUsuario,
     private readonly correo: ServicioCorreo,
     private readonly tokens: RepositorioToken,
+    private readonly sesiones: RepositorioSesion,
   ) {}
 
   /** El usuario cambia su propia contraseña. Es lo que desbloquea la cuenta. */
@@ -79,6 +81,9 @@ export class ServicioContrasena {
       quien.id,
     );
 
+    // HU-09: Revocar sesiones viejas tras cambiar la propia contraseña
+    await this.sesiones.revocarTodasDeUsuario(quien.id);
+
     return {
       mensaje: usuario.debe_cambiar_contrasena
         ? t('servidor.contrasena.actualizadaYaPuedes')
@@ -116,6 +121,9 @@ export class ServicioContrasena {
       await cifrarContrasena(temporal),
       quien.id,
     );
+
+    // HU-09: Revocar sesiones viejas cuando el propietario restablece la clave
+    await this.sesiones.revocarTodasDeUsuario(usuario.id);
 
     // El correo va en el idioma de quien lo recibe, no en el del propietario.
     const idiomaDelUsuario = await this.usuarios.idiomaDe(usuario.id);
@@ -202,6 +210,9 @@ export class ServicioContrasena {
     const hash = await cifrarContrasena(nueva);
 
     await this.usuarios.cambiarContrasena(usuarioId, hash, usuarioId);
+
+    // HU-09: Revocar sesiones viejas tras la recuperación exitosa
+    await this.sesiones.revocarTodasDeUsuario(usuarioId);
 
     return { mensaje: t('servidor.contrasena.recuperada') };
   }

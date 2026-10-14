@@ -6,10 +6,6 @@ import { POOL_BD } from '../../comun/modulo-base-datos';
 /**
  * Las consultas de animales, sus movimientos (HU-39) y sus cambios de estado
  * (HU-33). Cada metodo recibe el rancho de quien pregunta (HU-03).
- *
- * El corral de un animal solo cambia dentro de mover(), en la misma
- * transaccion que guarda el movimiento: asi el corral actual siempre es el
- * destino del ultimo movimiento (HU-39, criterio 3).
  */
 
 export type Estado = 'activo' | 'vendido' | 'muerto' | 'archivado';
@@ -33,13 +29,17 @@ export interface Animal extends DatosFicha {
   estado: Estado;
   creado_en: string;
   eliminado_en: string | null;
+  creado_por_nombre: string | null;
+  modificado_por_nombre: string | null;
 }
 
 const COLUMNAS = `
   a.id, a.identificador, a.tipo_identificador, a.nombre, a.raza, a.sexo,
   a.categoria_codigo, TO_CHAR(a.fecha_nacimiento, 'YYYY-MM-DD') AS fecha_nacimiento,
   a.origen, a.peso_kg::float AS peso_kg, a.corral_id, c.nombre AS corral_nombre,
-  a.estado, a.creado_en, a.eliminado_en`;
+  a.estado, a.creado_en, a.eliminado_en,
+  uc.nombre AS creado_por_nombre,
+  um.nombre AS modificado_por_nombre`;
 
 @Injectable()
 export class RepositorioAnimales {
@@ -52,29 +52,55 @@ export class RepositorioAnimales {
     return resultado.rows.map((fila) => fila.codigo);
   }
 
-  /**
-   * HU-33: por defecto solo los activos. estados = null trae todos.
-   * HU-34: los dados de baja solo si se piden.
-   */
-  async listar(ranchoId: string, estados: Estado[] | null, conBajas: boolean): Promise<Animal[]> {
+  async listar(
+    ranchoId: string,
+    estados: Estado[] | null,
+    conBajas: boolean,
+    busqueda?: string,
+    categoria?: string,
+    sexo?: string,
+    corral?: string,
+    fechaDesde?: string,
+    fechaHasta?: string,
+  ): Promise<Animal[]> {
+    const terminoBusqueda = busqueda ? `%${busqueda.trim().toLowerCase()}%` : null;
     const resultado = await this.bd.query(
       `SELECT ${COLUMNAS}
          FROM animales a
          LEFT JOIN corrales c ON c.id = a.corral_id
+         LEFT JOIN usuarios uc ON uc.id = a.creado_por
+         LEFT JOIN usuarios um ON um.id = a.modificado_por
         WHERE a.rancho_id = $1
           AND ($2::varchar[] IS NULL OR a.estado = ANY($2::varchar[]))
           AND ($3 OR a.eliminado_en IS NULL)
+          AND ($4::varchar IS NULL OR LOWER(a.identificador) LIKE $4 OR LOWER(a.nombre) LIKE $4)
+          AND ($5::varchar IS NULL OR a.categoria_codigo = $5)
+          AND ($6::varchar IS NULL OR a.sexo = $6)
+          AND ($7::varchar IS NULL OR a.corral_id::text = $7)
+          AND ($8::date IS NULL OR a.fecha_nacimiento >= $8::date)
+          AND ($9::date IS NULL OR a.fecha_nacimiento <= $9::date)
         ORDER BY a.eliminado_en NULLS FIRST, a.identificador`,
-      [ranchoId, estados, conBajas],
+      [
+        ranchoId,
+        estados,
+        conBajas,
+        terminoBusqueda,
+        categoria || null,
+        sexo || null,
+        corral || null,
+        fechaDesde || null,
+        fechaHasta || null,
+      ],
     );
     return resultado.rows;
   }
-
   async uno(id: string, ranchoId: string): Promise<Animal | null> {
     const resultado = await this.bd.query(
       `SELECT ${COLUMNAS}
          FROM animales a
          LEFT JOIN corrales c ON c.id = a.corral_id
+         LEFT JOIN usuarios uc ON uc.id = a.creado_por
+         LEFT JOIN usuarios um ON um.id = a.modificado_por
         WHERE a.id::text = $1 AND a.rancho_id = $2`,
       [id, ranchoId],
     );
@@ -99,7 +125,6 @@ export class RepositorioAnimales {
     return (resultado.rowCount ?? 0) > 0;
   }
 
-  /** Un corral vigente del mismo rancho. */
   async corralVigente(corralId: string, ranchoId: string): Promise<boolean> {
     const resultado = await this.bd.query(
       `SELECT 1 FROM corrales WHERE id::text = $1 AND rancho_id = $2 AND eliminado_en IS NULL`,
@@ -108,7 +133,6 @@ export class RepositorioAnimales {
     return (resultado.rowCount ?? 0) > 0;
   }
 
-  /** El alta, y si trae corral, su primer movimiento (origen nulo). */
   async crear(datos: {
     id: string;
     ranchoId: string;
@@ -149,7 +173,6 @@ export class RepositorioAnimales {
     );
   }
 
-  /** HU-39. Bloquea la fila para que dos movimientos a la vez no se pisen. */
   async mover(id: string, ranchoId: string, destinoId: string | null, autorId: string): Promise<boolean> {
     return this.enTransaccion(async (cliente) => {
       const actual = await cliente.query(
@@ -182,7 +205,6 @@ export class RepositorioAnimales {
     return resultado.rows;
   }
 
-  /** HU-33. El estado y su registro, juntos o nada. */
   async cambiarEstado(datos: {
     id: string;
     ranchoId: string;
@@ -225,7 +247,6 @@ export class RepositorioAnimales {
     return resultado.rows;
   }
 
-  /** HU-34: la baja marca, no borra; restaurar la desmarca. */
   async marcarBaja(id: string, ranchoId: string, baja: boolean, autorId: string) {
     await this.bd.query(
       `UPDATE animales

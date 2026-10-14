@@ -4,26 +4,11 @@ import { POOL_BD } from '../../comun/modulo-base-datos';
 
 /**
  * HU-06 · Acceso a datos del registro de propietarios.
- *
- * Es el unico lugar donde se escribe SQL sobre usuarios para el registro, que
- * es la convencion del equipo: ninguna consulta se escribe fuera de la capa de
- * repositorio.
- *
- * POR QUE NO HEREDA DE RepositorioBase
- * Por lo mismo que RepositorioRancho: RepositorioBase impone el filtro por
- * rancho, y aca todavia no hay rancho. El propietario se registra antes de
- * crear el suyo, asi que su fila nace con rancho_id nulo. El aislamiento no se
- * pierde: esta clase solo sabe crear una cuenta y buscar por correo, nunca
- * leer datos productivos.
  */
 @Injectable()
 export class RepositorioUsuario {
   constructor(@Inject(POOL_BD) private readonly bd: Pool) {}
 
-  /**
-   * El correo es unico en toda la plataforma, no por rancho (HU-13). Se compara
-   * en minuscula, igual que el indice ux_usuarios_correo.
-   */
   async existeCorreo(correo: string): Promise<boolean> {
     const resultado = await this.bd.query(
       `SELECT 1
@@ -44,18 +29,6 @@ export class RepositorioUsuario {
     return (resultado.rowCount ?? 0) > 0;
   }
 
-  /**
-   * Crea la cuenta del propietario.
-   *
-   *   rol                     propietario, siempre. Un registro publico no
-   *                           puede crear socios, colaboradores ni admins.
-   *   rancho_id               nulo: el rancho se crea despues, en HU-15.
-   *   correo_verificado       falso: lo pone en verdadero HU-07.
-   *   debe_cambiar_contrasena falso: eligio su propia contraseña. Solo es
-   *                           verdadero para las cuentas que crea el
-   *                           propietario con una clave temporal (HU-10).
-   *   creado_por              el mismo usuario: nadie lo dio de alta.
-   */
   async crearPropietario(datos: {
     id: string;
     nombre: string;
@@ -85,7 +58,6 @@ export class RepositorioUsuario {
     return resultado.rows[0];
   }
 
-  /** La ficha que necesitan HU-07 y HU-10 para decidir. */
   async porId(id: string): Promise<any | null> {
     const resultado = await this.bd.query(
       `SELECT id, nombre, correo, rol, rancho_id, pais_codigo,
@@ -97,10 +69,6 @@ export class RepositorioUsuario {
     return resultado.rows[0] ?? null;
   }
 
-  /**
-   * HU-25. El idioma con el que trabaja alguien: el que eligio, el de su pais
-   * o el del pais de su rancho. Para mandarle un correo que pidio otro.
-   */
   async idiomaDe(id: string): Promise<string | null> {
     const resultado = await this.bd.query(
       `SELECT COALESCE(u.idioma, pu.idioma, pr.idioma) AS idioma
@@ -124,7 +92,6 @@ export class RepositorioUsuario {
     return resultado.rows[0] ?? null;
   }
 
-  /** HU-08. Obtiene la ficha completa para autenticar credenciales con hash. */
   async buscarParaAutenticar(correo: string): Promise<any | null> {
     const resultado = await this.bd.query(
       `SELECT id, nombre, correo, contrasena_hash, rol, rancho_id,
@@ -137,10 +104,6 @@ export class RepositorioUsuario {
     return resultado.rows[0] ?? null;
   }
 
-  /**
-   * La ficha de "Mi perfil". Sin contrasena_hash, como todo lo que sale de
-   * aca salvo buscarParaAutenticar.
-   */
   async perfil(id: string): Promise<any | null> {
     const resultado = await this.bd.query(
       `SELECT u.id, u.nombre, u.correo, u.rol, u.estado,
@@ -161,7 +124,6 @@ export class RepositorioUsuario {
     return resultado.rows[0] ?? null;
   }
 
-  /** "Mi perfil": el nombre lo cambia su dueño y queda como autor del cambio. */
   async cambiarNombre(id: string, nombre: string): Promise<void> {
     await this.bd.query(
       `UPDATE usuarios SET nombre = $2, modificado_por = $1
@@ -170,16 +132,23 @@ export class RepositorioUsuario {
     );
   }
 
-  /** HU-25. Nulo vuelve a usar el idioma del pais. */
+  /** HU-14. Permite actualizar el país del usuario. */
+  async cambiarPais(id: string, paisCodigo: string): Promise<void> {
+    await this.bd.query(
+      `UPDATE usuarios SET pais_codigo = $2, modificado_por = $1, modificado_en = CURRENT_TIMESTAMP
+        WHERE id = $1 AND eliminado_en IS NULL`,
+      [id, paisCodigo],
+    );
+  }
+
   async cambiarIdioma(id: string, idioma: string | null): Promise<void> {
     await this.bd.query(
-      `UPDATE usuarios SET idioma = $2, modificado_por = $1
+      `UPDATE usuarios SET idioma = $2, modificado_por = $1, modificado_en = CURRENT_TIMESTAMP
         WHERE id = $1 AND eliminado_en IS NULL`,
       [id, idioma],
     );
   }
 
-  /** HU-07. Solo lo llama el servicio de verificacion, con un token consumido. */
   async marcarCorreoVerificado(usuarioId: string): Promise<void> {
     await this.bd.query(
       `UPDATE usuarios
@@ -191,10 +160,6 @@ export class RepositorioUsuario {
     );
   }
 
-  /**
-   * HU-10. Guarda la contraseña nueva y apaga la obligacion de cambiarla.
-   * El hash llega ya calculado: esta clase nunca ve una contraseña en claro.
-   */
   async cambiarContrasena(
     usuarioId: string,
     contrasenaHash: string,
@@ -211,10 +176,6 @@ export class RepositorioUsuario {
     );
   }
 
-  /**
-   * HU-10. El propietario fuerza un restablecimiento: se guarda una clave
-   * temporal nueva y queda la obligacion de cambiarla al entrar.
-   */
   async ponerContrasenaTemporal(
     usuarioId: string,
     contrasenaHash: string,
@@ -231,10 +192,6 @@ export class RepositorioUsuario {
     );
   }
 
-  /**
-   * HU-11. Registra un intento fallido de autenticación.
-   * Tras cinco intentos fallidos consecutivos, bloquea el acceso por 15 minutos.
-   */
   async registrarIntentoFallido(correo: string): Promise<{
     bloqueado: boolean;
     bloqueadoHasta: Date | null;
@@ -286,9 +243,6 @@ export class RepositorioUsuario {
     };
   }
 
-  /**
-   * HU-11. Reinicia el contador de intentos fallidos y el bloqueo tras un ingreso exitoso.
-   */
   async reiniciarIntentosFallidos(usuarioId: string): Promise<void> {
     await this.bd.query(
       `UPDATE usuarios
@@ -300,9 +254,6 @@ export class RepositorioUsuario {
     );
   }
 
-  /**
-   * HU-11. Comprueba si una cuenta se encuentra actualmente bloqueada por intentos fallidos.
-   */
   async estaBloqueado(correo: string): Promise<{
     bloqueado: boolean;
     bloqueadoHasta: Date | null;
@@ -325,4 +276,3 @@ export class RepositorioUsuario {
     };
   }
 }
-
