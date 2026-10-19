@@ -42,6 +42,8 @@ import { FormularioFicha } from './FormularioFicha';
  *        siempre es el del último movimiento (criterio 3).
  * HU-33  cambiar el estado pide confirmación y registra fecha y motivo.
  * HU-34  dar de baja y restaurar.
+ * HU-37  mover desde la ficha también es asignar; si el corral se excede,
+ *        se avisa sin impedirlo (HU-38).
  * HU-22  quien solo puede ver, ve la ficha y los dos historiales (criterio 3).
  */
 
@@ -54,6 +56,8 @@ export function PaginaFichaAnimal() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
+  // HU-38: el corral de destino quedó excedido. El movimiento ya se hizo.
+  const [avisoExceso, setAvisoExceso] = useState('');
   const [editando, setEditando] = useState(false);
   const [confirmandoBaja, setConfirmandoBaja] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -84,12 +88,15 @@ export function PaginaFichaAnimal() {
   const animal = ficha?.animal;
   const vigente = Boolean(animal && !animal.eliminado_en);
 
-  async function alHacer(hacer: () => Promise<{ mensaje: string }>) {
+  async function alHacer(hacer: () => Promise<{ mensaje: string; aviso?: string | null }>) {
     setOcupado(true);
     setError('');
     setAviso('');
+    setAvisoExceso('');
     try {
-      setAviso((await hacer()).mensaje);
+      const respuesta = await hacer();
+      setAviso(respuesta.mensaje);
+      setAvisoExceso(respuesta.aviso ?? '');
       setConfirmandoBaja(false);
       recargar();
     } catch (err) {
@@ -118,6 +125,7 @@ export function PaginaFichaAnimal() {
         {(cargando || contexto.cargando) && <Cargando lineas={6} />}
         {error && <Alerta variante="error">{error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
+        {avisoExceso && <Alerta variante="adv">{avisoExceso}</Alerta>}
 
         {animal && ficha && editando && (
           <FormularioFicha
@@ -284,7 +292,7 @@ function DatosDelAnimal({ animal, regional }: { animal: Animal; regional: Region
 
 interface PropiedadesAccion {
   animal: Animal;
-  alHacer: (hacer: () => Promise<{ mensaje: string }>) => Promise<void>;
+  alHacer: (hacer: () => Promise<{ mensaje: string; aviso?: string | null }>) => Promise<void>;
   ocupado: boolean;
 }
 

@@ -1333,32 +1333,59 @@
   "importacion": {
     "titulo": "Import cattle",
     "rotulo": "Bulk import",
-    "soloConsulta": "As a partner you have read-only access: you can see the cattle, but not import animals.",
+    "soloConsulta": "Importing animals requires edit permission in the Import module. Ask the owner for it.",
     "plantilla": {
-      "titulo": "1. Download the template",
-      "texto": "A CSV with the exact columns the system expects and three sample rows.",
-      "boton": "Download CSV template"
+      "titulo": "1. Template (optional)",
+      "texto": "An Excel file with the columns the system expects, a sample row and the accepted values. If your file already has those headers, you don't need it.",
+      "boton": "Download Excel template"
     },
     "archivo": {
       "titulo": "2. Upload your file",
-      "etiqueta": "CSV file"
+      "etiqueta": "Excel (.xlsx) or CSV file",
+      "ayuda": "Nothing is saved yet: first you'll see how it would look."
     },
-    "validacion": {
-      "titulo": "3. Review the data",
-      "validas": "{cantidad} animal(s) ready to import out of {total}.",
-      "errores": "{cantidad} row(s) with errors. Fix them in the file and upload it again.",
-      "fila": "Row {fila}",
-      "duplicados": "These ear tags already exist on your ranch: {caravanas}. What should we do with them?",
+    "resumen": {
+      "total": "Rows in the file",
+      "cargan": "Will be loaded",
+      "conError": "With errors",
+      "repetidas": "Repeated"
+    },
+    "vistaPrevia": {
+      "titulo": "3. This is how the first rows would look",
+      "vacia": "No row will be loaded. Check the errors and the repeated rows.",
+      "accion": "What happens",
+      "nueva": "New",
+      "actualizar": "Updated"
+    },
+    "repetidas": {
+      "titulo": "Repeated ({n})",
+      "pregunta": "What should we do with the animals that already exist on your ranch?",
       "omitir": "Skip them",
       "actualizar": "Update their data",
-      "confirmar": "Confirm and import"
+      "enArchivo": "Repeated earlier in the file: not loaded",
+      "enRancho": "Already exists on your ranch: skipped",
+      "seActualiza": "Already exists on your ranch: its data is updated"
+    },
+    "errores": {
+      "titulo": "Rows with errors ({n})",
+      "descargar": "Download report"
+    },
+    "informe": {
+      "archivo": "import_errors.csv",
+      "fila": "Row",
+      "filaN": "Row {n}",
+      "identificador": "Identifier",
+      "motivo": "Reason"
+    },
+    "confirmar": {
+      "texto": "Confirming saves {n} animal(s). Rows with errors are not loaded.",
+      "nada": "There is nothing to load yet.",
+      "boton": "Confirm and import ({n})"
     },
     "resultado": {
       "titulo": "Import finished",
-      "insertados": "New",
-      "actualizados": "Updated",
-      "omitidos": "Skipped",
-      "otra": "Run another import"
+      "otra": "Import another file",
+      "verAnimales": "See animals"
     }
   },
   "unidades": {
@@ -1404,6 +1431,15 @@
       "capacidadAyuda": "Optional. Without a capacity there is no overcrowding warning.",
       "superficie": "Area ({unidad})",
       "superficieAyuda": "Optional."
+    },
+    "excedidos": "{n} pen(s) are over capacity: {nombres}.",
+    "barra": "{n} of {capacidad} animals",
+    "asignar": {
+      "boton": "Assign animals",
+      "titulo": "Assign animals to “{nombre}”",
+      "confirmar": "Assign ({n})",
+      "vacio": "There are no active animals outside this pen.",
+      "todos": "Select all ({n})"
     }
   },
   "animales": {
@@ -1520,6 +1556,14 @@
         "vacio": "Its status never changed.",
         "de": "{anterior} → {nuevo}"
       }
+    },
+    "seleccion": {
+      "cuantos": "{n} animal(s) selected",
+      "corral": "Pen",
+      "asignar": "Assign to pen",
+      "quitar": "Clear selection",
+      "todos": "Select all active ({n})",
+      "elegir": "Select {identificador}"
     }
   },
   "permisosSocio": {

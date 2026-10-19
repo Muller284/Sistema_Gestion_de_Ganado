@@ -6,6 +6,9 @@
  *   HU-33  el cambio de estado con confirmación
  *   HU-39  el historial de movimientos entre corrales
  *   HU-21  los permisos del socio
+ *   HU-37  asignar animales a un corral (desde el corral o la selección)
+ *   HU-38  la barra de ocupación y su estado de advertencia
+ *   HU-43  la tabla de vista previa de la importación
  *
  * Solo tokens. Tarjeta, insignia, botón, campo y aviso ya existen: acá está
  * únicamente la lista con filas y el historial.
@@ -78,6 +81,86 @@
   align-items: center;
   gap: var(--e-8);
   font-size: var(--t-etiqueta);
+}
+
+/* HU-36 y HU-38: ocupación sobre capacidad. Al superar el 100 % la barra
+ * queda llena y pasa a los colores de advertencia. */
+.ganado__ocupacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  min-width: 120px;
+}
+
+.ganado__barra {
+  height: var(--e-6);
+  border-radius: var(--r-full);
+  background: var(--arena-100);
+  overflow: hidden;
+}
+
+.ganado__barra > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--corral-500);
+  transition: width var(--t-med) var(--curva);
+}
+
+.ganado__barra.excedida { background: var(--adv-bg); }
+.ganado__barra.excedida > span { background: var(--adv-base); }
+
+/* HU-37: el panel para asignar ocupa todo el ancho debajo de su fila. */
+.ganado__panel { flex-basis: 100%; }
+
+.ganado__casilla {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  font-size: var(--t-etiqueta);
+}
+
+.ganado__eleccion {
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+}
+
+/* HU-43: vista previa de la importación. Desplaza dentro de su caja en el celular. */
+.ganado__tabla-contenedor {
+  overflow-x: auto;
+  margin: calc(var(--e-24) * -1);
+}
+
+.ganado__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-etiqueta);
+}
+
+.ganado__tabla th,
+.ganado__tabla td {
+  padding: var(--e-10) var(--e-16);
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: var(--borde) solid var(--arena-100);
+}
+
+.ganado__tabla th {
+  color: var(--arena-600);
+  font-weight: var(--peso-medio);
+  background: var(--arena-50);
+}
+
+.ganado__tabla tr:last-child td { border-bottom: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ganado__barra > span { transition: none; }
 }
 
 @media (max-width: 640px) {

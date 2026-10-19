@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Alerta,
   Boton,
+  CampoLista,
   Cargando,
   DisenoApp,
   EstadoVacio,
@@ -11,7 +12,7 @@ import {
   Segmentos,
   Tarjeta,
 } from '../../componentes';
-import { api, type Animal, type EstadoAnimal } from '../../servicios/api';
+import { api, type Animal, type Corral, type EstadoAnimal } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { conTransicion } from '../../servicios/transicion';
 import { nivel, useContextoGanado, usuarioDe } from '../ganado/contexto';
@@ -25,8 +26,11 @@ import { FormularioFicha } from './FormularioFicha';
  * HU-34: los dados de baja tienen su propia vista y desde la ficha se
  * restauran.
  *
+ * HU-37, criterio 2: quien edita animales marca varios activos y los asigna
+ * juntos a un corral. Si el corral se excede, se avisa sin impedirlo (HU-38).
+ *
  * El listado con filtros y búsqueda es HU-29 (Brian): acá está solo lo que
- * hace falta para registrar un animal y abrir su ficha.
+ * hace falta para registrar un animal, abrir su ficha y asignar corrales.
  */
 
 type Vista = EstadoAnimal | 'todos' | 'bajas';
@@ -40,8 +44,31 @@ export function PaginaListaAnimales() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [registrando, setRegistrando] = useState(false);
+  const [seleccion, setSeleccion] = useState<string[]>([]);
+  const [corrales, setCorrales] = useState<Corral[]>([]);
+  const [destino, setDestino] = useState('');
+  const [asignando, setAsignando] = useState(false);
+  const [aviso, setAviso] = useState('');
+  const [avisoExceso, setAvisoExceso] = useState('');
+  // Cambiar la versión vuelve a pedir la lista.
+  const [version, setVersion] = useState(0);
 
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
+  // Solo los activos y vigentes se pueden asignar a un corral.
+  const asignables = animales.filter((a) => a.estado === 'activo' && !a.eliminado_en);
+  const seleccionando = puedeEditar && asignables.length > 0;
+
+  useEffect(() => {
+    if (!puedeEditar) return;
+    let vigente = true;
+    api
+      .corrales()
+      .then((lista) => vigente && setCorrales(lista))
+      .catch(() => undefined);
+    return () => {
+      vigente = false;
+    };
+  }, [puedeEditar, version]);
 
   useEffect(() => {
     let vigente = true;
@@ -53,6 +80,7 @@ export function PaginaListaAnimales() {
       .then((lista) => {
         if (vigente) {
           setAnimales(lista);
+          setSeleccion([]);
           setError('');
         }
       })
@@ -61,7 +89,28 @@ export function PaginaListaAnimales() {
     return () => {
       vigente = false;
     };
-  }, [vista]);
+  }, [vista, version]);
+
+  function alternar(id: string) {
+    setSeleccion((previa) => (previa.includes(id) ? previa.filter((x) => x !== id) : [...previa, id]));
+  }
+
+  /** HU-37, criterio 2. */
+  async function asignar() {
+    setAsignando(true);
+    setError('');
+    try {
+      const respuesta = await api.asignarAnimales(destino, seleccion);
+      setAviso(respuesta.mensaje);
+      setAvisoExceso(respuesta.aviso ?? '');
+      setDestino('');
+      setVersion((previa) => previa + 1);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setAsignando(false);
+    }
+  }
 
   function alRegistrar(animal: Animal) {
     navegar(`/animales/${animal.id}`);
@@ -88,6 +137,8 @@ export function PaginaListaAnimales() {
       <div className="col g24">
         {(cargando || contexto.cargando) && <Cargando lineas={5} />}
         {error && <Alerta variante="error">{error}</Alerta>}
+        {aviso && <Alerta variante="exito">{aviso}</Alerta>}
+        {avisoExceso && <Alerta variante="adv">{avisoExceso}</Alerta>}
         {!contexto.cargando && !puedeEditar && !error && (
           <Alerta variante="info">{t('animales.soloConsulta')}</Alerta>
         )}
@@ -112,6 +163,32 @@ export function PaginaListaAnimales() {
               opciones={VISTAS.map((clave) => ({ clave, nombre: t(`animales.vistas.${clave}`) }))}
             />
 
+            {seleccion.length > 0 && (
+              <Tarjeta>
+                <div className="fila g12 centro">
+                  <span className="cuerpo-m flex1">{t('animales.seleccion.cuantos', { n: seleccion.length })}</span>
+                  <CampoLista
+                    etiqueta={t('animales.seleccion.corral')}
+                    value={destino}
+                    onChange={(e) => setDestino(e.target.value)}
+                  >
+                    <option value="">{t('animales.campos.elegir')}</option>
+                    {corrales.map((corral) => (
+                      <option key={corral.id} value={corral.id}>
+                        {corral.nombre}
+                      </option>
+                    ))}
+                  </CampoLista>
+                  <Boton variante="primario" onClick={asignar} disabled={asignando || !destino}>
+                    {asignando ? t('comun.guardando') : t('animales.seleccion.asignar')}
+                  </Boton>
+                  <Boton variante="fantasma" onClick={() => setSeleccion([])} disabled={asignando}>
+                    {t('animales.seleccion.quitar')}
+                  </Boton>
+                </div>
+              </Tarjeta>
+            )}
+
             {animales.length === 0 ? (
               <EstadoVacio
                 icono="animal"
@@ -121,8 +198,31 @@ export function PaginaListaAnimales() {
             ) : (
               <Tarjeta>
                 <ul className="ganado__lista">
+                  {seleccionando && (
+                    <li className="ganado__fila">
+                      <label className="ganado__casilla">
+                        <input
+                          type="checkbox"
+                          checked={seleccion.length === asignables.length}
+                          onChange={() =>
+                            setSeleccion(seleccion.length === asignables.length ? [] : asignables.map((a) => a.id))
+                          }
+                        />
+                        {t('animales.seleccion.todos', { n: asignables.length })}
+                      </label>
+                    </li>
+                  )}
                   {animales.map((animal) => (
                     <li key={animal.id} className={animal.eliminado_en ? 'ganado__fila de-baja' : 'ganado__fila'}>
+                      {seleccionando && (
+                        <input
+                          type="checkbox"
+                          aria-label={t('animales.seleccion.elegir', { identificador: animal.identificador })}
+                          checked={seleccion.includes(animal.id)}
+                          disabled={animal.estado !== 'activo' || Boolean(animal.eliminado_en)}
+                          onChange={() => alternar(animal.id)}
+                        />
+                      )}
                       <div className="ganado__principal">
                         <span className="dato">{animal.identificador}</span>
                         <span className="pie c-500">

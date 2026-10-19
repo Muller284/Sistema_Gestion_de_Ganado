@@ -1333,32 +1333,59 @@
   "importacion": {
     "titulo": "Importar ganado",
     "rotulo": "Importación masiva",
-    "soloConsulta": "Como socio tienes acceso de solo consulta: puedes ver el ganado, pero no importar animales.",
+    "soloConsulta": "Importar animales necesita permiso de edición en el módulo Importación. Pídeselo al propietario.",
     "plantilla": {
-      "titulo": "1. Descarga la plantilla",
-      "texto": "Es un CSV con las columnas exactas que espera el sistema y tres filas de ejemplo.",
-      "boton": "Descargar plantilla CSV"
+      "titulo": "1. Plantilla (opcional)",
+      "texto": "Un Excel con las columnas que espera el sistema, una fila de ejemplo y los valores aceptados. Si tu archivo ya tiene esos encabezados, no hace falta.",
+      "boton": "Descargar plantilla de Excel"
     },
     "archivo": {
       "titulo": "2. Sube tu archivo",
-      "etiqueta": "Archivo CSV"
+      "etiqueta": "Archivo de Excel (.xlsx) o CSV",
+      "ayuda": "Todavía no se guarda nada: primero vas a ver cómo quedaría."
     },
-    "validacion": {
-      "titulo": "3. Revisa los datos",
-      "validas": "{cantidad} animal(es) listos para importar de {total}.",
-      "errores": "{cantidad} fila(s) con errores. Corrígelas en el archivo y vuelve a subirlo.",
-      "fila": "Fila {fila}",
-      "duplicados": "Estas caravanas ya existen en tu rancho: {caravanas}. ¿Qué hacemos con ellas?",
-      "omitir": "Omitirlas",
+    "resumen": {
+      "total": "Filas en el archivo",
+      "cargan": "Se cargan",
+      "conError": "Con error",
+      "repetidas": "Repetidas"
+    },
+    "vistaPrevia": {
+      "titulo": "3. Así quedarían las primeras filas",
+      "vacia": "Ninguna fila se va a cargar. Revisa los errores y las repetidas.",
+      "accion": "Qué pasa",
+      "nueva": "Nuevo",
+      "actualizar": "Se actualiza"
+    },
+    "repetidas": {
+      "titulo": "Repetidas ({n})",
+      "pregunta": "¿Qué hacemos con los animales que ya existen en tu rancho?",
+      "omitir": "Omitirlos",
       "actualizar": "Actualizar sus datos",
-      "confirmar": "Confirmar e importar"
+      "enArchivo": "Repetido más arriba en el archivo: no se carga",
+      "enRancho": "Ya existe en tu rancho: se omite",
+      "seActualiza": "Ya existe en tu rancho: se actualizan sus datos"
+    },
+    "errores": {
+      "titulo": "Filas con error ({n})",
+      "descargar": "Descargar informe"
+    },
+    "informe": {
+      "archivo": "errores_importacion.csv",
+      "fila": "Fila",
+      "filaN": "Fila {n}",
+      "identificador": "Identificador",
+      "motivo": "Motivo"
+    },
+    "confirmar": {
+      "texto": "Al confirmar se guardan {n} animal(es). Las filas con error no se cargan.",
+      "nada": "No hay nada para cargar todavía.",
+      "boton": "Confirmar e importar ({n})"
     },
     "resultado": {
       "titulo": "Importación terminada",
-      "insertados": "Nuevos",
-      "actualizados": "Actualizados",
-      "omitidos": "Omitidos",
-      "otra": "Hacer otra importación"
+      "otra": "Importar otro archivo",
+      "verAnimales": "Ver animales"
     }
   },
   "unidades": {
@@ -1404,6 +1431,15 @@
       "capacidadAyuda": "Opcional. Sin capacidad no hay aviso de sobrepoblación.",
       "superficie": "Superficie ({unidad})",
       "superficieAyuda": "Opcional."
+    },
+    "excedidos": "{n} corral(es) superan su capacidad: {nombres}.",
+    "barra": "{n} de {capacidad} animales",
+    "asignar": {
+      "boton": "Asignar animales",
+      "titulo": "Asignar animales a «{nombre}»",
+      "confirmar": "Asignar ({n})",
+      "vacio": "No hay animales activos fuera de este corral.",
+      "todos": "Elegir todos ({n})"
     }
   },
   "animales": {
@@ -1520,6 +1556,14 @@
         "vacio": "Nunca cambió de estado.",
         "de": "{anterior} → {nuevo}"
       }
+    },
+    "seleccion": {
+      "cuantos": "{n} animal(es) elegido(s)",
+      "corral": "Corral",
+      "asignar": "Asignar al corral",
+      "quitar": "Quitar la selección",
+      "todos": "Elegir todos los activos ({n})",
+      "elegir": "Elegir {identificador}"
     }
   },
   "permisosSocio": {

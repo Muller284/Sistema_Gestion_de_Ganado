@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import {
   Alerta,
   Boton,
@@ -11,7 +11,7 @@ import {
   Segmentos,
   Tarjeta,
 } from '../../componentes';
-import { api, type Corral } from '../../servicios/api';
+import { api, type Animal, type Corral, type RespuestaAsignacion } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { conTransicion } from '../../servicios/transicion';
 import {
@@ -33,6 +33,12 @@ import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/co
  * HU-34: dar de baja no borra; la vista "Dados de baja" permite restaurar.
  * HU-26: la superficie se escribe y se ve en hectáreas o acres según el país.
  * HU-21 y HU-22: quien solo puede ver no encuentra los botones de cargar.
+ *
+ * HU-37 · Desde cada corral se le asignan animales, de a uno o de a muchos;
+ *         cada asignación queda como movimiento (lo hace el servidor).
+ * HU-38 · La barra de ocupación pasa a advertencia al superar el 100 %, el
+ *         listado dice cuáles corrales están excedidos, y asignar de más
+ *         avisa pero no lo impide.
  */
 
 type Vista = 'vigentes' | 'bajas';
@@ -48,8 +54,12 @@ export function PaginaCorrales() {
   const [editando, setEditando] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
+  const [asignando, setAsignando] = useState<string | null>(null);
+  const [avisoExceso, setAvisoExceso] = useState('');
 
   const puedeEditar = nivel(contexto, 'corrales') === 'editar';
+  // HU-37: mover animales es editar animales, como hacerlo desde la ficha.
+  const puedeAsignar = nivel(contexto, 'animales') === 'editar';
 
   // Cambiar la versión vuelve a pedir la lista.
   const [version, setVersion] = useState(0);
@@ -69,11 +79,14 @@ export function PaginaCorrales() {
 
   const visibles = corrales.filter((c) => (vista === 'bajas') === Boolean(c.eliminado_en));
   const cuantosDeBaja = corrales.filter((c) => c.eliminado_en).length;
+  // HU-38, criterio 3.
+  const excedidos = corrales.filter((c) => !c.eliminado_en && c.sobrepoblado);
 
   function abrir(id: string | null) {
     conTransicion(() => {
       setEditando(id);
       setConfirmando(null);
+      setAsignando(null);
       setError('');
     });
   }
@@ -92,6 +105,23 @@ export function PaginaCorrales() {
     } finally {
       setOcupado(null);
     }
+  }
+
+  function abrirAsignacion(id: string | null) {
+    conTransicion(() => {
+      setAsignando(id);
+      setEditando(null);
+      setConfirmando(null);
+      setError('');
+    });
+  }
+
+  /** HU-37 y HU-38: el aviso de exceso se muestra aparte, porque la asignación ya se hizo. */
+  function alAsignar(respuesta: RespuestaAsignacion) {
+    setAviso(respuesta.mensaje);
+    setAvisoExceso(respuesta.aviso ?? '');
+    abrirAsignacion(null);
+    recargar();
   }
 
   function alGuardar(mensaje: string) {
@@ -123,6 +153,15 @@ export function PaginaCorrales() {
         {error && <Alerta variante="error">{error}</Alerta>}
         {contexto.error && <Alerta variante="error">{contexto.error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
+        {avisoExceso && <Alerta variante="adv">{avisoExceso}</Alerta>}
+        {!cargando && excedidos.length > 0 && (
+          <Alerta variante="adv">
+            {t('corrales.excedidos', {
+              n: excedidos.length,
+              nombres: excedidos.map((c) => c.nombre).join(', '),
+            })}
+          </Alerta>
+        )}
         {!contexto.cargando && !puedeEditar && !error && (
           <Alerta variante="info">{t('corrales.soloConsulta')}</Alerta>
         )}
@@ -169,6 +208,8 @@ export function PaginaCorrales() {
                         key={corral.id}
                         corral={corral}
                         regional={contexto.regional}
+                        asignable={puedeAsignar && editando === null && asignando === null}
+                        alAsignar={() => abrirAsignacion(corral.id)}
                         editable={puedeEditar && editando === null}
                         eliminable={puedeEliminar(contexto)}
                         confirmando={confirmando === corral.id}
@@ -178,7 +219,15 @@ export function PaginaCorrales() {
                         alCancelarBaja={() => setConfirmando(null)}
                         alDarDeBaja={() => accion(corral.id, () => api.bajaCorral(corral.id))}
                         alRestaurar={() => accion(corral.id, () => api.restaurarCorral(corral.id))}
-                      />
+                      >
+                        {asignando === corral.id && (
+                          <AsignarAnimales
+                            corral={corral}
+                            alAsignar={alAsignar}
+                            alCancelar={() => abrirAsignacion(null)}
+                          />
+                        )}
+                      </FilaCorral>
                     ),
                   )}
                 </ul>
@@ -194,6 +243,9 @@ export function PaginaCorrales() {
 interface PropiedadesFila {
   corral: Corral;
   regional: Regional;
+  /** HU-37: tiene edición de animales y no hay otra cosa abierta. */
+  asignable: boolean;
+  alAsignar: () => void;
   editable: boolean;
   /** Dar de baja y restaurar: solo el propietario y el Admin (HU-18). */
   eliminable: boolean;
@@ -204,11 +256,15 @@ interface PropiedadesFila {
   alCancelarBaja: () => void;
   alDarDeBaja: () => void;
   alRestaurar: () => void;
+  /** El panel de asignación, debajo de la fila. */
+  children?: ReactNode;
 }
 
 function FilaCorral({
   corral,
   regional,
+  asignable,
+  alAsignar,
   editable,
   eliminable,
   confirmando,
@@ -218,6 +274,7 @@ function FilaCorral({
   alCancelarBaja,
   alDarDeBaja,
   alRestaurar,
+  children,
 }: PropiedadesFila) {
   const deBaja = Boolean(corral.eliminado_en);
 
@@ -232,18 +289,27 @@ function FilaCorral({
         </span>
       </div>
 
-      {/* Criterio 3: ocupación sobre capacidad. Criterio 2: sin capacidad, sin aviso. */}
-      <span className="ganado__dato">
-        {corral.capacidad === null
-          ? t('corrales.ocupacionSinTope', { n: corral.ocupacion })
-          : t('corrales.ocupacion', { n: corral.ocupacion, capacidad: corral.capacidad })}
-      </span>
+      {/* HU-36 criterio 3 y HU-38 criterio 1. Sin capacidad, ni barra ni aviso (HU-36 criterio 2). */}
+      <div className="ganado__ocupacion">
+        <span className="ganado__dato">
+          {corral.capacidad === null
+            ? t('corrales.ocupacionSinTope', { n: corral.ocupacion })
+            : t('corrales.ocupacion', { n: corral.ocupacion, capacidad: corral.capacidad })}
+        </span>
+        {corral.capacidad !== null && <BarraOcupacion corral={corral} />}
+      </div>
       {corral.sobrepoblado && <Insignia variante="adv">{t('corrales.sobrepoblado')}</Insignia>}
       {deBaja && <Insignia variante="archivado">{t('corrales.deBaja')}</Insignia>}
 
-      {editable && (
+      {(editable || (asignable && !deBaja)) && (
         <div className="ganado__acciones">
-          {deBaja ? (
+          {asignable && !deBaja && !confirmando && (
+            <Boton variante="secundario" onClick={alAsignar} disabled={ocupado}>
+              <Icono nombre="animal" tamano={16} />
+              {t('corrales.asignar.boton')}
+            </Boton>
+          )}
+          {!editable ? null : deBaja ? (
             eliminable && (
             <Boton variante="secundario" onClick={alRestaurar} disabled={ocupado}>
               {t('corrales.restaurar')}
@@ -275,6 +341,7 @@ function FilaCorral({
           )}
         </div>
       )}
+      {children}
     </li>
   );
 }
@@ -370,5 +437,124 @@ function FormularioCorral({ corral, regional, alGuardar, alCancelar }: Propiedad
         </div>
       </Tarjeta>
     </form>
+  );
+}
+
+/** HU-38, criterio 1: la barra pasa a advertencia al superar el 100 %. */
+function BarraOcupacion({ corral }: { corral: Corral }) {
+  const capacidad = corral.capacidad ?? 0;
+  const lleno = capacidad > 0 ? Math.min(100, Math.round((corral.ocupacion / capacidad) * 100)) : 0;
+  return (
+    <div
+      className={corral.sobrepoblado ? 'ganado__barra excedida' : 'ganado__barra'}
+      role="meter"
+      aria-valuemin={0}
+      aria-valuemax={capacidad}
+      aria-valuenow={corral.ocupacion}
+      aria-label={t('corrales.barra', { n: corral.ocupacion, capacidad })}
+    >
+      <span style={{ width: `${lleno}%` }} />
+    </div>
+  );
+}
+
+interface PropiedadesAsignar {
+  corral: Corral;
+  alAsignar: (respuesta: RespuestaAsignacion) => void;
+  alCancelar: () => void;
+}
+
+/**
+ * HU-37, criterio 1: asignar desde el corral. Muestra los animales activos
+ * que todavía no están en él; se marcan uno o muchos y se asignan juntos.
+ */
+function AsignarAnimales({ corral, alAsignar, alCancelar }: PropiedadesAsignar) {
+  const [animales, setAnimales] = useState<Animal[] | null>(null);
+  const [elegidos, setElegidos] = useState<string[]>([]);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let vigente = true;
+    api
+      .animales('activo')
+      .then((lista) => vigente && setAnimales(lista.filter((a) => a.corral_id !== corral.id)))
+      .catch((err: Error) => vigente && setError(err.message));
+    return () => {
+      vigente = false;
+    };
+  }, [corral.id]);
+
+  const todos = animales ?? [];
+  const todosElegidos = todos.length > 0 && elegidos.length === todos.length;
+
+  function alternar(id: string) {
+    setElegidos((previos) => (previos.includes(id) ? previos.filter((x) => x !== id) : [...previos, id]));
+  }
+
+  async function asignar() {
+    setEnviando(true);
+    setError('');
+    try {
+      alAsignar(await api.asignarAnimales(corral.id, elegidos));
+    } catch (err) {
+      setError((err as Error).message);
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div className="ganado__panel">
+      <Tarjeta
+        titulo={t('corrales.asignar.titulo', { nombre: corral.nombre })}
+        pie={
+          <div className="fila g8">
+            <Boton variante="secundario" onClick={alCancelar} disabled={enviando}>
+              {t('comun.cancelar')}
+            </Boton>
+            <Boton variante="primario" onClick={asignar} disabled={enviando || elegidos.length === 0}>
+              {enviando ? t('comun.guardando') : t('corrales.asignar.confirmar', { n: elegidos.length })}
+            </Boton>
+          </div>
+        }
+      >
+        <div className="col g12">
+          {error && <Alerta variante="error">{error}</Alerta>}
+          {animales === null && !error && <Cargando lineas={3} />}
+          {animales !== null && todos.length === 0 && (
+            <p className="cuerpo c-600">{t('corrales.asignar.vacio')}</p>
+          )}
+          {todos.length > 0 && (
+            <>
+              <label className="ganado__casilla">
+                <input
+                  type="checkbox"
+                  checked={todosElegidos}
+                  onChange={() => setElegidos(todosElegidos ? [] : todos.map((a) => a.id))}
+                />
+                {t('corrales.asignar.todos', { n: todos.length })}
+              </label>
+              <ul className="ganado__eleccion">
+                {todos.map((animal) => (
+                  <li key={animal.id}>
+                    <label className="ganado__casilla">
+                      <input
+                        type="checkbox"
+                        checked={elegidos.includes(animal.id)}
+                        onChange={() => alternar(animal.id)}
+                      />
+                      <span className="dato">{animal.identificador}</span>
+                      <span className="pie c-500">
+                        {animal.corral_nombre ?? t('animales.sinCorral')}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      </Tarjeta>
+    </div>
   );
 }

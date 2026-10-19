@@ -1157,3 +1157,50 @@ y la pantalla esconde esos botones al resto.
 **La guía (HU-16) ya muestra animales y corrales disponibles**, como decía la
 decisión 28. Se ajustó `guia.test.js` en lo que cambió (vacunas sigue
 apagado).
+
+## 36. Asignación a corrales e importación desde Excel (Sprint 3, Romina)
+
+Historias: HU-37, HU-38, HU-40, HU-43 y HU-44.
+
+**Asignar es mover (HU-37).** `POST /corrales/:id/animales` recibe la lista de
+animales y, en una sola transacción, le registra a cada uno su movimiento
+(decisión 35: el corral solo cambia con un movimiento). Los que ya estaban en
+ese corral o no son del rancho no se tocan, y la respuesta dice cuántos. Exige
+edición de **animales**, igual que mover desde la ficha. Se asigna desde el
+corral (botón «Asignar animales»), desde la ficha y desde la selección del
+listado de animales.
+
+**El aviso de sobrepoblación no impide (HU-38).** Si el corral queda por
+encima de su capacidad, la asignación se hace igual y la respuesta trae un
+`aviso`. La barra de ocupación pasa a los colores de advertencia al superar
+el 100 % y el listado de corrales dice cuáles están excedidos. Sin capacidad
+cargada no hay barra ni aviso (HU-36, criterio 2).
+
+**Excel con exceljs (HU-40 y HU-43).** Dependencia nueva del servidor:
+`exceljs` 4.4.0, la única que lee y escribe `.xlsx` sin depender de nada
+nativo. Se usa para armar la plantilla y para leer lo que sube el usuario. El
+CSV se lee sin dependencias (coma o punto y coma, con comillas).
+
+**La plantilla sale en el idioma de quien la pide** (Accept-Language) y con la
+unidad de peso y el formato de fecha del país del rancho (HU-26). Trae una
+segunda hoja con los valores aceptados. Es opcional: se acepta cualquier
+archivo con esos encabezados, en cualquier orden y en cualquiera de los dos
+idiomas. Reconocer encabezados con **otros** nombres es HU-41 (Brian): se suma
+en `lector-archivo.ts` sin tocar el resto.
+
+**Vista previa y confirmación son dos pedidos con el mismo archivo.** El
+archivo viaja en base64 dentro del JSON (por eso el límite del cuerpo subió a
+8 MB en `main.ts`). `vista-previa` lee, valida y clasifica sin escribir nada;
+`confirmar` repite la validación y guarda en una sola transacción. Así nada se
+carga hasta confirmar y lo que se guarda es exactamente lo que se vio. Las
+filas con error no se cargan; las demás sí.
+
+**Repetidos (HU-44).** Dentro del archivo vale la primera aparición; las
+siguientes se informan como repetidas y no se cargan. Contra el rancho se
+compara por identificador entre los vigentes. «Actualizar» pisa solo los datos
+que trae el archivo (lo vacío no borra nada) y, si cambia el corral, registra
+el movimiento.
+
+**Permisos.** Importar exige edición en el módulo **importacion**
+(`PermisosModulo`); descargar la plantilla, solo verlo. Se va el
+almacenamiento en memoria del Sprint 2: todo queda en la tabla `animales`.
