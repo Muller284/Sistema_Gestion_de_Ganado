@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { Pool } from 'pg';
 import { POOL_BD } from '../../comun/modulo-base-datos';
 
@@ -81,6 +82,55 @@ export class RepositorioCorrales {
         WHERE id = $1 AND rancho_id = $2 AND eliminado_en IS NULL`,
       [id, ranchoId, datos.nombre, datos.capacidad, datos.superficieHa, autorId],
     );
+  }
+
+  /**
+   * HU-37. Mete en el corral a los animales vigentes del rancho que se pidan.
+   * Cada uno que cambia de corral deja su movimiento (HU-39), todo en una sola
+   * transaccion. Los que ya estaban, o no son de este rancho, no se tocan.
+   */
+  async asignar(
+    corralId: string,
+    animalIds: string[],
+    ranchoId: string,
+    autorId: string,
+  ): Promise<{ movidos: number; yaEstaban: number; noEncontrados: number }> {
+    const cliente = await this.bd.connect();
+    try {
+      await cliente.query('BEGIN');
+      const animales = await cliente.query(
+        `SELECT id, corral_id FROM animales
+          WHERE rancho_id = $1 AND id::text = ANY($2::text[]) AND eliminado_en IS NULL
+          FOR UPDATE`,
+        [ranchoId, animalIds],
+      );
+      let movidos = 0;
+      let yaEstaban = 0;
+      for (const animal of animales.rows) {
+        if (animal.corral_id === corralId) {
+          yaEstaban++;
+          continue;
+        }
+        await cliente.query(
+          `INSERT INTO movimientos_corral
+                  (id, rancho_id, animal_id, corral_origen_id, corral_destino_id, creado_por, modificado_por)
+           VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+          [randomUUID(), ranchoId, animal.id, animal.corral_id, corralId, autorId],
+        );
+        await cliente.query(
+          `UPDATE animales SET corral_id = $3, modificado_por = $4 WHERE id = $1 AND rancho_id = $2`,
+          [animal.id, ranchoId, corralId, autorId],
+        );
+        movidos++;
+      }
+      await cliente.query('COMMIT');
+      return { movidos, yaEstaban, noEncontrados: animalIds.length - animales.rowCount! };
+    } catch (error) {
+      await cliente.query('ROLLBACK');
+      throw error;
+    } finally {
+      cliente.release();
+    }
   }
 
   /** HU-34: la baja marca, no borra; restaurar la desmarca. */

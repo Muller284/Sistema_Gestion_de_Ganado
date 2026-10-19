@@ -234,15 +234,50 @@
       "dadoDeBaja": "Ranch deactivated."
     },
     "importacion": {
-      "sinContenido": "Send the CSV content or the list of rows to validate.",
-      "caravanaObligatoria": "The ear tag is required.",
-      "caravanaRepetida": "That ear tag is repeated within the same file.",
-      "sexoInvalido": "Sex must be male (M) or female (H).",
-      "pesoInvalido": "Current weight must be a positive number.",
-      "sinRancho": "You need an active ranch to import animals.",
-      "socioSoloLectura": "As a partner you have read-only access: you can't import animals.",
-      "archivoConErrores": "The file has {cantidad} row(s) with errors. Fix them before importing.",
-      "completada": "Import finished: {insertados} new, {actualizados} updated and {omitidos} skipped."
+      "sinContenido": "Upload an Excel (.xlsx) or CSV file.",
+      "muyGrande": "The file is larger than 5 MB. Split it into parts.",
+      "formatoInvalido": "The file could not be read. Save it as Excel (.xlsx) or CSV and upload it again.",
+      "sinFilas": "The file has no rows to import.",
+      "faltanColumnas": "The file is missing required columns: {columnas}. Use the template headers.",
+      "demasiadasFilas": "The file has more than {n} rows. Split it into parts.",
+      "nadaQueCargar": "There are no rows to load: all of them have errors or are repeated.",
+      "cambioMientras": "Someone registered one of these animals while you were reviewing the file. Generate the preview again.",
+      "completada": "Import finished: {insertados} new, {actualizados} updated, {omitidos} repeated skipped and {errores} row(s) with errors not loaded.",
+      "columnas": {
+        "identificador": "Identifier",
+        "tipo_identificador": "Identifier type",
+        "nombre": "Name",
+        "raza": "Breed",
+        "sexo": "Sex",
+        "categoria": "Category",
+        "fecha_nacimiento": "Birth date",
+        "origen": "Origin",
+        "corral": "Pen",
+        "peso": "Weight ({unidad})"
+      },
+      "plantilla": {
+        "archivo": "cattle_template",
+        "hoja": "Animals",
+        "hojaAyuda": "Accepted values",
+        "columna": "Column",
+        "valores": "What you can write",
+        "obligatorio": "Required.",
+        "corralEjemplo": "North pen",
+        "corralAyuda": "The name of a pen that already exists on your ranch, or empty.",
+        "pesoAyuda": "A number in {unidad}, or empty."
+      },
+      "motivos": {
+        "sinIdentificador": "The identifier is missing.",
+        "textoLargo": "The text is longer than {n} characters.",
+        "tipoInvalido": "“{valor}” is not a valid identifier type.",
+        "sexoInvalido": "“{valor}” is not a valid sex: write male or female.",
+        "categoriaInvalida": "“{valor}” is not a category in the catalog.",
+        "fechaInvalida": "The birth date is not valid. Use {formato}.",
+        "fechaFutura": "The birth date can't be in the future.",
+        "origenInvalido": "“{valor}” is not a valid origin.",
+        "corralInexistente": "There is no pen called “{valor}” on your ranch.",
+        "pesoInvalido": "Weight must be a number greater than zero."
+      }
     },
     "permisos": {
       "sinRancho": "You don't belong to any ranch yet.",
@@ -266,7 +301,10 @@
       "guardado": "You saved the changes to “{nombre}”.",
       "conAnimales": "“{nombre}” has {n} animal(s) in it. Move them to another pen before removing it.",
       "dadoDeBaja": "You removed the pen “{nombre}”. You can restore it whenever you want.",
-      "restaurado": "“{nombre}” is active again."
+      "restaurado": "“{nombre}” is active again.",
+      "seleccionInvalida": "Choose between 1 and {n} animals to assign.",
+      "asignados": "You assigned {n} animal(s) to “{nombre}”.",
+      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}."
     },
     "animales": {
       "sinIdentificador": "The identifier is required.",

@@ -178,6 +178,73 @@ async function ejecutarPruebas() {
     assert.strictEqual(estado, 404);
   });
 
+  // --- HU-37 y HU-38 (Sprint 3) --------------------------------------------
+  const chico = (await pedir('POST', '/corrales', { nombre: `Chico ${MARCA}`, capacidad: 1 })).cuerpo.corral;
+  const sueltos = [];
+  for (const sufijo of ['A', 'B']) {
+    sueltos.push((await pedir('POST', '/animales', { identificador: `S-${MARCA}-${sufijo}`, sexo: 'macho' })).cuerpo.animal);
+  }
+  const ajeno = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-B`, sexo: 'macho' }, PROPIETARIO_B)).cuerpo.animal;
+  let asignacion;
+
+  await prueba('HU-37 criterio 2: se asignan varios animales juntos desde una seleccion', async () => {
+    const { estado, cuerpo } = await pedir('POST', `/corrales/${chico.id}/animales`, {
+      animal_ids: [...sueltos.map((a) => a.id), ajeno.id],
+    });
+    assert.strictEqual(estado, 201, JSON.stringify(cuerpo));
+    asignacion = cuerpo;
+    assert.strictEqual(cuerpo.movidos, 2);
+    assert.strictEqual(cuerpo.no_encontrados, 1, 'el animal de otro rancho no se toca');
+  });
+
+  await prueba('HU-37 criterio 3: cada asignacion queda registrada como un movimiento', async () => {
+    const filas = await pool.query(
+      `SELECT animal_id, corral_origen_id, corral_destino_id, creado_por FROM movimientos_corral
+        WHERE corral_destino_id = $1`,
+      [chico.id],
+    );
+    assert.strictEqual(filas.rowCount, 2);
+    assert.ok(filas.rows.every((m) => m.corral_origen_id === null && m.creado_por === PROPIETARIO_A));
+    const ajenoAhora = await pool.query('SELECT corral_id FROM animales WHERE id = $1', [ajeno.id]);
+    assert.strictEqual(ajenoAhora.rows[0].corral_id, null);
+  });
+
+  await prueba('HU-38 criterio 2: el aviso no impide la accion, solo advierte', async () => {
+    assert.strictEqual(asignacion.corral.ocupacion, 2);
+    assert.strictEqual(asignacion.corral.sobrepoblado, true);
+    assert.match(asignacion.aviso, /2/);
+  });
+
+  await prueba('HU-38 criterios 1 y 3: el listado marca los corrales excedidos', async () => {
+    const lista = (await pedir('GET', '/corrales')).cuerpo;
+    assert.strictEqual(lista.find((c) => c.id === chico.id).sobrepoblado, true);
+  });
+
+  await prueba('HU-37 criterio 1: tambien desde la ficha, y avisa si el corral se excede', async () => {
+    const otro = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-C`, sexo: 'hembra' })).cuerpo.animal;
+    const { estado, cuerpo } = await pedir('POST', `/animales/${otro.id}/movimientos`, { corral_id: chico.id });
+    assert.strictEqual(estado, 201);
+    assert.strictEqual(cuerpo.animal.corral_id, chico.id);
+    assert.match(cuerpo.aviso, /3/);
+  });
+
+  await prueba('HU-37: los que ya estaban en el corral no generan otro movimiento', async () => {
+    const { cuerpo } = await pedir('POST', `/corrales/${chico.id}/animales`, { animal_ids: [sueltos[0].id] });
+    assert.strictEqual(cuerpo.movidos, 0);
+    assert.strictEqual(cuerpo.ya_estaban, 1);
+  });
+
+  await prueba('HU-37: sin permiso de edicion de animales no se asigna (socio y veterinario)', async () => {
+    const cuerpo = { animal_ids: [sueltos[0].id] };
+    assert.strictEqual((await pedir('POST', `/corrales/${chico.id}/animales`, cuerpo, SOCIO_A)).estado, 403);
+    assert.strictEqual((await pedir('POST', `/corrales/${chico.id}/animales`, cuerpo, VETERINARIO_A)).estado, 403);
+  });
+
+  await prueba('HU-37: una seleccion vacia se rechaza', async () => {
+    const { estado } = await pedir('POST', `/corrales/${chico.id}/animales`, { animal_ids: [] });
+    assert.strictEqual(estado, 400);
+  });
+
   // ------------------------------------------------------------------------
   await pool.query(
     `DELETE FROM animales WHERE rancho_id IN ($1, $2) AND identificador LIKE $3`,

@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
+import { avisoDeExceso } from '../corrales/servicio-corrales';
 import {
   RepositorioAnimales,
   type Animal,
@@ -136,9 +137,12 @@ export class ServicioAnimales {
     const destino = await this.corralValido(cuerpo?.corral_id, ranchoId);
     const movido = await this.animales.mover(actual.id, ranchoId, destino, quien.id);
     if (!movido) throw new BadRequestException(t('servidor.animales.mismoCorral'));
+    // HU-38: si el corral quedo excedido se avisa, pero el movimiento ya se hizo.
+    const ocupacion = destino ? await this.animales.ocupacionDeCorral(destino, ranchoId) : null;
     return {
       animal: await this.animales.uno(actual.id, ranchoId),
       mensaje: t('servidor.animales.movido', { identificador: actual.identificador }),
+      aviso: ocupacion ? avisoDeExceso(ocupacion) : null,
     };
   }
 
