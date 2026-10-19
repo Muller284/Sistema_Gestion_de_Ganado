@@ -32,14 +32,44 @@ export interface Animal extends DatosFicha {
   corral_nombre: string | null;
   estado: Estado;
   creado_en: string;
+  modificado_en: string;
+  /** HU-23: quien cargo la ficha y quien la toco por ultima vez. */
+  creado_por_nombre: string | null;
+  modificado_por_nombre: string | null;
   eliminado_en: string | null;
+}
+
+/**
+ * HU-29 · Filtros del listado. Todos opcionales y todos se resuelven en el SQL,
+ * no en memoria: con miles de animales no se trae todo para filtrar despues.
+ *   busqueda     parte del identificador o del nombre, sin importar mayusculas
+ *   sexo         macho o hembra
+ *   categoria    codigo del catalogo (HU-28)
+ *   corral       id de un corral del rancho
+ *   fechaDesde   nacidos desde ese dia (AAAA-MM-DD), inclusive
+ *   fechaHasta   nacidos hasta ese dia, inclusive
+ */
+export interface FiltrosListado {
+  busqueda: string | null;
+  sexo: 'macho' | 'hembra' | null;
+  categoria: string | null;
+  corral: string | null;
+  fechaDesde: string | null;
+  fechaHasta: string | null;
 }
 
 const COLUMNAS = `
   a.id, a.identificador, a.tipo_identificador, a.nombre, a.raza, a.sexo,
   a.categoria_codigo, TO_CHAR(a.fecha_nacimiento, 'YYYY-MM-DD') AS fecha_nacimiento,
   a.origen, a.peso_kg::float AS peso_kg, a.corral_id, c.nombre AS corral_nombre,
-  a.estado, a.creado_en, a.eliminado_en`;
+  a.estado, a.creado_en, a.modificado_en, a.eliminado_en,
+  uc.nombre AS creado_por_nombre, um.nombre AS modificado_por_nombre`;
+
+/** HU-23: los nombres de autoria salen de usuarios, no del cliente. */
+const UNIONES = `
+  LEFT JOIN corrales c ON c.id = a.corral_id
+  LEFT JOIN usuarios uc ON uc.id = a.creado_por
+  LEFT JOIN usuarios um ON um.id = a.modificado_por`;
 
 @Injectable()
 export class RepositorioAnimales {
@@ -55,17 +85,35 @@ export class RepositorioAnimales {
   /**
    * HU-33: por defecto solo los activos. estados = null trae todos.
    * HU-34: los dados de baja solo si se piden.
+   * HU-29: cada filtro nulo no filtra; los que vienen se suman con AND.
    */
-  async listar(ranchoId: string, estados: Estado[] | null, conBajas: boolean): Promise<Animal[]> {
+  async listar(
+    ranchoId: string,
+    estados: Estado[] | null,
+    conBajas: boolean,
+    filtros: FiltrosListado,
+  ): Promise<Animal[]> {
     const resultado = await this.bd.query(
       `SELECT ${COLUMNAS}
          FROM animales a
-         LEFT JOIN corrales c ON c.id = a.corral_id
+         ${UNIONES}
         WHERE a.rancho_id = $1
           AND ($2::varchar[] IS NULL OR a.estado = ANY($2::varchar[]))
           AND ($3 OR a.eliminado_en IS NULL)
+          AND ($4::text IS NULL
+               OR a.identificador ILIKE '%' || $4::text || '%'
+               OR a.nombre ILIKE '%' || $4::text || '%')
+          AND ($5::varchar IS NULL OR a.sexo = $5::varchar)
+          AND ($6::varchar IS NULL OR a.categoria_codigo = $6::varchar)
+          AND ($7::text IS NULL OR a.corral_id::text = $7::text)
+          AND ($8::date IS NULL OR a.fecha_nacimiento >= $8::date)
+          AND ($9::date IS NULL OR a.fecha_nacimiento <= $9::date)
         ORDER BY a.eliminado_en NULLS FIRST, a.identificador`,
-      [ranchoId, estados, conBajas],
+      [
+        ranchoId, estados, conBajas,
+        filtros.busqueda ? escaparComodines(filtros.busqueda) : null,
+        filtros.sexo, filtros.categoria, filtros.corral, filtros.fechaDesde, filtros.fechaHasta,
+      ],
     );
     return resultado.rows;
   }
@@ -74,7 +122,7 @@ export class RepositorioAnimales {
     const resultado = await this.bd.query(
       `SELECT ${COLUMNAS}
          FROM animales a
-         LEFT JOIN corrales c ON c.id = a.corral_id
+         ${UNIONES}
         WHERE a.id::text = $1 AND a.rancho_id = $2`,
       [id, ranchoId],
     );
@@ -270,4 +318,12 @@ export class RepositorioAnimales {
       cliente.release();
     }
   }
+}
+
+/**
+ * HU-29. Lo que escribe el usuario se busca tal cual: un % o un _ en la
+ * busqueda no tienen que funcionar como comodines de ILIKE.
+ */
+function escaparComodines(texto: string): string {
+  return texto.replace(/[\\%_]/g, (c) => `\\${c}`);
 }

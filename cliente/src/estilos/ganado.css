@@ -6,6 +6,7 @@
  *   HU-33  el cambio de estado con confirmación
  *   HU-39  el historial de movimientos entre corrales
  *   HU-21  los permisos del socio
+ *   HU-29  los filtros del listado de animales
  *
  * Solo tokens. Tarjeta, insignia, botón, campo y aviso ya existen: acá está
  * únicamente la lista con filas y el historial.
@@ -50,6 +51,15 @@
   gap: var(--e-8);
   margin-left: auto;
 }
+
+/* Filtros del listado (HU-29). La búsqueda ocupa toda la primera fila. */
+.ganado__filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--e-12) var(--e-16);
+}
+
+.ganado__filtros > .campo:first-child { grid-column: 1 / -1; }
 
 /* Historial de movimientos y de estados (HU-39 y HU-33). */
 .ganado__historial {

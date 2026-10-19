@@ -296,7 +296,9 @@
         "archivado": "archivado"
       },
       "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
-      "restaurado": "{identificador} volvió a estar vigente."
+      "restaurado": "{identificador} volvió a estar vigente.",
+      "soloPropietarioBaja": "Solo el propietario puede dar de baja o restaurar animales.",
+      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta»."
     }
   },
   "acceso": {
@@ -1136,7 +1138,7 @@
       "correoAyuda": "Es con el que entras. Cambiarlo exige confirmar el nuevo, y eso llega más adelante.",
       "pais": "País",
       "sinPais": "Sin país registrado",
-      "paisAyuda": "Define idioma, moneda y unidades. Se cambia desde los ajustes del país.",
+      "paisAyuda": "Define el idioma, la moneda y las unidades. Si lo cambias, el idioma pasa a ser el del país nuevo.",
       "rol": "Rol",
       "rancho": "Rancho",
       "sinRancho": "Todavía sin rancho",
@@ -1384,7 +1386,8 @@
     "vacio": {
       "titulo": "No hay animales para mostrar",
       "texto": "Registra el primero con su identificador y los datos de su ficha.",
-      "textoVista": "Prueba con otro estado."
+      "textoVista": "Prueba con otro estado.",
+      "textoFiltros": "Ningún animal coincide con la búsqueda o los filtros."
     },
     "verFicha": "Ver ficha",
     "deBaja": "Dado de baja",
@@ -1480,7 +1483,25 @@
         "titulo": "Cambios de estado",
         "vacio": "Nunca cambió de estado.",
         "de": "{anterior} → {nuevo}"
+      },
+      "autoria": {
+        "creado": "Registrado por",
+        "modificado": "Última modificación",
+        "detalle": "{nombre} · {momento}",
+        "sistema": "Sistema"
       }
+    },
+    "buscar": "Buscar",
+    "placeholderBusqueda": "Identificador o nombre",
+    "sexoFiltro": "Sexo",
+    "todosSexos": "Todos los sexos",
+    "filtros": {
+      "titulo": "Buscar y filtrar",
+      "todasCategorias": "Todas las categorías",
+      "todosCorrales": "Todos los corrales",
+      "nacidoDesde": "Nacidos desde",
+      "nacidoHasta": "Nacidos hasta",
+      "limpiar": "Quitar filtros"
     }
   },
   "permisosSocio": {

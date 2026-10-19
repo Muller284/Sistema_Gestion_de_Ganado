@@ -41,8 +41,11 @@ import { FormularioFicha } from './FormularioFicha';
  *        mover es la única forma de cambiarle el corral, así el corral actual
  *        siempre es el del último movimiento (criterio 3).
  * HU-33  cambiar el estado pide confirmación y registra fecha y motivo.
- * HU-34  dar de baja y restaurar.
+ * HU-34  dar de baja y restaurar. HU-18: solo el propietario (y el Admin en
+ *        soporte); el servidor lo vuelve a exigir.
  * HU-22  quien solo puede ver, ve la ficha y los dos historiales (criterio 3).
+ * HU-23  quién registró la ficha y quién la modificó por última vez, con la
+ *        fecha y hora en la zona del rancho.
  */
 
 const ESTADOS: EstadoAnimal[] = ['activo', 'vendido', 'muerto', 'archivado'];
@@ -79,6 +82,8 @@ export function PaginaFichaAnimal() {
   }, [id, version]);
 
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
+  const rol = contexto.rancho?.usuario?.rol;
+  const puedeDarDeBaja = rol === 'propietario' || rol === 'admin_plataforma';
   const animal = ficha?.animal;
   const vigente = Boolean(animal && !animal.eliminado_en);
 
@@ -149,10 +154,12 @@ export function PaginaFichaAnimal() {
                           <Icono nombre="lapiz" tamano={16} />
                           {t('animales.ficha.editar')}
                         </Boton>
-                        <Boton variante="fantasma" onClick={() => setConfirmandoBaja(true)}>
-                          <Icono nombre="archivar" tamano={16} />
-                          {t('animales.ficha.darDeBaja')}
-                        </Boton>
+                        {puedeDarDeBaja && (
+                          <Boton variante="fantasma" onClick={() => setConfirmandoBaja(true)}>
+                            <Icono nombre="archivar" tamano={16} />
+                            {t('animales.ficha.darDeBaja')}
+                          </Boton>
+                        )}
                       </>
                     )}
                     {vigente && confirmandoBaja && (
@@ -172,7 +179,7 @@ export function PaginaFichaAnimal() {
                         </Boton>
                       </>
                     )}
-                    {!vigente && (
+                    {!vigente && puedeDarDeBaja && (
                       <Boton
                         variante="primario"
                         onClick={() => alHacer(() => api.restaurarAnimal(animal.id))}
@@ -274,6 +281,18 @@ function DatosDelAnimal({ animal, regional }: { animal: Animal; regional: Region
         {animal.peso_kg ? formatoPeso(animal.peso_kg, regional) : raya}
       </Dato>
       <Dato nombre={t('animales.campos.corralActual')}>{animal.corral_nombre ?? t('animales.sinCorral')}</Dato>
+      <Dato nombre={t('animales.ficha.autoria.creado')}>
+        {t('animales.ficha.autoria.detalle', {
+          nombre: animal.creado_por_nombre ?? t('animales.ficha.autoria.sistema'),
+          momento: formatoMomento(animal.creado_en, regional),
+        })}
+      </Dato>
+      <Dato nombre={t('animales.ficha.autoria.modificado')}>
+        {t('animales.ficha.autoria.detalle', {
+          nombre: animal.modificado_por_nombre ?? t('animales.ficha.autoria.sistema'),
+          momento: formatoMomento(animal.modificado_en, regional),
+        })}
+      </Dato>
     </Datos>
   );
 }

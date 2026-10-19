@@ -296,7 +296,9 @@
         "archivado": "archived"
       },
       "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
-      "restaurado": "{identificador} is active again."
+      "restaurado": "{identificador} is active again.",
+      "soloPropietarioBaja": "Only the owner can remove or restore animals.",
+      "rangoInvalido": "The “from” date can’t be later than the “to” date."
     }
   },
   "acceso": {
@@ -1136,7 +1138,7 @@
       "correoAyuda": "This is the one you sign in with. Changing it requires confirming the new one, and that's coming later.",
       "pais": "Country",
       "sinPais": "No country on file",
-      "paisAyuda": "Sets the language, currency and units. You can change it from the country settings.",
+      "paisAyuda": "It sets the language, currency and units. If you change it, the language switches to the new country’s.",
       "rol": "Role",
       "rancho": "Ranch",
       "sinRancho": "No ranch yet",
@@ -1384,7 +1386,8 @@
     "vacio": {
       "titulo": "No animals to show",
       "texto": "Register the first one with its identifier and record data.",
-      "textoVista": "Try another status."
+      "textoVista": "Try another status.",
+      "textoFiltros": "No animal matches the search or the filters."
     },
     "verFicha": "View record",
     "deBaja": "Removed",
@@ -1480,7 +1483,25 @@
         "titulo": "Status changes",
         "vacio": "Its status never changed.",
         "de": "{anterior} → {nuevo}"
+      },
+      "autoria": {
+        "creado": "Registered by",
+        "modificado": "Last modified",
+        "detalle": "{nombre} · {momento}",
+        "sistema": "System"
       }
+    },
+    "buscar": "Search",
+    "placeholderBusqueda": "Tag or name",
+    "sexoFiltro": "Sex",
+    "todosSexos": "All sexes",
+    "filtros": {
+      "titulo": "Search and filter",
+      "todasCategorias": "All categories",
+      "todosCorrales": "All pens",
+      "nacidoDesde": "Born from",
+      "nacidoHasta": "Born until",
+      "limpiar": "Clear filters"
     }
   },
   "permisosSocio": {

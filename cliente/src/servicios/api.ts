@@ -452,7 +452,22 @@ export interface Animal extends DatosFichaAnimal {
   corral_nombre: string | null;
   estado: EstadoAnimal;
   creado_en: string;
+  modificado_en: string;
+  /** HU-23: quien registró la ficha y quien la modificó por última vez. */
+  creado_por_nombre: string | null;
+  modificado_por_nombre: string | null;
   eliminado_en: string | null;
+}
+
+/** HU-29 · Filtros del listado. Los vacíos no se mandan. */
+export interface FiltrosAnimales {
+  busqueda?: string;
+  sexo?: Sexo | '';
+  categoria?: string;
+  corral?: string;
+  /** AAAA-MM-DD, por fecha de nacimiento. */
+  fechaDesde?: string;
+  fechaHasta?: string;
 }
 
 export interface MovimientoCorral {
@@ -636,7 +651,7 @@ export const api = {
 
   // Mi perfil
   perfil: () => pedir<PerfilUsuario>('/usuarios/yo/perfil'),
-  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null }) =>
+  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null; pais_codigo?: string }) =>
     pedir<{ perfil: PerfilUsuario; mensaje: string }>('/usuarios/yo/perfil', {
       method: 'PATCH',
       body: JSON.stringify(datos),
@@ -687,8 +702,15 @@ export const api = {
 
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
-  animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false) =>
-    pedir<Animal[]>(`/animales?estado=${estado}${conBajas ? '&bajas=1' : ''}`),
+  animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false, filtros: FiltrosAnimales = {}) => {
+    const parametros = new URLSearchParams({ estado });
+    if (conBajas) parametros.set('bajas', '1');
+    for (const [clave, valor] of Object.entries(filtros)) {
+      const limpio = typeof valor === 'string' ? valor.trim() : '';
+      if (limpio) parametros.set(clave, limpio);
+    }
+    return pedir<Animal[]>(`/animales?${parametros.toString()}`);
+  },
   fichaAnimal: (id: string) => pedir<FichaAnimal>(`/animales/${id}`),
   crearAnimal: (
     datos: DatosFichaAnimal & {

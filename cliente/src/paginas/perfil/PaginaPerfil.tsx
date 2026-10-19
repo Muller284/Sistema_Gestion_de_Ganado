@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   Alerta,
   Boton,
+  CampoLista,
   CampoTexto,
   Cargando,
   DisenoApp,
@@ -9,7 +10,7 @@ import {
   Insignia,
   Tarjeta,
 } from '../../componentes';
-import { api, type PerfilUsuario } from '../../servicios/api';
+import { api, type Pais, type PerfilUsuario } from '../../servicios/api';
 import { IDIOMAS, cambiarIdioma, existe, localeActual, t } from '../../servicios/idioma';
 import { enumerar, faltasDeContrasena, inicial } from '../../servicios/texto';
 
@@ -19,13 +20,13 @@ import { enumerar, faltasDeContrasena, inicial } from '../../servicios/texto';
  *
  * QUÉ SE PUEDE CAMBIAR
  *   el nombre       acá mismo.
+ *   el país         acá mismo (HU-14, criterio 2). Al cambiarlo, el idioma
+ *                   pasa a ser el del país nuevo (HU-25).
  *   el idioma       el de su país o uno elegido (HU-25).
  *   la contraseña   con la actual y la nueva (el mismo servicio de HU-10).
  * QUÉ NO, Y POR QUÉ
  *   el correo       cambiarlo exige confirmar el nuevo (HU-07); se ve, pero
  *                   no se edita todavía.
- *   el país         es el criterio 2 de HU-14 (Brian): se cambia desde los
- *                   ajustes del país cuando esa parte exista.
  *   rol y rancho    los decide el propietario, no uno mismo.
  */
 
@@ -101,7 +102,8 @@ export function PaginaPerfil() {
               <CambioDeContrasena />
             </div>
 
-            <PreferenciaIdioma perfil={perfil} />
+            {/* La clave la vuelve a armar si el país cambió el idioma. */}
+            <PreferenciaIdioma key={`${perfil.pais_codigo}-${perfil.idioma}`} perfil={perfil} />
           </>
         )}
       </div>
@@ -117,11 +119,26 @@ function DatosPersonales({
   alGuardar: (perfil: PerfilUsuario) => void;
 }) {
   const [nombre, setNombre] = useState(perfil.nombre);
+  const [pais, setPais] = useState(perfil.pais_codigo ?? '');
+  const [paises, setPaises] = useState<Pais[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
 
-  const cambio = nombre.trim() !== perfil.nombre;
+  useEffect(() => {
+    let vigente = true;
+    api
+      .paises()
+      .then((lista) => vigente && setPaises(lista))
+      .catch(() => undefined);
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  const cambiaNombre = nombre.trim() !== perfil.nombre;
+  const cambiaPais = pais !== '' && pais !== (perfil.pais_codigo ?? '');
+  const cambio = cambiaNombre || cambiaPais;
 
   async function guardar(e: React.FormEvent) {
     e.preventDefault();
@@ -129,9 +146,15 @@ function DatosPersonales({
     setAviso('');
     setGuardando(true);
     try {
-      const respuesta = await api.actualizarPerfil({ nombre: nombre.trim() });
+      const respuesta = await api.actualizarPerfil({
+        ...(cambiaNombre ? { nombre: nombre.trim() } : {}),
+        ...(cambiaPais ? { pais_codigo: pais } : {}),
+      });
+      // HU-14: con otro país puede cambiar el idioma; la pantalla lo sigue.
+      if (cambiaPais) cambiarIdioma(respuesta.perfil.idioma);
       alGuardar(respuesta.perfil);
       setNombre(respuesta.perfil.nombre);
+      setPais(respuesta.perfil.pais_codigo ?? '');
       setAviso(respuesta.mensaje);
     } catch (err) {
       setError((err as Error).message);
@@ -163,12 +186,26 @@ function DatosPersonales({
           disabled
           ayuda={t('perfil.datos.correoAyuda')}
         />
-        <CampoTexto
+        <CampoLista
           etiqueta={t('perfil.datos.pais')}
-          value={perfil.pais ?? t('perfil.datos.sinPais')}
-          disabled
+          value={pais}
           ayuda={t('perfil.datos.paisAyuda')}
-        />
+          onChange={(e) => {
+            setPais(e.target.value);
+            setAviso('');
+          }}
+        >
+          {!pais && <option value="">{t('perfil.datos.sinPais')}</option>}
+          {/* Mientras llega la lista, el país actual igual se ve. */}
+          {paises.length === 0 && perfil.pais_codigo && (
+            <option value={perfil.pais_codigo}>{perfil.pais ?? perfil.pais_codigo}</option>
+          )}
+          {paises.map((opcion) => (
+            <option key={opcion.codigo} value={opcion.codigo}>
+              {opcion.nombre}
+            </option>
+          ))}
+        </CampoLista>
 
         <dl className="datos perfil__datos">
           <dt>{t('perfil.datos.rol')}</dt>
@@ -181,7 +218,15 @@ function DatosPersonales({
 
         <div className="fila g8 perfil__botones">
           {cambio && (
-            <Boton type="button" variante="secundario" onClick={() => setNombre(perfil.nombre)} disabled={guardando}>
+            <Boton
+              type="button"
+              variante="secundario"
+              onClick={() => {
+                setNombre(perfil.nombre);
+                setPais(perfil.pais_codigo ?? '');
+              }}
+              disabled={guardando}
+            >
               {t('perfil.datos.deshacer')}
             </Boton>
           )}

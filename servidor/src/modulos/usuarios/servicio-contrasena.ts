@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { RepositorioUsuario } from './repositorio-usuario';
 import { RepositorioToken } from './repositorio-token';
+import { RepositorioSesion } from './repositorio-sesion';
 import { ServicioCorreo } from '../../comun/servicio-correo';
 import {
   cifrarContrasena,
@@ -29,6 +30,11 @@ import { enIdioma, enumerarEn, t } from '../../comun/idioma';
  *      restablecimiento.
  *      → restablecer() genera la clave, se la manda por correo al usuario y
  *        NO la devuelve en la respuesta. El propietario ve "listo", nada mas.
+ *
+ * HU-09, criterio 3 · Cuando la contraseña cambia (porque la cambio el
+ * usuario, porque la recupero o porque el propietario la restablecio) se
+ * revocan todas sus sesiones con RepositorioSesion (decision 29). Un token de
+ * refresco viejo responde 401: quien tenia la clave anterior queda afuera.
  */
 
 @Injectable()
@@ -37,6 +43,7 @@ export class ServicioContrasena {
     private readonly usuarios: RepositorioUsuario,
     private readonly correo: ServicioCorreo,
     private readonly tokens: RepositorioToken,
+    private readonly sesiones: RepositorioSesion,
   ) {}
 
   /** El usuario cambia su propia contraseña. Es lo que desbloquea la cuenta. */
@@ -78,6 +85,8 @@ export class ServicioContrasena {
       await cifrarContrasena(nueva),
       quien.id,
     );
+    // HU-09, criterio 3. El cliente vuelve a iniciar sesion con la clave nueva.
+    await this.sesiones.revocarTodasDeUsuario(quien.id);
 
     return {
       mensaje: usuario.debe_cambiar_contrasena
@@ -116,6 +125,8 @@ export class ServicioContrasena {
       await cifrarContrasena(temporal),
       quien.id,
     );
+    // HU-09, criterio 3: con la clave vieja ya no se sigue adentro.
+    await this.sesiones.revocarTodasDeUsuario(usuario.id);
 
     // El correo va en el idioma de quien lo recibe, no en el del propietario.
     const idiomaDelUsuario = await this.usuarios.idiomaDe(usuario.id);
@@ -202,6 +213,9 @@ export class ServicioContrasena {
     const hash = await cifrarContrasena(nueva);
 
     await this.usuarios.cambiarContrasena(usuarioId, hash, usuarioId);
+
+    // Criterio 3: si alguien entro con la clave perdida, aca se queda afuera.
+    await this.sesiones.revocarTodasDeUsuario(usuarioId);
 
     return { mensaje: t('servidor.contrasena.recuperada') };
   }
