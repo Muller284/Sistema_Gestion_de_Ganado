@@ -46,6 +46,15 @@ export function nivel(contexto: Contexto, modulo: string): NivelModulo {
   return contexto.permisos[modulo] ?? 'ninguno';
 }
 
+/**
+ * HU-18, criterio 3: dar de baja es solo del propietario y del Admin que entró
+ * a dar soporte. Es comodidad: el servidor lo vuelve a controlar.
+ */
+export function puedeEliminar(contexto: Contexto): boolean {
+  const usuario = contexto.rancho?.usuario;
+  return usuario?.rol === 'propietario' || Boolean(usuario?.soporte);
+}
+
 /** Para DisenoApp mientras todavía no se sabe quién es. */
 export function usuarioDe(contexto: Contexto) {
   return contexto.rancho?.usuario ?? { nombre: t('equipo.invitado'), rol: '—' };

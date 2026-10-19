@@ -25,6 +25,8 @@ import { RepositorioCorrales, type Corral } from './repositorio-corrales';
  */
 
 const LARGO_NOMBRE = 100;
+/** Lo que entra en una pagina grande del listado; mas que eso, se hace en partes. */
+const MAXIMO_POR_ASIGNACION = 1000;
 
 @Injectable()
 export class ServicioCorrales {
@@ -75,7 +77,8 @@ export class ServicioCorrales {
 
   /** HU-34. Con animales adentro no: primero hay que moverlos. */
   async darDeBaja(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'corrales', 'editar');
+    // Solo el propietario y el Admin dan de baja (HU-18, criterio 3).
+    const ranchoId = this.permisos.exigirEliminar(quien, 'corrales');
     const actual = await this.vigente(id, ranchoId);
     if (actual.ocupacion > 0) {
       throw new ConflictException(
@@ -86,8 +89,43 @@ export class ServicioCorrales {
     return { mensaje: t('servidor.corrales.dadoDeBaja', { nombre: actual.nombre }) };
   }
 
+  /**
+   * HU-37 · Asignar animales al corral, de a uno o de a muchos (la seleccion
+   * del listado). Cada asignacion queda como movimiento (HU-39).
+   * HU-38 · Si el corral queda por encima de su capacidad se avisa, pero la
+   * asignacion se hace igual: el aviso no impide la accion.
+   * Mover animales es editar animales, como hacerlo desde la ficha.
+   */
+  async asignarAnimales(id: string, cuerpo: any, quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
+    const corral = await this.vigente(id, ranchoId);
+
+    const pedidos: unknown = cuerpo?.animal_ids;
+    if (
+      !Array.isArray(pedidos) ||
+      pedidos.length === 0 ||
+      pedidos.length > MAXIMO_POR_ASIGNACION ||
+      pedidos.some((animalId) => typeof animalId !== 'string')
+    ) {
+      throw new BadRequestException(
+        t('servidor.corrales.seleccionInvalida', { n: MAXIMO_POR_ASIGNACION }),
+      );
+    }
+
+    const resultado = await this.corrales.asignar(corral.id, [...new Set(pedidos as string[])], ranchoId, quien.id);
+    const actualizado = conAviso((await this.corrales.uno(corral.id, ranchoId))!);
+    return {
+      corral: actualizado,
+      movidos: resultado.movidos,
+      ya_estaban: resultado.yaEstaban,
+      no_encontrados: resultado.noEncontrados,
+      mensaje: t('servidor.corrales.asignados', { n: resultado.movidos, nombre: corral.nombre }),
+      aviso: avisoDeExceso(actualizado),
+    };
+  }
+
   async restaurar(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'corrales', 'editar');
+    const ranchoId = this.permisos.exigirEliminar(quien, 'corrales');
     const actual = await this.corrales.uno(id, ranchoId);
     if (!actual) throw new NotFoundException(t('servidor.corrales.noExiste'));
     if (actual.eliminado_en) {
@@ -158,4 +196,18 @@ function conAviso(corral: Corral) {
     ...corral,
     sobrepoblado: corral.capacidad !== null && corral.ocupacion > corral.capacidad,
   };
+}
+
+/** HU-38. El texto del aviso, o nulo si el corral no supera su capacidad. */
+export function avisoDeExceso(corral: {
+  nombre: string;
+  ocupacion: number;
+  capacidad: number | null;
+}): string | null {
+  if (corral.capacidad === null || corral.ocupacion <= corral.capacidad) return null;
+  return t('servidor.corrales.excedido', {
+    nombre: corral.nombre,
+    n: corral.ocupacion,
+    capacidad: corral.capacidad,
+  });
 }

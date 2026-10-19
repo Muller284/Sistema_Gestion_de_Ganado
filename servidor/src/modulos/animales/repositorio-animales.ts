@@ -156,6 +156,19 @@ export class RepositorioAnimales {
     return (resultado.rowCount ?? 0) > 0;
   }
 
+  /** HU-38. Cuantos animales activos tiene hoy un corral y su capacidad. */
+  async ocupacionDeCorral(corralId: string, ranchoId: string) {
+    const resultado = await this.bd.query(
+      `SELECT c.nombre, c.capacidad,
+              (SELECT COUNT(*)::int FROM animales a
+                WHERE a.corral_id = c.id AND a.estado = 'activo' AND a.eliminado_en IS NULL) AS ocupacion
+         FROM corrales c
+        WHERE c.id = $1 AND c.rancho_id = $2`,
+      [corralId, ranchoId],
+    );
+    return (resultado.rows[0] as { nombre: string; capacidad: number | null; ocupacion: number }) ?? null;
+  }
+
   /** El alta, y si trae corral, su primer movimiento (origen nulo). */
   async crear(datos: {
     id: string;

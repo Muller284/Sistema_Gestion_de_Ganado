@@ -7,9 +7,9 @@
  *
  * HU-19, criterio 3: se rechazan las operaciones sobre modulos no
  * habilitados aunque se intenten desde fuera de la interfaz. El encargado de
- * almacen no tiene el modulo importacion ni el de animales: validar e
- * importar le responden 403. La administrativa, cuyo tipo si edita
- * importacion, puede validar.
+ * almacen no tiene el modulo importacion ni el de animales: la vista previa
+ * y la confirmacion (las rutas de Romina, HU-43) le responden 403. La
+ * administrativa, cuyo tipo si edita importacion, puede ver la vista previa.
  *
  * Contra el PostgreSQL de verdad y contra el servidor levantado.
  * Lo que crea, lo borra al terminar: no hace falta volver a sembrar.
@@ -81,26 +81,32 @@ async function ejecutarPruebas() {
   console.log('================================================================\n');
 
   try {
-    const csv = `caravana,sexo\nI-${MARCA},hembra`;
+    // El mismo formato que usa importacion.test.js: el archivo viaja en base64.
+    const archivo = {
+      nombre_archivo: 'permisos.csv',
+      contenido_base64: Buffer.from(`Identificador;Sexo\nI-${MARCA};hembra\n`, 'utf8').toString('base64'),
+    };
 
-    await prueba('El encargado de almacen recibe 403 al validar', async () => {
-      const { estado, cuerpo } = await pedir('POST', '/importacion/validar', { csv }, ALMACEN_A);
+    await prueba('El encargado de almacen recibe 403 en la vista previa', async () => {
+      const { estado, cuerpo } = await pedir('POST', '/importacion/vista-previa', archivo, ALMACEN_A);
       assert.strictEqual(estado, 403, JSON.stringify(cuerpo));
     });
 
-    await prueba('El encargado de almacen recibe 403 al importar', async () => {
-      const { estado, cuerpo } = await pedir('POST', '/importacion/ejecutar', { csv }, ALMACEN_A);
+    await prueba('El encargado de almacen recibe 403 al confirmar la importacion', async () => {
+      const { estado, cuerpo } = await pedir('POST', '/importacion/confirmar', archivo, ALMACEN_A);
       assert.strictEqual(estado, 403, JSON.stringify(cuerpo));
+      const fila = await pool.query('SELECT 1 FROM animales WHERE identificador = $1', [`I-${MARCA}`]);
+      assert.strictEqual(fila.rowCount, 0, 'cargo el animal igual');
     });
 
-    await prueba('El socio sin edicion tambien recibe 403 al validar', async () => {
-      const { estado } = await pedir('POST', '/importacion/validar', { csv }, SOCIO_A);
+    await prueba('El socio sin edicion tambien recibe 403 en la vista previa', async () => {
+      const { estado } = await pedir('POST', '/importacion/vista-previa', archivo, SOCIO_A);
       assert.strictEqual(estado, 403);
     });
 
-    await prueba('La administrativa, que edita importacion, si puede validar', async () => {
-      const { estado, cuerpo } = await pedir('POST', '/importacion/validar', { csv }, ADMINISTRATIVO_A);
-      assert.ok(estado === 200 || estado === 201, `${estado} ${JSON.stringify(cuerpo)}`);
+    await prueba('La administrativa, que edita importacion, si puede ver la vista previa', async () => {
+      const { estado, cuerpo } = await pedir('POST', '/importacion/vista-previa', archivo, ADMINISTRATIVO_A);
+      assert.strictEqual(estado, 200, `${estado} ${JSON.stringify(cuerpo)}`);
     });
 
     await prueba('El encargado de almacen tampoco entra a animales (403)', async () => {

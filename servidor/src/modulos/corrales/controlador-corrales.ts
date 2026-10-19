@@ -21,6 +21,8 @@ import { ServicioCorrales } from './servicio-corrales';
  *   PATCH  /corrales/:id             lo mismo
  *   DELETE /corrales/:id             baja logica
  *   POST   /corrales/:id/restaurar   deshace la baja
+ *   POST   /corrales/:id/animales    { animal_ids } asigna animales al corral (HU-37);
+ *                                    si queda excedido responde con un aviso (HU-38)
  */
 @UseGuards(GuardiaCuentaLista)
 @Controller('corrales')
@@ -50,5 +52,11 @@ export class ControladorCorrales {
   @Post(':id/restaurar')
   async restaurar(@Param('id') id: string, @Req() peticion: any) {
     return this.servicio.restaurar(id, peticion.usuarioActual);
+  }
+
+  /** HU-37 y HU-38. { animal_ids: [...] } */
+  @Post(':id/animales')
+  async asignarAnimales(@Param('id') id: string, @Body() cuerpo: any, @Req() peticion: any) {
+    return this.servicio.asignarAnimales(id, cuerpo, peticion.usuarioActual);
   }
 }

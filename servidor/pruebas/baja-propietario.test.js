@@ -106,9 +106,11 @@ async function ejecutarPruebas() {
 
     await prueba('El mensaje del 403 habla de la baja, no de los permisos de los socios', async () => {
       const { cuerpo } = await pedir('DELETE', `/animales/${animal.id}`, undefined, CAMPO_A);
-      const texto = JSON.stringify(cuerpo);
+      const texto = JSON.stringify(cuerpo).toLowerCase();
       assert.ok(!texto.includes('permisos de los socios'), texto);
       assert.ok(texto.includes('dar de baja'), texto);
+      // La clave es servidor.permisos.soloPropietarioElimina (exigirEliminar, de Romina).
+      assert.strictEqual(cuerpo.motivo, 'solo_propietario_elimina', texto);
     });
 
     await prueba('El propietario si puede dar de baja', async () => {

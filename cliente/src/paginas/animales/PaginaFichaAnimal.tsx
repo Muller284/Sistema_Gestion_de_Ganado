@@ -30,7 +30,7 @@ import {
   hoyEn,
   type Regional,
 } from '../../servicios/unidades';
-import { nivel, useContextoGanado, usuarioDe } from '../ganado/contexto';
+import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/contexto';
 import { FormularioFicha } from './FormularioFicha';
 
 /**
@@ -41,8 +41,10 @@ import { FormularioFicha } from './FormularioFicha';
  *        mover es la única forma de cambiarle el corral, así el corral actual
  *        siempre es el del último movimiento (criterio 3).
  * HU-33  cambiar el estado pide confirmación y registra fecha y motivo.
- * HU-34  dar de baja y restaurar. HU-18: solo el propietario (y el Admin en
- *        soporte); el servidor lo vuelve a exigir.
+ * HU-34  dar de baja y restaurar. HU-18, criterio 3: solo el propietario y el
+ *        Admin en soporte (puedeEliminar); el servidor lo vuelve a exigir.
+ * HU-37  mover desde la ficha también es asignar; si el corral se excede,
+ *        se avisa sin impedirlo (HU-38).
  * HU-22  quien solo puede ver, ve la ficha y los dos historiales (criterio 3).
  * HU-23  quién registró la ficha y quién la modificó por última vez, con la
  *        fecha y hora en la zona del rancho.
@@ -57,6 +59,8 @@ export function PaginaFichaAnimal() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
+  // HU-38: el corral de destino quedó excedido. El movimiento ya se hizo.
+  const [avisoExceso, setAvisoExceso] = useState('');
   const [editando, setEditando] = useState(false);
   const [confirmandoBaja, setConfirmandoBaja] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -82,17 +86,20 @@ export function PaginaFichaAnimal() {
   }, [id, version]);
 
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
-  const rol = contexto.rancho?.usuario?.rol;
-  const puedeDarDeBaja = rol === 'propietario' || rol === 'admin_plataforma';
+  // HU-18, criterio 3: dar de baja y restaurar, solo el propietario y el Admin.
+  const eliminable = puedeEliminar(contexto);
   const animal = ficha?.animal;
   const vigente = Boolean(animal && !animal.eliminado_en);
 
-  async function alHacer(hacer: () => Promise<{ mensaje: string }>) {
+  async function alHacer(hacer: () => Promise<{ mensaje: string; aviso?: string | null }>) {
     setOcupado(true);
     setError('');
     setAviso('');
+    setAvisoExceso('');
     try {
-      setAviso((await hacer()).mensaje);
+      const respuesta = await hacer();
+      setAviso(respuesta.mensaje);
+      setAvisoExceso(respuesta.aviso ?? '');
       setConfirmandoBaja(false);
       recargar();
     } catch (err) {
@@ -121,6 +128,7 @@ export function PaginaFichaAnimal() {
         {(cargando || contexto.cargando) && <Cargando lineas={6} />}
         {error && <Alerta variante="error">{error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
+        {avisoExceso && <Alerta variante="adv">{avisoExceso}</Alerta>}
 
         {animal && ficha && editando && (
           <FormularioFicha
@@ -154,7 +162,7 @@ export function PaginaFichaAnimal() {
                           <Icono nombre="lapiz" tamano={16} />
                           {t('animales.ficha.editar')}
                         </Boton>
-                        {puedeDarDeBaja && (
+                        {eliminable && (
                           <Boton variante="fantasma" onClick={() => setConfirmandoBaja(true)}>
                             <Icono nombre="archivar" tamano={16} />
                             {t('animales.ficha.darDeBaja')}
@@ -179,7 +187,7 @@ export function PaginaFichaAnimal() {
                         </Boton>
                       </>
                     )}
-                    {!vigente && puedeDarDeBaja && (
+                    {!vigente && eliminable && (
                       <Boton
                         variante="primario"
                         onClick={() => alHacer(() => api.restaurarAnimal(animal.id))}
@@ -299,7 +307,7 @@ function DatosDelAnimal({ animal, regional }: { animal: Animal; regional: Region
 
 interface PropiedadesAccion {
   animal: Animal;
-  alHacer: (hacer: () => Promise<{ mensaje: string }>) => Promise<void>;
+  alHacer: (hacer: () => Promise<{ mensaje: string; aviso?: string | null }>) => Promise<void>;
   ocupado: boolean;
 }
 

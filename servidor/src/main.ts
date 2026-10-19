@@ -8,11 +8,16 @@ for (const ruta of [join(__dirname, '..', '..', '.env'), join(__dirname, '..', '
 }
 
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { middlewareIdioma } from './comun/idioma';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // HU-43: el archivo a importar viaja en base64 dentro del JSON. El límite de
+  // Express (100 kb) no alcanza para un Excel de unos miles de animales.
+  app.useBodyParser('json', { limit: '8mb' });
 
   // El cliente de Vite corre en otro puerto (5173), asi que el navegador
   // bloquearia las llamadas sin esto.
