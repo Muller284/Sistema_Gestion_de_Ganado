@@ -58,6 +58,45 @@ export interface FiltrosListado {
   fechaHasta: string | null;
 }
 
+/**
+ * HU-30 · Orden y paginacion (Brian). El orden se elige de esta lista y nunca
+ * se arma SQL con lo que llega en la URL: la clave elige la expresion.
+ */
+export const ORDENES = {
+  identificador: 'a.identificador',
+  nombre: 'a.nombre',
+  sexo: 'a.sexo',
+  categoria: 'ca.orden',
+  nacimiento: 'a.fecha_nacimiento',
+  corral: 'c.nombre',
+  estado: 'a.estado',
+  peso: 'a.peso_kg',
+  creado: 'a.creado_en',
+} as const;
+
+export type Orden = keyof typeof ORDENES;
+export type Direccion = 'asc' | 'desc';
+
+/** Que bajas entran: ninguna (por defecto), tambien las bajas, o solo las bajas (HU-34). */
+export type Bajas = 'no' | 'con' | 'solo';
+
+export interface Paginacion {
+  pagina: number;
+  porPagina: number;
+  orden: Orden;
+  direccion: Direccion;
+}
+
+export interface PaginaAnimales {
+  animales: Animal[];
+  total: number;
+  pagina: number;
+  por_pagina: number;
+  paginas: number;
+  orden: Orden;
+  direccion: Direccion;
+}
+
 const COLUMNAS = `
   a.id, a.identificador, a.tipo_identificador, a.nombre, a.raza, a.sexo,
   a.categoria_codigo, TO_CHAR(a.fecha_nacimiento, 'YYYY-MM-DD') AS fecha_nacimiento,
@@ -70,6 +109,27 @@ const UNIONES = `
   LEFT JOIN corrales c ON c.id = a.corral_id
   LEFT JOIN usuarios uc ON uc.id = a.creado_por
   LEFT JOIN usuarios um ON um.id = a.modificado_por`;
+
+/**
+ * HU-29, HU-33, HU-34 · Las condiciones del listado. Los parametros $1..$9
+ * son los mismos en la consulta de la pagina y en la del total.
+ */
+const CONDICIONES = `
+        WHERE a.rancho_id = $1
+          AND ($2::varchar[] IS NULL OR a.estado = ANY($2::varchar[]))
+          AND (CASE $3::text
+                 WHEN 'con' THEN TRUE
+                 WHEN 'solo' THEN a.eliminado_en IS NOT NULL
+                 ELSE a.eliminado_en IS NULL
+               END)
+          AND ($4::text IS NULL
+               OR a.identificador ILIKE '%' || $4::text || '%'
+               OR a.nombre ILIKE '%' || $4::text || '%')
+          AND ($5::varchar IS NULL OR a.sexo = $5::varchar)
+          AND ($6::varchar IS NULL OR a.categoria_codigo = $6::varchar)
+          AND ($7::text IS NULL OR a.corral_id::text = $7::text)
+          AND ($8::date IS NULL OR a.fecha_nacimiento >= $8::date)
+          AND ($9::date IS NULL OR a.fecha_nacimiento <= $9::date)`;
 
 @Injectable()
 export class RepositorioAnimales {
@@ -84,38 +144,83 @@ export class RepositorioAnimales {
 
   /**
    * HU-33: por defecto solo los activos. estados = null trae todos.
-   * HU-34: los dados de baja solo si se piden.
+   * HU-34: las bajas solo si se piden ('con' las suma, 'solo' trae solo esas).
    * HU-29: cada filtro nulo no filtra; los que vienen se suman con AND.
+   * HU-30: sin paginacion devuelve todo (asi lo usan otras pantallas); con
+   *        paginacion, el ORDER BY, LIMIT y OFFSET van en el SQL y el total
+   *        sale de un COUNT con los mismos filtros.
    */
   async listar(
     ranchoId: string,
     estados: Estado[] | null,
-    conBajas: boolean,
+    bajas: Bajas,
     filtros: FiltrosListado,
-  ): Promise<Animal[]> {
-    const resultado = await this.bd.query(
-      `SELECT ${COLUMNAS}
-         FROM animales a
-         ${UNIONES}
-        WHERE a.rancho_id = $1
-          AND ($2::varchar[] IS NULL OR a.estado = ANY($2::varchar[]))
-          AND ($3 OR a.eliminado_en IS NULL)
-          AND ($4::text IS NULL
-               OR a.identificador ILIKE '%' || $4::text || '%'
-               OR a.nombre ILIKE '%' || $4::text || '%')
-          AND ($5::varchar IS NULL OR a.sexo = $5::varchar)
-          AND ($6::varchar IS NULL OR a.categoria_codigo = $6::varchar)
-          AND ($7::text IS NULL OR a.corral_id::text = $7::text)
-          AND ($8::date IS NULL OR a.fecha_nacimiento >= $8::date)
-          AND ($9::date IS NULL OR a.fecha_nacimiento <= $9::date)
-        ORDER BY a.eliminado_en NULLS FIRST, a.identificador`,
-      [
-        ranchoId, estados, conBajas,
-        filtros.busqueda ? escaparComodines(filtros.busqueda) : null,
-        filtros.sexo, filtros.categoria, filtros.corral, filtros.fechaDesde, filtros.fechaHasta,
-      ],
-    );
-    return resultado.rows;
+  ): Promise<Animal[]>;
+  async listar(
+    ranchoId: string,
+    estados: Estado[] | null,
+    bajas: Bajas,
+    filtros: FiltrosListado,
+    paginacion: Paginacion,
+  ): Promise<PaginaAnimales>;
+  async listar(
+    ranchoId: string,
+    estados: Estado[] | null,
+    bajas: Bajas,
+    filtros: FiltrosListado,
+    paginacion?: Paginacion,
+  ): Promise<Animal[] | PaginaAnimales> {
+    const parametros: unknown[] = [
+      ranchoId, estados, bajas,
+      filtros.busqueda ? escaparComodines(filtros.busqueda) : null,
+      filtros.sexo, filtros.categoria, filtros.corral, filtros.fechaDesde, filtros.fechaHasta,
+    ];
+
+    if (!paginacion) {
+      const resultado = await this.bd.query(
+        `SELECT ${COLUMNAS}
+           FROM animales a
+           ${UNIONES}
+           ${CONDICIONES}
+          ORDER BY a.eliminado_en NULLS FIRST, a.identificador`,
+        parametros,
+      );
+      return resultado.rows;
+    }
+
+    const { pagina, porPagina, orden, direccion } = paginacion;
+    // La expresion sale de ORDENES y el sentido de un tipo cerrado: nada de
+    // lo que llega en la URL se pega al SQL. Los nulos van siempre al final.
+    // El identificador y el id desempatan: el orden es estable entre paginas.
+    const sentido = direccion === 'desc' ? 'DESC' : 'ASC';
+    const [filas, cuenta] = await Promise.all([
+      this.bd.query(
+        `SELECT ${COLUMNAS}
+           FROM animales a
+           ${UNIONES}
+           LEFT JOIN categorias_animal ca ON ca.codigo = a.categoria_codigo
+           ${CONDICIONES}
+          ORDER BY ${ORDENES[orden]} ${sentido} NULLS LAST, a.identificador ${sentido}, a.id
+          LIMIT $10 OFFSET $11`,
+        [...parametros, porPagina, (pagina - 1) * porPagina],
+      ),
+      this.bd.query(
+        `SELECT COUNT(*)::int AS total
+           FROM animales a
+           ${CONDICIONES}`,
+        parametros,
+      ),
+    ]);
+    const total: number = cuenta.rows[0]?.total ?? 0;
+    return {
+      animales: filas.rows,
+      total,
+      pagina,
+      por_pagina: porPagina,
+      paginas: Math.max(1, Math.ceil(total / porPagina)),
+      orden,
+      direccion,
+    };
   }
 
   async uno(id: string, ranchoId: string): Promise<Animal | null> {

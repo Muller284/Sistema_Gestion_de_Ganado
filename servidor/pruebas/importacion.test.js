@@ -281,11 +281,16 @@ async function ejecutarPruebas() {
     assert.strictEqual((await pedir('POST', '/importacion/vista-previa', cuerpo, ADMINISTRATIVA_A)).estado, 200);
   });
 
-  await prueba('Un archivo sin las columnas obligatorias se rechaza diciendo cuales faltan', async () => {
-    const { estado, cuerpo } = await pedir('POST', '/importacion/vista-previa', {
-      nombre_archivo: 'mal.csv',
-      contenido_base64: csv('Nombre,Raza\nLucera,Nelore\n'),
-    });
+  // Desde HU-42 (Brian) la vista previa ya no rechaza el archivo: dice qué
+  // obligatorias faltan para que se asignen a mano. Confirmar sí lo rechaza.
+  await prueba('Un archivo sin las columnas obligatorias no se carga y dice cuales faltan', async () => {
+    const archivoMal = { nombre_archivo: 'mal.csv', contenido_base64: csv('Nombre,Raza\nLucera,Nelore\n') };
+    const previa = await pedir('POST', '/importacion/vista-previa', archivoMal);
+    assert.strictEqual(previa.estado, 200, JSON.stringify(previa.cuerpo));
+    assert.strictEqual(previa.cuerpo.listo, false);
+    assert.deepStrictEqual(previa.cuerpo.faltan, ['identificador', 'sexo']);
+    assert.strictEqual(previa.cuerpo.resumen.cargan, 0);
+    const { estado, cuerpo } = await pedir('POST', '/importacion/confirmar', archivoMal);
     assert.strictEqual(estado, 400);
     assert.match(cuerpo.message, /Identificador/);
   });

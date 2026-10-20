@@ -238,7 +238,7 @@
       "muyGrande": "El archivo pesa más de 5 MB. Divídelo en partes.",
       "formatoInvalido": "No se pudo leer el archivo. Guárdalo como Excel (.xlsx) o CSV y vuelve a subirlo.",
       "sinFilas": "El archivo no tiene filas para importar.",
-      "faltanColumnas": "Al archivo le faltan columnas obligatorias: {columnas}. Usa los encabezados de la plantilla.",
+      "faltanColumnas": "Al archivo le faltan columnas obligatorias: {columnas}. Asígnalas a una columna del archivo o usa los encabezados de la plantilla.",
       "demasiadasFilas": "El archivo tiene más de {n} filas. Divídelo en partes.",
       "nadaQueCargar": "No hay ninguna fila para cargar: todas tienen errores o están repetidas.",
       "cambioMientras": "Alguien registró uno de estos animales mientras revisabas el archivo. Vuelve a generar la vista previa.",
@@ -277,7 +277,10 @@
         "origenInvalido": "«{valor}» no es un origen válido.",
         "corralInexistente": "No hay ningún corral llamado «{valor}» en tu rancho.",
         "pesoInvalido": "El peso tiene que ser un número mayor que cero."
-      }
+      },
+      "extensionInvalida": "El archivo tiene que ser Excel (.xlsx) o CSV (.csv).",
+      "asignacionInvalida": "La asignación de columnas no es válida. Vuelve a elegir los campos.",
+      "campoYaAsignado": "El campo «{campo}» ya está asignado a la columna «{columna}». Elige otro o ignora la columna."
     },
     "permisos": {
       "sinRancho": "Todavía no perteneces a ningún rancho.",
@@ -336,7 +339,9 @@
       },
       "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
       "restaurado": "{identificador} volvió a estar vigente.",
-      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta»."
+      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
+      "ordenInvalido": "No se puede ordenar el listado por ese campo.",
+      "paginaInvalida": "La página pedida no es válida."
     }
   },
   "acceso": {
@@ -1117,7 +1122,10 @@
       "pais": "País {codigo}",
       "existencias": "Existencias totales",
       "corrales": "Corrales",
-      "llegaFase2": "Llega en la fase 2"
+      "llegaFase2": "Llega en la fase 2",
+      "existenciasDetalle": "{machos} machos · {hembras} hembras activos",
+      "corralesDetalle": "{n} animales asignados a corrales",
+      "sinDatos": "Sin datos todavía"
     },
     "datos": {
       "titulo": "Datos del rancho",
@@ -1343,7 +1351,10 @@
     "archivo": {
       "titulo": "2. Sube tu archivo",
       "etiqueta": "Archivo de Excel (.xlsx) o CSV",
-      "ayuda": "Todavía no se guarda nada: primero vas a ver cómo quedaría."
+      "ayuda": "Hasta 5.000 filas. Todavía no se guarda nada: primero vas a ver cómo quedaría.",
+      "elegir": "Elegir archivo",
+      "cambiar": "Cambiar archivo",
+      "ninguno": "Ningún archivo elegido"
     },
     "resumen": {
       "total": "Filas en el archivo",
@@ -1387,6 +1398,38 @@
       "titulo": "Importación terminada",
       "otra": "Importar otro archivo",
       "verAnimales": "Ver animales"
+    },
+    "columnas": {
+      "titulo": "Columnas de tu archivo",
+      "texto": "Así entendimos cada columna. Revisa que esté bien antes de continuar.",
+      "encabezado": "Columna del archivo",
+      "campo": "Se toma como",
+      "reconocidas": "Reconocidas ({n})",
+      "plantilla": "Igual a la plantilla",
+      "variante": "Reconocida por su nombre",
+      "manual": "Elegida por ti",
+      "ignorada": "Se ignora",
+      "sinReconocer": "Columnas que no reconocimos ({n})",
+      "sinReconocerTexto": "Elige a qué campo corresponde cada una, o márcala para ignorarla.",
+      "elegirCampo": "Elige un campo…",
+      "ignorar": "Ignorar esta columna",
+      "faltan": "Todavía falta asignar: {campos}.",
+      "pendientes": "Decide qué hacer con {n} columna(s) antes de continuar.",
+      "continuar": "Continuar con la vista previa",
+      "cambiar": "Revisar columnas",
+      "campos": {
+        "identificador": "Identificador",
+        "tipo_identificador": "Tipo de identificador",
+        "nombre": "Nombre",
+        "raza": "Raza",
+        "sexo": "Sexo",
+        "categoria": "Categoría",
+        "fecha_nacimiento": "Fecha de nacimiento",
+        "origen": "Origen",
+        "corral": "Corral",
+        "peso": "Peso"
+      },
+      "obligatorio": "obligatorio"
     }
   },
   "unidades": {
@@ -1584,6 +1627,33 @@
       "quitar": "Quitar la selección",
       "todos": "Elegir todos los activos ({n})",
       "elegir": "Elegir {identificador}"
+    },
+    "orden": {
+      "etiqueta": "Ordenar por",
+      "direccion": "Sentido",
+      "asc": "Ascendente",
+      "desc": "Descendente",
+      "campos": {
+        "identificador": "Identificador",
+        "nombre": "Nombre",
+        "sexo": "Sexo",
+        "categoria": "Categoría",
+        "nacimiento": "Fecha de nacimiento",
+        "corral": "Corral",
+        "estado": "Estado",
+        "peso": "Peso",
+        "creado": "Fecha de registro"
+      }
+    },
+    "paginas": {
+      "rango": "{desde}–{hasta} de {total}",
+      "pagina": "Página {n} de {total}",
+      "anterior": "Anterior",
+      "siguiente": "Siguiente",
+      "primera": "Primera",
+      "ultima": "Última",
+      "porPagina": "Por página",
+      "navegacion": "Páginas del listado"
     }
   },
   "permisosSocio": {

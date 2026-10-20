@@ -1204,3 +1204,37 @@ el movimiento.
 **Permisos.** Importar exige edición en el módulo **importacion**
 (`PermisosModulo`); descargar la plantilla, solo verlo. Se va el
 almacenamiento en memoria del Sprint 2: todo queda en la tabla `animales`.
+
+---
+
+## 37. Columnas reconocidas, asignación manual y listado paginado (Sprint 3, Brian)
+
+**Fecha:** 19 de octubre · **Decidió:** Brian
+
+**HU-41 · Reconocimiento.** El lector (`lector-archivo.ts`) compara cada
+encabezado, ya normalizado (sin mayúsculas, acentos, signos ni palabras como
+"de" o "del"), contra el título de la plantilla en cada idioma y una lista de
+variantes comunes (`VARIANTES`: "Caravana", "Arete", "Género", "F. Nac.",
+"Potrero", "Ear tag", "DOB"...). Si no coincide exacto, acepta un error de
+tipeo (distancia de edición 1, o 2 en nombres largos) solo si no hay dos
+campos igual de cerca. Si dos columnas parecen el mismo campo, se queda la
+primera y la otra se pregunta. Sumar una variante es sumar una palabra a la
+lista. Se descartó reconocer por el contenido de las celdas: adivina de más y
+es difícil de explicar en pantalla.
+
+**HU-42 · La vista previa ya no rechaza un archivo sin las obligatorias.**
+Antes respondía 400 si faltaba Identificador o Sexo. Ahora responde 200 con
+`listo: false`, `columnas` (qué columna se tomó como qué campo) y `faltan`,
+para que la pantalla pida asignarlas. La asignación viaja en `asignaciones`
+(`{ posición: campo | 'ignorar' }`) en la vista previa y en la confirmación;
+un campo ya tomado o inexistente es un 400. Confirmar sin las obligatorias
+sigue siendo 400. Se actualizó la prueba de Romina que esperaba el 400.
+
+**HU-30 · Paginación compatible.** `GET /animales` sin `pagina` devuelve la
+lista entera como antes (otras pantallas y pruebas la usan así). Con `pagina`
+devuelve `{ animales, total, pagina, por_pagina, paginas, orden, direccion }`.
+El orden se elige de una lista cerrada (`ORDENES`): nunca se pega al SQL lo
+que llega en la URL. Los nulos van al final y el identificador y el id
+desempatan, para que las páginas no se pisen. La vista de bajas usa
+`bajas=solo`, porque filtrarlas en el navegador rompería la paginación. La
+migración 009 suma índices por rancho para cada columna de orden.

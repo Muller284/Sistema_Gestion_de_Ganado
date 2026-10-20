@@ -238,7 +238,7 @@
       "muyGrande": "The file is larger than 5 MB. Split it into parts.",
       "formatoInvalido": "The file could not be read. Save it as Excel (.xlsx) or CSV and upload it again.",
       "sinFilas": "The file has no rows to import.",
-      "faltanColumnas": "The file is missing required columns: {columnas}. Use the template headers.",
+      "faltanColumnas": "The file is missing required columns: {columnas}. Assign them to a column of the file or use the template headers.",
       "demasiadasFilas": "The file has more than {n} rows. Split it into parts.",
       "nadaQueCargar": "There are no rows to load: all of them have errors or are repeated.",
       "cambioMientras": "Someone registered one of these animals while you were reviewing the file. Generate the preview again.",
@@ -277,7 +277,10 @@
         "origenInvalido": "“{valor}” is not a valid origin.",
         "corralInexistente": "There is no pen called “{valor}” on your ranch.",
         "pesoInvalido": "Weight must be a number greater than zero."
-      }
+      },
+      "extensionInvalida": "The file must be Excel (.xlsx) or CSV (.csv).",
+      "asignacionInvalida": "The column assignment is not valid. Choose the fields again.",
+      "campoYaAsignado": "The field “{campo}” is already assigned to the column “{columna}”. Choose another or ignore the column."
     },
     "permisos": {
       "sinRancho": "You don't belong to any ranch yet.",
@@ -336,7 +339,9 @@
       },
       "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
       "restaurado": "{identificador} is active again.",
-      "rangoInvalido": "The “from” date can’t be later than the “to” date."
+      "rangoInvalido": "The “from” date can’t be later than the “to” date.",
+      "ordenInvalido": "The list cannot be sorted by that field.",
+      "paginaInvalida": "The requested page is not valid."
     }
   },
   "acceso": {
@@ -1117,7 +1122,10 @@
       "pais": "Country {codigo}",
       "existencias": "Total livestock",
       "corrales": "Pens",
-      "llegaFase2": "Coming in phase 2"
+      "llegaFase2": "Coming in phase 2",
+      "existenciasDetalle": "{machos} males · {hembras} females active",
+      "corralesDetalle": "{n} animals assigned to pens",
+      "sinDatos": "No data yet"
     },
     "datos": {
       "titulo": "Ranch details",
@@ -1343,7 +1351,10 @@
     "archivo": {
       "titulo": "2. Upload your file",
       "etiqueta": "Excel (.xlsx) or CSV file",
-      "ayuda": "Nothing is saved yet: first you'll see how it would look."
+      "ayuda": "Up to 5,000 rows. Nothing is saved yet: you will see how it would look first.",
+      "elegir": "Choose file",
+      "cambiar": "Change file",
+      "ninguno": "No file chosen"
     },
     "resumen": {
       "total": "Rows in the file",
@@ -1387,6 +1398,38 @@
       "titulo": "Import finished",
       "otra": "Import another file",
       "verAnimales": "See animals"
+    },
+    "columnas": {
+      "titulo": "Columns in your file",
+      "texto": "This is how we read each column. Check it before you continue.",
+      "encabezado": "Column in the file",
+      "campo": "Read as",
+      "reconocidas": "Recognized ({n})",
+      "plantilla": "Same as the template",
+      "variante": "Recognized by its name",
+      "manual": "Chosen by you",
+      "ignorada": "Ignored",
+      "sinReconocer": "Columns we did not recognize ({n})",
+      "sinReconocerTexto": "Choose which field each one is, or mark it to be ignored.",
+      "elegirCampo": "Choose a field…",
+      "ignorar": "Ignore this column",
+      "faltan": "Still to assign: {campos}.",
+      "pendientes": "Decide what to do with {n} column(s) before you continue.",
+      "continuar": "Continue to the preview",
+      "cambiar": "Review columns",
+      "campos": {
+        "identificador": "Identifier",
+        "tipo_identificador": "Identifier type",
+        "nombre": "Name",
+        "raza": "Breed",
+        "sexo": "Sex",
+        "categoria": "Category",
+        "fecha_nacimiento": "Birth date",
+        "origen": "Origin",
+        "corral": "Pen",
+        "peso": "Weight"
+      },
+      "obligatorio": "required"
     }
   },
   "unidades": {
@@ -1584,6 +1627,33 @@
       "quitar": "Clear selection",
       "todos": "Select all active ({n})",
       "elegir": "Select {identificador}"
+    },
+    "orden": {
+      "etiqueta": "Sort by",
+      "direccion": "Direction",
+      "asc": "Ascending",
+      "desc": "Descending",
+      "campos": {
+        "identificador": "Identifier",
+        "nombre": "Name",
+        "sexo": "Sex",
+        "categoria": "Category",
+        "nacimiento": "Birth date",
+        "corral": "Pen",
+        "estado": "Status",
+        "peso": "Weight",
+        "creado": "Date registered"
+      }
+    },
+    "paginas": {
+      "rango": "{desde}–{hasta} of {total}",
+      "pagina": "Page {n} of {total}",
+      "anterior": "Previous",
+      "siguiente": "Next",
+      "primera": "First",
+      "ultima": "Last",
+      "porPagina": "Per page",
+      "navegacion": "List pages"
     }
   },
   "permisosSocio": {
