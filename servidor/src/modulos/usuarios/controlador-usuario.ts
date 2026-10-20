@@ -14,7 +14,7 @@ import { RepositorioUsuarioActual } from '../../comun/repositorio-usuario-actual
  *   POST /usuarios/cierre                       HU-12, cierre de sesión
  *   GET  /usuarios/yo                           el estado de mi cuenta
  *   GET  /usuarios/yo/perfil                    mis datos, para "Mi perfil"
- *   PATCH /usuarios/yo/perfil                   cambiar mi nombre
+ *   PATCH /usuarios/yo/perfil                   cambiar mi nombre, idioma o pais (HU-14)
  *   POST /usuarios/verificacion                 HU-07, confirmar el correo
  *   POST /usuarios/verificacion/reenvio         HU-07, pedir otro enlace
  *   POST /usuarios/mi-contrasena                HU-10, cambiar la mia

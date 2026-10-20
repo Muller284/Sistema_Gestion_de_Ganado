@@ -115,13 +115,15 @@ export class ServicioUsuario {
   }
 
   /**
-   * Mi perfil: el nombre y el idioma (HU-25). El correo no, porque cambiarlo
-   * exige confirmar el nuevo (HU-07) y eso es otra historia; el pais tampoco
-   * desde aca, porque es el criterio 2 de HU-14 (Brian).
+   * Mi perfil: el nombre, el idioma (HU-25) y el pais (HU-14, criterio 2). El
+   * correo no, porque cambiarlo exige confirmar el nuevo (HU-07) y eso es otra
+   * historia.
    *
    * Cada dato es opcional: se cambia lo que venga. idioma nulo o vacio vuelve
    * a usar el del pais (criterio 2 de HU-25: "se toma del pais y se puede
-   * cambiar").
+   * cambiar"). Al cambiar el pais, el idioma pasa a ser el del pais nuevo,
+   * salvo que en el mismo pedido se elija otro. Un pais_codigo vacio no borra
+   * el pais: todo usuario tiene uno desde el registro (HU-06).
    */
   async actualizarPerfil(cuerpo: any, quien: UsuarioActual) {
     // Mismas salidas que el portero: con esto pendiente no se edita nada.
@@ -131,7 +133,9 @@ export class ServicioUsuario {
 
     const cambiaNombre = cuerpo && 'nombre' in cuerpo;
     const cambiaIdioma = cuerpo && 'idioma' in cuerpo;
-    if (!cambiaNombre && !cambiaIdioma) {
+    const paisCodigo = cuerpo && 'pais_codigo' in cuerpo ? texto(cuerpo.pais_codigo).toUpperCase() : '';
+    const cambiaPais = paisCodigo !== '';
+    if (!cambiaNombre && !cambiaIdioma && !cambiaPais) {
       throw new BadRequestException(t('servidor.perfil.nadaQueCambiar'));
     }
 
@@ -156,13 +160,24 @@ export class ServicioUsuario {
       }
     }
 
+    if (cambiaPais && !(await this.repositorio.existePais(paisCodigo))) {
+      throw new BadRequestException(t('servidor.registro.paisNoExiste'));
+    }
+
     if (cambiaNombre) await this.repositorio.cambiarNombre(quien.id, nombre!);
+    // El pais antes que el idioma: cambiarPais deja el idioma siguiendo al
+    // pais, y si tambien se eligio uno, ese es el que queda.
+    if (cambiaPais) await this.repositorio.cambiarPais(quien.id, paisCodigo);
     if (cambiaIdioma) await this.repositorio.cambiarIdioma(quien.id, idioma);
 
     const perfil = await this.repositorio.perfil(quien.id);
     // El mensaje sale en el idioma nuevo: es lo primero que se lee en el.
     const mensaje = enIdioma(perfil.idioma, () =>
-      t(cambiaIdioma && !cambiaNombre ? 'servidor.perfil.idiomaGuardado' : 'servidor.perfil.guardado'),
+      t(
+        cambiaIdioma && !cambiaNombre && !cambiaPais
+          ? 'servidor.perfil.idiomaGuardado'
+          : 'servidor.perfil.guardado',
+      ),
     );
     return { perfil, mensaje };
   }

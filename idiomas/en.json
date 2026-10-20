@@ -234,15 +234,50 @@
       "dadoDeBaja": "Ranch deactivated."
     },
     "importacion": {
-      "sinContenido": "Send the CSV content or the list of rows to validate.",
-      "caravanaObligatoria": "The ear tag is required.",
-      "caravanaRepetida": "That ear tag is repeated within the same file.",
-      "sexoInvalido": "Sex must be male (M) or female (H).",
-      "pesoInvalido": "Current weight must be a positive number.",
-      "sinRancho": "You need an active ranch to import animals.",
-      "socioSoloLectura": "As a partner you have read-only access: you can't import animals.",
-      "archivoConErrores": "The file has {cantidad} row(s) with errors. Fix them before importing.",
-      "completada": "Import finished: {insertados} new, {actualizados} updated and {omitidos} skipped."
+      "sinContenido": "Upload an Excel (.xlsx) or CSV file.",
+      "muyGrande": "The file is larger than 5 MB. Split it into parts.",
+      "formatoInvalido": "The file could not be read. Save it as Excel (.xlsx) or CSV and upload it again.",
+      "sinFilas": "The file has no rows to import.",
+      "faltanColumnas": "The file is missing required columns: {columnas}. Use the template headers.",
+      "demasiadasFilas": "The file has more than {n} rows. Split it into parts.",
+      "nadaQueCargar": "There are no rows to load: all of them have errors or are repeated.",
+      "cambioMientras": "Someone registered one of these animals while you were reviewing the file. Generate the preview again.",
+      "completada": "Import finished: {insertados} new, {actualizados} updated, {omitidos} repeated skipped and {errores} row(s) with errors not loaded.",
+      "columnas": {
+        "identificador": "Identifier",
+        "tipo_identificador": "Identifier type",
+        "nombre": "Name",
+        "raza": "Breed",
+        "sexo": "Sex",
+        "categoria": "Category",
+        "fecha_nacimiento": "Birth date",
+        "origen": "Origin",
+        "corral": "Pen",
+        "peso": "Weight ({unidad})"
+      },
+      "plantilla": {
+        "archivo": "cattle_template",
+        "hoja": "Animals",
+        "hojaAyuda": "Accepted values",
+        "columna": "Column",
+        "valores": "What you can write",
+        "obligatorio": "Required.",
+        "corralEjemplo": "North pen",
+        "corralAyuda": "The name of a pen that already exists on your ranch, or empty.",
+        "pesoAyuda": "A number in {unidad}, or empty."
+      },
+      "motivos": {
+        "sinIdentificador": "The identifier is missing.",
+        "textoLargo": "The text is longer than {n} characters.",
+        "tipoInvalido": "“{valor}” is not a valid identifier type.",
+        "sexoInvalido": "“{valor}” is not a valid sex: write male or female.",
+        "categoriaInvalida": "“{valor}” is not a category in the catalog.",
+        "fechaInvalida": "The birth date is not valid. Use {formato}.",
+        "fechaFutura": "The birth date can't be in the future.",
+        "origenInvalido": "“{valor}” is not a valid origin.",
+        "corralInexistente": "There is no pen called “{valor}” on your ranch.",
+        "pesoInvalido": "Weight must be a number greater than zero."
+      }
     },
     "permisos": {
       "sinRancho": "You don't belong to any ranch yet.",
@@ -252,7 +287,8 @@
       "soloPropietario": "Only the owner can change the partners' permissions.",
       "modulosInvalidos": "The list of modules is not valid.",
       "noEsSocio": "That person is not a partner of your ranch.",
-      "guardados": "Done, we saved the modules they can edit."
+      "guardados": "Done, we saved the modules they can edit.",
+      "soloPropietarioElimina": "Only the ranch owner can remove records in {modulo}. Ask them to do it."
     },
     "corrales": {
       "sinNombre": "Give the pen a name.",
@@ -265,7 +301,10 @@
       "guardado": "You saved the changes to “{nombre}”.",
       "conAnimales": "“{nombre}” has {n} animal(s) in it. Move them to another pen before removing it.",
       "dadoDeBaja": "You removed the pen “{nombre}”. You can restore it whenever you want.",
-      "restaurado": "“{nombre}” is active again."
+      "restaurado": "“{nombre}” is active again.",
+      "seleccionInvalida": "Choose between 1 and {n} animals to assign.",
+      "asignados": "You assigned {n} animal(s) to “{nombre}”.",
+      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}."
     },
     "animales": {
       "sinIdentificador": "The identifier is required.",
@@ -296,7 +335,8 @@
         "archivado": "archived"
       },
       "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
-      "restaurado": "{identificador} is active again."
+      "restaurado": "{identificador} is active again.",
+      "rangoInvalido": "The “from” date can’t be later than the “to” date."
     }
   },
   "acceso": {
@@ -1136,7 +1176,7 @@
       "correoAyuda": "This is the one you sign in with. Changing it requires confirming the new one, and that's coming later.",
       "pais": "Country",
       "sinPais": "No country on file",
-      "paisAyuda": "Sets the language, currency and units. You can change it from the country settings.",
+      "paisAyuda": "It sets the language, currency and units. If you change it, the language switches to the new country’s.",
       "rol": "Role",
       "rancho": "Ranch",
       "sinRancho": "No ranch yet",
@@ -1294,32 +1334,59 @@
   "importacion": {
     "titulo": "Import cattle",
     "rotulo": "Bulk import",
-    "soloConsulta": "As a partner you have read-only access: you can see the cattle, but not import animals.",
+    "soloConsulta": "Importing animals requires edit permission in the Import module. Ask the owner for it.",
     "plantilla": {
-      "titulo": "1. Download the template",
-      "texto": "A CSV with the exact columns the system expects and three sample rows.",
-      "boton": "Download CSV template"
+      "titulo": "1. Template (optional)",
+      "texto": "An Excel file with the columns the system expects, a sample row and the accepted values. If your file already has those headers, you don't need it.",
+      "boton": "Download Excel template"
     },
     "archivo": {
       "titulo": "2. Upload your file",
-      "etiqueta": "CSV file"
+      "etiqueta": "Excel (.xlsx) or CSV file",
+      "ayuda": "Nothing is saved yet: first you'll see how it would look."
     },
-    "validacion": {
-      "titulo": "3. Review the data",
-      "validas": "{cantidad} animal(s) ready to import out of {total}.",
-      "errores": "{cantidad} row(s) with errors. Fix them in the file and upload it again.",
-      "fila": "Row {fila}",
-      "duplicados": "These ear tags already exist on your ranch: {caravanas}. What should we do with them?",
+    "resumen": {
+      "total": "Rows in the file",
+      "cargan": "Will be loaded",
+      "conError": "With errors",
+      "repetidas": "Repeated"
+    },
+    "vistaPrevia": {
+      "titulo": "3. This is how the first rows would look",
+      "vacia": "No row will be loaded. Check the errors and the repeated rows.",
+      "accion": "What happens",
+      "nueva": "New",
+      "actualizar": "Updated"
+    },
+    "repetidas": {
+      "titulo": "Repeated ({n})",
+      "pregunta": "What should we do with the animals that already exist on your ranch?",
       "omitir": "Skip them",
       "actualizar": "Update their data",
-      "confirmar": "Confirm and import"
+      "enArchivo": "Repeated earlier in the file: not loaded",
+      "enRancho": "Already exists on your ranch: skipped",
+      "seActualiza": "Already exists on your ranch: its data is updated"
+    },
+    "errores": {
+      "titulo": "Rows with errors ({n})",
+      "descargar": "Download report"
+    },
+    "informe": {
+      "archivo": "import_errors.csv",
+      "fila": "Row",
+      "filaN": "Row {n}",
+      "identificador": "Identifier",
+      "motivo": "Reason"
+    },
+    "confirmar": {
+      "texto": "Confirming saves {n} animal(s). Rows with errors are not loaded.",
+      "nada": "There is nothing to load yet.",
+      "boton": "Confirm and import ({n})"
     },
     "resultado": {
       "titulo": "Import finished",
-      "insertados": "New",
-      "actualizados": "Updated",
-      "omitidos": "Skipped",
-      "otra": "Run another import"
+      "otra": "Import another file",
+      "verAnimales": "See animals"
     }
   },
   "unidades": {
@@ -1365,6 +1432,15 @@
       "capacidadAyuda": "Optional. Without a capacity there is no overcrowding warning.",
       "superficie": "Area ({unidad})",
       "superficieAyuda": "Optional."
+    },
+    "excedidos": "{n} pen(s) are over capacity: {nombres}.",
+    "barra": "{n} of {capacidad} animals",
+    "asignar": {
+      "boton": "Assign animals",
+      "titulo": "Assign animals to “{nombre}”",
+      "confirmar": "Assign ({n})",
+      "vacio": "There are no active animals outside this pen.",
+      "todos": "Select all ({n})"
     }
   },
   "animales": {
@@ -1384,7 +1460,8 @@
     "vacio": {
       "titulo": "No animals to show",
       "texto": "Register the first one with its identifier and record data.",
-      "textoVista": "Try another status."
+      "textoVista": "Try another status.",
+      "textoFiltros": "No animal matches the search or the filters."
     },
     "verFicha": "View record",
     "deBaja": "Removed",
@@ -1480,7 +1557,33 @@
         "titulo": "Status changes",
         "vacio": "Its status never changed.",
         "de": "{anterior} → {nuevo}"
+      },
+      "autoria": {
+        "creado": "Registered by",
+        "modificado": "Last modified",
+        "detalle": "{nombre} · {momento}",
+        "sistema": "System"
       }
+    },
+    "buscar": "Search",
+    "placeholderBusqueda": "Tag or name",
+    "sexoFiltro": "Sex",
+    "todosSexos": "All sexes",
+    "filtros": {
+      "titulo": "Search and filter",
+      "todasCategorias": "All categories",
+      "todosCorrales": "All pens",
+      "nacidoDesde": "Born from",
+      "nacidoHasta": "Born until",
+      "limpiar": "Clear filters"
+    },
+    "seleccion": {
+      "cuantos": "{n} animal(s) selected",
+      "corral": "Pen",
+      "asignar": "Assign to pen",
+      "quitar": "Clear selection",
+      "todos": "Select all active ({n})",
+      "elegir": "Select {identificador}"
     }
   },
   "permisosSocio": {

@@ -8,11 +8,13 @@ import { randomUUID } from 'crypto';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
+import { avisoDeExceso } from '../corrales/servicio-corrales';
 import {
   RepositorioAnimales,
   type Animal,
   type DatosFicha,
   type Estado,
+  type FiltrosListado,
 } from './repositorio-animales';
 
 /**
@@ -36,8 +38,22 @@ import {
  * HU-39 · Historial de movimientos: origen, destino, fecha y quien; se ve en
  *         la ficha; el corral actual coincide con el ultimo movimiento.
  *
- * El registro con identificador (HU-27) y el listado con filtros (HU-29) son
- * de Brian: aca solo esta lo minimo para que la ficha tenga de donde salir.
+ * HU-18 · Solo el propietario (y el Admin en soporte) da de baja y restaura:
+ *         PermisosModulo.exigirEliminar(), de Romina. Un colaborador con
+ *         permiso de edicion carga y corrige fichas, pero no las borra.
+ *
+ * HU-23 · Cada ficha trae el nombre de quien la creo y de quien la modifico
+ *         por ultima vez (creado_por_nombre, modificado_por_nombre).
+ *
+ * HU-27 · Registro con identificador (Brian)
+ *   1. El identificador puede ser caravana, numero interno o RFID.
+ *   2. No se repite entre los animales vigentes del mismo rancho.
+ *   3. Otro rancho si puede usar el mismo identificador.
+ *
+ * HU-29 · Listado con filtros (Brian): busqueda por identificador o nombre y
+ *         filtros por sexo, categoria, corral y rango de fechas de
+ *         nacimiento, todos resueltos en la consulta SQL.
+ *
  * El peso llega y se guarda en kilos (HU-26).
  */
 
@@ -59,8 +75,16 @@ export class ServicioAnimales {
     return this.animales.categorias();
   }
 
-  /** estado: 'todos' o uno de los cuatro. Sin nada, solo los activos (HU-33). */
-  async listar(estado: string | undefined, bajas: boolean, quien: UsuarioActual) {
+  /**
+   * estado: 'todos' o uno de los cuatro. Sin nada, solo los activos (HU-33).
+   * consulta: los filtros de HU-29, tal como llegan en la URL.
+   */
+  async listar(
+    estado: string | undefined,
+    bajas: boolean,
+    consulta: Record<string, string | undefined>,
+    quien: UsuarioActual,
+  ) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'ver');
     let estados: Estado[] | null = ['activo'];
     if (estado === 'todos') estados = null;
@@ -70,7 +94,7 @@ export class ServicioAnimales {
       }
       estados = [estado as Estado];
     }
-    return this.animales.listar(ranchoId, estados, bajas);
+    return this.animales.listar(ranchoId, estados, bajas, this.validarFiltros(consulta));
   }
 
   /** La ficha completa: datos, movimientos (HU-39) y cambios de estado (HU-33). */
@@ -136,9 +160,12 @@ export class ServicioAnimales {
     const destino = await this.corralValido(cuerpo?.corral_id, ranchoId);
     const movido = await this.animales.mover(actual.id, ranchoId, destino, quien.id);
     if (!movido) throw new BadRequestException(t('servidor.animales.mismoCorral'));
+    // HU-38: si el corral quedo excedido se avisa, pero el movimiento ya se hizo.
+    const ocupacion = destino ? await this.animales.ocupacionDeCorral(destino, ranchoId) : null;
     return {
       animal: await this.animales.uno(actual.id, ranchoId),
       mensaje: t('servidor.animales.movido', { identificador: actual.identificador }),
+      aviso: ocupacion ? avisoDeExceso(ocupacion) : null,
     };
   }
 
@@ -170,9 +197,9 @@ export class ServicioAnimales {
     };
   }
 
-  /** HU-34. */
+  /** HU-34. Solo el propietario y el Admin dan de baja (HU-18, criterio 3). */
   async darDeBaja(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
+    const ranchoId = this.permisos.exigirEliminar(quien, 'animales');
     const actual = await this.vigente(id, ranchoId);
     await this.animales.marcarBaja(actual.id, ranchoId, true, quien.id);
     return { mensaje: t('servidor.animales.dadoDeBaja', { identificador: actual.identificador }) };
@@ -180,7 +207,7 @@ export class ServicioAnimales {
 
   /** HU-34. Si otro animal vigente tomo su identificador, no se puede. */
   async restaurar(id: string, quien: UsuarioActual) {
-    const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
+    const ranchoId = this.permisos.exigirEliminar(quien, 'animales');
     const actual = await this.existente(id, ranchoId);
     if (actual.eliminado_en) {
       if (await this.animales.identificadorOcupado(actual.identificador, ranchoId, actual.id)) {
@@ -193,6 +220,34 @@ export class ServicioAnimales {
     return {
       animal: await this.animales.uno(actual.id, ranchoId),
       mensaje: t('servidor.animales.restaurado', { identificador: actual.identificador }),
+    };
+  }
+
+  /** HU-29. Un filtro vacio no filtra; uno mal formado es un 400, no un listado vacio. */
+  private validarFiltros(consulta: Record<string, string | undefined>): FiltrosListado {
+    const busqueda = texto(consulta.busqueda, LARGO_TEXTO);
+
+    const sexo = consulta.sexo === 'macho' || consulta.sexo === 'hembra' ? consulta.sexo : null;
+    if (consulta.sexo && !sexo) {
+      throw new BadRequestException(t('servidor.animales.sexoInvalido'));
+    }
+
+    const fechaDesde = consulta.fechaDesde ? fechaValida(consulta.fechaDesde) : null;
+    const fechaHasta = consulta.fechaHasta ? fechaValida(consulta.fechaHasta) : null;
+    if ((consulta.fechaDesde && !fechaDesde) || (consulta.fechaHasta && !fechaHasta)) {
+      throw new BadRequestException(t('servidor.animales.fechaInvalida'));
+    }
+    if (fechaDesde && fechaHasta && fechaDesde > fechaHasta) {
+      throw new BadRequestException(t('servidor.animales.rangoInvalido'));
+    }
+
+    return {
+      busqueda,
+      sexo,
+      categoria: typeof consulta.categoria === 'string' && consulta.categoria ? consulta.categoria : null,
+      corral: typeof consulta.corral === 'string' && consulta.corral ? consulta.corral : null,
+      fechaDesde,
+      fechaHasta,
     };
   }
 

@@ -179,6 +179,19 @@ export class RepositorioUsuario {
     );
   }
 
+  /**
+   * HU-14, criterio 2. El pais se cambia desde Mi perfil. El idioma elegido
+   * vuelve a nulo para que siga al pais nuevo (HU-25: "se toma del pais");
+   * si en el mismo pedido viene un idioma, el servicio lo pone despues.
+   */
+  async cambiarPais(id: string, paisCodigo: string): Promise<void> {
+    await this.bd.query(
+      `UPDATE usuarios SET pais_codigo = $2, idioma = NULL, modificado_por = $1
+        WHERE id = $1 AND eliminado_en IS NULL`,
+      [id, paisCodigo],
+    );
+  }
+
   /** HU-07. Solo lo llama el servicio de verificacion, con un token consumido. */
   async marcarCorreoVerificado(usuarioId: string): Promise<void> {
     await this.bd.query(

@@ -113,6 +113,28 @@ export class PermisosModulo {
   }
 
   /**
+   * HU-18, criterio 3: "Ningun rol salvo el propietario y el Admin puede
+   * eliminar registros". Tener edicion en un modulo no alcanza para dar de
+   * baja: eso queda para el propietario y el Admin en soporte (HU-24).
+   * Devuelve el rancho, como exigir().
+   */
+  exigirEliminar(quien: UsuarioActual, modulo: string): string {
+    if (!quien.ranchoId) {
+      throw new NotFoundException(t('servidor.permisos.sinRancho'));
+    }
+    if (!actuaComoPropietario(quien)) {
+      throw new ForbiddenException({
+        motivo: 'solo_propietario_elimina',
+        modulo,
+        message: t('servidor.permisos.soloPropietarioElimina', {
+          modulo: t(`modulos.${modulo}.nombre`),
+        }),
+      });
+    }
+    return quien.ranchoId;
+  }
+
+  /**
    * HU-21, criterio 3: el propietario habilita (o quita) la edicion de un
    * modulo a un socio de su rancho. El socio ya ve todo; esto solo suma editar.
    */

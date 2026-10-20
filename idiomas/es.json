@@ -234,15 +234,50 @@
       "dadoDeBaja": "Rancho dado de baja."
     },
     "importacion": {
-      "sinContenido": "Envía el contenido del CSV o la lista de filas para validar.",
-      "caravanaObligatoria": "La caravana es obligatoria.",
-      "caravanaRepetida": "Esa caravana está repetida dentro del mismo archivo.",
-      "sexoInvalido": "El sexo tiene que ser macho (M) o hembra (H).",
-      "pesoInvalido": "El peso actual tiene que ser un número positivo.",
-      "sinRancho": "Necesitas un rancho activo para importar animales.",
-      "socioSoloLectura": "Como socio tienes acceso de solo consulta: no puedes importar animales.",
-      "archivoConErrores": "El archivo tiene {cantidad} fila(s) con errores. Corrígelas antes de importar.",
-      "completada": "Importación completada: {insertados} nuevo(s), {actualizados} actualizado(s) y {omitidos} omitido(s)."
+      "sinContenido": "Sube un archivo de Excel (.xlsx) o CSV.",
+      "muyGrande": "El archivo pesa más de 5 MB. Divídelo en partes.",
+      "formatoInvalido": "No se pudo leer el archivo. Guárdalo como Excel (.xlsx) o CSV y vuelve a subirlo.",
+      "sinFilas": "El archivo no tiene filas para importar.",
+      "faltanColumnas": "Al archivo le faltan columnas obligatorias: {columnas}. Usa los encabezados de la plantilla.",
+      "demasiadasFilas": "El archivo tiene más de {n} filas. Divídelo en partes.",
+      "nadaQueCargar": "No hay ninguna fila para cargar: todas tienen errores o están repetidas.",
+      "cambioMientras": "Alguien registró uno de estos animales mientras revisabas el archivo. Vuelve a generar la vista previa.",
+      "completada": "Importación terminada: {insertados} nuevo(s), {actualizados} actualizado(s), {omitidos} repetido(s) omitido(s) y {errores} fila(s) con error sin cargar.",
+      "columnas": {
+        "identificador": "Identificador",
+        "tipo_identificador": "Tipo de identificador",
+        "nombre": "Nombre",
+        "raza": "Raza",
+        "sexo": "Sexo",
+        "categoria": "Categoría",
+        "fecha_nacimiento": "Fecha de nacimiento",
+        "origen": "Origen",
+        "corral": "Corral",
+        "peso": "Peso ({unidad})"
+      },
+      "plantilla": {
+        "archivo": "plantilla_ganado",
+        "hoja": "Animales",
+        "hojaAyuda": "Valores aceptados",
+        "columna": "Columna",
+        "valores": "Qué se puede escribir",
+        "obligatorio": "Obligatorio.",
+        "corralEjemplo": "Corral Norte",
+        "corralAyuda": "El nombre de un corral que ya exista en tu rancho, o vacío.",
+        "pesoAyuda": "Un número en {unidad}, o vacío."
+      },
+      "motivos": {
+        "sinIdentificador": "Falta el identificador.",
+        "textoLargo": "El texto pasa de {n} caracteres.",
+        "tipoInvalido": "«{valor}» no es un tipo de identificador válido.",
+        "sexoInvalido": "«{valor}» no es un sexo válido: escribe macho o hembra.",
+        "categoriaInvalida": "«{valor}» no es una categoría del catálogo.",
+        "fechaInvalida": "La fecha de nacimiento no es válida. Usa {formato}.",
+        "fechaFutura": "La fecha de nacimiento no puede ser futura.",
+        "origenInvalido": "«{valor}» no es un origen válido.",
+        "corralInexistente": "No hay ningún corral llamado «{valor}» en tu rancho.",
+        "pesoInvalido": "El peso tiene que ser un número mayor que cero."
+      }
     },
     "permisos": {
       "sinRancho": "Todavía no perteneces a ningún rancho.",
@@ -252,7 +287,8 @@
       "soloPropietario": "Solo el propietario puede cambiar los permisos de los socios.",
       "modulosInvalidos": "La lista de módulos no es válida.",
       "noEsSocio": "Esa persona no es socia de tu rancho.",
-      "guardados": "Listo, guardamos los módulos que puede editar."
+      "guardados": "Listo, guardamos los módulos que puede editar.",
+      "soloPropietarioElimina": "Dar de baja en {modulo} es solo del propietario del rancho: pídeselo."
     },
     "corrales": {
       "sinNombre": "Ponle un nombre al corral.",
@@ -265,7 +301,10 @@
       "guardado": "Guardaste los cambios de «{nombre}».",
       "conAnimales": "«{nombre}» tiene {n} animal(es) adentro. Muévelos a otro corral antes de darlo de baja.",
       "dadoDeBaja": "Diste de baja el corral «{nombre}». Puedes restaurarlo cuando quieras.",
-      "restaurado": "«{nombre}» volvió a estar vigente."
+      "restaurado": "«{nombre}» volvió a estar vigente.",
+      "seleccionInvalida": "Elige entre 1 y {n} animales para asignar.",
+      "asignados": "Asignaste {n} animal(es) a «{nombre}».",
+      "excedido": "Ojo: «{nombre}» quedó con {n} animales y su capacidad es de {capacidad}."
     },
     "animales": {
       "sinIdentificador": "El identificador es obligatorio.",
@@ -296,7 +335,8 @@
         "archivado": "archivado"
       },
       "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
-      "restaurado": "{identificador} volvió a estar vigente."
+      "restaurado": "{identificador} volvió a estar vigente.",
+      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta»."
     }
   },
   "acceso": {
@@ -1136,7 +1176,7 @@
       "correoAyuda": "Es con el que entras. Cambiarlo exige confirmar el nuevo, y eso llega más adelante.",
       "pais": "País",
       "sinPais": "Sin país registrado",
-      "paisAyuda": "Define idioma, moneda y unidades. Se cambia desde los ajustes del país.",
+      "paisAyuda": "Define el idioma, la moneda y las unidades. Si lo cambias, el idioma pasa a ser el del país nuevo.",
       "rol": "Rol",
       "rancho": "Rancho",
       "sinRancho": "Todavía sin rancho",
@@ -1294,32 +1334,59 @@
   "importacion": {
     "titulo": "Importar ganado",
     "rotulo": "Importación masiva",
-    "soloConsulta": "Como socio tienes acceso de solo consulta: puedes ver el ganado, pero no importar animales.",
+    "soloConsulta": "Importar animales necesita permiso de edición en el módulo Importación. Pídeselo al propietario.",
     "plantilla": {
-      "titulo": "1. Descarga la plantilla",
-      "texto": "Es un CSV con las columnas exactas que espera el sistema y tres filas de ejemplo.",
-      "boton": "Descargar plantilla CSV"
+      "titulo": "1. Plantilla (opcional)",
+      "texto": "Un Excel con las columnas que espera el sistema, una fila de ejemplo y los valores aceptados. Si tu archivo ya tiene esos encabezados, no hace falta.",
+      "boton": "Descargar plantilla de Excel"
     },
     "archivo": {
       "titulo": "2. Sube tu archivo",
-      "etiqueta": "Archivo CSV"
+      "etiqueta": "Archivo de Excel (.xlsx) o CSV",
+      "ayuda": "Todavía no se guarda nada: primero vas a ver cómo quedaría."
     },
-    "validacion": {
-      "titulo": "3. Revisa los datos",
-      "validas": "{cantidad} animal(es) listos para importar de {total}.",
-      "errores": "{cantidad} fila(s) con errores. Corrígelas en el archivo y vuelve a subirlo.",
-      "fila": "Fila {fila}",
-      "duplicados": "Estas caravanas ya existen en tu rancho: {caravanas}. ¿Qué hacemos con ellas?",
-      "omitir": "Omitirlas",
+    "resumen": {
+      "total": "Filas en el archivo",
+      "cargan": "Se cargan",
+      "conError": "Con error",
+      "repetidas": "Repetidas"
+    },
+    "vistaPrevia": {
+      "titulo": "3. Así quedarían las primeras filas",
+      "vacia": "Ninguna fila se va a cargar. Revisa los errores y las repetidas.",
+      "accion": "Qué pasa",
+      "nueva": "Nuevo",
+      "actualizar": "Se actualiza"
+    },
+    "repetidas": {
+      "titulo": "Repetidas ({n})",
+      "pregunta": "¿Qué hacemos con los animales que ya existen en tu rancho?",
+      "omitir": "Omitirlos",
       "actualizar": "Actualizar sus datos",
-      "confirmar": "Confirmar e importar"
+      "enArchivo": "Repetido más arriba en el archivo: no se carga",
+      "enRancho": "Ya existe en tu rancho: se omite",
+      "seActualiza": "Ya existe en tu rancho: se actualizan sus datos"
+    },
+    "errores": {
+      "titulo": "Filas con error ({n})",
+      "descargar": "Descargar informe"
+    },
+    "informe": {
+      "archivo": "errores_importacion.csv",
+      "fila": "Fila",
+      "filaN": "Fila {n}",
+      "identificador": "Identificador",
+      "motivo": "Motivo"
+    },
+    "confirmar": {
+      "texto": "Al confirmar se guardan {n} animal(es). Las filas con error no se cargan.",
+      "nada": "No hay nada para cargar todavía.",
+      "boton": "Confirmar e importar ({n})"
     },
     "resultado": {
       "titulo": "Importación terminada",
-      "insertados": "Nuevos",
-      "actualizados": "Actualizados",
-      "omitidos": "Omitidos",
-      "otra": "Hacer otra importación"
+      "otra": "Importar otro archivo",
+      "verAnimales": "Ver animales"
     }
   },
   "unidades": {
@@ -1365,6 +1432,15 @@
       "capacidadAyuda": "Opcional. Sin capacidad no hay aviso de sobrepoblación.",
       "superficie": "Superficie ({unidad})",
       "superficieAyuda": "Opcional."
+    },
+    "excedidos": "{n} corral(es) superan su capacidad: {nombres}.",
+    "barra": "{n} de {capacidad} animales",
+    "asignar": {
+      "boton": "Asignar animales",
+      "titulo": "Asignar animales a «{nombre}»",
+      "confirmar": "Asignar ({n})",
+      "vacio": "No hay animales activos fuera de este corral.",
+      "todos": "Elegir todos ({n})"
     }
   },
   "animales": {
@@ -1384,7 +1460,8 @@
     "vacio": {
       "titulo": "No hay animales para mostrar",
       "texto": "Registra el primero con su identificador y los datos de su ficha.",
-      "textoVista": "Prueba con otro estado."
+      "textoVista": "Prueba con otro estado.",
+      "textoFiltros": "Ningún animal coincide con la búsqueda o los filtros."
     },
     "verFicha": "Ver ficha",
     "deBaja": "Dado de baja",
@@ -1480,7 +1557,33 @@
         "titulo": "Cambios de estado",
         "vacio": "Nunca cambió de estado.",
         "de": "{anterior} → {nuevo}"
+      },
+      "autoria": {
+        "creado": "Registrado por",
+        "modificado": "Última modificación",
+        "detalle": "{nombre} · {momento}",
+        "sistema": "Sistema"
       }
+    },
+    "buscar": "Buscar",
+    "placeholderBusqueda": "Identificador o nombre",
+    "sexoFiltro": "Sexo",
+    "todosSexos": "Todos los sexos",
+    "filtros": {
+      "titulo": "Buscar y filtrar",
+      "todasCategorias": "Todas las categorías",
+      "todosCorrales": "Todos los corrales",
+      "nacidoDesde": "Nacidos desde",
+      "nacidoHasta": "Nacidos hasta",
+      "limpiar": "Quitar filtros"
+    },
+    "seleccion": {
+      "cuantos": "{n} animal(es) elegido(s)",
+      "corral": "Corral",
+      "asignar": "Asignar al corral",
+      "quitar": "Quitar la selección",
+      "todos": "Elegir todos los activos ({n})",
+      "elegir": "Elegir {identificador}"
     }
   },
   "permisosSocio": {

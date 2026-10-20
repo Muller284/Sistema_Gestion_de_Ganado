@@ -110,23 +110,54 @@ export function cambiarUsuario(id: string) {
   localStorage.setItem('usuario-id', id);
 }
 
+/** Quién pide, en qué idioma y para qué rancho: lo mismo en cada pedido. */
+function cabeceras(ruta: string): Record<string, string> {
+  const token = tokenAccesoActual();
+  const soporte = soporteActual();
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    'x-usuario-id': usuarioActual(),
+    // HU-25: el servidor contesta sus mensajes en este idioma.
+    'Accept-Language': idiomaActual(),
+    // HU-24. Las rutas /admin son del Admin fuera de cualquier rancho.
+    ...(soporte && !ruta.startsWith('/admin/') ? { 'x-rancho-soporte': soporte.ranchoId } : {}),
+  };
+}
+
+/**
+ * Un archivo que devuelve el servidor (HU-40: la plantilla de Excel). Se
+ * guarda con el nombre que manda el servidor, o con el de respaldo.
+ */
+export async function descargar(ruta: string, nombreDeRespaldo: string): Promise<void> {
+  const respuesta = await fetch(`${BASE}${ruta}`, { headers: cabeceras(ruta) });
+  if (!respuesta.ok) {
+    const cuerpo = await respuesta.json().catch(() => null);
+    throw new Error(cuerpo?.message ?? `Error ${respuesta.status}`);
+  }
+  const disposicion = respuesta.headers.get('Content-Disposition') ?? '';
+  const nombre = decodeURIComponent(disposicion.match(/filename="?([^";]+)"?/)?.[1] ?? nombreDeRespaldo);
+  guardarArchivo(await respuesta.blob(), nombre);
+}
+
+/** Ofrece un archivo armado en el navegador (HU-43: el informe de errores). */
+export function guardarArchivo(contenido: Blob, nombre: string): void {
+  const enlace = document.createElement('a');
+  enlace.href = URL.createObjectURL(contenido);
+  enlace.download = nombre;
+  enlace.click();
+  URL.revokeObjectURL(enlace.href);
+}
+
 async function pedir<T>(
   ruta: string,
   opciones: RequestInit = {},
   esReintento = false,
 ): Promise<T> {
-  const token = tokenAccesoActual();
-  const soporte = soporteActual();
   const respuesta = await fetch(`${BASE}${ruta}`, {
     ...opciones,
     headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      'x-usuario-id': usuarioActual(),
-      // HU-25: el servidor contesta sus mensajes en este idioma.
-      'Accept-Language': idiomaActual(),
-      // HU-24. Las rutas /admin son del Admin fuera de cualquier rancho.
-      ...(soporte && !ruta.startsWith('/admin/') ? { 'x-rancho-soporte': soporte.ranchoId } : {}),
+      ...cabeceras(ruta),
       ...(opciones.headers ?? {}),
     },
   });
@@ -377,34 +408,75 @@ export interface AccesoAdmin {
   estado: 'abierto' | 'cerrado' | 'vencido';
 }
 
-// HU-40 a HU-45 · Importacion de ganado. Mismos nombres que devuelve el servidor.
-export interface PlantillaImportacion {
-  encabezados: string[];
-  ejemplo: string;
-  contenidoCsv: string;
-}
+// HU-40, HU-43 y HU-44 · Importación de animales. Mismos nombres que devuelve el servidor.
+export type EstrategiaDuplicados = 'omitir' | 'actualizar';
+
+export type ColumnaImportacion =
+  | 'identificador'
+  | 'tipo_identificador'
+  | 'nombre'
+  | 'raza'
+  | 'sexo'
+  | 'categoria'
+  | 'fecha_nacimiento'
+  | 'origen'
+  | 'corral'
+  | 'peso';
 
 export interface ErrorDeFila {
   fila: number;
-  caravana?: string;
-  error: string;
+  identificador: string | null;
+  columna: ColumnaImportacion | null;
+  motivo: string;
 }
 
-export interface ValidacionImportacion {
-  total: number;
-  validas: number;
-  con_errores: number;
-  duplicados: number;
+export interface FilaRepetida {
+  fila: number;
+  identificador: string;
+  /** archivo: ya apareció más arriba en el archivo. rancho: ya existe en el rancho. */
+  en: 'archivo' | 'rancho';
+}
+
+export interface FilaPrevia {
+  fila: number;
+  accion: 'nueva' | 'actualizar';
+  identificador: string;
+  tipo_identificador: TipoIdentificador;
+  nombre: string | null;
+  raza: string | null;
+  sexo: Sexo;
+  categoria_codigo: string | null;
+  fecha_nacimiento: string | null;
+  origen: Origen | null;
+  corral: string | null;
+  peso_kg: number | null;
+}
+
+export interface InformeImportacion {
+  estrategia: EstrategiaDuplicados;
+  resumen: {
+    total: number;
+    cargan: number;
+    nuevas: number;
+    actualizan: number;
+    con_error: number;
+    repetidas: number;
+    repetidas_en_archivo: number;
+    existentes: number;
+  };
+  vista_previa: FilaPrevia[];
   errores: ErrorDeFila[];
-  filas_duplicadas: string[];
+  repetidas: FilaRepetida[];
 }
-
-export type EstrategiaDuplicados = 'omitir' | 'actualizar';
 
 export interface ResultadoImportacion {
-  exito: boolean;
   mensaje: string;
-  resumen: { total_procesados: number; insertados: number; actualizados: number; omitidos: number };
+  resumen: { insertados: number; actualizados: number; omitidos: number; con_error: number };
+}
+
+export interface ArchivoAImportar {
+  nombre_archivo: string;
+  contenido_base64: string;
 }
 
 // HU-21 y HU-22 · Lo que puede quien entró en cada módulo.
@@ -452,7 +524,22 @@ export interface Animal extends DatosFichaAnimal {
   corral_nombre: string | null;
   estado: EstadoAnimal;
   creado_en: string;
+  modificado_en: string;
+  /** HU-23: quien registró la ficha y quien la modificó por última vez. */
+  creado_por_nombre: string | null;
+  modificado_por_nombre: string | null;
   eliminado_en: string | null;
+}
+
+/** HU-29 · Filtros del listado. Los vacíos no se mandan. */
+export interface FiltrosAnimales {
+  busqueda?: string;
+  sexo?: Sexo | '';
+  categoria?: string;
+  corral?: string;
+  /** AAAA-MM-DD, por fecha de nacimiento. */
+  fechaDesde?: string;
+  fechaHasta?: string;
 }
 
 export interface MovimientoCorral {
@@ -483,6 +570,19 @@ export interface FichaAnimal {
 export interface RespuestaAnimal {
   animal: Animal;
   mensaje: string;
+  /** HU-38: el corral de destino quedó por encima de su capacidad. */
+  aviso?: string | null;
+}
+
+/** HU-37 · Resultado de asignar animales a un corral. */
+export interface RespuestaAsignacion {
+  corral: Corral;
+  movidos: number;
+  ya_estaban: number;
+  no_encontrados: number;
+  mensaje: string;
+  /** HU-38: el aviso no impide la asignación, solo advierte. */
+  aviso: string | null;
 }
 
 export interface RespuestaCorral {
@@ -636,7 +736,7 @@ export const api = {
 
   // Mi perfil
   perfil: () => pedir<PerfilUsuario>('/usuarios/yo/perfil'),
-  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null }) =>
+  actualizarPerfil: (datos: { nombre?: string; idioma?: string | null; pais_codigo?: string }) =>
     pedir<{ perfil: PerfilUsuario; mensaje: string }>('/usuarios/yo/perfil', {
       method: 'PATCH',
       body: JSON.stringify(datos),
@@ -654,17 +754,17 @@ export const api = {
   accesosAdmin: () => pedir<AccesoAdmin[]>('/admin/accesos'),
   accesosDeMiRancho: () => pedir<AccesoAdmin[]>('/admin/accesos/de-mi-rancho'),
 
-  // HU-40 a HU-45 · Importacion de ganado
-  plantillaImportacion: () => pedir<PlantillaImportacion>('/importacion/plantilla'),
-  validarImportacion: (csv: string) =>
-    pedir<ValidacionImportacion>('/importacion/validar', {
+  // HU-40, HU-43 y HU-44 · Importación de animales
+  descargarPlantilla: () => descargar('/importacion/plantilla', 'plantilla.xlsx'),
+  vistaPreviaImportacion: (archivo: ArchivoAImportar, estrategia: EstrategiaDuplicados) =>
+    pedir<InformeImportacion>('/importacion/vista-previa', {
       method: 'POST',
-      body: JSON.stringify({ csv }),
+      body: JSON.stringify({ ...archivo, estrategia }),
     }),
-  ejecutarImportacion: (csv: string, estrategia_duplicados: EstrategiaDuplicados) =>
-    pedir<ResultadoImportacion>('/importacion/ejecutar', {
+  confirmarImportacion: (archivo: ArchivoAImportar, estrategia: EstrategiaDuplicados) =>
+    pedir<ResultadoImportacion>('/importacion/confirmar', {
       method: 'POST',
-      body: JSON.stringify({ csv, estrategia_duplicados }),
+      body: JSON.stringify({ ...archivo, estrategia }),
     }),
   // HU-21 y HU-22 · Permisos por módulo
   misPermisos: () => pedir<MisPermisos>('/permisos/mios'),
@@ -681,14 +781,26 @@ export const api = {
     pedir<RespuestaCorral>('/corrales', { method: 'POST', body: JSON.stringify(datos) }),
   actualizarCorral: (id: string, datos: DatosCorral) =>
     pedir<RespuestaCorral>(`/corrales/${id}`, { method: 'PATCH', body: JSON.stringify(datos) }),
+  asignarAnimales: (corralId: string, animalIds: string[]) =>
+    pedir<RespuestaAsignacion>(`/corrales/${corralId}/animales`, {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds }),
+    }),
   bajaCorral: (id: string) => pedir<{ mensaje: string }>(`/corrales/${id}`, { method: 'DELETE' }),
   restaurarCorral: (id: string) =>
     pedir<RespuestaCorral>(`/corrales/${id}/restaurar`, { method: 'POST' }),
 
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
-  animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false) =>
-    pedir<Animal[]>(`/animales?estado=${estado}${conBajas ? '&bajas=1' : ''}`),
+  animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false, filtros: FiltrosAnimales = {}) => {
+    const parametros = new URLSearchParams({ estado });
+    if (conBajas) parametros.set('bajas', '1');
+    for (const [clave, valor] of Object.entries(filtros)) {
+      const limpio = typeof valor === 'string' ? valor.trim() : '';
+      if (limpio) parametros.set(clave, limpio);
+    }
+    return pedir<Animal[]>(`/animales?${parametros.toString()}`);
+  },
   fichaAnimal: (id: string) => pedir<FichaAnimal>(`/animales/${id}`),
   crearAnimal: (
     datos: DatosFichaAnimal & {
