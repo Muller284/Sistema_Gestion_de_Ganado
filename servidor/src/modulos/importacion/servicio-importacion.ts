@@ -3,7 +3,16 @@ import ExcelJS from 'exceljs';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { enIdioma, t } from '../../comun/idioma';
-import { COLUMNAS, leerArchivo, normalizar, type Columna, type FilaLeida, type Valor } from './lector-archivo';
+import {
+  COLUMNAS,
+  leerArchivo,
+  normalizar,
+  titulosDe,
+  type ColumnaDelArchivo,
+  type Columna,
+  type FilaLeida,
+  type Valor,
+} from './lector-archivo';
 import { RepositorioImportacion, type AnimalAImportar, type ContextoRancho } from './repositorio-importacion';
 
 /**
@@ -25,6 +34,13 @@ import { RepositorioImportacion, type AnimalAImportar, type ContextoRancho } fro
  *   1. Por identificador dentro del rancho.
  *   2. Dentro del propio archivo, no solo contra la base.
  *   3. Se elige omitir los repetidos o actualizar los existentes.
+ *
+ * HU-41 · Reconocimiento de columnas y HU-42 · Confirmación manual (Brian)
+ *   La vista previa devuelve `columnas` (qué columna del archivo se tomó
+ *   como qué campo) y `faltan` (obligatorias sin asignar). Las columnas no
+ *   reconocidas se asignan a mano y vuelven en `asignaciones`
+ *   ({ posición: campo | 'ignorar' }). Si falta una obligatoria, la vista
+ *   previa no valida filas (listo: false) y confirmar responde 400.
  *
  * Importar es del módulo "importacion" con permiso de edición (HU-19/HU-22):
  * el socio y los colaboradores sin ese permiso reciben 403.
@@ -63,6 +79,14 @@ export interface FilaPrevia {
 
 export interface Informe {
   estrategia: Estrategia;
+  /** HU-41/HU-42: false mientras falte asignar una columna obligatoria. */
+  listo: boolean;
+  /** HU-41, criterio 3: cada columna del archivo y el campo que se le asignó. */
+  columnas: ColumnaDelArchivo[];
+  /** Columnas obligatorias que todavía no tienen ninguna columna del archivo. */
+  faltan: Columna[];
+  /** HU-42: los campos que se pueden elegir para una columna no reconocida. */
+  campos: readonly Columna[];
   resumen: {
     total: number;
     /** Las que se guardan al confirmar: nuevas más, si se actualiza, las existentes. */
@@ -158,6 +182,9 @@ export class ServicioImportacion {
   async confirmar(cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'importacion', 'editar');
     const { informe, nuevas, aActualizar } = await this.clasificar(cuerpo, ranchoId);
+    if (!informe.listo) {
+      throw new BadRequestException(t('servidor.importacion.faltanColumnas', { columnas: titulosDe(informe.faltan) }));
+    }
     if (nuevas.length + aActualizar.length === 0) {
       throw new BadRequestException(t('servidor.importacion.nadaQueCargar'));
     }
@@ -184,7 +211,29 @@ export class ServicioImportacion {
 
   private async clasificar(cuerpo: any, ranchoId: string): Promise<Clasificacion> {
     const estrategia: Estrategia = cuerpo?.estrategia === 'actualizar' ? 'actualizar' : 'omitir';
-    const archivo = await leerArchivo(cuerpo?.nombre_archivo, cuerpo?.contenido_base64);
+    const archivo = await leerArchivo(cuerpo?.nombre_archivo, cuerpo?.contenido_base64, cuerpo?.asignaciones);
+    const mapeo = { columnas: archivo.columnas, faltan: archivo.faltan, campos: COLUMNAS };
+
+    // HU-42: sin las obligatorias no se valida ninguna fila; primero hay que asignarlas.
+    if (archivo.faltan.length > 0) {
+      return {
+        nuevas: [],
+        aActualizar: [],
+        informe: {
+          estrategia,
+          listo: false,
+          ...mapeo,
+          resumen: {
+            total: archivo.filas.length, cargan: 0, nuevas: 0, actualizan: 0, con_error: 0,
+            repetidas: 0, repetidas_en_archivo: 0, existentes: 0,
+          },
+          vista_previa: [],
+          errores: [],
+          repetidas: [],
+        },
+      };
+    }
+
     const contexto = await this.repositorio.contexto(ranchoId);
     const valores = valoresAceptados(contexto);
 
@@ -247,6 +296,8 @@ export class ServicioImportacion {
       aActualizar,
       informe: {
         estrategia,
+        listo: true,
+        ...mapeo,
         resumen: {
           total: archivo.filas.length,
           cargan: nuevas.length + aActualizar.length,

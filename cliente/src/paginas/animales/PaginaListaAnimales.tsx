@@ -17,8 +17,10 @@ import {
   api,
   type Animal,
   type Corral,
+  type DireccionOrden,
   type EstadoAnimal,
   type FiltrosAnimales,
+  type OrdenAnimales,
   type Sexo,
 } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
@@ -39,6 +41,12 @@ import { FormularioFicha } from './FormularioFicha';
  * servidor; la búsqueda espera ESPERA_BUSQUEDA ms sin teclear antes de pedir,
  * para no mandar un pedido por cada letra.
  *
+ * HU-30 (Brian): el listado se ordena por cualquier columna y se recorre por
+ * páginas. El orden y la paginación los resuelve la base de datos: solo
+ * viaja la página que se ve. Filtros, orden y página van juntos en cada
+ * pedido, así que cambiar de página no pierde el filtro ni el orden; cambiar
+ * un filtro o el orden vuelve a la primera página.
+ *
  * HU-37, criterio 2 (Romina): quien edita animales marca varios activos y los
  * asigna juntos a un corral. Si el corral se excede, se avisa sin impedirlo
  * (HU-38).
@@ -48,6 +56,18 @@ type Vista = EstadoAnimal | 'todos' | 'bajas';
 const VISTAS: Vista[] = ['activo', 'vendido', 'muerto', 'archivado', 'todos', 'bajas'];
 const SEXOS: Sexo[] = ['macho', 'hembra'];
 const ESPERA_BUSQUEDA = 300;
+const ORDENES: OrdenAnimales[] = [
+  'identificador',
+  'nombre',
+  'sexo',
+  'categoria',
+  'nacimiento',
+  'corral',
+  'estado',
+  'peso',
+  'creado',
+];
+const TAMANOS_PAGINA = [25, 50, 100];
 const SIN_FILTROS: FiltrosAnimales = {
   busqueda: '',
   sexo: '',
@@ -85,6 +105,15 @@ export function PaginaListaAnimales() {
   const [avisoExceso, setAvisoExceso] = useState('');
   // Cambiar la versión vuelve a pedir la lista.
   const [version, setVersion] = useState(0);
+  // HU-30: la página pedida, su tamaño y el orden; el total lo dice el servidor.
+  const [pagina, setPagina] = useState(1);
+  const [porPagina, setPorPagina] = useState(TAMANOS_PAGINA[0]);
+  const [orden, setOrden] = useState<OrdenAnimales>('identificador');
+  const [direccion, setDireccion] = useState<DireccionOrden>('asc');
+  const [total, setTotal] = useState(0);
+  const [paginas, setPaginas] = useState(1);
+  // El pedido que ya respondió. Mientras el actual sea otro, la página se está cargando.
+  const [respondido, setRespondido] = useState('');
 
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
   // Solo los activos y vigentes se pueden asignar a un corral.
@@ -94,6 +123,11 @@ export function PaginaListaAnimales() {
   const busqueda = useDemorado(filtros.busqueda ?? '', ESPERA_BUSQUEDA);
   const { sexo, categoria, corral, fechaDesde, fechaHasta } = filtros;
   const hayFiltros = Object.values(filtros).some(Boolean);
+  // HU-30: todo lo que define la página pedida. Si cambia, hay un pedido en curso.
+  const clavePedido = JSON.stringify([
+    vista, version, busqueda, sexo, categoria, corral, fechaDesde, fechaHasta, pagina, porPagina, orden, direccion,
+  ]);
+  const paginando = clavePedido !== respondido;
 
   // El catálogo de categorías del filtro se pide una vez. Si falla, queda vacío.
   useEffect(() => {
@@ -123,27 +157,64 @@ export function PaginaListaAnimales() {
   useEffect(() => {
     let vigente = true;
     const pedidos: FiltrosAnimales = { busqueda, sexo, categoria, corral, fechaDesde, fechaHasta };
-    const pedido =
-      vista === 'bajas'
-        ? api.animales('todos', true, pedidos).then((lista) => lista.filter((a) => a.eliminado_en))
-        : api.animales(vista, false, pedidos);
-    pedido
-      .then((lista) => {
-        if (vigente) {
-          setAnimales(lista);
-          setSeleccion([]);
-          setError('');
+    // HU-30: el servidor ordena y corta la página. Las bajas se piden solas
+    // (bajas=solo) para que la paginación cuente solo esas.
+    api
+      .paginaAnimales(vista === 'bajas' ? 'todos' : vista, vista === 'bajas' ? 'solo' : 'no', pedidos, {
+        pagina,
+        porPagina,
+        orden,
+        direccion,
+      })
+      .then((respuesta) => {
+        if (!vigente) return;
+        // Si la página quedó fuera (p. ej. tras asignar o dar de baja), se va a la última.
+        if (respuesta.animales.length === 0 && respuesta.total > 0 && pagina > respuesta.paginas) {
+          setPagina(respuesta.paginas);
+          return;
         }
+        setAnimales(respuesta.animales);
+        setTotal(respuesta.total);
+        setPaginas(respuesta.paginas);
+        setSeleccion([]);
+        setError('');
       })
       .catch((err: Error) => vigente && setError(err.message))
-      .finally(() => vigente && setCargando(false));
+      .finally(() => {
+        if (!vigente) return;
+        setCargando(false);
+        setRespondido(clavePedido);
+      });
     return () => {
       vigente = false;
     };
-  }, [vista, version, busqueda, sexo, categoria, corral, fechaDesde, fechaHasta]);
+  }, [vista, version, busqueda, sexo, categoria, corral, fechaDesde, fechaHasta, pagina, porPagina, orden, direccion, clavePedido]);
 
+  /** HU-30: un filtro nuevo vuelve a la primera página; cambiar de página no toca los filtros. */
   function cambiarFiltro(clave: keyof FiltrosAnimales, valor: string) {
     setFiltros((previos) => ({ ...previos, [clave]: valor }));
+    setPagina(1);
+  }
+
+  function limpiarFiltros() {
+    setFiltros(SIN_FILTROS);
+    setPagina(1);
+  }
+
+  /** HU-30: otro orden u otro tamaño de página empiezan desde la primera. */
+  function cambiarOrden(nuevo: OrdenAnimales) {
+    setOrden(nuevo);
+    setPagina(1);
+  }
+
+  function cambiarDireccion(nueva: DireccionOrden) {
+    setDireccion(nueva);
+    setPagina(1);
+  }
+
+  function cambiarPorPagina(nuevo: number) {
+    setPorPagina(nuevo);
+    setPagina(1);
   }
 
   function alternar(id: string) {
@@ -215,6 +286,7 @@ export function PaginaListaAnimales() {
               alCambiar={(nueva) => {
                 setCargando(true);
                 setVista(nueva);
+                setPagina(1);
               }}
               opciones={VISTAS.map((clave) => ({ clave, nombre: t(`animales.vistas.${clave}`) }))}
             />
@@ -279,13 +351,35 @@ export function PaginaListaAnimales() {
                   onChange={(evento) => cambiarFiltro('fechaHasta', evento.target.value)}
                 />
               </div>
-              {hayFiltros && (
-                <div className="ganado__acciones">
-                  <Boton variante="fantasma" onClick={() => setFiltros(SIN_FILTROS)}>
-                    {t('animales.filtros.limpiar')}
-                  </Boton>
-                </div>
-              )}
+              {/* HU-30: el orden se elige por cualquier columna del listado. */}
+              <div className="ganado__orden">
+                <CampoLista
+                  etiqueta={t('animales.orden.etiqueta')}
+                  value={orden}
+                  onChange={(evento) => cambiarOrden(evento.target.value as OrdenAnimales)}
+                >
+                  {ORDENES.map((clave) => (
+                    <option key={clave} value={clave}>
+                      {t(`animales.orden.campos.${clave}`)}
+                    </option>
+                  ))}
+                </CampoLista>
+                <CampoLista
+                  etiqueta={t('animales.orden.direccion')}
+                  value={direccion}
+                  onChange={(evento) => cambiarDireccion(evento.target.value as DireccionOrden)}
+                >
+                  <option value="asc">{t('animales.orden.asc')}</option>
+                  <option value="desc">{t('animales.orden.desc')}</option>
+                </CampoLista>
+                {hayFiltros && (
+                  <div className="ganado__acciones">
+                    <Boton variante="fantasma" onClick={limpiarFiltros}>
+                      {t('animales.filtros.limpiar')}
+                    </Boton>
+                  </div>
+                )}
+              </div>
             </Tarjeta>
 
             {seleccion.length > 0 && (
@@ -328,7 +422,7 @@ export function PaginaListaAnimales() {
               />
             ) : (
               <Tarjeta>
-                <ul className="ganado__lista">
+                <ul className={paginando ? 'ganado__lista ocupada' : 'ganado__lista'} aria-busy={paginando}>
                   {seleccionando && (
                     <li className="ganado__fila">
                       <label className="ganado__casilla">
@@ -378,6 +472,59 @@ export function PaginaListaAnimales() {
                   ))}
                 </ul>
               </Tarjeta>
+            )}
+
+            {/* HU-30: la paginación. Filtro y orden se mantienen al cambiar de página. */}
+            {!error && total > 0 && (
+              <nav className="ganado__paginas" aria-label={t('animales.paginas.navegacion')}>
+                <span className="pie c-600">
+                  {t('animales.paginas.rango', {
+                    desde: (pagina - 1) * porPagina + 1,
+                    hasta: Math.min(pagina * porPagina, total),
+                    total,
+                  })}
+                </span>
+                <div className="ganado__paginas-botones">
+                  <Boton variante="fantasma" onClick={() => setPagina(1)} disabled={pagina <= 1 || paginando}>
+                    {t('animales.paginas.primera')}
+                  </Boton>
+                  <Boton
+                    variante="secundario"
+                    onClick={() => setPagina((previa) => Math.max(1, previa - 1))}
+                    disabled={pagina <= 1 || paginando}
+                  >
+                    {t('animales.paginas.anterior')}
+                  </Boton>
+                  <span className="cuerpo-m">{t('animales.paginas.pagina', { n: pagina, total: paginas })}</span>
+                  <Boton
+                    variante="secundario"
+                    onClick={() => setPagina((previa) => Math.min(paginas, previa + 1))}
+                    disabled={pagina >= paginas || paginando}
+                  >
+                    {t('animales.paginas.siguiente')}
+                  </Boton>
+                  <Boton
+                    variante="fantasma"
+                    onClick={() => setPagina(paginas)}
+                    disabled={pagina >= paginas || paginando}
+                  >
+                    {t('animales.paginas.ultima')}
+                  </Boton>
+                </div>
+                <div className="ganado__paginas-por-pagina">
+                  <CampoLista
+                    etiqueta={t('animales.paginas.porPagina')}
+                    value={String(porPagina)}
+                    onChange={(evento) => cambiarPorPagina(Number(evento.target.value))}
+                  >
+                    {TAMANOS_PAGINA.map((tamano) => (
+                      <option key={tamano} value={tamano}>
+                        {tamano}
+                      </option>
+                    ))}
+                  </CampoLista>
+                </div>
+              </nav>
             )}
           </>
         )}

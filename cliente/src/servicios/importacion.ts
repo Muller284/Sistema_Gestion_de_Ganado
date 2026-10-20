@@ -1,4 +1,10 @@
-import type { ErrorDeFila, FilaRepetida } from './api';
+import type {
+  AsignacionesColumnas,
+  ColumnaDelArchivo,
+  ColumnaImportacion,
+  ErrorDeFila,
+  FilaRepetida,
+} from './api';
 
 /**
  * HU-43 · Lo que la pantalla de importación necesita y no depende de React:
@@ -62,4 +68,73 @@ export function informeDeErrores(
     fila.map(celda).join(','),
   );
   return `${BOM}${lineas.join(SALTO)}${SALTO}`;
+}
+
+// ---------------------------------------------------------------------------
+// HU-41 y HU-42 · Columnas reconocidas y asignación manual (Brian)
+// ---------------------------------------------------------------------------
+
+/** Las que el archivo tiene que traer sí o sí. Las mismas que exige el servidor. */
+export const COLUMNAS_OBLIGATORIAS: readonly ColumnaImportacion[] = ['identificador', 'sexo'];
+
+/** HU-42, criterio 1: solo se piden las columnas que el sistema no reconoció. */
+export function noReconocidas(columnas: ColumnaDelArchivo[]): ColumnaDelArchivo[] {
+  return columnas.filter((columna) => columna.campo === null && columna.como !== 'ignorada');
+}
+
+/** Las que se reconocieron solas (por la plantilla o por una variante). */
+export function reconocidas(columnas: ColumnaDelArchivo[]): ColumnaDelArchivo[] {
+  return columnas.filter((columna) => columna.como === 'plantilla' || columna.como === 'variante');
+}
+
+/** Los campos que ya tienen columna: los reconocidos más los elegidos a mano. */
+function camposOcupados(columnas: ColumnaDelArchivo[], asignaciones: AsignacionesColumnas): Set<ColumnaImportacion> {
+  const ocupados = new Set<ColumnaImportacion>();
+  for (const columna of reconocidas(columnas)) if (columna.campo) ocupados.add(columna.campo);
+  for (const valor of Object.values(asignaciones)) if (valor && valor !== 'ignorar') ocupados.add(valor);
+  return ocupados;
+}
+
+/**
+ * HU-42, criterio 2: los campos que se pueden elegir para una columna en la
+ * lista desplegable. Un campo ya tomado por otra columna no se ofrece; el que
+ * tiene elegido esta misma columna, sí.
+ */
+export function camposDisponibles(
+  todos: readonly ColumnaImportacion[],
+  columnas: ColumnaDelArchivo[],
+  asignaciones: AsignacionesColumnas,
+  posicion: number,
+): ColumnaImportacion[] {
+  const ocupados = camposOcupados(columnas, asignaciones);
+  const propio = asignaciones[String(posicion)];
+  return todos.filter((campo) => !ocupados.has(campo) || campo === propio);
+}
+
+/** Obligatorias que todavía no tienen ninguna columna del archivo. */
+export function obligatoriasSinAsignar(
+  columnas: ColumnaDelArchivo[],
+  asignaciones: AsignacionesColumnas,
+): ColumnaImportacion[] {
+  const ocupados = camposOcupados(columnas, asignaciones);
+  return COLUMNAS_OBLIGATORIAS.filter((campo) => !ocupados.has(campo));
+}
+
+/** Columnas no reconocidas sobre las que todavía no se decidió nada (ni campo ni ignorar). */
+export function sinDecidir(columnas: ColumnaDelArchivo[], asignaciones: AsignacionesColumnas): ColumnaDelArchivo[] {
+  return noReconocidas(columnas).filter((columna) => !asignaciones[String(columna.posicion)]);
+}
+
+/** Se puede seguir a la vista previa cuando todo está decidido y no falta ninguna obligatoria. */
+export function columnasListas(columnas: ColumnaDelArchivo[], asignaciones: AsignacionesColumnas): boolean {
+  return sinDecidir(columnas, asignaciones).length === 0 && obligatoriasSinAsignar(columnas, asignaciones).length === 0;
+}
+
+/** Solo lo que corresponde a columnas no reconocidas: lo demás el servidor lo ignora igual. */
+export function limpiarAsignaciones(
+  columnas: ColumnaDelArchivo[],
+  asignaciones: AsignacionesColumnas,
+): AsignacionesColumnas {
+  const validas = new Set(noReconocidas(columnas).map((columna) => String(columna.posicion)));
+  return Object.fromEntries(Object.entries(asignaciones).filter(([posicion, valor]) => validas.has(posicion) && valor));
 }

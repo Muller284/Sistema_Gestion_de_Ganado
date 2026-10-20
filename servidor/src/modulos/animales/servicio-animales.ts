@@ -14,7 +14,12 @@ import {
   type Animal,
   type DatosFicha,
   type Estado,
+  type Bajas,
+  type Direccion,
   type FiltrosListado,
+  type Orden,
+  type Paginacion,
+  ORDENES,
 } from './repositorio-animales';
 
 /**
@@ -54,6 +59,17 @@ import {
  *         filtros por sexo, categoria, corral y rango de fechas de
  *         nacimiento, todos resueltos en la consulta SQL.
  *
+ * HU-30 · Orden y paginacion del listado (Brian)
+ *   1. El orden y la paginacion se resuelven en la base de datos (ORDER BY,
+ *      LIMIT y OFFSET en el SQL), no en el navegador.
+ *   2. Con 2.000 animales activos el listado carga en menos de dos segundos:
+ *      solo viaja una pagina, y la migracion 009 agrega los indices.
+ *   3. El filtro y el orden se mantienen al cambiar de pagina: van en cada
+ *      pedido junto con la pagina, y la respuesta los devuelve.
+ *   Se pide con ?pagina=N (desde 1) &porPagina= (1 a 100, 25 por defecto)
+ *   &orden= (ver ORDENES) &direccion=asc|desc. Sin pagina, devuelve la lista
+ *   entera como antes, para no romper a quien ya la usa.
+ *
  * El peso llega y se guarda en kilos (HU-26).
  */
 
@@ -62,6 +78,8 @@ const TIPOS_IDENTIFICADOR = ['caravana', 'interno', 'rfid'] as const;
 const ORIGENES = ['nacido', 'comprado', 'otro'] as const;
 const LARGO_TEXTO = 100;
 const LARGO_MOTIVO = 500;
+const POR_PAGINA = 25;
+const MAXIMO_POR_PAGINA = 100;
 
 @Injectable()
 export class ServicioAnimales {
@@ -77,11 +95,13 @@ export class ServicioAnimales {
 
   /**
    * estado: 'todos' o uno de los cuatro. Sin nada, solo los activos (HU-33).
-   * consulta: los filtros de HU-29, tal como llegan en la URL.
+   * bajas: 'no', 'con' (tambien las dadas de baja) o 'solo' (HU-34).
+   * consulta: los filtros de HU-29 y, si viene pagina, la paginacion de HU-30,
+   * tal como llegan en la URL.
    */
   async listar(
     estado: string | undefined,
-    bajas: boolean,
+    bajas: Bajas,
     consulta: Record<string, string | undefined>,
     quien: UsuarioActual,
   ) {
@@ -94,7 +114,11 @@ export class ServicioAnimales {
       }
       estados = [estado as Estado];
     }
-    return this.animales.listar(ranchoId, estados, bajas, this.validarFiltros(consulta));
+    const filtros = this.validarFiltros(consulta);
+    const paginacion = this.validarPaginacion(consulta);
+    return paginacion
+      ? this.animales.listar(ranchoId, estados, bajas, filtros, paginacion)
+      : this.animales.listar(ranchoId, estados, bajas, filtros);
   }
 
   /** La ficha completa: datos, movimientos (HU-39) y cambios de estado (HU-33). */
@@ -249,6 +273,28 @@ export class ServicioAnimales {
       fechaDesde,
       fechaHasta,
     };
+  }
+
+  /** HU-30. Sin pagina ni porPagina no se pagina. Lo mal formado es un 400. */
+  private validarPaginacion(consulta: Record<string, string | undefined>): Paginacion | null {
+    const { pagina, porPagina, orden, direccion } = consulta;
+    if (pagina === undefined && porPagina === undefined) return null;
+
+    const numero = pagina === undefined || pagina === '' ? 1 : Number(pagina);
+    const tamano = porPagina === undefined || porPagina === '' ? POR_PAGINA : Number(porPagina);
+    if (!Number.isInteger(numero) || numero < 1 || !Number.isInteger(tamano) || tamano < 1 || tamano > MAXIMO_POR_PAGINA) {
+      throw new BadRequestException(t('servidor.animales.paginaInvalida'));
+    }
+
+    const clave = orden || 'identificador';
+    if (!Object.prototype.hasOwnProperty.call(ORDENES, clave)) {
+      throw new BadRequestException(t('servidor.animales.ordenInvalido'));
+    }
+    const sentido = direccion || 'asc';
+    if (sentido !== 'asc' && sentido !== 'desc') {
+      throw new BadRequestException(t('servidor.animales.ordenInvalido'));
+    }
+    return { pagina: numero, porPagina: tamano, orden: clave as Orden, direccion: sentido as Direccion };
   }
 
   private async existente(id: string, ranchoId: string): Promise<Animal> {

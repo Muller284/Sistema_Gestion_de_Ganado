@@ -452,8 +452,33 @@ export interface FilaPrevia {
   peso_kg: number | null;
 }
 
+/**
+ * HU-41 y HU-42 · Cómo se interpretó cada columna del archivo.
+ * plantilla: igual a la plantilla; variante: por un sinónimo o con un error de
+ * tipeo; manual: la eligió el usuario; ignorada: el usuario no la quiere;
+ * null: no se reconoció y hay que preguntarla.
+ */
+export type ComoSeReconocio = 'plantilla' | 'variante' | 'manual' | 'ignorada' | null;
+
+export interface ColumnaDelArchivo {
+  /** Posición en el archivo, desde 0: la clave en `asignaciones`. */
+  posicion: number;
+  encabezado: string;
+  campo: ColumnaImportacion | null;
+  como: ComoSeReconocio;
+}
+
+/** HU-42 · Para cada columna no reconocida: el campo elegido o 'ignorar'. */
+export type AsignacionesColumnas = Record<string, ColumnaImportacion | 'ignorar'>;
+
 export interface InformeImportacion {
   estrategia: EstrategiaDuplicados;
+  /** false mientras falte asignar una columna obligatoria (HU-42). */
+  listo: boolean;
+  /** HU-41, criterio 3. */
+  columnas: ColumnaDelArchivo[];
+  faltan: ColumnaImportacion[];
+  campos: ColumnaImportacion[];
   resumen: {
     total: number;
     cargan: number;
@@ -541,6 +566,42 @@ export interface FiltrosAnimales {
   fechaDesde?: string;
   fechaHasta?: string;
 }
+
+/** HU-30 · Por qué columna se ordena el listado (las mismas claves que el servidor). */
+export type OrdenAnimales =
+  | 'identificador'
+  | 'nombre'
+  | 'sexo'
+  | 'categoria'
+  | 'nacimiento'
+  | 'corral'
+  | 'estado'
+  | 'peso'
+  | 'creado';
+
+export type DireccionOrden = 'asc' | 'desc';
+
+/** HU-30 · Qué página se pide y cómo ordenada. */
+export interface PedidoPagina {
+  pagina: number;
+  porPagina: number;
+  orden: OrdenAnimales;
+  direccion: DireccionOrden;
+}
+
+/** HU-30 · Una página del listado, ordenada y paginada en la base. */
+export interface PaginaAnimales {
+  animales: Animal[];
+  total: number;
+  pagina: number;
+  por_pagina: number;
+  paginas: number;
+  orden: OrdenAnimales;
+  direccion: DireccionOrden;
+}
+
+/** HU-34 · Qué bajas trae el listado: ninguna, también las bajas o solo las bajas. */
+export type BajasListado = 'no' | 'con' | 'solo';
 
 export interface MovimientoCorral {
   id: string;
@@ -756,15 +817,24 @@ export const api = {
 
   // HU-40, HU-43 y HU-44 · Importación de animales
   descargarPlantilla: () => descargar('/importacion/plantilla', 'plantilla.xlsx'),
-  vistaPreviaImportacion: (archivo: ArchivoAImportar, estrategia: EstrategiaDuplicados) =>
+  // HU-41 y HU-42: `asignaciones` lleva lo elegido a mano para las columnas no reconocidas.
+  vistaPreviaImportacion: (
+    archivo: ArchivoAImportar,
+    estrategia: EstrategiaDuplicados,
+    asignaciones: AsignacionesColumnas = {},
+  ) =>
     pedir<InformeImportacion>('/importacion/vista-previa', {
       method: 'POST',
-      body: JSON.stringify({ ...archivo, estrategia }),
+      body: JSON.stringify({ ...archivo, estrategia, asignaciones }),
     }),
-  confirmarImportacion: (archivo: ArchivoAImportar, estrategia: EstrategiaDuplicados) =>
+  confirmarImportacion: (
+    archivo: ArchivoAImportar,
+    estrategia: EstrategiaDuplicados,
+    asignaciones: AsignacionesColumnas = {},
+  ) =>
     pedir<ResultadoImportacion>('/importacion/confirmar', {
       method: 'POST',
-      body: JSON.stringify({ ...archivo, estrategia }),
+      body: JSON.stringify({ ...archivo, estrategia, asignaciones }),
     }),
   // HU-21 y HU-22 · Permisos por módulo
   misPermisos: () => pedir<MisPermisos>('/permisos/mios'),
@@ -800,6 +870,29 @@ export const api = {
       if (limpio) parametros.set(clave, limpio);
     }
     return pedir<Animal[]>(`/animales?${parametros.toString()}`);
+  },
+  /**
+   * HU-30 · Una página del listado. El filtro, el orden y la página viajan
+   * juntos en cada pedido, así que cambiar de página no pierde ninguno.
+   */
+  paginaAnimales: (
+    estado: EstadoAnimal | 'todos',
+    bajas: BajasListado,
+    filtros: FiltrosAnimales,
+    pagina: PedidoPagina,
+  ) => {
+    const parametros = new URLSearchParams({ estado });
+    if (bajas === 'con') parametros.set('bajas', '1');
+    if (bajas === 'solo') parametros.set('bajas', 'solo');
+    for (const [clave, valor] of Object.entries(filtros)) {
+      const limpio = typeof valor === 'string' ? valor.trim() : '';
+      if (limpio) parametros.set(clave, limpio);
+    }
+    parametros.set('pagina', String(pagina.pagina));
+    parametros.set('porPagina', String(pagina.porPagina));
+    parametros.set('orden', pagina.orden);
+    parametros.set('direccion', pagina.direccion);
+    return pedir<PaginaAnimales>(`/animales?${parametros.toString()}`);
   },
   fichaAnimal: (id: string) => pedir<FichaAnimal>(`/animales/${id}`),
   crearAnimal: (

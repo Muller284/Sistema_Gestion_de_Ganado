@@ -14,12 +14,16 @@ import { GuardiaCuentaLista } from '../../comun/guardia-cuenta-lista';
 import { ServicioAnimales } from './servicio-animales';
 
 /**
- * Animales (HU-27, HU-28, HU-29, HU-33, HU-34 y HU-39).
+ * Animales (HU-27, HU-28, HU-29, HU-30, HU-33, HU-34 y HU-39).
  *
  *   GET    /animales/categorias          el catalogo de categorias (HU-28)
- *   GET    /animales                     los activos; ?estado=todos|vendido|... ; ?bajas=1
+ *   GET    /animales                     los activos; ?estado=todos|vendido|... ;
+ *                                         ?bajas=1 (tambien las bajas) | ?bajas=solo (solo esas)
  *                                         HU-29: ?busqueda= &sexo= &categoria= &corral=
  *                                                &fechaDesde= &fechaHasta= (AAAA-MM-DD)
+ *                                         HU-30: ?pagina= &porPagina= &orden= &direccion=asc|desc
+ *                                                con pagina responde { animales, total, pagina,
+ *                                                por_pagina, paginas, orden, direccion }
  *   GET    /animales/:id                 la ficha, con movimientos y cambios de estado
  *   POST   /animales                     alta con la ficha y, si viene, el corral
  *   PATCH  /animales/:id                 la ficha (sin corral ni estado)
@@ -48,12 +52,16 @@ export class ControladorAnimales {
     @Query('corral') corral: string | undefined,
     @Query('fechaDesde') fechaDesde: string | undefined,
     @Query('fechaHasta') fechaHasta: string | undefined,
+    @Query('pagina') pagina: string | undefined,
+    @Query('porPagina') porPagina: string | undefined,
+    @Query('orden') orden: string | undefined,
+    @Query('direccion') direccion: string | undefined,
     @Req() peticion: any,
   ) {
     return this.servicio.listar(
       estado,
-      bajas === '1' || bajas === 'true',
-      { busqueda, sexo, categoria, corral, fechaDesde, fechaHasta },
+      bajas === 'solo' ? 'solo' : bajas === '1' || bajas === 'true' ? 'con' : 'no',
+      { busqueda, sexo, categoria, corral, fechaDesde, fechaHasta, pagina, porPagina, orden, direccion },
       peticion.usuarioActual,
     );
   }
