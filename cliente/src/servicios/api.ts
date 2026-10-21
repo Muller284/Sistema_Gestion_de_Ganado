@@ -558,6 +558,8 @@ export interface CambioEstado {
   estado_nuevo: EstadoAnimal;
   fecha: string;
   motivo: string;
+  /** HU-32: cuándo quedó guardado; fecha es el día que eligió el usuario. */
+  creado_en: string;
   registrado_por: string | null;
 }
 

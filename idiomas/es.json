@@ -1520,7 +1520,71 @@
       "nuevo": "Registrar animal",
       "editar": "Editar la ficha de {identificador}"
     },
+    "altaRapida": {
+      "boton": "Alta rápida",
+      "rotulo": "Desde el celular",
+      "titulo": "Alta rápida de animales",
+      "intro": "Solo lo mínimo para no anotar en papel: identificador, categoría y sexo. El resto de la ficha se completa después.",
+      "identificador": "Identificador",
+      "identificadorEjemplo": "Ej.: 4471",
+      "identificadorAyuda": "El número de la caravana. Si usas número interno o RFID, cámbialo después en la ficha.",
+      "categoria": "Categoría",
+      "sexo": "Sexo",
+      "sexoAyuda": "Se elige solo según la categoría; cámbialo si hace falta.",
+      "faltan": "Escribe el identificador y elige la categoría y el sexo.",
+      "registrar": "Registrar",
+      "registrando": "Registrando…",
+      "terminar": "Terminar",
+      "siguiente": "Escribe el siguiente.",
+      "sesion": {
+        "titulo": "Registrados ahora",
+        "cuantos": {
+          "uno": "{n} animal",
+          "otros": "{n} animales"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "No puedes registrar animales",
+        "texto": "Tu tipo de colaborador solo puede ver los animales. Pídele al propietario que te habilite la edición."
+      }
+    },
     "ficha": {
+      "pestanas": {
+        "etiqueta": "Secciones de la ficha",
+        "resumen": "Resumen",
+        "sanidad": "Sanidad",
+        "pesajes": "Pesajes",
+        "historial": "Historial"
+      },
+      "encabezado": {
+        "edad": "Edad",
+        "meses": {
+          "uno": "{n} mes",
+          "otros": "{n} meses"
+        },
+        "anios": {
+          "uno": "{n} año",
+          "otros": "{n} años"
+        },
+        "aniosYMeses": "{anios} y {meses}"
+      },
+      "sanidad": {
+        "titulo": "Sanidad llega en la fase 3",
+        "texto": "Acá se van a ver las vacunas, los tratamientos y las revisiones de este animal. Por ahora el módulo de sanidad todavía no está disponible."
+      },
+      "pesajes": {
+        "titulo": "Pesajes llega en la fase 3",
+        "texto": "Acá se van a ver los pesajes y la ganancia de peso de este animal. Por ahora el módulo de pesajes todavía no está disponible.",
+        "textoConPeso": "Acá se van a ver los pesajes y la ganancia de peso de este animal. Por ahora solo está el peso que se cargó en la ficha: {peso}."
+      },
+      "historial": {
+        "titulo": "Historial",
+        "alta": "Se registró el animal",
+        "entro": "Entró a {destino}",
+        "estado": "Pasó de {anterior} a {nuevo} el {fecha}",
+        "baja": "Se dio de baja",
+        "quienCuando": "{nombre} · {momento}"
+      },
       "rotulo": "Ficha del animal",
       "titulo": "Animal {identificador}",
       "volver": "Volver a animales",
