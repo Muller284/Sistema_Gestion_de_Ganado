@@ -1520,7 +1520,71 @@
       "nuevo": "Register animal",
       "editar": "Edit the record of {identificador}"
     },
+    "altaRapida": {
+      "boton": "Quick add",
+      "rotulo": "From your phone",
+      "titulo": "Quick animal registration",
+      "intro": "Just the minimum so you don't have to write it on paper: identifier, category and sex. The rest of the record can be filled in later.",
+      "identificador": "Identifier",
+      "identificadorEjemplo": "E.g.: 4471",
+      "identificadorAyuda": "The ear tag number. If you use an internal number or RFID, change it later in the record.",
+      "categoria": "Category",
+      "sexo": "Sex",
+      "sexoAyuda": "It's picked automatically from the category; change it if needed.",
+      "faltan": "Type the identifier and choose the category and sex.",
+      "registrar": "Register",
+      "registrando": "Registering…",
+      "terminar": "Done",
+      "siguiente": "Type the next one.",
+      "sesion": {
+        "titulo": "Registered just now",
+        "cuantos": {
+          "uno": "{n} animal",
+          "otros": "{n} animals"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "You can't register animals",
+        "texto": "Your collaborator type can only view animals. Ask the owner to give you editing access."
+      }
+    },
     "ficha": {
+      "pestanas": {
+        "etiqueta": "Record sections",
+        "resumen": "Summary",
+        "sanidad": "Health",
+        "pesajes": "Weighings",
+        "historial": "History"
+      },
+      "encabezado": {
+        "edad": "Age",
+        "meses": {
+          "uno": "{n} month",
+          "otros": "{n} months"
+        },
+        "anios": {
+          "uno": "{n} year",
+          "otros": "{n} years"
+        },
+        "aniosYMeses": "{anios} and {meses}"
+      },
+      "sanidad": {
+        "titulo": "Health arrives in phase 3",
+        "texto": "This is where this animal's vaccines, treatments and check-ups will appear. The health module isn't available yet."
+      },
+      "pesajes": {
+        "titulo": "Weighings arrive in phase 3",
+        "texto": "This is where this animal's weighings and weight gain will appear. The weighings module isn't available yet.",
+        "textoConPeso": "This is where this animal's weighings and weight gain will appear. For now there's only the weight entered in the record: {peso}."
+      },
+      "historial": {
+        "titulo": "History",
+        "alta": "The animal was registered",
+        "entro": "Moved into {destino}",
+        "estado": "Changed from {anterior} to {nuevo} on {fecha}",
+        "baja": "Removed from records",
+        "quienCuando": "{nombre} · {momento}"
+      },
       "rotulo": "Animal record",
       "titulo": "Animal {identificador}",
       "volver": "Back to animals",

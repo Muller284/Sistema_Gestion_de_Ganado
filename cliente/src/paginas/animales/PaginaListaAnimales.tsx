@@ -182,10 +182,17 @@ export function PaginaListaAnimales() {
       acciones={
         puedeEditar &&
         !registrando && (
-          <Boton variante="primario" onClick={() => conTransicion(() => setRegistrando(true))}>
-            <Icono nombre="mas" tamano={18} />
-            {t('animales.nuevo')}
-          </Boton>
+          <>
+            {/* HU-35: el alta mínima, pensada para el celular. */}
+            <Link className="btn btn-secundario" to="/animales/alta-rapida">
+              <Icono nombre="caravana" tamano={18} />
+              {t('animales.altaRapida.boton')}
+            </Link>
+            <Boton variante="primario" onClick={() => conTransicion(() => setRegistrando(true))}>
+              <Icono nombre="mas" tamano={18} />
+              {t('animales.nuevo')}
+            </Boton>
+          </>
         )
       }
     >

@@ -1204,3 +1204,43 @@ el movimiento.
 **Permisos.** Importar exige edición en el módulo **importacion**
 (`PermisosModulo`); descargar la plantilla, solo verlo. Se va el
 almacenamiento en memoria del Sprint 2: todo queda en la tabla `animales`.
+
+## 38. Ficha con pestañas y alta rápida desde el celular (Sprint 3, Aaron)
+
+Historias: HU-32 y HU-35.
+
+**La ficha se arma con lo que ya existía (HU-32).** No hizo falta tocar el
+servidor: `GET /animales/:id` ya traía el animal con su autoría (HU-23), los
+movimientos (HU-39) y los cambios de estado (HU-33), cada uno con quién lo
+registró. La pantalla junta todo en una sola línea de tiempo
+(`cliente/src/paginas/animales/historial.ts`), lo más nuevo primero. En un
+cambio de estado el "cuándo" es el momento en que se guardó (`creado_en`), y la
+fecha que eligió el usuario va en el texto: pueden ser días distintos. La baja
+sale de `eliminado_en` y `modificado_por`, que es quien la hizo, porque después
+de una baja la ficha no se puede editar.
+
+**Pestañas en la dirección.** Resumen, sanidad, pesajes e historial usan
+`Segmentos`, y la elegida queda en `?pestana=`: el enlace se puede compartir y
+el botón Atrás la respeta. Sanidad y pesajes son de la fase 3: la pestaña está
+y explica por qué todavía está vacía (pesajes muestra el peso cargado en la
+ficha, si hay).
+
+**Alta rápida (HU-35) en `/animales/alta-rapida`.** Pide identificador,
+categoría y sexo, y nada más; el tipo de identificador es caravana y el resto
+se completa en la ficha. Usa el mismo `POST /animales`, así que valen las
+mismas reglas (identificador único, categoría del catálogo, permiso de edición
+en animales). Las opciones son botones grandes y no listas desplegables, y
+todo lo tocable usa `--alto-control-movil` (52 px; el mínimo pedido es 48). La
+barra de Terminar y Registrar queda pegada abajo. Al registrar se vacía el
+identificador y vuelve a tener el foco; la categoría y el sexo se quedan para
+la siguiente, porque en el corral se cargan tandas parecidas. Elegir la
+categoría marca el sexo que le corresponde (vaca, hembra; toro, macho), y se
+puede cambiar.
+
+**Estilos en `animal.css`.** Archivo aparte de `ganado.css` para que el trabajo
+de cada uno no choque en el mismo archivo.
+
+**Pendiente, fuera de estas historias:** en pantallas de menos de 860 px el
+menú lateral se oculta y no hay otro menú. En el celular se llega a Animales y
+al alta rápida por la dirección o desde el listado, pero falta una navegación
+para móvil.

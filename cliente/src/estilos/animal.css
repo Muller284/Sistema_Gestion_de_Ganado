@@ -1,0 +1,195 @@
+/* ============================================================================
+ * SPRINT 3 · La ficha del animal y el alta desde el celular
+ * ----------------------------------------------------------------------------
+ *   HU-32  el encabezado de la ficha y la línea de tiempo del historial
+ *   HU-35  el alta rápida: opciones grandes y la barra de acciones abajo
+ *
+ * Archivo aparte de ganado.css para que el trabajo de cada uno no se pise en
+ * el mismo archivo. Solo tokens, como todo lo demás.
+ * ==========================================================================*/
+
+/* HU-32, criterio 1: el identificador en grande, el estado al lado y los
+ * datos principales en una fila que se acomoda al ancho. */
+.animal-encabezado {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--e-16) var(--e-24);
+  background: var(--arena-0);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-lg);
+  padding: var(--e-24);
+}
+
+.animal-encabezado__titulo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  min-width: 0;
+}
+
+.animal-encabezado__numero {
+  font-family: var(--f-dato);
+  font-size: var(--t-display);
+  line-height: var(--lh-display);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-display);
+  color: var(--arena-900);
+  overflow-wrap: anywhere;
+}
+
+.animal-encabezado__estado { align-self: start; }
+
+.animal-encabezado__datos {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--e-12) var(--e-24);
+  margin: 0;
+  padding-top: var(--e-16);
+  border-top: var(--borde) solid var(--arena-100);
+}
+
+.animal-encabezado__datos dt {
+  font-size: var(--t-etiqueta);
+  line-height: var(--lh-etiqueta);
+  color: var(--arena-600);
+}
+
+.animal-encabezado__datos dd {
+  margin: var(--e-4) 0 0;
+  font-size: var(--t-cuerpo-g);
+  line-height: var(--lh-cuerpo-g);
+  font-weight: var(--peso-medio);
+  color: var(--arena-900);
+}
+
+/* HU-32, criterio 4: una línea vertical une los eventos, cada uno con su
+ * icono, qué pasó y quién lo registró y cuándo. */
+.animal-historial {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.animal-historial__evento {
+  position: relative;
+  display: flex;
+  gap: var(--e-12);
+  padding-bottom: var(--e-20);
+}
+
+.animal-historial__evento:last-child { padding-bottom: 0; }
+
+.animal-historial__evento:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  top: var(--e-32);
+  bottom: 0;
+  left: var(--e-16);
+  width: var(--borde);
+  background: var(--arena-200);
+}
+
+.animal-historial__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--e-32);
+  height: var(--e-32);
+  border-radius: var(--r-full);
+  background: var(--corral-50);
+  color: var(--corral-600);
+}
+
+.animal-historial__evento--estado .animal-historial__icono { background: var(--info-bg); color: var(--info-base); }
+.animal-historial__evento--baja .animal-historial__icono { background: var(--adv-bg); color: var(--adv-base); }
+
+/* HU-35 · Alta rápida. Todo lo tocable mide al menos --alto-control-movil
+ * (52 px, el inventario de pantallas pide 48 como mínimo). */
+.alta-rapida {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-24);
+  max-width: var(--ancho-formulario);
+}
+
+.alta-rapida__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.alta-rapida__grupo legend {
+  padding: 0;
+  margin-bottom: var(--e-8);
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  font-weight: var(--peso-medio);
+  color: var(--arena-800);
+}
+
+.alta-rapida__opciones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--e-8);
+}
+
+.alta-rapida__opcion {
+  min-height: var(--alto-control-movil);
+  height: auto;
+  white-space: normal;
+}
+
+.alta-rapida__opcion[aria-pressed='true'] {
+  background: var(--corral-50);
+  border-color: var(--corral-500);
+  color: var(--corral-700);
+  font-weight: var(--peso-fuerte);
+}
+
+/* HU-35, criterio 3: las acciones van abajo, al alcance del pulgar. Quedan
+ * pegadas al borde inferior mientras se baja por el formulario, encima de la
+ * barra de demostración mientras exista. */
+.alta-rapida__acciones {
+  position: sticky;
+  bottom: var(--alto-barra-demo);
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--e-8);
+  padding: var(--e-12) 0;
+  background: var(--arena-50);
+  border-top: var(--borde) solid var(--arena-200);
+}
+
+.alta-rapida__acciones .btn { min-height: var(--alto-control-movil); }
+
+.alta-rapida__sesion {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alta-rapida__sesion li + li { border-top: var(--borde) solid var(--arena-100); }
+
+.alta-rapida__sesion a {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: var(--alto-control-movil);
+  color: var(--arena-800);
+  text-decoration: none;
+}
+
+@media (min-width: 641px) {
+  .alta-rapida__opciones { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .animal-encabezado { grid-template-columns: 1fr; padding: var(--e-20); }
+  .animal-encabezado__numero { font-size: var(--t-h1); line-height: var(--lh-h1); }
+}
