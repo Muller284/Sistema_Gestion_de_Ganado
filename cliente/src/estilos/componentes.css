@@ -126,6 +126,32 @@
 .campo-movil select { height: var(--alto-control-movil); font-size: var(--t-cuerpo-g); }
 .campo-movil > label { font-size: var(--t-cuerpo); line-height: var(--lh-cuerpo); }
 
+/* El ojo de las contraseñas: dentro del campo, a la derecha, del alto del
+ * control para que sea fácil de tocar. */
+.campo-contrasena { position: relative; }
+.campo .campo-contrasena input { padding-right: 48px; }
+.campo .campo-contrasena input:focus { padding-right: 47px; }
+.campo-contrasena__ojo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--arena-600);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  cursor: pointer;
+}
+.campo-contrasena__ojo:hover { color: var(--arena-800); }
+.campo-contrasena__ojo:focus-visible { outline: 2px solid var(--corral-600); outline-offset: -4px; }
+.campo-movil .campo-contrasena__ojo { width: var(--alto-control-movil); }
+.campo-movil .campo-contrasena input { padding-right: calc(var(--alto-control-movil) + 4px); }
+.campo-movil .campo-contrasena input:focus { padding-right: calc(var(--alto-control-movil) + 3px); }
+
 /* ============================================================================
  * TARJETA
  * ==========================================================================*/

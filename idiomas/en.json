@@ -18,10 +18,53 @@
       "numero": "one number",
       "falta": "It still needs at least {faltas}.",
       "necesita": "The password needs at least {faltas}.",
-      "reglas": "At least 8 characters, with one uppercase letter and one number."
+      "reglas": "At least 8 characters, with one uppercase letter and one number.",
+      "mostrar": "Show password",
+      "ocultar": "Hide password"
     }
   },
   "servidor": {
+    "masivo": {
+      "estadoCambiado": "Done, {n} animal(s) changed to {estado}.",
+      "dadosDeBaja": "Done, you removed {n} animal(s). Each one can be restored from its record.",
+      "seleccionInvalida": "Choose between 1 and {n} animals."
+    },
+    "exportacion": {
+      "formatoInvalido": "The format must be Excel (xlsx) or CSV.",
+      "queInvalido": "Choose what to export: animals, pens, movements or status changes.",
+      "csvUnoSolo": "A CSV is a single table: choose only one thing to export, or use Excel.",
+      "archivo": {
+        "todo": "livestock",
+        "animales": "animals",
+        "corrales": "pens",
+        "movimientos": "movements",
+        "estados": "status-changes"
+      },
+      "hojas": {
+        "animales": "Animals",
+        "corrales": "Pens",
+        "movimientos": "Movements",
+        "estados": "Status changes"
+      },
+      "columnas": {
+        "estado": "Status",
+        "dadoDeBaja": "Removed on",
+        "registradoPor": "Registered by",
+        "registradoEl": "Registered on",
+        "corral": "Pen",
+        "capacidad": "Capacity",
+        "superficie_ha": "Area (ha)",
+        "superficie_acre": "Area (acres)",
+        "ocupacion": "Active animals",
+        "fechaHora": "Date and time",
+        "corralOrigen": "From pen",
+        "corralDestino": "To pen",
+        "fecha": "Date",
+        "estadoAnterior": "Previous status",
+        "estadoNuevo": "New status",
+        "motivo": "Reason"
+      }
+    },
     "comun": {
       "enumerar": "{primeros} and {ultimo}"
     },
@@ -264,14 +307,17 @@
         "obligatorio": "Required.",
         "corralEjemplo": "North pen",
         "corralAyuda": "The name of a pen that already exists on your ranch, or empty.",
-        "pesoAyuda": "A number in {unidad}, or empty."
+        "pesoAyuda": "A number in {unidad}, or empty.",
+        "razaAyuda": "One of these breeds, or empty: {razas}."
       },
       "motivos": {
         "sinIdentificador": "The identifier is missing.",
         "textoLargo": "The text is longer than {n} characters.",
         "tipoInvalido": "“{valor}” is not a valid identifier type.",
         "sexoInvalido": "“{valor}” is not a valid sex: write male or female.",
+        "sinCategoria": "The category is missing.",
         "categoriaInvalida": "“{valor}” is not a category in the catalog.",
+        "razaInvalida": "\"{valor}\" isn't a breed on the list. Use one of the values on the help sheet, \"Other breed\" or \"Crossbred\".",
         "fechaInvalida": "The birth date is not valid. Use {formato}.",
         "fechaFutura": "The birth date can't be in the future.",
         "origenInvalido": "“{valor}” is not a valid origin.",
@@ -336,7 +382,9 @@
       },
       "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
       "restaurado": "{identificador} is active again.",
-      "rangoInvalido": "The “from” date can’t be later than the “to” date."
+      "rangoInvalido": "The “from” date can’t be later than the “to” date.",
+      "razaInvalida": "Choose a breed from the list. If it isn't there, use \"Other breed\" or \"Crossbred\".",
+      "sinCategoria": "Choose the animal's category."
     }
   },
   "acceso": {
@@ -359,6 +407,7 @@
       "correo": "Email",
       "correoEjemplo": "you@example.com",
       "contrasena": "Password",
+      "repetirContrasena": "Repeat the password",
       "contrasenaNueva": "New password",
       "repetirNueva": "Repeat the new password",
       "alMenos8": "At least 8 characters",
@@ -1201,6 +1250,28 @@
       "tuRancho": "your ranch"
     }
   },
+  "exportacion": {
+    "boton": "Export",
+    "titulo": "Export ranch data",
+    "formato": "Format",
+    "formatos": {
+      "xlsx": "Excel",
+      "csv": "CSV"
+    },
+    "que": "What to export (in Excel, one sheet each)",
+    "queUno": "What to export (a CSV is a single table)",
+    "conjuntos": {
+      "animales": "Animals",
+      "corrales": "Pens",
+      "movimientos": "Movements between pens",
+      "estados": "Status changes"
+    },
+    "filtrosAplicados": "Animals, movements and status changes are exported as in the list: “{vista}” tab.",
+    "conFiltros": "With the search and filters you have set.",
+    "sinFiltros": "No filters: everything in that tab.",
+    "descargar": "Download",
+    "descargando": "Preparing the file…"
+  },
   "mapa": {
     "ariaLienzo": "Map to mark the ranch's location. You can also type the latitude and longitude yourself.",
     "sinImagenes": "The map images couldn't be loaded. Check your connection, or type the latitude and longitude yourself.",
@@ -1496,13 +1567,72 @@
       "toro": "Bull",
       "buey": "Ox"
     },
+    "razas": {
+      "nelore": "Nellore",
+      "nelore_mocho": "Polled Nellore",
+      "brahman": "Brahman",
+      "gyr": "Gir",
+      "guzera": "Guzerat",
+      "indubrasil": "Indu-Brazil",
+      "tabapua": "Tabapuã",
+      "sindi": "Red Sindhi",
+      "angus": "Angus",
+      "red_angus": "Red Angus",
+      "hereford": "Hereford",
+      "shorthorn": "Shorthorn",
+      "devon": "Devon",
+      "charolais": "Charolais",
+      "limousin": "Limousin",
+      "simmental": "Simmental",
+      "braunvieh": "Braunvieh",
+      "gelbvieh": "Gelbvieh",
+      "chianina": "Chianina",
+      "blonde": "Blonde d'Aquitaine",
+      "holstein": "Holstein",
+      "jersey": "Jersey",
+      "pardo_suizo": "Brown Swiss",
+      "girolando": "Girolando",
+      "guernsey": "Guernsey",
+      "ayrshire": "Ayrshire",
+      "normando": "Normande",
+      "brangus": "Brangus",
+      "braford": "Braford",
+      "santa_gertrudis": "Santa Gertrudis",
+      "simbrah": "Simbrah",
+      "senepol": "Senepol",
+      "beefmaster": "Beefmaster",
+      "bonsmara": "Bonsmara",
+      "canchim": "Canchim",
+      "charbray": "Charbray",
+      "criollo": "Criollo (unspecified)",
+      "criollo_yacumeno": "Yacumeño Criollo",
+      "criollo_saavedreno": "Saavedreño Criollo",
+      "criollo_chaqueno": "Chaqueño Criollo",
+      "criollo_argentino": "Argentine Criollo",
+      "romosinuano": "Romosinuano",
+      "blanco_orejinegro": "Blanco Orejinegro (BON)",
+      "caracu": "Caracu",
+      "texas_longhorn": "Texas Longhorn",
+      "cruza": "Crossbred",
+      "otra": "Other breed"
+    },
+    "gruposRaza": {
+      "cebuinas": "Zebu (Bos indicus)",
+      "britanicas": "British",
+      "continentales": "Continental European",
+      "lecheras": "Dairy",
+      "compuestas": "Composite",
+      "criollas": "Criollo",
+      "otras": "Other"
+    },
     "campos": {
       "identificador": "Identifier",
       "identificadorEjemplo": "4471",
       "tipoIdentificador": "Identifier type",
       "nombre": "Name",
       "raza": "Breed",
-      "razaEjemplo": "Nelore",
+      "sinRaza": "Not specified",
+      "razaAyuda": "If it isn't listed, choose \"Other breed\".",
       "sexo": "Sex",
       "categoria": "Category",
       "nacimiento": "Birth date",
@@ -1519,6 +1649,53 @@
     "formulario": {
       "nuevo": "Register animal",
       "editar": "Edit the record of {identificador}"
+    },
+    "masivo": {
+      "titulo": "Actions on the selected animals",
+      "cuantos": {
+        "uno": "{n} animal selected",
+        "otros": "{n} animals selected"
+      },
+      "ambito": {
+        "sueltos": "Selected one by one.",
+        "pagina": "Everything on this page.",
+        "filtro": "Every result of the filter, including what doesn't fit on the page."
+      },
+      "acciones": "What to do with them",
+      "accion": {
+        "corral": "Assign to a pen",
+        "estado": "Change status",
+        "baja": "Remove"
+      },
+      "aplicar": "Apply to {n}",
+      "siAplicar": "Yes, apply",
+      "confirmar": {
+        "corral": {
+          "uno": "Assign {n} animal to “{corral}”?",
+          "otros": "Assign {n} animals to “{corral}”?"
+        },
+        "estado": {
+          "uno": "Change the status of {n} animal to {estado}? Its history is kept.",
+          "otros": "Change the status of {n} animals to {estado}? Each one's history is kept."
+        },
+        "baja": {
+          "uno": "Remove {n} animal? It can be restored from its record.",
+          "otros": "Remove {n} animals? Each one can be restored from its record."
+        }
+      },
+      "listo": {
+        "corral": {
+          "uno": "Done, {n} animal is now in “{corral}”.",
+          "otros": "Done, {n} animals are now in “{corral}”."
+        }
+      },
+      "yaEstaban": {
+        "uno": "{n} already had that status.",
+        "otros": "{n} already had that status."
+      },
+      "bajaExplicacion": "Removing doesn't delete: the animals stop showing in regular views and can be restored from their record.",
+      "elegirPagina": "Select everything on this page ({n})",
+      "elegirFiltro": "Select every result of the filter"
     },
     "altaRapida": {
       "boton": "Quick add",

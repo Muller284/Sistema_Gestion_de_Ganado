@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Alerta,
   Boton,
+  CampoContrasena,
   CampoTexto,
   DisenoAcceso,
   Icono,
@@ -92,10 +93,9 @@ export function PaginaIngreso({ alIngresar }: Propiedades) {
           onChange={(e) => setCorreo(e.target.value)}
         />
 
-        <CampoTexto
+        <CampoContrasena
           etiqueta={t('acceso.comun.contrasena')}
           obligatorio
-          type="password"
           autoComplete="current-password"
           placeholder={t('acceso.ingreso.contrasenaEjemplo')}
           value={contrasena}

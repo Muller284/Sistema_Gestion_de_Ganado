@@ -179,7 +179,7 @@ function armarFilas(tabla: Tabla): ArchivoLeido {
     if (columna === 'peso' && /\(\s*lb/i.test(String(titulo))) unidadPeso = 'lb';
   });
 
-  const faltan = (['identificador', 'sexo'] as Columna[]).filter((columna) => !posiciones.has(columna));
+  const faltan = (['identificador', 'sexo', 'categoria'] as Columna[]).filter((columna) => !posiciones.has(columna));
   if (faltan.length > 0) {
     throw new BadRequestException(
       t('servidor.importacion.faltanColumnas', {

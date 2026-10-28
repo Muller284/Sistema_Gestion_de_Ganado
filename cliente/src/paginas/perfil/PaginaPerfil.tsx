@@ -3,6 +3,7 @@ import {
   Alerta,
   Boton,
   CampoLista,
+  CampoContrasena,
   CampoTexto,
   Cargando,
   DisenoApp,
@@ -275,25 +276,22 @@ function CambioDeContrasena() {
         {error && <Alerta variante="error">{error}</Alerta>}
         {aviso && <Alerta variante="exito">{aviso}</Alerta>}
 
-        <CampoTexto
+        <CampoContrasena
           etiqueta={t('perfil.contrasena.actual')}
-          type="password"
           autoComplete="current-password"
           value={actual}
           onChange={(e) => setActual(e.target.value)}
         />
-        <CampoTexto
+        <CampoContrasena
           etiqueta={t('perfil.contrasena.nueva')}
-          type="password"
           autoComplete="new-password"
           ayuda={t('comun.contrasena.reglas')}
           error={nueva && faltas.length > 0 ? t('comun.contrasena.falta', { faltas: enumerar(faltas) }) : undefined}
           value={nueva}
           onChange={(e) => setNueva(e.target.value)}
         />
-        <CampoTexto
+        <CampoContrasena
           etiqueta={t('perfil.contrasena.repetir')}
-          type="password"
           autoComplete="new-password"
           error={noCoinciden ? t('perfil.contrasena.noCoincide') : undefined}
           value={repetir}

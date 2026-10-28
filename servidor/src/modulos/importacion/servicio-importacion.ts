@@ -5,6 +5,7 @@ import { PermisosModulo } from '../../comun/permisos-modulo';
 import { enIdioma, t } from '../../comun/idioma';
 import { COLUMNAS, leerArchivo, normalizar, type Columna, type FilaLeida, type Valor } from './lector-archivo';
 import { RepositorioImportacion, type AnimalAImportar, type ContextoRancho } from './repositorio-importacion';
+import { RAZAS } from '../animales/razas';
 
 /**
  * Importación de animales desde Excel o CSV.
@@ -116,7 +117,7 @@ export class ServicioImportacion {
       identificador: '4471',
       tipo_identificador: t('animales.tiposIdentificador.caravana'),
       nombre: 'Lucera',
-      raza: 'Nelore',
+      raza: t('animales.razas.nelore'),
       sexo: t('animales.sexos.hembra'),
       categoria: t('animales.categorias.vaquilla'),
       fecha_nacimiento: contexto.formatoFecha.replace('YYYY', '2024').replace('MM', '05').replace('DD', '12'),
@@ -136,8 +137,9 @@ export class ServicioImportacion {
     ayuda.addRows([
       [t('servidor.importacion.columnas.identificador', { unidad }), t('servidor.importacion.plantilla.obligatorio')],
       [t('servidor.importacion.columnas.tipo_identificador', { unidad }), lista('animales.tiposIdentificador', ['caravana', 'interno', 'rfid'])],
+      [t('servidor.importacion.columnas.raza', { unidad }), t('servidor.importacion.plantilla.razaAyuda', { razas: lista('animales.razas', [...RAZAS]) })],
       [t('servidor.importacion.columnas.sexo', { unidad }), `${lista('animales.sexos', ['hembra', 'macho'])}. ${t('servidor.importacion.plantilla.obligatorio')}`],
-      [t('servidor.importacion.columnas.categoria', { unidad }), lista('animales.categorias', contexto.categorias)],
+      [t('servidor.importacion.columnas.categoria', { unidad }), `${lista('animales.categorias', contexto.categorias)}. ${t('servidor.importacion.plantilla.obligatorio')}`],
       [t('servidor.importacion.columnas.fecha_nacimiento', { unidad }), contexto.formatoFecha],
       [t('servidor.importacion.columnas.origen', { unidad }), lista('animales.origenes', ['nacido', 'comprado', 'otro'])],
       [t('servidor.importacion.columnas.corral', { unidad }), t('servidor.importacion.plantilla.corralAyuda')],
@@ -271,6 +273,7 @@ interface ValoresAceptados {
   sexo: Map<string, AnimalAImportar['sexo']>;
   origen: Map<string, NonNullable<AnimalAImportar['origen']>>;
   categoria: Map<string, string>;
+  raza: Map<string, string>;
 }
 
 function valoresAceptados(contexto: ContextoRancho): ValoresAceptados {
@@ -288,6 +291,23 @@ function valoresAceptados(contexto: ContextoRancho): ValoresAceptados {
     sexo: armar('animales.sexos', ['macho', 'hembra'] as const, { m: 'macho', h: 'hembra', f: 'hembra' }),
     origen: armar('animales.origenes', ['nacido', 'comprado', 'otro'] as const),
     categoria: armar('animales.categorias', contexto.categorias),
+    // La lista fija de razas, con los nombres de uso común que no coinciden.
+    raza: armar('animales.razas', RAZAS, {
+      holando: 'holstein',
+      'holando argentino': 'holstein',
+      'holstein friesian': 'holstein',
+      'aberdeen angus': 'angus',
+      'black angus': 'angus',
+      'polled hereford': 'hereford',
+      'brown swiss': 'pardo_suizo',
+      mestizo: 'cruza',
+      mestiza: 'cruza',
+      cruce: 'cruza',
+      cruzado: 'cruza',
+      cruzada: 'cruza',
+      otra: 'otra',
+      other: 'otra',
+    }),
   };
 }
 
@@ -323,11 +343,9 @@ function validarFila(
   const sexo = valores.sexo.get(normalizar(v.sexo));
   if (!sexo) return error(fila, identificador, 'sexo', 'sexoInvalido', { valor: texto(v.sexo) ?? '' });
 
-  let categoria: string | null = null;
-  if (texto(v.categoria)) {
-    categoria = valores.categoria.get(normalizar(v.categoria)) ?? null;
-    if (!categoria) return error(fila, identificador, 'categoria', 'categoriaInvalida', { valor: texto(v.categoria)! });
-  }
+  if (!texto(v.categoria)) return error(fila, identificador, 'categoria', 'sinCategoria');
+  const categoria = valores.categoria.get(normalizar(v.categoria)) ?? null;
+  if (!categoria) return error(fila, identificador, 'categoria', 'categoriaInvalida', { valor: texto(v.categoria)! });
 
   let nacimiento: string | null = null;
   if (texto(v.fecha_nacimiento)) {
@@ -356,15 +374,19 @@ function validarFila(
     peso = Math.round((unidadPeso === 'lb' ? numero * KG_POR_LIBRA : numero) * 100) / 100;
   }
 
-  for (const columna of ['nombre', 'raza'] as const) {
-    if ((texto(v[columna])?.length ?? 0) > 100) return error(fila, identificador, columna, 'textoLargo', { n: 100 });
+  if ((texto(v.nombre)?.length ?? 0) > 100) return error(fila, identificador, 'nombre', 'textoLargo', { n: 100 });
+
+  let raza: string | null = null;
+  if (texto(v.raza)) {
+    raza = valores.raza.get(normalizar(v.raza)) ?? null;
+    if (!raza) return error(fila, identificador, 'raza', 'razaInvalida', { valor: texto(v.raza)! });
   }
 
   return {
     identificador,
     tipo_identificador: tipo,
     nombre: texto(v.nombre),
-    raza: texto(v.raza),
+    raza,
     sexo,
     categoria_codigo: categoria,
     fecha_nacimiento: nacimiento,

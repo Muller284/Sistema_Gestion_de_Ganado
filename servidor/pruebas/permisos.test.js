@@ -73,7 +73,7 @@ async function ejecutarPruebas() {
   console.log('================================================================\n');
 
   const animal = (
-    await pedir('POST', '/animales', { identificador: `P-${MARCA}`, sexo: 'macho' })
+    await pedir('POST', '/animales', { identificador: `P-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' })
   ).cuerpo.animal;
 
   // --- HU-22 ---------------------------------------------------------------
@@ -104,7 +104,7 @@ async function ejecutarPruebas() {
     const { estado, cuerpo } = await pedir(
       'POST',
       '/animales',
-      { identificador: `V-${MARCA}`, sexo: 'macho' },
+      { identificador: `V-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' },
       VETERINARIO_A,
     );
     assert.strictEqual(estado, 403);
@@ -126,7 +126,7 @@ async function ejecutarPruebas() {
   await prueba('HU-21: el socio arranca viendo todo y sin editar nada', async () => {
     const { cuerpo } = await pedir('GET', '/permisos/mios', undefined, SOCIO_A);
     assert.ok(Object.values(cuerpo).every((nivel) => nivel === 'ver'));
-    const { estado } = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', raza: 'X' }, SOCIO_A);
+    const { estado } = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', categoria_codigo: 'toro', raza: 'X' }, SOCIO_A);
     assert.strictEqual(estado, 403);
   });
 
@@ -144,7 +144,7 @@ async function ejecutarPruebas() {
     assert.strictEqual(cuerpo.animales, 'editar');
     assert.strictEqual(cuerpo.corrales, 'ver');
 
-    const edita = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', raza: 'Gyr' }, SOCIO_A);
+    const edita = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', categoria_codigo: 'toro', raza: 'gyr' }, SOCIO_A);
     assert.strictEqual(edita.estado, 200);
     const corral = await pedir('POST', '/corrales', { nombre: `Socio ${MARCA}` }, SOCIO_A);
     assert.strictEqual(corral.estado, 403);

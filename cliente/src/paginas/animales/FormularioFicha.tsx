@@ -5,12 +5,14 @@ import {
   type Animal,
   type Corral,
   type DatosFichaAnimal,
+  type GrupoRazas,
   type Origen,
   type Sexo,
   type TipoIdentificador,
 } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicios/unidades';
+import { nombreRaza } from './razas';
 
 /**
  * HU-28 · Datos de la ficha del animal: raza, sexo, categoría, fecha de
@@ -18,11 +20,16 @@ import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicio
  *
  *   1. El corral es opcional (y solo se elige al registrar: después cambia
  *      con un movimiento, HU-39).
- *   2. La categoría se elige de un catálogo, no se escribe libre.
+ *   2. La categoría se elige de un catálogo, no se escribe libre. Es
+ *      obligatoria: es con lo que se cuenta el hato.
  *   3. La fecha de nacimiento no puede ser futura (el campo no la deja y el
  *      servidor la rechaza igual).
  *
  * HU-26: el peso se escribe en la unidad del país y viaja en kilos.
+ *
+ * La raza se elige de la lista fija (GET /animales/razas), agrupada como la
+ * agrupa la zootecnia. Si el animal tenía una raza escrita a mano de antes
+ * de la lista, aparece como primera opción para no perderla al editar.
  */
 
 const TIPOS: TipoIdentificador[] = ['caravana', 'interno', 'rfid'];
@@ -45,6 +52,7 @@ interface Propiedades {
 
 export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Propiedades) {
   const [categorias, setCategorias] = useState<string[]>([]);
+  const [grupos, setGrupos] = useState<GrupoRazas[]>([]);
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [identificador, setIdentificador] = useState('');
   const [tipo, setTipo] = useState<TipoIdentificador>('caravana');
@@ -67,6 +75,10 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
       .categoriasAnimal()
       .then((lista) => vigente && setCategorias(lista))
       .catch((err: Error) => vigente && setError(err.message));
+    api
+      .razasAnimal()
+      .then((lista) => vigente && setGrupos(lista))
+      .catch((err: Error) => vigente && setError(err.message));
     // Los corrales solo hacen falta en el alta. Si no los puede ver, se carga sin corral.
     if (!animal) {
       api
@@ -81,14 +93,14 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
-    if (!sexo) return;
+    if (!sexo || !categoria) return;
     setEnviando(true);
     setError('');
     const ficha: DatosFichaAnimal = {
       nombre: nombre || null,
       raza: raza || null,
       sexo,
-      categoria_codigo: categoria || null,
+      categoria_codigo: categoria,
       fecha_nacimiento: nacimiento || null,
       origen: origen || null,
       peso_kg: peso === '' ? null : pesoAGuardar(Number(peso), regional.peso),
@@ -109,7 +121,10 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
     }
   }
 
-  const listo = Boolean(sexo) && (animal || identificador.trim());
+  const listo = Boolean(sexo) && Boolean(categoria) && (animal || identificador.trim());
+  // Una raza de antes de la lista fija: se ofrece tal cual para no perderla.
+  const razaAnterior =
+    animal?.raza && !grupos.some((grupo) => grupo.razas.includes(animal.raza ?? '')) ? animal.raza : null;
 
   return (
     <form onSubmit={enviar} noValidate>
@@ -161,13 +176,24 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
-            <CampoTexto
+            <CampoLista
               etiqueta={t('animales.campos.raza')}
-              maxLength={100}
-              placeholder={t('animales.campos.razaEjemplo')}
+              ayuda={t('animales.campos.razaAyuda')}
               value={raza}
               onChange={(e) => setRaza(e.target.value)}
-            />
+            >
+              <option value="">{t('animales.campos.sinRaza')}</option>
+              {razaAnterior && <option value={razaAnterior}>{razaAnterior}</option>}
+              {grupos.map((grupo) => (
+                <optgroup key={grupo.grupo} label={t(`animales.gruposRaza.${grupo.grupo}`)}>
+                  {grupo.razas.map((codigo) => (
+                    <option key={codigo} value={codigo}>
+                      {nombreRaza(codigo)}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </CampoLista>
           </div>
 
           <div className="par">
@@ -187,10 +213,11 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
             {/* Criterio 2: de un catálogo. */}
             <CampoLista
               etiqueta={t('animales.campos.categoria')}
+              obligatorio
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
             >
-              <option value="">{t('animales.campos.sinCategoria')}</option>
+              <option value="">{t('animales.campos.elegir')}</option>
               {categorias.map((codigo) => (
                 <option key={codigo} value={codigo}>
                   {t(`animales.categorias.${codigo}`)}

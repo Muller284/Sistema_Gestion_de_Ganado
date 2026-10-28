@@ -794,6 +794,7 @@ export const api = {
 
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
+  razasAnimal: () => pedir<GrupoRazas[]>('/animales/razas'),
   animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false, filtros: FiltrosAnimales = {}) => {
     const parametros = new URLSearchParams({ estado });
     if (conBajas) parametros.set('bajas', '1');
@@ -826,4 +827,65 @@ export const api = {
   bajaAnimal: (id: string) => pedir<{ mensaje: string }>(`/animales/${id}`, { method: 'DELETE' }),
   restaurarAnimal: (id: string) =>
     pedir<RespuestaAnimal>(`/animales/${id}/restaurar`, { method: 'POST' }),
+
+  // HU-31 · Acciones masivas sobre animales
+  cambiarEstadoMasivo: (animalIds: string[], estado: EstadoAnimal, motivo: string, fecha: string) =>
+    pedir<RespuestaEstadoMasivo>('/masivo/animales/estado', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds, estado, motivo, fecha }),
+    }),
+  bajaMasiva: (animalIds: string[]) =>
+    pedir<RespuestaBajaMasiva>('/masivo/animales/baja', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds }),
+    }),
+
+  // HU-45 · Exportación
+  exportar: (pedido: PedidoExportacion) => descargar(`/exportacion?${parametrosExportacion(pedido)}`, 'ganado.xlsx'),
 };
+
+/** La lista fija de razas: cada grupo con sus códigos (ver servidor/.../razas.ts). */
+export interface GrupoRazas {
+  grupo: string;
+  razas: string[];
+}
+
+/** HU-31. Cuántos cambiaron, cuántos ya estaban en ese estado y cuántos no se encontraron. */
+export interface RespuestaEstadoMasivo {
+  cambiados: number;
+  ya_estaban: number;
+  no_encontrados: number;
+  mensaje: string;
+}
+
+export interface RespuestaBajaMasiva {
+  dados_de_baja: number;
+  no_encontrados: number;
+  mensaje: string;
+}
+
+/** HU-45 · Qué se exporta, en qué formato y con qué filtros del listado. */
+export type ConjuntoExportacion = 'animales' | 'corrales' | 'movimientos' | 'estados';
+export type FormatoExportacion = 'xlsx' | 'csv';
+
+export interface PedidoExportacion {
+  que: ConjuntoExportacion[];
+  formato: FormatoExportacion;
+  /** La pestaña del listado: un estado, todos o las bajas. */
+  vista: EstadoAnimal | 'todos' | 'bajas';
+  filtros: FiltrosAnimales;
+}
+
+/** Los parámetros de GET /exportacion. Los filtros vacíos no se mandan. */
+export function parametrosExportacion(pedido: PedidoExportacion): string {
+  const parametros = new URLSearchParams({
+    que: pedido.que.join(','),
+    formato: pedido.formato,
+    vista: pedido.vista,
+  });
+  for (const [clave, valor] of Object.entries(pedido.filtros)) {
+    const limpio = typeof valor === 'string' ? valor.trim() : '';
+    if (limpio) parametros.set(clave, limpio);
+  }
+  return parametros.toString();
+}
