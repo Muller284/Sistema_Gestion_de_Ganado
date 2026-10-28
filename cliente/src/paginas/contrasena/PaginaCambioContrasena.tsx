@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alerta, Boton, CampoTexto, DisenoAcceso, Icono } from '../../componentes';
+import { Alerta, Boton, CampoContrasena, DisenoAcceso, Icono } from '../../componentes';
 import { api } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { enumerar, faltasDeContrasena } from '../../servicios/texto';
@@ -80,19 +80,17 @@ export function PaginaCambioContrasena({ nombre, alTerminar }: Propiedades) {
         <Alerta variante="adv">{t('acceso.contrasena.cambio.aviso')}</Alerta>
 
         <form onSubmit={guardar} className="col g16">
-          <CampoTexto
+          <CampoContrasena
             etiqueta={t('acceso.contrasena.cambio.temporal')}
             obligatorio
-            type="password"
             autoComplete="current-password"
             placeholder={t('acceso.contrasena.cambio.temporalEjemplo')}
             value={actual}
             onChange={(e) => setActual(e.target.value)}
           />
-          <CampoTexto
+          <CampoContrasena
             etiqueta={t('acceso.comun.contrasenaNueva')}
             obligatorio
-            type="password"
             autoComplete="new-password"
             placeholder={t('acceso.comun.alMenos8')}
             ayuda={t('acceso.comun.ayudaContrasena')}
@@ -106,10 +104,9 @@ export function PaginaCambioContrasena({ nombre, alTerminar }: Propiedades) {
             value={nueva}
             onChange={(e) => setNueva(e.target.value)}
           />
-          <CampoTexto
+          <CampoContrasena
             etiqueta={t('acceso.comun.repetirNueva')}
             obligatorio
-            type="password"
             autoComplete="new-password"
             error={noCoinciden ? t('acceso.comun.noCoinciden') : undefined}
             value={repetir}

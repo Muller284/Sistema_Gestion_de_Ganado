@@ -18,10 +18,53 @@
       "numero": "un número",
       "falta": "Falta al menos {faltas}.",
       "necesita": "La contraseña necesita al menos {faltas}.",
-      "reglas": "Al menos 8 caracteres, con una mayúscula y un número."
+      "reglas": "Al menos 8 caracteres, con una mayúscula y un número.",
+      "mostrar": "Mostrar la contraseña",
+      "ocultar": "Ocultar la contraseña"
     }
   },
   "servidor": {
+    "masivo": {
+      "estadoCambiado": "Listo, {n} animal(es) pasaron a {estado}.",
+      "dadosDeBaja": "Listo, diste de baja {n} animal(es). Se pueden restaurar desde la ficha de cada uno.",
+      "seleccionInvalida": "Elige entre 1 y {n} animales."
+    },
+    "exportacion": {
+      "formatoInvalido": "El formato tiene que ser Excel (xlsx) o CSV.",
+      "queInvalido": "Elige qué exportar: animales, corrales, movimientos o cambios de estado.",
+      "csvUnoSolo": "Un CSV es una sola tabla: elige una sola cosa para exportar, o usa Excel.",
+      "archivo": {
+        "todo": "ganado",
+        "animales": "animales",
+        "corrales": "corrales",
+        "movimientos": "movimientos",
+        "estados": "cambios-de-estado"
+      },
+      "hojas": {
+        "animales": "Animales",
+        "corrales": "Corrales",
+        "movimientos": "Movimientos",
+        "estados": "Cambios de estado"
+      },
+      "columnas": {
+        "estado": "Estado",
+        "dadoDeBaja": "Dado de baja el",
+        "registradoPor": "Registrado por",
+        "registradoEl": "Registrado el",
+        "corral": "Corral",
+        "capacidad": "Capacidad",
+        "superficie_ha": "Superficie (ha)",
+        "superficie_acre": "Superficie (acres)",
+        "ocupacion": "Animales activos",
+        "fechaHora": "Fecha y hora",
+        "corralOrigen": "Corral de origen",
+        "corralDestino": "Corral de destino",
+        "fecha": "Fecha",
+        "estadoAnterior": "Estado anterior",
+        "estadoNuevo": "Estado nuevo",
+        "motivo": "Motivo"
+      }
+    },
     "comun": {
       "enumerar": "{primeros} y {ultimo}"
     },
@@ -264,14 +307,17 @@
         "obligatorio": "Obligatorio.",
         "corralEjemplo": "Corral Norte",
         "corralAyuda": "El nombre de un corral que ya exista en tu rancho, o vacío.",
-        "pesoAyuda": "Un número en {unidad}, o vacío."
+        "pesoAyuda": "Un número en {unidad}, o vacío.",
+        "razaAyuda": "Una de estas razas, o vacío: {razas}."
       },
       "motivos": {
         "sinIdentificador": "Falta el identificador.",
         "textoLargo": "El texto pasa de {n} caracteres.",
         "tipoInvalido": "«{valor}» no es un tipo de identificador válido.",
         "sexoInvalido": "«{valor}» no es un sexo válido: escribe macho o hembra.",
+        "sinCategoria": "Falta la categoría.",
         "categoriaInvalida": "«{valor}» no es una categoría del catálogo.",
+        "razaInvalida": "«{valor}» no es una raza de la lista. Usa uno de los valores de la hoja de ayuda, «Otra raza» o «Cruza / mestizo».",
         "fechaInvalida": "La fecha de nacimiento no es válida. Usa {formato}.",
         "fechaFutura": "La fecha de nacimiento no puede ser futura.",
         "origenInvalido": "«{valor}» no es un origen válido.",
@@ -336,7 +382,9 @@
       },
       "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
       "restaurado": "{identificador} volvió a estar vigente.",
-      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta»."
+      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
+      "razaInvalida": "Elige una raza de la lista. Si no está, usa «Otra raza» o «Cruza / mestizo».",
+      "sinCategoria": "Elige la categoría del animal."
     }
   },
   "acceso": {
@@ -359,6 +407,7 @@
       "correo": "Correo",
       "correoEjemplo": "tu@ejemplo.com",
       "contrasena": "Contraseña",
+      "repetirContrasena": "Repetir la contraseña",
       "contrasenaNueva": "Contraseña nueva",
       "repetirNueva": "Repetir la contraseña nueva",
       "alMenos8": "Al menos 8 caracteres",
@@ -1201,6 +1250,28 @@
       "tuRancho": "tu rancho"
     }
   },
+  "exportacion": {
+    "boton": "Exportar",
+    "titulo": "Exportar datos del rancho",
+    "formato": "Formato",
+    "formatos": {
+      "xlsx": "Excel",
+      "csv": "CSV"
+    },
+    "que": "Qué exportar (en Excel, una hoja por cada uno)",
+    "queUno": "Qué exportar (un CSV es una sola tabla)",
+    "conjuntos": {
+      "animales": "Animales",
+      "corrales": "Corrales",
+      "movimientos": "Movimientos entre corrales",
+      "estados": "Cambios de estado"
+    },
+    "filtrosAplicados": "Animales, movimientos y cambios de estado salen como en la lista: pestaña «{vista}».",
+    "conFiltros": "Con la búsqueda y los filtros que tienes puestos.",
+    "sinFiltros": "Sin filtros: todos los de esa pestaña.",
+    "descargar": "Descargar",
+    "descargando": "Preparando el archivo…"
+  },
   "mapa": {
     "ariaLienzo": "Mapa para marcar la ubicación del rancho. También puedes escribir la latitud y la longitud a mano.",
     "sinImagenes": "No se pudieron cargar las imágenes del mapa. Revisa la conexión, o escribe la latitud y la longitud a mano.",
@@ -1496,13 +1567,72 @@
       "toro": "Toro",
       "buey": "Buey"
     },
+    "razas": {
+      "nelore": "Nelore",
+      "nelore_mocho": "Nelore mocho",
+      "brahman": "Brahman",
+      "gyr": "Gyr",
+      "guzera": "Guzerá",
+      "indubrasil": "Indubrasil",
+      "tabapua": "Tabapuã",
+      "sindi": "Sindi",
+      "angus": "Angus",
+      "red_angus": "Red Angus",
+      "hereford": "Hereford",
+      "shorthorn": "Shorthorn",
+      "devon": "Devon",
+      "charolais": "Charolais",
+      "limousin": "Limousin",
+      "simmental": "Simmental",
+      "braunvieh": "Braunvieh (Pardo de carne)",
+      "gelbvieh": "Gelbvieh",
+      "chianina": "Chianina",
+      "blonde": "Blonde d'Aquitaine",
+      "holstein": "Holstein (Holando)",
+      "jersey": "Jersey",
+      "pardo_suizo": "Pardo Suizo",
+      "girolando": "Girolando",
+      "guernsey": "Guernsey",
+      "ayrshire": "Ayrshire",
+      "normando": "Normando",
+      "brangus": "Brangus",
+      "braford": "Braford",
+      "santa_gertrudis": "Santa Gertrudis",
+      "simbrah": "Simbrah",
+      "senepol": "Senepol",
+      "beefmaster": "Beefmaster",
+      "bonsmara": "Bonsmara",
+      "canchim": "Canchim",
+      "charbray": "Charbray",
+      "criollo": "Criollo (sin especificar)",
+      "criollo_yacumeno": "Criollo Yacumeño",
+      "criollo_saavedreno": "Criollo Saavedreño",
+      "criollo_chaqueno": "Criollo Chaqueño",
+      "criollo_argentino": "Criollo Argentino",
+      "romosinuano": "Romosinuano",
+      "blanco_orejinegro": "Blanco Orejinegro (BON)",
+      "caracu": "Caracu",
+      "texas_longhorn": "Texas Longhorn",
+      "cruza": "Cruza / mestizo",
+      "otra": "Otra raza"
+    },
+    "gruposRaza": {
+      "cebuinas": "Cebuinas",
+      "britanicas": "Británicas",
+      "continentales": "Continentales europeas",
+      "lecheras": "Lecheras",
+      "compuestas": "Compuestas o sintéticas",
+      "criollas": "Criollas",
+      "otras": "Otras"
+    },
     "campos": {
       "identificador": "Identificador",
       "identificadorEjemplo": "4471",
       "tipoIdentificador": "Tipo de identificador",
       "nombre": "Nombre",
       "raza": "Raza",
-      "razaEjemplo": "Nelore",
+      "sinRaza": "Sin especificar",
+      "razaAyuda": "Si no está en la lista, elige «Otra raza».",
       "sexo": "Sexo",
       "categoria": "Categoría",
       "nacimiento": "Fecha de nacimiento",
@@ -1519,6 +1649,53 @@
     "formulario": {
       "nuevo": "Registrar animal",
       "editar": "Editar la ficha de {identificador}"
+    },
+    "masivo": {
+      "titulo": "Acciones con los animales elegidos",
+      "cuantos": {
+        "uno": "{n} animal elegido",
+        "otros": "{n} animales elegidos"
+      },
+      "ambito": {
+        "sueltos": "Elegidos de a uno.",
+        "pagina": "Todos los de esta página.",
+        "filtro": "Todo el resultado del filtro, también lo que no entra en la página."
+      },
+      "acciones": "Qué hacer con ellos",
+      "accion": {
+        "corral": "Asignar a un corral",
+        "estado": "Cambiar estado",
+        "baja": "Dar de baja"
+      },
+      "aplicar": "Aplicar a {n}",
+      "siAplicar": "Sí, aplicar",
+      "confirmar": {
+        "corral": {
+          "uno": "¿Asignar {n} animal a «{corral}»?",
+          "otros": "¿Asignar {n} animales a «{corral}»?"
+        },
+        "estado": {
+          "uno": "¿Cambiar el estado de {n} animal a {estado}? Su historia queda guardada.",
+          "otros": "¿Cambiar el estado de {n} animales a {estado}? La historia de cada uno queda guardada."
+        },
+        "baja": {
+          "uno": "¿Dar de baja {n} animal? Se puede restaurar desde su ficha.",
+          "otros": "¿Dar de baja {n} animales? Cada uno se puede restaurar desde su ficha."
+        }
+      },
+      "listo": {
+        "corral": {
+          "uno": "Listo, {n} animal quedó en «{corral}».",
+          "otros": "Listo, {n} animales quedaron en «{corral}»."
+        }
+      },
+      "yaEstaban": {
+        "uno": "{n} ya estaba en ese estado.",
+        "otros": "{n} ya estaban en ese estado."
+      },
+      "bajaExplicacion": "La baja no borra: los animales dejan de aparecer en las consultas normales y se pueden restaurar desde su ficha.",
+      "elegirPagina": "Elegir los de esta página ({n})",
+      "elegirFiltro": "Elegir todo el resultado del filtro"
     },
     "altaRapida": {
       "boton": "Alta rápida",

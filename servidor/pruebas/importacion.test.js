@@ -149,8 +149,8 @@ async function ejecutarPruebas() {
     [null, 'macho', id(2), 'novillo', '10/02/2024', null],
     [null, 'xx', id(3), null, null, null],
     [null, 'hembra', null, null, null, null],
-    [null, 'hembra', id(4), null, '31/02/2024', null],
-    [null, 'hembra', id(1), null, null, null],
+    [null, 'hembra', id(4), 'vaca', '31/02/2024', null],
+    [null, 'hembra', id(1), 'vaca', null, null],
   ]);
   let informe;
 
@@ -215,7 +215,7 @@ async function ejecutarPruebas() {
 
   // --- HU-44 ---------------------------------------------------------------
   const segundo = csv(
-    `${ENCABEZADO.join(';')}\n${id(1)};hembra;vaquilla;;410;\n${id(5)};macho;;;;\n${id(5)};macho;;;;\n`,
+    `${ENCABEZADO.join(';')}\n${id(1)};hembra;vaquilla;;410;\n${id(5)};macho;toro;;;\n${id(5)};macho;toro;;;\n`,
   );
 
   await prueba('HU-44 criterios 1 y 2: repetido contra el rancho y dentro del archivo (CSV)', async () => {

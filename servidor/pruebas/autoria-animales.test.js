@@ -59,7 +59,7 @@ async function pedir(metodo, ruta, cuerpo, usuarioId = PROPIETARIO_A) {
 
 /** Da de alta un animal del propietario A y devuelve la ficha. */
 async function alta(datos, usuarioId = PROPIETARIO_A) {
-  const { estado, cuerpo } = await pedir('POST', '/animales', datos, usuarioId);
+  const { estado, cuerpo } = await pedir('POST', '/animales', { categoria_codigo: datos.sexo === 'macho' ? 'toro' : 'vaca', ...datos }, usuarioId);
   assert.strictEqual(estado, 201, JSON.stringify(cuerpo));
   return cuerpo.animal;
 }
@@ -100,7 +100,7 @@ async function ejecutarPruebas() {
     });
 
     await prueba('Si otro la edita, cambia quien modifico y no quien creo', async () => {
-      const editado = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', raza: 'Gyr' }, CAMPO_A);
+      const editado = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', categoria_codigo: 'toro', raza: 'gyr' }, CAMPO_A);
       assert.strictEqual(editado.estado, 200, JSON.stringify(editado.cuerpo));
       const { cuerpo } = await pedir('GET', `/animales/${animal.id}`);
       assert.strictEqual(cuerpo.animal.creado_por_nombre, propietario);

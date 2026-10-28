@@ -9,6 +9,7 @@ import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
 import { avisoDeExceso } from '../corrales/servicio-corrales';
+import { catalogoRazas, esRaza } from './razas';
 import {
   RepositorioAnimales,
   type Animal,
@@ -73,6 +74,12 @@ export class ServicioAnimales {
   async categorias(quien: UsuarioActual) {
     await this.permisos.exigir(quien, 'animales', 'ver');
     return this.animales.categorias();
+  }
+
+  /** La lista fija de razas, por grupo (ver razas.ts). */
+  async razas(quien: UsuarioActual) {
+    await this.permisos.exigir(quien, 'animales', 'ver');
+    return catalogoRazas();
   }
 
   /**
@@ -145,7 +152,7 @@ export class ServicioAnimales {
   async actualizar(id: string, cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
     const actual = await this.vigente(id, ranchoId);
-    const ficha = await this.validarFicha(cuerpo);
+    const ficha = await this.validarFicha(cuerpo, actual.raza);
     await this.animales.actualizarFicha(actual.id, ranchoId, ficha, quien.id);
     return {
       animal: await this.animales.uno(actual.id, ranchoId),
@@ -263,19 +270,24 @@ export class ServicioAnimales {
     return animal;
   }
 
-  /** HU-28. */
-  private async validarFicha(cuerpo: any): Promise<DatosFicha> {
+  /**
+   * HU-28. razaActual: la que ya tenía el animal. Si es un texto de antes de
+   * la lista fija y no se cambia, se acepta.
+   */
+  private async validarFicha(cuerpo: any, razaActual: string | null = null): Promise<DatosFicha> {
     const sexo = cuerpo?.sexo;
     if (sexo !== 'macho' && sexo !== 'hembra') {
       throw new BadRequestException(t('servidor.animales.sexoInvalido'));
     }
 
-    let categoria: string | null = null;
-    if (cuerpo?.categoria_codigo) {
-      categoria = String(cuerpo.categoria_codigo);
-      if (!(await this.animales.categoriaExiste(categoria))) {
-        throw new BadRequestException(t('servidor.animales.categoriaInvalida'));
-      }
+    // La categoría es obligatoria: es con lo que se cuenta el hato (vacas,
+    // terneros, toros...), y en el campo siempre se sabe.
+    if (!cuerpo?.categoria_codigo) {
+      throw new BadRequestException(t('servidor.animales.sinCategoria'));
+    }
+    const categoria = String(cuerpo.categoria_codigo);
+    if (!(await this.animales.categoriaExiste(categoria))) {
+      throw new BadRequestException(t('servidor.animales.categoriaInvalida'));
     }
 
     let fechaNacimiento: string | null = null;
@@ -298,9 +310,14 @@ export class ServicioAnimales {
       if (!(peso > 0)) throw new BadRequestException(t('servidor.animales.pesoInvalido'));
     }
 
+    const raza = texto(cuerpo?.raza, LARGO_TEXTO);
+    if (raza !== null && !esRaza(raza) && raza !== razaActual) {
+      throw new BadRequestException(t('servidor.animales.razaInvalida'));
+    }
+
     return {
       nombre: texto(cuerpo?.nombre, LARGO_TEXTO),
-      raza: texto(cuerpo?.raza, LARGO_TEXTO),
+      raza,
       sexo,
       categoria_codigo: categoria,
       fecha_nacimiento: fechaNacimiento,

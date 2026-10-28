@@ -1244,3 +1244,160 @@ de cada uno no choque en el mismo archivo.
 menú lateral se oculta y no hay otro menú. En el celular se llega a Animales y
 al alta rápida por la dirección o desde el listado, pero falta una navegación
 para móvil.
+
+---
+
+## 39. Acciones masivas y exportación (Sprint 3, Aaron)
+
+Historias: HU-31 y HU-45. Incluye la decisión sobre HU-18, criterio 1.
+
+**Elegir (HU-31, criterio 1).** En el listado cada fila tiene su casilla, y
+arriba hay dos opciones más: "Elegir los de esta página", que marca lo que se
+ve, y "Elegir todo el resultado del filtro", que vuelve a pedir la lista
+completa al servidor con la misma pestaña y los mismos filtros. Así incluye
+también lo que no entra en la página, antes y después de la paginación de
+HU-30. Se pueden elegir animales vigentes de cualquier estado; los dados de
+baja no.
+
+**La barra (criterios 2 y 3).** `AccionesMasivas.tsx` muestra cuántos animales
+hay elegidos, cómo se eligieron y las acciones posibles:
+
+- Asignar a un corral (HU-37).
+- Cambiar estado, con fecha y motivo (HU-33).
+- Dar de baja (HU-34), solo para el propietario y el Admin (HU-18, criterio 3).
+
+Ninguna acción se manda hasta confirmar en un aviso que dice cuántos animales
+afecta.
+
+**Servidor.** Hay dos rutas nuevas bajo su propio prefijo, para no chocar con
+`/animales/:id/estado`:
+
+- `POST /masivo/animales/estado` cambia el estado y guarda cada cambio en
+  `cambios_estado_animal` con su autor. Es una sola sentencia, así que si falla
+  no se aplica ningún cambio.
+- `POST /masivo/animales/baja` da de baja a todos los elegidos.
+
+Las dos reciben hasta 5000 ids. Responden cuántos se cambiaron, cuántos ya
+estaban en ese estado y cuántos no se encontraron (de otro rancho, inexistentes
+o dados de baja). Los permisos son los mismos que en las acciones de a uno.
+Asignar a un corral usa `POST /corrales/:id/animales`, que acepta hasta 1000
+por pedido; la pantalla manda en tandas una selección más grande.
+
+**Exportar (HU-45).** `GET /exportacion` recibe tres cosas:
+
+- `que`: animales, corrales, movimientos y cambios de estado.
+- `formato`: `xlsx` arma una hoja por cada cosa; `csv` es una sola tabla, así
+  que se elige una sola cosa.
+- Los mismos filtros que `GET /animales` (criterio 2). Se aplican a los
+  animales y a sus movimientos y cambios de estado.
+
+El archivo se llama, por ejemplo, `ganado_rancho-el-cerrito_2026-10-27.xlsx` o
+`animales_rancho-el-cerrito_2026-10-27.csv` (criterio 3). La fecha es la de hoy
+en la zona horaria del país del rancho.
+
+Otras reglas del archivo:
+
+- El peso y la superficie salen en las unidades del país, y las fechas en su
+  formato (HU-26).
+- La hoja de animales empieza con los títulos de la plantilla de importación
+  (HU-40), así un archivo exportado se puede volver a importar.
+- Exportar es leer: pide permiso de ver cada módulo (corrales pide corrales y el
+  resto pide animales).
+- El CSV lleva BOM para que Excel lea bien los acentos.
+
+**HU-18, criterio 1: un usuario recién creado.** Decisión del equipo (27/10):
+un usuario no puede crear, editar ni eliminar nada cuando recién es creado;
+cuando ya tiene su rol asignado, puede hacer lo que su rol le permite. Esto ya
+se cumple sin una marca nueva:
+
+- Al darlo de alta queda con contraseña temporal y `debe_cambiar_contrasena`.
+  Mientras no la cambie, `GuardiaCuentaLista` le cierra todo con el motivo
+  `debe_cambiar_contrasena` (HU-10).
+- Un colaborador no se puede crear sin tipo, y el tipo es su rol: cuando entra,
+  ya tiene asignado qué ve y qué edita.
+
+Esto también cierra la pregunta pendiente del punto 31: el tipo elegido al darlo
+de alta cuenta como la asignación del rol. Lo prueba
+`servidor/pruebas/usuario-nuevo.test.js`.
+
+**Pruebas.**
+
+- Servidor: `acciones-masivas.test.js`, `exportacion.test.js` y
+  `usuario-nuevo.test.js`, ya incluidas en `npm test`.
+- Cliente: `acciones-masivas.test.tsx` y `exportacion.test.tsx`.
+
+---
+
+## 40. Contraseñas con ojo, raza de lista fija y campos obligatorios (Sprint 3, Aaron)
+
+Ajustes pedidos antes de cerrar el sprint.
+
+**Contraseñas.** Todo campo de contraseña usa el nuevo componente
+`CampoContrasena`, que tiene un botón con un ojo para ver lo que se va
+escribiendo. Está en el ingreso, el registro, el cambio de la clave temporal,
+el restablecimiento y el perfil.
+
+- El botón queda dentro del campo, a la derecha, y mide lo mismo que el campo
+  de alto.
+- Dice con `aria-pressed` si está mostrando la contraseña.
+- No envía el formulario.
+
+Donde se crea o se cambia una contraseña, hay que escribirla dos veces. El
+cambio de clave, el restablecimiento y el perfil ya lo pedían; faltaba el
+registro. Que las dos coincidan se revisa en el cliente; las reglas de la
+contraseña siguen en el servidor.
+
+**Raza de lista fija.** `servidor/src/modulos/animales/razas.ts` tiene unas 50
+razas en siete grupos: cebuinas, británicas, continentales, lecheras,
+compuestas, criollas y otras. La lista sale de lo más común en los países del
+sistema: en Bolivia, el Nelore y sus cruzas son la mayor parte del hato de
+carne, y están los criollos Yacumeño, Saavedreño y Chaqueño; en Estados
+Unidos predominan Angus, Hereford, Charolais y Simmental. "Cruza / mestizo" y
+"Otra raza" cubren lo que no está en la lista.
+
+- **Qué se guarda.** El código de la raza (`nelore`, `pardo_suizo`), igual que
+  con la categoría. Cada pantalla muestra el nombre en su idioma
+  (`animales.razas.*`).
+- **Servidor.** `GET /animales/razas` da la lista. El alta y la edición
+  rechazan un texto que no esté en ella.
+- **Animales anteriores a la lista.** Si tenían una raza escrita a mano, esa
+  raza se muestra tal cual. Se pueden editar sin cambiarla, y en el
+  formulario aparece como primera opción.
+- **Importación.** Acepta el nombre en español o en inglés y algunos nombres
+  de uso común: Holando, Aberdeen Angus, mestizo y otros. La hoja de ayuda de
+  la plantilla lista las razas.
+- **Exportación.** Muestra el nombre de la raza, no el código.
+
+**Qué es obligatorio.** Se revisó contra cómo trabajan los ranchos reales.
+
+- Los sistemas de trazabilidad exigen por animal el número oficial de
+  identificación, la caravana (SAG Chile, Res. 8202/2015).
+- El software ganadero usado en ranchos (CattleMax) exige solo el
+  identificador, el estado y el tipo de animal. Raza, nacimiento, peso,
+  origen y padres son opcionales, porque muchas veces no se conocen.
+
+Con eso:
+
+- **Animal.** Obligatorios: identificador, sexo y categoría.
+  - La categoría pasó a ser obligatoria al registrar, al editar y al
+    importar, y la columna Categoría ya es obligatoria en el archivo. Es con
+    lo que se cuenta el hato, y en el campo siempre se sabe.
+  - Siguen opcionales: nombre, raza, fecha de nacimiento, origen, peso y
+    corral. Un animal comprado muchas veces no tiene fecha de nacimiento ni
+    raza conocidas.
+- **Corral.** Solo el nombre es obligatorio. La capacidad y la superficie
+  siguen opcionales: muchos corrales y potreros no están medidos. Sin
+  capacidad no hay aviso de sobrepoblación, y el formulario ya lo dice.
+- **Rancho.** Sin cambios. Son obligatorios el nombre, el país, el
+  departamento, la localidad, la superficie y el tipo de producción. La
+  ubicación GPS es opcional.
+- **Integrante del equipo.** Sin cambios: nombre, correo, rol y, para un
+  colaborador, su tipo.
+
+**Pruebas de otros que se tocaron.** Varias pruebas creaban animales sin
+categoría o con la raza escrita a mano. Solo se les agregó la categoría o se
+cambió la raza por su código; lo que prueban no cambió. Son las de animales,
+corrales, permisos, registro de animal, autoría, baja del propietario,
+importación y permisos de importación. Las pruebas nuevas son
+`servidor/pruebas/ficha-razas.test.js` y
+`cliente/pruebas/contrasenas-razas.test.tsx`.

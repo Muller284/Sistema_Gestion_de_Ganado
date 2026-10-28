@@ -59,7 +59,7 @@ async function pedir(metodo, ruta, cuerpo, usuarioId = PROPIETARIO_A) {
 
 /** Da de alta un animal del propietario A y devuelve la ficha. */
 async function alta(datos, usuarioId = PROPIETARIO_A) {
-  const { estado, cuerpo } = await pedir('POST', '/animales', datos, usuarioId);
+  const { estado, cuerpo } = await pedir('POST', '/animales', { categoria_codigo: datos.sexo === 'macho' ? 'toro' : 'vaca', ...datos }, usuarioId);
   assert.strictEqual(estado, 201, JSON.stringify(cuerpo));
   return cuerpo.animal;
 }

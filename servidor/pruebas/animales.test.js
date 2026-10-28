@@ -87,7 +87,7 @@ async function ejecutarPruebas() {
   await prueba('HU-28: se guarda la ficha completa (raza, sexo, categoria, nacimiento, origen)', async () => {
     const { estado, cuerpo } = await pedir('POST', '/animales', {
       identificador: `A-${MARCA}`,
-      raza: 'Nelore',
+      raza: 'nelore',
       sexo: 'hembra',
       categoria_codigo: 'vaquilla',
       fecha_nacimiento: '2024-05-12',
@@ -96,7 +96,7 @@ async function ejecutarPruebas() {
     });
     assert.strictEqual(estado, 201, JSON.stringify(cuerpo));
     animal = cuerpo.animal;
-    assert.strictEqual(animal.raza, 'Nelore');
+    assert.strictEqual(animal.raza, 'nelore');
     assert.strictEqual(animal.categoria_codigo, 'vaquilla');
     assert.strictEqual(animal.fecha_nacimiento, '2024-05-12');
     assert.strictEqual(animal.origen, 'nacido');
@@ -121,6 +121,7 @@ async function ejecutarPruebas() {
     const { estado } = await pedir('POST', '/animales', {
       identificador: `F-${MARCA}`,
       sexo: 'macho',
+      categoria_codigo: 'toro',
       fecha_nacimiento: manana(),
     });
     assert.strictEqual(estado, 400);
@@ -129,22 +130,22 @@ async function ejecutarPruebas() {
   await prueba('HU-28: editar la ficha guarda los cambios de verdad', async () => {
     const { estado } = await pedir('PATCH', `/animales/${animal.id}`, {
       sexo: 'hembra',
-      raza: 'Brahman',
+      raza: 'brahman',
       categoria_codigo: 'vaca',
     });
     assert.strictEqual(estado, 200);
     const ficha = (await pedir('GET', `/animales/${animal.id}`)).cuerpo;
-    assert.strictEqual(ficha.animal.raza, 'Brahman');
+    assert.strictEqual(ficha.animal.raza, 'brahman');
     assert.strictEqual(ficha.animal.categoria_codigo, 'vaca');
   });
 
   await prueba('El identificador no se repite en el rancho, pero si en otro', async () => {
     assert.strictEqual(
-      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' })).estado,
+      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' })).estado,
       409,
     );
     assert.strictEqual(
-      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' }, PROPIETARIO_B)).estado,
+      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' }, PROPIETARIO_B)).estado,
       201,
     );
   });
@@ -189,7 +190,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-39: editar la ficha no cambia el corral por la puerta de atras', async () => {
-    await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'hembra', corral_id: corralUno.id });
+    await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'hembra', categoria_codigo: 'vaca', corral_id: corralUno.id });
     const { cuerpo } = await pedir('GET', `/animales/${animal.id}`);
     assert.strictEqual(cuerpo.animal.corral_id, corralDos.id);
   });
@@ -263,7 +264,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-34: dado de baja libera su identificador', async () => {
-    const { estado } = await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' });
+    const { estado } = await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' });
     assert.strictEqual(estado, 201);
   });
 

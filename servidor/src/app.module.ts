@@ -14,6 +14,8 @@ import { ModuloImportacion } from './modulos/importacion/modulo-importacion';
 import { ModuloPermisos } from './modulos/permisos/modulo-permisos';
 import { ModuloCorrales } from './modulos/corrales/modulo-corrales';
 import { ModuloAnimales } from './modulos/animales/modulo-animales';
+import { ModuloAccionesMasivas } from './modulos/masivo/modulo-acciones-masivas';
+import { ModuloExportacion } from './modulos/exportacion/modulo-exportacion';
 
 @Module({
   imports: [
@@ -46,6 +48,8 @@ import { ModuloAnimales } from './modulos/animales/modulo-animales';
     ModuloPermisos, // HU-21 y HU-22
     ModuloCorrales, // HU-36
     ModuloAnimales, // HU-28, HU-33, HU-34 y HU-39
+    ModuloAccionesMasivas, // HU-31
+    ModuloExportacion, // HU-45
   ],
 })
 export class AppModule {}

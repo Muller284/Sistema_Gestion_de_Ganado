@@ -111,6 +111,7 @@ async function ejecutarPruebas() {
       const alta = await pedir('POST', '/animales', {
         identificador: `C-${MARCA}-${sufijo}`,
         sexo: 'hembra',
+        categoria_codigo: 'vaca',
         corral_id: corral.id,
       });
       assert.strictEqual(alta.estado, 201, JSON.stringify(alta.cuerpo));
@@ -182,9 +183,9 @@ async function ejecutarPruebas() {
   const chico = (await pedir('POST', '/corrales', { nombre: `Chico ${MARCA}`, capacidad: 1 })).cuerpo.corral;
   const sueltos = [];
   for (const sufijo of ['A', 'B']) {
-    sueltos.push((await pedir('POST', '/animales', { identificador: `S-${MARCA}-${sufijo}`, sexo: 'macho' })).cuerpo.animal);
+    sueltos.push((await pedir('POST', '/animales', { identificador: `S-${MARCA}-${sufijo}`, sexo: 'macho', categoria_codigo: 'toro' })).cuerpo.animal);
   }
-  const ajeno = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-B`, sexo: 'macho' }, PROPIETARIO_B)).cuerpo.animal;
+  const ajeno = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-B`, sexo: 'macho', categoria_codigo: 'toro' }, PROPIETARIO_B)).cuerpo.animal;
   let asignacion;
 
   await prueba('HU-37 criterio 2: se asignan varios animales juntos desde una seleccion', async () => {
@@ -221,7 +222,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-37 criterio 1: tambien desde la ficha, y avisa si el corral se excede', async () => {
-    const otro = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-C`, sexo: 'hembra' })).cuerpo.animal;
+    const otro = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-C`, sexo: 'hembra', categoria_codigo: 'vaca' })).cuerpo.animal;
     const { estado, cuerpo } = await pedir('POST', `/animales/${otro.id}/movimientos`, { corral_id: chico.id });
     assert.strictEqual(estado, 201);
     assert.strictEqual(cuerpo.animal.corral_id, chico.id);
