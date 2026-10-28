@@ -9,6 +9,7 @@ import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
 import { avisoDeExceso } from '../corrales/servicio-corrales';
+import { REGLAS_CATEGORIAS, mensajeDeCategoria, problemaDeCategoria } from '../../comun/categorias-animal';
 import {
   RepositorioAnimales,
   type Animal,
@@ -69,6 +70,12 @@ export class ServicioAnimales {
     private readonly animales: RepositorioAnimales,
     private readonly permisos: PermisosModulo,
   ) {}
+
+  /** HU-28: qué sexo y qué edad corresponden a cada categoría. */
+  async reglasDeCategorias(quien: UsuarioActual) {
+    await this.permisos.exigir(quien, 'animales', 'ver');
+    return REGLAS_CATEGORIAS;
+  }
 
   async categorias(quien: UsuarioActual) {
     await this.permisos.exigir(quien, 'animales', 'ver');
@@ -285,6 +292,12 @@ export class ServicioAnimales {
       if (fechaNacimiento > hoy()) {
         throw new BadRequestException(t('servidor.animales.nacimientoFuturo'));
       }
+    }
+
+    // La categoría tiene que corresponder al sexo y a la edad (pedido del docente).
+    if (categoria) {
+      const problema = problemaDeCategoria(categoria, sexo, fechaNacimiento, hoy());
+      if (problema) throw new BadRequestException(mensajeDeCategoria(problema, categoria, sexo));
     }
 
     const origen = cuerpo?.origen || null;

@@ -5,6 +5,7 @@ import { PermisosModulo } from '../../comun/permisos-modulo';
 import { enIdioma, t } from '../../comun/idioma';
 import { COLUMNAS, leerArchivo, normalizar, type Columna, type FilaLeida, type Valor } from './lector-archivo';
 import { RepositorioImportacion, type AnimalAImportar, type ContextoRancho } from './repositorio-importacion';
+import { mensajeDeCategoria, problemaDeCategoria } from '../../comun/categorias-animal';
 
 /**
  * Importación de animales desde Excel o CSV.
@@ -334,6 +335,14 @@ function validarFila(
     nacimiento = leerFecha(v.fecha_nacimiento!, contexto.formatoFecha);
     if (!nacimiento) return error(fila, identificador, 'fecha_nacimiento', 'fechaInvalida', { formato: contexto.formatoFecha });
     if (nacimiento > new Date().toISOString().slice(0, 10)) return error(fila, identificador, 'fecha_nacimiento', 'fechaFutura');
+  }
+
+  // La misma regla que el alta a mano: la categoría corresponde al sexo y a la edad.
+  if (categoria) {
+    const problema = problemaDeCategoria(categoria, sexo, nacimiento, new Date().toISOString().slice(0, 10));
+    if (problema) {
+      return { fila: fila.fila, identificador, columna: 'categoria', motivo: mensajeDeCategoria(problema, categoria, sexo) };
+    }
   }
 
   let origen: AnimalAImportar['origen'] = null;

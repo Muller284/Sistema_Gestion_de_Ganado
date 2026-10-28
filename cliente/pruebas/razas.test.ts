@@ -4,7 +4,9 @@ import { OTRA_RAZA, RAZAS, razaAGuardar, razaEnFormulario } from '../src/servici
 /** HU-28 · La raza se elige de una lista, con «Otra» para escribirla. */
 
 describe('lista de razas', () => {
-  it('trae las razas comunes de carne y de leche, sin repetir', () => {
+  it('trae razas de todo el mundo, de carne, leche y doble propósito, sin repetir', () => {
+    expect(RAZAS).toContain('Wagyu');
+    expect(RAZAS).toContain('Fleckvieh');
     expect(RAZAS).toContain('Nelore');
     expect(RAZAS).toContain('Holstein');
     expect(new Set(RAZAS).size).toBe(RAZAS.length);
@@ -15,7 +17,7 @@ describe('lista de razas', () => {
   });
 
   it('una raza que no está en la lista se muestra en «Otra» con su texto', () => {
-    expect(razaEnFormulario('Romosinuano')).toEqual({ opcion: OTRA_RAZA, otra: 'Romosinuano' });
+    expect(razaEnFormulario('Blanco Orejinegro')).toEqual({ opcion: OTRA_RAZA, otra: 'Blanco Orejinegro' });
   });
 
   it('sin raza, nada elegido', () => {
@@ -24,7 +26,7 @@ describe('lista de razas', () => {
 
   it('se guarda la elegida, lo escrito en «Otra» o nada', () => {
     expect(razaAGuardar('Gyr', '')).toBe('Gyr');
-    expect(razaAGuardar(OTRA_RAZA, '  Romosinuano ')).toBe('Romosinuano');
+    expect(razaAGuardar(OTRA_RAZA, '  Blanco Orejinegro ')).toBe('Blanco Orejinegro');
     expect(razaAGuardar(OTRA_RAZA, '   ')).toBeNull();
     expect(razaAGuardar('', '')).toBeNull();
   });

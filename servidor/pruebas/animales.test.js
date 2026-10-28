@@ -284,6 +284,57 @@ async function ejecutarPruebas() {
     assert.strictEqual(estado, 404);
   });
 
+  // --- Pedido del docente: la categoria corresponde al sexo y a la edad -------
+  const hoyIso = new Date().toISOString().slice(0, 10);
+
+  await prueba('HU-28: las reglas de categoria salen del servidor', async () => {
+    const { estado, cuerpo } = await pedir('GET', '/animales/categorias/reglas');
+    assert.strictEqual(estado, 200);
+    assert.deepStrictEqual(cuerpo.find((r) => r.codigo === 'vaca'), {
+      codigo: 'vaca',
+      sexo: 'hembra',
+      edad_minima_meses: 18,
+      edad_maxima_meses: null,
+    });
+  });
+
+  await prueba('HU-28: una hembra que nacio hoy no puede ser vaca, si ternera', async () => {
+    const vaca = await pedir('POST', '/animales', {
+      identificador: `N-${MARCA}`,
+      sexo: 'hembra',
+      categoria_codigo: 'vaca',
+      fecha_nacimiento: hoyIso,
+    });
+    assert.strictEqual(vaca.estado, 400);
+    assert.match(vaca.cuerpo.message, /18 meses/);
+    const ternera = await pedir('POST', '/animales', {
+      identificador: `N-${MARCA}`,
+      sexo: 'hembra',
+      categoria_codigo: 'ternera',
+      fecha_nacimiento: hoyIso,
+    });
+    assert.strictEqual(ternera.estado, 201);
+  });
+
+  await prueba('HU-28: un macho no puede ser vaca ni vaquilla', async () => {
+    const { estado, cuerpo } = await pedir('POST', '/animales', {
+      identificador: `M-${MARCA}`,
+      sexo: 'macho',
+      categoria_codigo: 'vaquilla',
+    });
+    assert.strictEqual(estado, 400);
+    assert.match(cuerpo.message, /macho/);
+  });
+
+  await prueba('HU-28: sin fecha de nacimiento se controla solo el sexo', async () => {
+    const { estado } = await pedir('POST', '/animales', {
+      identificador: `T-${MARCA}`,
+      sexo: 'macho',
+      categoria_codigo: 'toro',
+    });
+    assert.strictEqual(estado, 201);
+  });
+
   // ------------------------------------------------------------------------
   await pool.query(`DELETE FROM animales WHERE rancho_id IN ($1, $2) AND identificador LIKE $3`, [
     RANCHO_A,

@@ -342,7 +342,14 @@
       },
       "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
       "restaurado": "{identificador} is active again.",
-      "rangoInvalido": "The “from” date can’t be later than the “to” date."
+      "rangoInvalido": "The “from” date can’t be later than the “to” date.",
+      "categoriaSexo": "The category “{categoria}” doesn't match a {sexo} animal.",
+      "categoriaEdad": "The category “{categoria}” is for animals {rango}. Check the birth date or choose another category.",
+      "rangos": {
+        "hasta": "up to {max} months old",
+        "entre": "from {min} to {max} months old",
+        "desde": "{min} months old or more"
+      }
     }
   },
   "acceso": {
@@ -1534,7 +1541,9 @@
       "sinOrigen": "Not specified",
       "sinRaza": "Not specified",
       "otraRaza": "Other (type it)",
-      "razaEscrita": "Which breed?"
+      "razaEscrita": "Which breed?",
+      "categoriaFiltrada": "Only the ones that match the sex and age.",
+      "categoriaNoCorresponde": "This category doesn't match the sex or age. Choose another one."
     },
     "formulario": {
       "nuevo": "Register animal",
@@ -1668,6 +1677,11 @@
       "quitar": "Clear selection",
       "todos": "Select all active ({n})",
       "elegir": "Select {identificador}"
+    },
+    "gruposRaza": {
+      "carne": "Beef",
+      "leche": "Dairy",
+      "doble": "Dual purpose"
     }
   },
   "permisosSocio": {

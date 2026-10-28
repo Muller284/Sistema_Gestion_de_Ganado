@@ -17,6 +17,7 @@ import { ServicioAnimales } from './servicio-animales';
  * Animales (HU-27, HU-28, HU-29, HU-33, HU-34 y HU-39).
  *
  *   GET    /animales/categorias          el catalogo de categorias (HU-28)
+ *   GET    /animales/categorias/reglas   sexo y edad de cada categoria (HU-28)
  *   GET    /animales                     los activos; ?estado=todos|vendido|... ; ?bajas=1
  *                                         HU-29: ?busqueda= &sexo= &categoria= &corral=
  *                                                &fechaDesde= &fechaHasta= (AAAA-MM-DD)
@@ -36,6 +37,11 @@ export class ControladorAnimales {
   @Get('categorias')
   async categorias(@Req() peticion: any) {
     return this.servicio.categorias(peticion.usuarioActual);
+  }
+
+  @Get('categorias/reglas')
+  async reglasDeCategorias(@Req() peticion: any) {
+    return this.servicio.reglasDeCategorias(peticion.usuarioActual);
   }
 
   @Get()

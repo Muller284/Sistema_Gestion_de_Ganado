@@ -342,7 +342,14 @@
       },
       "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
       "restaurado": "{identificador} volvió a estar vigente.",
-      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta»."
+      "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
+      "categoriaSexo": "La categoría «{categoria}» no corresponde a un animal {sexo}.",
+      "categoriaEdad": "La categoría «{categoria}» es para animales {rango}. Revisa la fecha de nacimiento o elige otra categoría.",
+      "rangos": {
+        "hasta": "de hasta {max} meses",
+        "entre": "de {min} a {max} meses",
+        "desde": "de {min} meses o más"
+      }
     }
   },
   "acceso": {
@@ -1534,7 +1541,9 @@
       "sinOrigen": "Sin especificar",
       "sinRaza": "Sin especificar",
       "otraRaza": "Otra (escribirla)",
-      "razaEscrita": "¿Qué raza es?"
+      "razaEscrita": "¿Qué raza es?",
+      "categoriaFiltrada": "Solo las que corresponden al sexo y a la edad.",
+      "categoriaNoCorresponde": "Esta categoría no corresponde al sexo o a la edad. Elige otra."
     },
     "formulario": {
       "nuevo": "Registrar animal",
@@ -1668,6 +1677,11 @@
       "quitar": "Quitar la selección",
       "todos": "Elegir todos los activos ({n})",
       "elegir": "Elegir {identificador}"
+    },
+    "gruposRaza": {
+      "carne": "Carne",
+      "leche": "Leche",
+      "doble": "Doble propósito"
     }
   },
   "permisosSocio": {
