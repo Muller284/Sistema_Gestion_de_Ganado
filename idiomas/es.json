@@ -1526,7 +1526,6 @@
       "tipoIdentificador": "Tipo de identificador",
       "nombre": "Nombre",
       "raza": "Raza",
-      "razaEjemplo": "Romosinuano",
       "sexo": "Sexo",
       "categoria": "Categoría",
       "nacimiento": "Fecha de nacimiento",
@@ -1539,12 +1538,12 @@
       "elegir": "Elegir…",
       "sinCategoria": "Sin categoría",
       "sinOrigen": "Sin especificar",
-      "sinRaza": "Sin especificar",
-      "otraRaza": "Otra (escribirla)",
-      "razaEscrita": "¿Qué raza es?",
       "categoriaFiltrada": "Solo las que corresponden al sexo y a la edad.",
       "categoriaNoCorresponde": "Esta categoría no corresponde al sexo o a la edad. Elige otra.",
-      "razaNuevaAyuda": "Si ya está en la lista se usa esa; si es nueva, queda guardada para tu rancho."
+      "razaNuevaAyuda": "No está en la lista: se guardará como raza nueva de tu rancho.",
+      "razaBuscar": "Escribe para buscar o agregar",
+      "razaAgregar": "Agregar «{raza}» como raza nueva",
+      "razaSinResultados": "Sin resultados"
     },
     "formulario": {
       "nuevo": "Registrar animal",

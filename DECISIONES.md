@@ -1250,7 +1250,9 @@ para móvil.
   `razas`: el catálogo mundial (45 razas, `rancho_id` nulo, agrupadas en carne,
   leche y doble propósito; el sistema no es solo para Bolivia) y las razas
   propias de cada rancho. El formulario las pide a `GET /animales/razas` y
-  ofrece además «Otra» para escribir una. Si lo escrito ya existe (sin importar
+  las muestra en un buscador (`componentes/CampoBuscador.tsx`): lo escrito
+  filtra la lista por cualquier parte del nombre, y si no está aparece
+  «Agregar … como raza nueva» (lo que antes era «Otra»). Si lo escrito ya existe (sin importar
   mayúsculas, acentos ni espacios: columna `clave`, regla en
   `servidor/src/comun/razas.ts`), se guarda con el nombre de la lista; si es
   nueva, queda como raza del rancho y aparece en su lista, en «Razas de mi

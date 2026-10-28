@@ -9,6 +9,7 @@ export { Alerta } from './Alerta';
 export { BarraDemostracion } from './BarraDemostracion';
 export { Boton } from './Boton';
 export { Campo, CampoLista, CampoTexto } from './Campo';
+export { CampoBuscador, type GrupoBuscador } from './CampoBuscador';
 export { Cargando } from './Cargando';
 export { Cifra, DisenoApp } from './DisenoApp';
 export { DisenoAcceso } from './DisenoAcceso';

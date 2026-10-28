@@ -1526,7 +1526,6 @@
       "tipoIdentificador": "Identifier type",
       "nombre": "Name",
       "raza": "Breed",
-      "razaEjemplo": "Romosinuano",
       "sexo": "Sex",
       "categoria": "Category",
       "nacimiento": "Birth date",
@@ -1539,12 +1538,12 @@
       "elegir": "Choose…",
       "sinCategoria": "No category",
       "sinOrigen": "Not specified",
-      "sinRaza": "Not specified",
-      "otraRaza": "Other (type it)",
-      "razaEscrita": "Which breed?",
       "categoriaFiltrada": "Only the ones that match the sex and age.",
       "categoriaNoCorresponde": "This category doesn't match the sex or age. Choose another one.",
-      "razaNuevaAyuda": "If it's already on the list, that one is used; if it's new, it's saved for your ranch."
+      "razaNuevaAyuda": "Not on the list: it will be saved as a new breed for your ranch.",
+      "razaBuscar": "Type to search or add",
+      "razaAgregar": "Add “{raza}” as a new breed",
+      "razaSinResultados": "No results"
     },
     "formulario": {
       "nuevo": "Register animal",

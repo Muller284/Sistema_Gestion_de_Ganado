@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Alerta, Boton, CampoLista, CampoTexto, Tarjeta } from '../../componentes';
+import { Alerta, Boton, CampoBuscador, CampoLista, CampoTexto, Tarjeta } from '../../componentes';
 import {
   api,
   type Animal,
@@ -13,7 +13,7 @@ import {
 } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { categoriasPermitidas } from '../../servicios/categorias';
-import { OTRA_RAZA, agruparRazas, razaAGuardar, razaEnFormulario } from '../../servicios/razas';
+import { buscarRazas, esRazaNueva, razaAGuardar } from '../../servicios/razas';
 import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicios/unidades';
 
 /**
@@ -27,9 +27,9 @@ import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicio
  *      servidor la rechaza igual).
  *
  * HU-26: el peso se escribe en la unidad del país y viaja en kilos.
- * La raza se elige de una lista (catálogo mundial más las propias del
- * rancho); «Otra» abre un campo para escribirla, y si es nueva queda en la
- * lista del rancho (pedido del docente).
+ * La raza se busca escribiendo en una lista (catálogo mundial más las
+ * propias del rancho); si lo escrito no está, se guarda como raza nueva y
+ * queda en la lista del rancho (pedido del docente).
  * La categoría solo ofrece las que corresponden al sexo y a la edad que da la
  * fecha de nacimiento: si nació hoy no puede ser vaca ni toro (pedido del
  * docente). Las reglas las manda el servidor, que lo vuelve a controlar.
@@ -61,9 +61,7 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
   const [tipo, setTipo] = useState<TipoIdentificador>('caravana');
   const [nombre, setNombre] = useState(animal?.nombre ?? '');
   const [razas, setRazas] = useState<Raza[]>([]);
-  // Hasta que llega la lista, la raza guardada se muestra como «Otra».
-  const [razaOpcion, setRazaOpcion] = useState(animal?.raza ? OTRA_RAZA : '');
-  const [razaOtra, setRazaOtra] = useState(animal?.raza ?? '');
+  const [raza, setRaza] = useState(animal?.raza ?? '');
   const [sexo, setSexo] = useState<Sexo | ''>(animal?.sexo ?? '');
   const [categoria, setCategoria] = useState(animal?.categoria_codigo ?? '');
   const [nacimiento, setNacimiento] = useState(animal?.fecha_nacimiento ?? '');
@@ -83,13 +81,7 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
       .catch((err: Error) => vigente && setError(err.message));
     api
       .razas()
-      .then((lista) => {
-        if (!vigente) return;
-        setRazas(lista);
-        const enLista = razaEnFormulario(animal?.raza, lista);
-        setRazaOpcion(enLista.opcion);
-        setRazaOtra(enLista.otra);
-      })
+      .then((lista) => vigente && setRazas(lista))
       .catch(() => undefined);
     api
       .reglasCategorias()
@@ -114,7 +106,7 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
     setError('');
     const ficha: DatosFichaAnimal = {
       nombre: nombre || null,
-      raza: razaAGuardar(razaOpcion, razaOtra),
+      raza: razaAGuardar(razas, raza),
       sexo,
       categoria_codigo: categoria || null,
       fecha_nacimiento: nacimiento || null,
@@ -203,35 +195,22 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
-            <div className="col g8">
-              <CampoLista
-                etiqueta={t('animales.campos.raza')}
-                value={razaOpcion}
-                onChange={(e) => setRazaOpcion(e.target.value)}
-              >
-                <option value="">{t('animales.campos.sinRaza')}</option>
-                {agruparRazas(razas).map(({ grupo, razas: delGrupo }) => (
-                  <optgroup key={grupo} label={t(`animales.gruposRaza.${grupo}`)}>
-                    {delGrupo.map((opcion) => (
-                      <option key={opcion} value={opcion}>
-                        {opcion}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-                <option value={OTRA_RAZA}>{t('animales.campos.otraRaza')}</option>
-              </CampoLista>
-              {razaOpcion === OTRA_RAZA && (
-                <CampoTexto
-                  etiqueta={t('animales.campos.razaEscrita')}
-                  ayuda={t('animales.campos.razaNuevaAyuda')}
-                  maxLength={100}
-                  placeholder={t('animales.campos.razaEjemplo')}
-                  value={razaOtra}
-                  onChange={(e) => setRazaOtra(e.target.value)}
-                />
-              )}
-            </div>
+            <CampoBuscador
+              etiqueta={t('animales.campos.raza')}
+              placeholder={t('animales.campos.razaBuscar')}
+              ayuda={esRazaNueva(razas, raza) ? t('animales.campos.razaNuevaAyuda') : undefined}
+              maxLength={100}
+              value={raza}
+              onChange={setRaza}
+              grupos={buscarRazas(razas, raza).map(({ grupo, razas: delGrupo }) => ({
+                titulo: t(`animales.gruposRaza.${grupo}`),
+                opciones: delGrupo,
+              }))}
+              opcionNueva={
+                esRazaNueva(razas, raza) ? t('animales.campos.razaAgregar', { raza: raza.trim() }) : undefined
+              }
+              sinResultados={t('animales.campos.razaSinResultados')}
+            />
           </div>
 
           <div className="par">

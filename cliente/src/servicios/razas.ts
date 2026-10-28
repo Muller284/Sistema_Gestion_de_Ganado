@@ -4,20 +4,18 @@ import type { Raza } from './api';
  * HU-28 · La raza se elige de una lista (pedido del docente). La lista la
  * manda el servidor (GET /animales/razas, tabla razas de la migración 009):
  * el catálogo mundial, agrupado en carne, leche y doble propósito, más las
- * razas propias del rancho, que son las que alguien escribió en «Otra».
+ * razas propias del rancho.
  *
- * Si en «Otra» se escribe una raza que ya existe, el servidor la reconoce sin
- * importar mayúsculas ni acentos y la guarda como en la lista; si es nueva,
- * queda en la lista de ese rancho.
+ * El campo es un buscador: lo escrito filtra la lista por cualquier parte del
+ * nombre, sin importar mayúsculas ni acentos. Si lo escrito no está, se
+ * guarda como raza nueva (lo que antes era «Otra») y el servidor la deja en
+ * la lista de ese rancho.
  */
 
 export type GrupoRaza = 'carne' | 'leche' | 'doble' | 'propias';
 
 /** El orden en que se muestran los grupos. */
 const ORDEN_GRUPOS: GrupoRaza[] = ['carne', 'leche', 'doble', 'propias'];
-
-/** El valor de la lista para «Otra». */
-export const OTRA_RAZA = 'otra';
 
 /** Sin mayúsculas, sin acentos y sin espacios de más (la misma regla que el servidor). */
 export function claveDeRaza(nombre: string): string {
@@ -37,21 +35,24 @@ export function agruparRazas(razas: Raza[]): { grupo: GrupoRaza; razas: string[]
   })).filter((g) => g.razas.length > 0);
 }
 
-/**
- * Cómo se muestra en el formulario una raza ya guardada: si está en la lista
- * se elige ella; si no, queda en «Otra» con el texto escrito.
- */
-export function razaEnFormulario(
-  raza: string | null | undefined,
-  razas: Raza[],
-): { opcion: string; otra: string } {
-  if (!raza) return { opcion: '', otra: '' };
-  const conocida = razas.find((r) => claveDeRaza(r.nombre) === claveDeRaza(raza));
-  return conocida ? { opcion: conocida.nombre, otra: '' } : { opcion: OTRA_RAZA, otra: raza };
+/** Las razas que contienen lo escrito, agrupadas. Sin texto, todas. */
+export function buscarRazas(razas: Raza[], texto: string): { grupo: GrupoRaza; razas: string[] }[] {
+  const buscada = claveDeRaza(texto);
+  return agruparRazas(razas.filter((r) => claveDeRaza(r.nombre).includes(buscada)));
 }
 
-/** Lo que se manda: la elegida, lo escrito en «Otra», o nada. */
-export function razaAGuardar(opcion: string, otra: string): string | null {
-  if (opcion === OTRA_RAZA) return otra.trim() || null;
-  return opcion || null;
+/** La raza de la lista que es lo escrito (aunque cambien mayúsculas o acentos). */
+export function razaConocida(razas: Raza[], texto: string): Raza | undefined {
+  const clave = claveDeRaza(texto);
+  return clave ? razas.find((r) => claveDeRaza(r.nombre) === clave) : undefined;
+}
+
+/** Lo escrito no está en la lista: se guardará como raza nueva del rancho. */
+export function esRazaNueva(razas: Raza[], texto: string): boolean {
+  return claveDeRaza(texto) !== '' && !razaConocida(razas, texto);
+}
+
+/** Lo que se manda: el nombre de la lista si la conoce, si no lo escrito, o nada. */
+export function razaAGuardar(razas: Raza[], texto: string): string | null {
+  return razaConocida(razas, texto)?.nombre ?? (texto.replace(/\s+/g, ' ').trim() || null);
 }
