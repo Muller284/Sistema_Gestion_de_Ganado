@@ -304,7 +304,13 @@
       "restaurado": "«{nombre}» volvió a estar vigente.",
       "seleccionInvalida": "Elige entre 1 y {n} animales para asignar.",
       "asignados": "Asignaste {n} animal(es) a «{nombre}».",
-      "excedido": "Ojo: «{nombre}» quedó con {n} animales y su capacidad es de {capacidad}."
+      "excedido": "Ojo: «{nombre}» quedó con {n} animales y su capacidad es de {capacidad}.",
+      "capacidadExcedeSuperficie": "Esa superficie admite hasta {limite} animal(es): {carga} por hectárea en un rancho de {tipo}. Baja la capacidad o agranda la superficie.",
+      "tiposProduccion": {
+        "carne": "carne",
+        "leche": "leche",
+        "mixto": "producción mixta"
+      }
     },
     "animales": {
       "sinIdentificador": "El identificador es obligatorio.",
@@ -1431,7 +1437,12 @@
       "capacidad": "Capacidad (animales)",
       "capacidadAyuda": "Opcional. Sin capacidad no hay aviso de sobrepoblación.",
       "superficie": "Superficie ({unidad})",
-      "superficieAyuda": "Opcional."
+      "superficieAyuda": "Opcional.",
+      "capacidadLimite": "Con esta superficie caben hasta {n} animales.",
+      "capacidadExcedida": "Esta superficie admite hasta {n} animales. Baja la capacidad o agranda la superficie.",
+      "capacidadCero": "La capacidad tiene que ser un número entero mayor que cero.",
+      "superficieCero": "La superficie tiene que ser mayor que cero.",
+      "superficieCarga": "Caben {n} animal(es) por hectárea en un rancho de {tipo}."
     },
     "excedidos": "{n} corral(es) superan su capacidad: {nombres}.",
     "barra": "{n} de {capacidad} animales",
@@ -1441,6 +1452,12 @@
       "confirmar": "Asignar ({n})",
       "vacio": "No hay animales activos fuera de este corral.",
       "todos": "Elegir todos ({n})"
+    },
+    "superficieYLimite": "{superficie} · caben hasta {limite} animales",
+    "tiposProduccion": {
+      "carne": "carne",
+      "leche": "leche",
+      "mixto": "producción mixta"
     }
   },
   "animales": {
@@ -1502,7 +1519,7 @@
       "tipoIdentificador": "Tipo de identificador",
       "nombre": "Nombre",
       "raza": "Raza",
-      "razaEjemplo": "Nelore",
+      "razaEjemplo": "Romosinuano",
       "sexo": "Sexo",
       "categoria": "Categoría",
       "nacimiento": "Fecha de nacimiento",
@@ -1514,7 +1531,10 @@
       "corralActual": "Corral actual",
       "elegir": "Elegir…",
       "sinCategoria": "Sin categoría",
-      "sinOrigen": "Sin especificar"
+      "sinOrigen": "Sin especificar",
+      "sinRaza": "Sin especificar",
+      "otraRaza": "Otra (escribirla)",
+      "razaEscrita": "¿Qué raza es?"
     },
     "formulario": {
       "nuevo": "Registrar animal",

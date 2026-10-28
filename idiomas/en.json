@@ -304,7 +304,13 @@
       "restaurado": "“{nombre}” is active again.",
       "seleccionInvalida": "Choose between 1 and {n} animals to assign.",
       "asignados": "You assigned {n} animal(s) to “{nombre}”.",
-      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}."
+      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}.",
+      "capacidadExcedeSuperficie": "That area allows up to {limite} animal(s): {carga} per hectare on a {tipo} ranch. Lower the capacity or enlarge the area.",
+      "tiposProduccion": {
+        "carne": "beef",
+        "leche": "dairy",
+        "mixto": "mixed production"
+      }
     },
     "animales": {
       "sinIdentificador": "The identifier is required.",
@@ -1431,7 +1437,12 @@
       "capacidad": "Capacity (animals)",
       "capacidadAyuda": "Optional. Without a capacity there is no overcrowding warning.",
       "superficie": "Area ({unidad})",
-      "superficieAyuda": "Optional."
+      "superficieAyuda": "Optional.",
+      "capacidadLimite": "This area fits up to {n} animals.",
+      "capacidadExcedida": "This area allows up to {n} animals. Lower the capacity or enlarge the area.",
+      "capacidadCero": "Capacity must be a whole number greater than zero.",
+      "superficieCero": "Area must be greater than zero.",
+      "superficieCarga": "{n} animal(s) per hectare fit on a {tipo} ranch."
     },
     "excedidos": "{n} pen(s) are over capacity: {nombres}.",
     "barra": "{n} of {capacidad} animals",
@@ -1441,6 +1452,12 @@
       "confirmar": "Assign ({n})",
       "vacio": "There are no active animals outside this pen.",
       "todos": "Select all ({n})"
+    },
+    "superficieYLimite": "{superficie} · up to {limite} animals",
+    "tiposProduccion": {
+      "carne": "beef",
+      "leche": "dairy",
+      "mixto": "mixed production"
     }
   },
   "animales": {
@@ -1502,7 +1519,7 @@
       "tipoIdentificador": "Identifier type",
       "nombre": "Name",
       "raza": "Breed",
-      "razaEjemplo": "Nelore",
+      "razaEjemplo": "Romosinuano",
       "sexo": "Sex",
       "categoria": "Category",
       "nacimiento": "Birth date",
@@ -1514,7 +1531,10 @@
       "corralActual": "Current pen",
       "elegir": "Choose…",
       "sinCategoria": "No category",
-      "sinOrigen": "Not specified"
+      "sinOrigen": "Not specified",
+      "sinRaza": "Not specified",
+      "otraRaza": "Other (type it)",
+      "razaEscrita": "Which breed?"
     },
     "formulario": {
       "nuevo": "Register animal",

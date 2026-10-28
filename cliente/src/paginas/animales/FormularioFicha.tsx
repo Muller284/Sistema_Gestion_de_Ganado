@@ -10,6 +10,7 @@ import {
   type TipoIdentificador,
 } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
+import { OTRA_RAZA, RAZAS, razaAGuardar, razaEnFormulario } from '../../servicios/razas';
 import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicios/unidades';
 
 /**
@@ -23,6 +24,8 @@ import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicio
  *      servidor la rechaza igual).
  *
  * HU-26: el peso se escribe en la unidad del país y viaja en kilos.
+ * La raza se elige de una lista; «Otra» abre un campo para escribirla
+ * (pedido del docente).
  */
 
 const TIPOS: TipoIdentificador[] = ['caravana', 'interno', 'rfid'];
@@ -49,7 +52,8 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
   const [identificador, setIdentificador] = useState('');
   const [tipo, setTipo] = useState<TipoIdentificador>('caravana');
   const [nombre, setNombre] = useState(animal?.nombre ?? '');
-  const [raza, setRaza] = useState(animal?.raza ?? '');
+  const [razaOpcion, setRazaOpcion] = useState(() => razaEnFormulario(animal?.raza).opcion);
+  const [razaOtra, setRazaOtra] = useState(() => razaEnFormulario(animal?.raza).otra);
   const [sexo, setSexo] = useState<Sexo | ''>(animal?.sexo ?? '');
   const [categoria, setCategoria] = useState(animal?.categoria_codigo ?? '');
   const [nacimiento, setNacimiento] = useState(animal?.fecha_nacimiento ?? '');
@@ -86,7 +90,7 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
     setError('');
     const ficha: DatosFichaAnimal = {
       nombre: nombre || null,
-      raza: raza || null,
+      raza: razaAGuardar(razaOpcion, razaOtra),
       sexo,
       categoria_codigo: categoria || null,
       fecha_nacimiento: nacimiento || null,
@@ -161,13 +165,30 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
-            <CampoTexto
-              etiqueta={t('animales.campos.raza')}
-              maxLength={100}
-              placeholder={t('animales.campos.razaEjemplo')}
-              value={raza}
-              onChange={(e) => setRaza(e.target.value)}
-            />
+            <div className="col g8">
+              <CampoLista
+                etiqueta={t('animales.campos.raza')}
+                value={razaOpcion}
+                onChange={(e) => setRazaOpcion(e.target.value)}
+              >
+                <option value="">{t('animales.campos.sinRaza')}</option>
+                {RAZAS.map((opcion) => (
+                  <option key={opcion} value={opcion}>
+                    {opcion}
+                  </option>
+                ))}
+                <option value={OTRA_RAZA}>{t('animales.campos.otraRaza')}</option>
+              </CampoLista>
+              {razaOpcion === OTRA_RAZA && (
+                <CampoTexto
+                  etiqueta={t('animales.campos.razaEscrita')}
+                  maxLength={100}
+                  placeholder={t('animales.campos.razaEjemplo')}
+                  value={razaOtra}
+                  onChange={(e) => setRazaOtra(e.target.value)}
+                />
+              )}
+            </div>
           </div>
 
           <div className="par">

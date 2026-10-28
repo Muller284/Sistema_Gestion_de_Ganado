@@ -491,7 +491,15 @@ export interface Corral {
   superficie_ha: string | null;
   ocupacion: number;
   sobrepoblado: boolean;
+  /** Lo máximo que admite la superficie según el tipo de producción; nulo sin superficie. */
+  limite_superficie: number | null;
   eliminado_en: string | null;
+}
+
+/** Cuántos animales admite cada hectárea en este rancho (comun/carga-animal.ts del servidor). */
+export interface CargaAnimal {
+  tipo_produccion: 'carne' | 'leche' | 'mixto';
+  animales_por_hectarea: number;
 }
 
 export interface DatosCorral {
@@ -779,6 +787,7 @@ export const api = {
 
   // HU-36 y HU-34 · Corrales
   corrales: (conBajas = false) => pedir<Corral[]>(`/corrales${conBajas ? '?bajas=1' : ''}`),
+  cargaCorrales: () => pedir<CargaAnimal>('/corrales/carga'),
   crearCorral: (datos: DatosCorral) =>
     pedir<RespuestaCorral>('/corrales', { method: 'POST', body: JSON.stringify(datos) }),
   actualizarCorral: (id: string, datos: DatosCorral) =>

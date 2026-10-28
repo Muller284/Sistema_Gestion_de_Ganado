@@ -1244,3 +1244,16 @@ de cada uno no choque en el mismo archivo.
 menú lateral se oculta y no hay otro menú. En el celular se llega a Animales y
 al alta rápida por la dirección o desde el listado, pero falta una navegación
 para móvil.
+
+**Ajustes pedidos por el docente (28/10, sobre HU-28 y HU-36).**
+- *Raza de una lista.* El formulario del animal ofrece las razas bovinas más
+  comunes en Bolivia (`cliente/src/servicios/razas.ts`) y «Otra», que abre un
+  campo para escribirla. Se guarda el nombre tal cual: el servidor sigue
+  aceptando texto, así la importación y las razas poco comunes no se pierden.
+- *Capacidad según la superficie.* La capacidad de un corral no puede pasar de
+  lo que admite su superficie: carne 1, leche 2 y mixto 1,5 animales por
+  hectárea, según el tipo de producción del rancho. La tabla vive solo en
+  `servidor/src/comun/carga-animal.ts`; la pantalla la pide por
+  `GET /corrales/carga` y muestra el límite mientras se escribe. Ni la
+  capacidad ni la superficie aceptan cero. Asignar animales de más sigue
+  avisando sin impedirlo (HU-38).
