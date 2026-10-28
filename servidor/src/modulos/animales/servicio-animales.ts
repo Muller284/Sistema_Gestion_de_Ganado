@@ -9,6 +9,7 @@ import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
 import { avisoDeExceso } from '../corrales/servicio-corrales';
+import { RepositorioRazas } from './repositorio-razas';
 import { REGLAS_CATEGORIAS, mensajeDeCategoria, problemaDeCategoria } from '../../comun/categorias-animal';
 import {
   RepositorioAnimales,
@@ -69,7 +70,17 @@ export class ServicioAnimales {
   constructor(
     private readonly animales: RepositorioAnimales,
     private readonly permisos: PermisosModulo,
+    private readonly razas: RepositorioRazas,
   ) {}
+
+  /**
+   * HU-28 · Las razas para elegir: el catálogo mundial más las propias del
+   * rancho, que son las que alguien escribió en «Otra».
+   */
+  async listarRazas(quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'animales', 'ver');
+    return this.razas.listar(ranchoId);
+  }
 
   /** HU-28: qué sexo y qué edad corresponden a cada categoría. */
   async reglasDeCategorias(quien: UsuarioActual) {
@@ -130,6 +141,8 @@ export class ServicioAnimales {
 
     const ficha = await this.validarFicha(cuerpo);
     const corralId = await this.corralValido(cuerpo?.corral_id, ranchoId);
+    // Una raza que ya existe se guarda como en el catálogo; una nueva queda en el rancho.
+    if (ficha.raza) ficha.raza = await this.razas.resolver(ficha.raza, ranchoId, quien.id);
 
     const id = randomUUID();
     try {
@@ -153,6 +166,7 @@ export class ServicioAnimales {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
     const actual = await this.vigente(id, ranchoId);
     const ficha = await this.validarFicha(cuerpo);
+    if (ficha.raza) ficha.raza = await this.razas.resolver(ficha.raza, ranchoId, quien.id);
     await this.animales.actualizarFicha(actual.id, ranchoId, ficha, quien.id);
     return {
       animal: await this.animales.uno(actual.id, ranchoId),

@@ -273,6 +273,16 @@ async function ejecutarPruebas() {
     assert.strictEqual(cuerpo.resumen.existentes, 0);
   });
 
+  await prueba('HU-28: la raza del archivo se reconoce sin importar mayusculas ni acentos', async () => {
+    const { cuerpo } = await pedir('POST', '/importacion/vista-previa', {
+      nombre_archivo: 'razas.csv',
+      contenido_base64: csv(`Identificador;Sexo;Raza
+${id('raza')};macho;NELÓRE
+`),
+    });
+    assert.strictEqual(cuerpo.vista_previa[0].raza, 'Nelore');
+  });
+
   // --- Permisos y archivos invalidos -----------------------------------------
   await prueba('El socio y el colaborador sin el modulo no importan; con edicion, si', async () => {
     const cuerpo = { nombre_archivo: 'segundo.csv', contenido_base64: segundo };

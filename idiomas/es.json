@@ -1543,7 +1543,8 @@
       "otraRaza": "Otra (escribirla)",
       "razaEscrita": "¿Qué raza es?",
       "categoriaFiltrada": "Solo las que corresponden al sexo y a la edad.",
-      "categoriaNoCorresponde": "Esta categoría no corresponde al sexo o a la edad. Elige otra."
+      "categoriaNoCorresponde": "Esta categoría no corresponde al sexo o a la edad. Elige otra.",
+      "razaNuevaAyuda": "Si ya está en la lista se usa esa; si es nueva, queda guardada para tu rancho."
     },
     "formulario": {
       "nuevo": "Registrar animal",
@@ -1681,7 +1682,8 @@
     "gruposRaza": {
       "carne": "Carne",
       "leche": "Leche",
-      "doble": "Doble propósito"
+      "doble": "Doble propósito",
+      "propias": "Razas de mi rancho"
     }
   },
   "permisosSocio": {

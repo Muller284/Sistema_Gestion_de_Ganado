@@ -18,6 +18,7 @@ import { ServicioAnimales } from './servicio-animales';
  *
  *   GET    /animales/categorias          el catalogo de categorias (HU-28)
  *   GET    /animales/categorias/reglas   sexo y edad de cada categoria (HU-28)
+ *   GET    /animales/razas               el catalogo de razas mas las propias del rancho (HU-28)
  *   GET    /animales                     los activos; ?estado=todos|vendido|... ; ?bajas=1
  *                                         HU-29: ?busqueda= &sexo= &categoria= &corral=
  *                                                &fechaDesde= &fechaHasta= (AAAA-MM-DD)
@@ -37,6 +38,11 @@ export class ControladorAnimales {
   @Get('categorias')
   async categorias(@Req() peticion: any) {
     return this.servicio.categorias(peticion.usuarioActual);
+  }
+
+  @Get('razas')
+  async razas(@Req() peticion: any) {
+    return this.servicio.listarRazas(peticion.usuarioActual);
   }
 
   @Get('categorias/reglas')

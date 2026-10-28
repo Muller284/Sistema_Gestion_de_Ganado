@@ -1543,7 +1543,8 @@
       "otraRaza": "Other (type it)",
       "razaEscrita": "Which breed?",
       "categoriaFiltrada": "Only the ones that match the sex and age.",
-      "categoriaNoCorresponde": "This category doesn't match the sex or age. Choose another one."
+      "categoriaNoCorresponde": "This category doesn't match the sex or age. Choose another one.",
+      "razaNuevaAyuda": "If it's already on the list, that one is used; if it's new, it's saved for your ranch."
     },
     "formulario": {
       "nuevo": "Register animal",
@@ -1681,7 +1682,8 @@
     "gruposRaza": {
       "carne": "Beef",
       "leche": "Dairy",
-      "doble": "Dual purpose"
+      "doble": "Dual purpose",
+      "propias": "My ranch's breeds"
     }
   },
   "permisosSocio": {

@@ -1246,11 +1246,16 @@ al alta rápida por la dirección o desde el listado, pero falta una navegación
 para móvil.
 
 **Ajustes pedidos por el docente (28/10, sobre HU-28 y HU-36).**
-- *Raza de una lista.* El formulario del animal ofrece las razas bovinas más
-  difundidas en el mundo, agrupadas en carne, leche y doble propósito
-  (`cliente/src/servicios/razas.ts`; el sistema no es solo para Bolivia), y
-  «Otra», que abre un campo para escribirla. Se guarda el nombre tal cual: el servidor sigue
-  aceptando texto, así la importación y las razas poco comunes no se pierden.
+- *Raza de una lista, guardada en la base.* La migración 009 crea la tabla
+  `razas`: el catálogo mundial (45 razas, `rancho_id` nulo, agrupadas en carne,
+  leche y doble propósito; el sistema no es solo para Bolivia) y las razas
+  propias de cada rancho. El formulario las pide a `GET /animales/razas` y
+  ofrece además «Otra» para escribir una. Si lo escrito ya existe (sin importar
+  mayúsculas, acentos ni espacios: columna `clave`, regla en
+  `servidor/src/comun/razas.ts`), se guarda con el nombre de la lista; si es
+  nueva, queda como raza del rancho y aparece en su lista, en «Razas de mi
+  rancho». Otro rancho no la ve (HU-03). La importación sigue la misma regla.
+  `animales.raza` sigue siendo texto, así no cambia nada de lo que ya lo lee.
 - *Capacidad según la superficie.* La capacidad de un corral no puede pasar de
   lo que admite su superficie: carne 1, leche 2 y mixto 1,5 animales por
   hectárea, según el tipo de producción del rancho. La tabla vive solo en

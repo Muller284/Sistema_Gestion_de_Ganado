@@ -497,6 +497,12 @@ export interface Corral {
 }
 
 /** Cuántos animales admite cada hectárea en este rancho (comun/carga-animal.ts del servidor). */
+/** HU-28 · Una raza para elegir: del catálogo (con grupo) o propia del rancho (grupo nulo). */
+export interface Raza {
+  nombre: string;
+  grupo: 'carne' | 'leche' | 'doble' | null;
+}
+
 /** HU-28 · Qué sexo y qué edad corresponden a cada categoría (comun/categorias-animal.ts del servidor). */
 export interface ReglaCategoria {
   codigo: string;
@@ -812,6 +818,7 @@ export const api = {
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
   reglasCategorias: () => pedir<ReglaCategoria[]>('/animales/categorias/reglas'),
+  razas: () => pedir<Raza[]>('/animales/razas'),
   animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false, filtros: FiltrosAnimales = {}) => {
     const parametros = new URLSearchParams({ estado });
     if (conBajas) parametros.set('bajas', '1');

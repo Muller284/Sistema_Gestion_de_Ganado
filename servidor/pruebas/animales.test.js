@@ -335,8 +335,55 @@ async function ejecutarPruebas() {
     assert.strictEqual(estado, 201);
   });
 
+  // --- HU-28: razas del catalogo y propias del rancho ---------------------------
+  const razaNueva = `Criolla ${MARCA}`;
+
+  await prueba('HU-28: el catalogo de razas trae las del mundo con su grupo', async () => {
+    const { estado, cuerpo } = await pedir('GET', '/animales/razas');
+    assert.strictEqual(estado, 200);
+    assert.deepStrictEqual(cuerpo.find((r) => r.nombre === 'Nelore'), { nombre: 'Nelore', grupo: 'carne' });
+    assert.deepStrictEqual(cuerpo.find((r) => r.nombre === 'Holstein'), { nombre: 'Holstein', grupo: 'leche' });
+  });
+
+  await prueba('HU-28: una raza del catalogo escrita distinto se guarda como en el catalogo', async () => {
+    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R1-${MARCA}`, sexo: 'macho', raza: '  NELÓRE ' });
+    assert.strictEqual(cuerpo.animal.raza, 'Nelore');
+  });
+
+  await prueba('HU-28: una raza nueva queda en la lista del rancho, sin grupo', async () => {
+    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R2-${MARCA}`, sexo: 'macho', raza: razaNueva });
+    assert.strictEqual(cuerpo.animal.raza, razaNueva);
+    const lista = (await pedir('GET', '/animales/razas')).cuerpo;
+    assert.deepStrictEqual(lista.find((r) => r.nombre === razaNueva), { nombre: razaNueva, grupo: null });
+  });
+
+  await prueba('HU-28: escrita de nuevo con otras mayusculas no se duplica', async () => {
+    const { cuerpo } = await pedir('POST', '/animales', {
+      identificador: `R3-${MARCA}`,
+      sexo: 'macho',
+      raza: razaNueva.toUpperCase(),
+    });
+    assert.strictEqual(cuerpo.animal.raza, razaNueva);
+    const filas = await pool.query(`SELECT COUNT(*)::int AS n FROM razas WHERE rancho_id = $1 AND nombre ILIKE $2`, [
+      RANCHO_A,
+      razaNueva,
+    ]);
+    assert.strictEqual(filas.rows[0].n, 1);
+  });
+
+  await prueba('HU-03: la raza propia de un rancho no aparece en otro', async () => {
+    const lista = (await pedir('GET', '/animales/razas', undefined, PROPIETARIO_B)).cuerpo;
+    assert.ok(!lista.some((r) => r.nombre === razaNueva));
+    assert.ok(lista.some((r) => r.nombre === 'Nelore'));
+  });
+
   // ------------------------------------------------------------------------
   await pool.query(`DELETE FROM animales WHERE rancho_id IN ($1, $2) AND identificador LIKE $3`, [
+    RANCHO_A,
+    RANCHO_B,
+    `%${MARCA}%`,
+  ]);
+  await pool.query(`DELETE FROM razas WHERE rancho_id IN ($1, $2) AND nombre LIKE $3`, [
     RANCHO_A,
     RANCHO_B,
     `%${MARCA}%`,

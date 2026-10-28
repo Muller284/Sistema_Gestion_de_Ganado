@@ -6,13 +6,14 @@ import {
   type Corral,
   type DatosFichaAnimal,
   type Origen,
+  type Raza,
   type ReglaCategoria,
   type Sexo,
   type TipoIdentificador,
 } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { categoriasPermitidas } from '../../servicios/categorias';
-import { GRUPOS_RAZAS, OTRA_RAZA, razaAGuardar, razaEnFormulario } from '../../servicios/razas';
+import { OTRA_RAZA, agruparRazas, razaAGuardar, razaEnFormulario } from '../../servicios/razas';
 import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicios/unidades';
 
 /**
@@ -26,8 +27,9 @@ import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicio
  *      servidor la rechaza igual).
  *
  * HU-26: el peso se escribe en la unidad del país y viaja en kilos.
- * La raza se elige de una lista; «Otra» abre un campo para escribirla
- * (pedido del docente).
+ * La raza se elige de una lista (catálogo mundial más las propias del
+ * rancho); «Otra» abre un campo para escribirla, y si es nueva queda en la
+ * lista del rancho (pedido del docente).
  * La categoría solo ofrece las que corresponden al sexo y a la edad que da la
  * fecha de nacimiento: si nació hoy no puede ser vaca ni toro (pedido del
  * docente). Las reglas las manda el servidor, que lo vuelve a controlar.
@@ -58,8 +60,10 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
   const [identificador, setIdentificador] = useState('');
   const [tipo, setTipo] = useState<TipoIdentificador>('caravana');
   const [nombre, setNombre] = useState(animal?.nombre ?? '');
-  const [razaOpcion, setRazaOpcion] = useState(() => razaEnFormulario(animal?.raza).opcion);
-  const [razaOtra, setRazaOtra] = useState(() => razaEnFormulario(animal?.raza).otra);
+  const [razas, setRazas] = useState<Raza[]>([]);
+  // Hasta que llega la lista, la raza guardada se muestra como «Otra».
+  const [razaOpcion, setRazaOpcion] = useState(animal?.raza ? OTRA_RAZA : '');
+  const [razaOtra, setRazaOtra] = useState(animal?.raza ?? '');
   const [sexo, setSexo] = useState<Sexo | ''>(animal?.sexo ?? '');
   const [categoria, setCategoria] = useState(animal?.categoria_codigo ?? '');
   const [nacimiento, setNacimiento] = useState(animal?.fecha_nacimiento ?? '');
@@ -77,6 +81,16 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
       .categoriasAnimal()
       .then((lista) => vigente && setCategorias(lista))
       .catch((err: Error) => vigente && setError(err.message));
+    api
+      .razas()
+      .then((lista) => {
+        if (!vigente) return;
+        setRazas(lista);
+        const enLista = razaEnFormulario(animal?.raza, lista);
+        setRazaOpcion(enLista.opcion);
+        setRazaOtra(enLista.otra);
+      })
+      .catch(() => undefined);
     api
       .reglasCategorias()
       .then((lista) => vigente && setReglas(lista))
@@ -196,9 +210,9 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
                 onChange={(e) => setRazaOpcion(e.target.value)}
               >
                 <option value="">{t('animales.campos.sinRaza')}</option>
-                {GRUPOS_RAZAS.map(({ grupo, razas }) => (
+                {agruparRazas(razas).map(({ grupo, razas: delGrupo }) => (
                   <optgroup key={grupo} label={t(`animales.gruposRaza.${grupo}`)}>
-                    {razas.map((opcion) => (
+                    {delGrupo.map((opcion) => (
                       <option key={opcion} value={opcion}>
                         {opcion}
                       </option>
@@ -210,6 +224,7 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
               {razaOpcion === OTRA_RAZA && (
                 <CampoTexto
                   etiqueta={t('animales.campos.razaEscrita')}
+                  ayuda={t('animales.campos.razaNuevaAyuda')}
                   maxLength={100}
                   placeholder={t('animales.campos.razaEjemplo')}
                   value={razaOtra}
