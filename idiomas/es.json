@@ -307,8 +307,7 @@
         "obligatorio": "Obligatorio.",
         "corralEjemplo": "Corral Norte",
         "corralAyuda": "El nombre de un corral que ya exista en tu rancho, o vacío.",
-        "pesoAyuda": "Un número en {unidad}, o vacío.",
-        "razaAyuda": "Una de estas razas, o vacío: {razas}."
+        "pesoAyuda": "Un número en {unidad}, o vacío."
       },
       "motivos": {
         "sinIdentificador": "Falta el identificador.",
@@ -317,7 +316,6 @@
         "sexoInvalido": "«{valor}» no es un sexo válido: escribe macho o hembra.",
         "sinCategoria": "Falta la categoría.",
         "categoriaInvalida": "«{valor}» no es una categoría del catálogo.",
-        "razaInvalida": "«{valor}» no es una raza de la lista. Usa uno de los valores de la hoja de ayuda, «Otra raza» o «Cruza / mestizo».",
         "fechaInvalida": "La fecha de nacimiento no es válida. Usa {formato}.",
         "fechaFutura": "La fecha de nacimiento no puede ser futura.",
         "origenInvalido": "«{valor}» no es un origen válido.",
@@ -350,7 +348,13 @@
       "restaurado": "«{nombre}» volvió a estar vigente.",
       "seleccionInvalida": "Elige entre 1 y {n} animales para asignar.",
       "asignados": "Asignaste {n} animal(es) a «{nombre}».",
-      "excedido": "Ojo: «{nombre}» quedó con {n} animales y su capacidad es de {capacidad}."
+      "excedido": "Ojo: «{nombre}» quedó con {n} animales y su capacidad es de {capacidad}.",
+      "capacidadExcedeSuperficie": "Esa superficie admite hasta {limite} animal(es): {carga} por hectárea en un rancho de {tipo}. Baja la capacidad o agranda la superficie.",
+      "tiposProduccion": {
+        "carne": "carne",
+        "leche": "leche",
+        "mixto": "producción mixta"
+      }
     },
     "animales": {
       "sinIdentificador": "El identificador es obligatorio.",
@@ -383,8 +387,14 @@
       "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
       "restaurado": "{identificador} volvió a estar vigente.",
       "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
-      "razaInvalida": "Elige una raza de la lista. Si no está, usa «Otra raza» o «Cruza / mestizo».",
-      "sinCategoria": "Elige la categoría del animal."
+      "sinCategoria": "Elige la categoría del animal.",
+      "categoriaSexo": "La categoría «{categoria}» no corresponde a un animal {sexo}.",
+      "categoriaEdad": "La categoría «{categoria}» es para animales {rango}. Revisa la fecha de nacimiento o elige otra categoría.",
+      "rangos": {
+        "hasta": "de hasta {max} meses",
+        "entre": "de {min} a {max} meses",
+        "desde": "de {min} meses o más"
+      }
     }
   },
   "acceso": {
@@ -1502,7 +1512,12 @@
       "capacidad": "Capacidad (animales)",
       "capacidadAyuda": "Opcional. Sin capacidad no hay aviso de sobrepoblación.",
       "superficie": "Superficie ({unidad})",
-      "superficieAyuda": "Opcional."
+      "superficieAyuda": "Opcional.",
+      "capacidadLimite": "Con esta superficie caben hasta {n} animales.",
+      "capacidadExcedida": "Esta superficie admite hasta {n} animales. Baja la capacidad o agranda la superficie.",
+      "capacidadCero": "La capacidad tiene que ser un número entero mayor que cero.",
+      "superficieCero": "La superficie tiene que ser mayor que cero.",
+      "superficieCarga": "Caben {n} animal(es) por hectárea en un rancho de {tipo}."
     },
     "excedidos": "{n} corral(es) superan su capacidad: {nombres}.",
     "barra": "{n} de {capacidad} animales",
@@ -1512,6 +1527,12 @@
       "confirmar": "Asignar ({n})",
       "vacio": "No hay animales activos fuera de este corral.",
       "todos": "Elegir todos ({n})"
+    },
+    "superficieYLimite": "{superficie} · caben hasta {limite} animales",
+    "tiposProduccion": {
+      "carne": "carne",
+      "leche": "leche",
+      "mixto": "producción mixta"
     }
   },
   "animales": {
@@ -1567,63 +1588,11 @@
       "toro": "Toro",
       "buey": "Buey"
     },
-    "razas": {
-      "nelore": "Nelore",
-      "nelore_mocho": "Nelore mocho",
-      "brahman": "Brahman",
-      "gyr": "Gyr",
-      "guzera": "Guzerá",
-      "indubrasil": "Indubrasil",
-      "tabapua": "Tabapuã",
-      "sindi": "Sindi",
-      "angus": "Angus",
-      "red_angus": "Red Angus",
-      "hereford": "Hereford",
-      "shorthorn": "Shorthorn",
-      "devon": "Devon",
-      "charolais": "Charolais",
-      "limousin": "Limousin",
-      "simmental": "Simmental",
-      "braunvieh": "Braunvieh (Pardo de carne)",
-      "gelbvieh": "Gelbvieh",
-      "chianina": "Chianina",
-      "blonde": "Blonde d'Aquitaine",
-      "holstein": "Holstein (Holando)",
-      "jersey": "Jersey",
-      "pardo_suizo": "Pardo Suizo",
-      "girolando": "Girolando",
-      "guernsey": "Guernsey",
-      "ayrshire": "Ayrshire",
-      "normando": "Normando",
-      "brangus": "Brangus",
-      "braford": "Braford",
-      "santa_gertrudis": "Santa Gertrudis",
-      "simbrah": "Simbrah",
-      "senepol": "Senepol",
-      "beefmaster": "Beefmaster",
-      "bonsmara": "Bonsmara",
-      "canchim": "Canchim",
-      "charbray": "Charbray",
-      "criollo": "Criollo (sin especificar)",
-      "criollo_yacumeno": "Criollo Yacumeño",
-      "criollo_saavedreno": "Criollo Saavedreño",
-      "criollo_chaqueno": "Criollo Chaqueño",
-      "criollo_argentino": "Criollo Argentino",
-      "romosinuano": "Romosinuano",
-      "blanco_orejinegro": "Blanco Orejinegro (BON)",
-      "caracu": "Caracu",
-      "texas_longhorn": "Texas Longhorn",
-      "cruza": "Cruza / mestizo",
-      "otra": "Otra raza"
-    },
     "gruposRaza": {
-      "cebuinas": "Cebuinas",
-      "britanicas": "Británicas",
-      "continentales": "Continentales europeas",
-      "lecheras": "Lecheras",
-      "compuestas": "Compuestas o sintéticas",
-      "criollas": "Criollas",
-      "otras": "Otras"
+      "carne": "Carne",
+      "leche": "Leche",
+      "doble": "Doble propósito",
+      "propias": "Razas de mi rancho"
     },
     "campos": {
       "identificador": "Identificador",
@@ -1631,8 +1600,6 @@
       "tipoIdentificador": "Tipo de identificador",
       "nombre": "Nombre",
       "raza": "Raza",
-      "sinRaza": "Sin especificar",
-      "razaAyuda": "Si no está en la lista, elige «Otra raza».",
       "sexo": "Sexo",
       "categoria": "Categoría",
       "nacimiento": "Fecha de nacimiento",
@@ -1644,7 +1611,13 @@
       "corralActual": "Corral actual",
       "elegir": "Elegir…",
       "sinCategoria": "Sin categoría",
-      "sinOrigen": "Sin especificar"
+      "sinOrigen": "Sin especificar",
+      "categoriaFiltrada": "Solo las que corresponden al sexo y a la edad.",
+      "categoriaNoCorresponde": "Esta categoría no corresponde al sexo o a la edad. Elige otra.",
+      "razaNuevaAyuda": "No está en la lista: se guardará como raza nueva de tu rancho.",
+      "razaBuscar": "Escribe para buscar o agregar",
+      "razaAgregar": "Agregar «{raza}» como raza nueva",
+      "razaSinResultados": "Sin resultados"
     },
     "formulario": {
       "nuevo": "Registrar animal",

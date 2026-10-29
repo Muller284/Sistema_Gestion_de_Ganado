@@ -152,6 +152,65 @@
 .campo-movil .campo-contrasena input { padding-right: calc(var(--alto-control-movil) + 4px); }
 .campo-movil .campo-contrasena input:focus { padding-right: calc(var(--alto-control-movil) + 3px); }
 
+/* Agregado en HU-28: CampoBuscador, un input con la lista que se filtra debajo. */
+.buscador { position: relative; }
+
+.buscador__lista,
+.buscador__lista ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.buscador__lista {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + var(--e-4));
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: var(--e-4) 0;
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-sm);
+  background: var(--arena-0);
+  box-shadow: var(--s-lg);
+}
+
+.buscador__grupo {
+  display: block;
+  padding: var(--e-8) var(--e-12) var(--e-4);
+  font-size: var(--t-pie);
+  line-height: var(--lh-pie);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  color: var(--arena-500);
+}
+
+.buscador__opcion {
+  padding: var(--e-8) var(--e-12);
+  font-size: var(--t-cuerpo);
+  line-height: var(--lh-cuerpo);
+  color: var(--arena-800);
+  cursor: pointer;
+}
+
+.buscador__opcion:hover,
+.buscador__opcion[aria-selected='true'] { background: var(--corral-50); }
+
+.buscador__nueva {
+  margin-top: var(--e-4);
+  border-top: var(--borde) solid var(--arena-200);
+  color: var(--corral-600);
+  font-weight: var(--peso-medio);
+}
+
+.buscador__vacio {
+  padding: var(--e-8) var(--e-12);
+  font-size: var(--t-cuerpo);
+  color: var(--arena-500);
+}
+
 /* ============================================================================
  * TARJETA
  * ==========================================================================*/

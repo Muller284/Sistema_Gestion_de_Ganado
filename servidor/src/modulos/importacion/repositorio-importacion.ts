@@ -83,10 +83,15 @@ export class RepositorioImportacion {
     nuevas: AnimalAImportar[],
     aActualizar: { id: string; corralActual: string | null; datos: AnimalAImportar }[],
     autorId: string,
+    /** HU-28: el nombre con que se guarda cada raza (las nuevas quedan en el rancho). */
+    resolverRaza: (nombre: string, cliente: PoolClient) => Promise<string>,
   ): Promise<{ insertados: number; actualizados: number }> {
     const cliente = await this.bd.connect();
     try {
       await cliente.query('BEGIN');
+      for (const animal of [...nuevas, ...aActualizar.map((a) => a.datos)]) {
+        if (animal.raza) animal.raza = await resolverRaza(animal.raza, cliente);
+      }
       for (const animal of nuevas) {
         const id = randomUUID();
         await cliente.query(

@@ -91,7 +91,7 @@ async function ejecutarPruebas() {
       const { estado, cuerpo } = await pedir(
         'PATCH',
         `/animales/${animal.id}`,
-        { sexo: 'hembra', categoria_codigo: 'vaca', raza: 'nelore' },
+        { sexo: 'hembra', categoria_codigo: 'vaca', raza: 'Nelore' },
         CAMPO_A,
       );
       assert.strictEqual(estado, 200, JSON.stringify(cuerpo));

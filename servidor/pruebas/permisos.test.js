@@ -144,7 +144,7 @@ async function ejecutarPruebas() {
     assert.strictEqual(cuerpo.animales, 'editar');
     assert.strictEqual(cuerpo.corrales, 'ver');
 
-    const edita = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', categoria_codigo: 'toro', raza: 'gyr' }, SOCIO_A);
+    const edita = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', categoria_codigo: 'toro', raza: 'Gyr' }, SOCIO_A);
     assert.strictEqual(edita.estado, 200);
     const corral = await pedir('POST', '/corrales', { nombre: `Socio ${MARCA}` }, SOCIO_A);
     assert.strictEqual(corral.estado, 403);

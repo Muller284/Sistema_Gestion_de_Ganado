@@ -491,7 +491,29 @@ export interface Corral {
   superficie_ha: string | null;
   ocupacion: number;
   sobrepoblado: boolean;
+  /** Lo máximo que admite la superficie según el tipo de producción; nulo sin superficie. */
+  limite_superficie: number | null;
   eliminado_en: string | null;
+}
+
+/** Cuántos animales admite cada hectárea en este rancho (comun/carga-animal.ts del servidor). */
+/** HU-28 · Una raza para elegir: del catálogo (con grupo) o propia del rancho (grupo nulo). */
+export interface Raza {
+  nombre: string;
+  grupo: 'carne' | 'leche' | 'doble' | null;
+}
+
+/** HU-28 · Qué sexo y qué edad corresponden a cada categoría (comun/categorias-animal.ts del servidor). */
+export interface ReglaCategoria {
+  codigo: string;
+  sexo: Sexo;
+  edad_minima_meses: number;
+  edad_maxima_meses: number | null;
+}
+
+export interface CargaAnimal {
+  tipo_produccion: 'carne' | 'leche' | 'mixto';
+  animales_por_hectarea: number;
 }
 
 export interface DatosCorral {
@@ -779,6 +801,7 @@ export const api = {
 
   // HU-36 y HU-34 · Corrales
   corrales: (conBajas = false) => pedir<Corral[]>(`/corrales${conBajas ? '?bajas=1' : ''}`),
+  cargaCorrales: () => pedir<CargaAnimal>('/corrales/carga'),
   crearCorral: (datos: DatosCorral) =>
     pedir<RespuestaCorral>('/corrales', { method: 'POST', body: JSON.stringify(datos) }),
   actualizarCorral: (id: string, datos: DatosCorral) =>
@@ -794,7 +817,8 @@ export const api = {
 
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
-  razasAnimal: () => pedir<GrupoRazas[]>('/animales/razas'),
+  reglasCategorias: () => pedir<ReglaCategoria[]>('/animales/categorias/reglas'),
+  razas: () => pedir<Raza[]>('/animales/razas'),
   animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false, filtros: FiltrosAnimales = {}) => {
     const parametros = new URLSearchParams({ estado });
     if (conBajas) parametros.set('bajas', '1');
@@ -843,12 +867,6 @@ export const api = {
   // HU-45 · Exportación
   exportar: (pedido: PedidoExportacion) => descargar(`/exportacion?${parametrosExportacion(pedido)}`, 'ganado.xlsx'),
 };
-
-/** La lista fija de razas: cada grupo con sus códigos (ver servidor/.../razas.ts). */
-export interface GrupoRazas {
-  grupo: string;
-  razas: string[];
-}
 
 /** HU-31. Cuántos cambiaron, cuántos ya estaban en ese estado y cuántos no se encontraron. */
 export interface RespuestaEstadoMasivo {

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { CampoContrasena } from '../src/componentes';
 import { api, type Animal } from '../src/servicios/api';
@@ -7,14 +7,13 @@ import { t } from '../src/servicios/idioma';
 import { REGIONAL_POR_DEFECTO } from '../src/servicios/unidades';
 import { PaginaRegistro } from '../src/paginas/registro/PaginaRegistro';
 import { FormularioFicha } from '../src/paginas/animales/FormularioFicha';
-import { nombreRaza } from '../src/paginas/animales/razas';
 
 /**
  * Ajustes de cierre del Sprint 3:
  *   - Toda contraseña tiene el ojo para ver lo escrito, y al crearla o
  *     cambiarla se escribe dos veces.
- *   - La raza se elige de una lista fija agrupada; la categoría es
- *     obligatoria.
+ *   - La categoría es obligatoria. (La raza es de Romina, HU-28: ver
+ *     razas.test.ts.)
  */
 
 afterEach(() => {
@@ -84,37 +83,21 @@ describe('Contraseñas', () => {
   });
 });
 
-describe('Raza y categoría en la ficha', () => {
-  const GRUPOS = [
-    { grupo: 'cebuinas', razas: ['nelore', 'brahman'] },
-    { grupo: 'otras', razas: ['cruza', 'otra'] },
-  ];
-
+describe('Categoría obligatoria en la ficha', () => {
   function preparar() {
     vi.spyOn(api, 'categoriasAnimal').mockResolvedValue(['vaca', 'toro']);
-    vi.spyOn(api, 'razasAnimal').mockResolvedValue(GRUPOS);
+    vi.spyOn(api, 'razas').mockResolvedValue([{ nombre: 'Nelore', grupo: 'carne' }]);
+    vi.spyOn(api, 'reglasCategorias').mockResolvedValue([]);
     vi.spyOn(api, 'corrales').mockResolvedValue([]);
   }
 
-  it('la raza es una lista agrupada con el nombre de cada una', async () => {
-    preparar();
-    render(<FormularioFicha regional={REGIONAL_POR_DEFECTO} alGuardar={() => undefined} alCancelar={() => undefined} />);
-    const lista = (await screen.findByLabelText(t('animales.campos.raza'))) as HTMLSelectElement;
-    expect(lista.tagName).toBe('SELECT');
-    await waitFor(() => expect(lista.querySelectorAll('optgroup')).toHaveLength(2));
-    const cebuinas = lista.querySelector(`optgroup[label="${t('animales.gruposRaza.cebuinas')}"]`) as HTMLElement;
-    expect(within(cebuinas).getByText(t('animales.razas.nelore'))).toBeTruthy();
-    expect(within(lista).getByText(t('animales.razas.otra'))).toBeTruthy();
-  });
-
-  it('sin categoría no se puede guardar; con categoría, sí, y se manda el código de la raza', async () => {
+  it('sin categoría no se puede guardar; con categoría, sí', async () => {
     preparar();
     const crear = vi.spyOn(api, 'crearAnimal').mockResolvedValue({ animal: { id: 'a-1' } as Animal, mensaje: 'Listo.' });
     render(<FormularioFicha regional={REGIONAL_POR_DEFECTO} alGuardar={() => undefined} alCancelar={() => undefined} />);
-    await screen.findByText(t('animales.razas.brahman'));
+    await screen.findByText(t('animales.categorias.vaca'));
     fireEvent.change(screen.getByPlaceholderText(t('animales.campos.identificadorEjemplo')), { target: { value: '4471' } });
     fireEvent.change(screen.getByLabelText(new RegExp(t('animales.campos.sexo'))), { target: { value: 'hembra' } });
-    fireEvent.change(screen.getByLabelText(t('animales.campos.raza')), { target: { value: 'brahman' } });
     const guardar = screen.getByRole('button', { name: t('comun.guardar') }) as HTMLButtonElement;
     expect(guardar.disabled).toBe(true);
 
@@ -122,21 +105,6 @@ describe('Raza y categoría en la ficha', () => {
     expect(guardar.disabled).toBe(false);
     fireEvent.click(guardar);
     await waitFor(() => expect(crear).toHaveBeenCalled());
-    expect(crear.mock.calls[0][0]).toMatchObject({ raza: 'brahman', categoria_codigo: 'vaca' });
-  });
-
-  it('una raza escrita antes de la lista se ofrece tal cual para no perderla', async () => {
-    preparar();
-    const animal = { id: 'a-1', identificador: '4471', raza: 'Nelore puro', sexo: 'hembra', categoria_codigo: 'vaca' } as Animal;
-    render(<FormularioFicha animal={animal} regional={REGIONAL_POR_DEFECTO} alGuardar={() => undefined} alCancelar={() => undefined} />);
-    const lista = (await screen.findByLabelText(t('animales.campos.raza'))) as HTMLSelectElement;
-    await screen.findByText(t('animales.razas.brahman'));
-    expect(lista.value).toBe('Nelore puro');
-  });
-
-  it('el nombre de la raza: el del idioma si está en la lista, si no el texto guardado', () => {
-    expect(nombreRaza('pardo_suizo')).toBe(t('animales.razas.pardo_suizo'));
-    expect(nombreRaza('Nelore puro')).toBe('Nelore puro');
-    expect(nombreRaza(null)).toBeNull();
+    expect(crear.mock.calls[0][0]).toMatchObject({ categoria_codigo: 'vaca' });
   });
 });

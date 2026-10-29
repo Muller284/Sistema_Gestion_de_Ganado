@@ -11,7 +11,8 @@ import {
   Segmentos,
   Tarjeta,
 } from '../../componentes';
-import { api, type Animal, type Corral, type RespuestaAsignacion } from '../../servicios/api';
+import { api, type Animal, type CargaAnimal, type Corral, type RespuestaAsignacion } from '../../servicios/api';
+import { limitePorSuperficie, revisarCorral } from '../../servicios/carga';
 import { t } from '../../servicios/idioma';
 import { conTransicion } from '../../servicios/transicion';
 import {
@@ -36,6 +37,9 @@ import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/co
  *
  * HU-37 · Desde cada corral se le asignan animales, de a uno o de a muchos;
  *         cada asignación queda como movimiento (lo hace el servidor).
+ * Pedido del docente · La capacidad no puede pasar de lo que admite la
+ *         superficie (animales por hectárea según el tipo de producción del
+ *         rancho), y ni la capacidad ni la superficie aceptan cero.
  * HU-38 · La barra de ocupación pasa a advertencia al superar el 100 %, el
  *         listado dice cuáles corrales están excedidos, y asignar de más
  *         avisa pero no lo impide.
@@ -284,7 +288,10 @@ function FilaCorral({
         <span className="cuerpo-m">{corral.nombre}</span>
         <span className="pie c-500">
           {corral.superficie_ha
-            ? formatoSuperficie(Number(corral.superficie_ha), regional)
+            ? t('corrales.superficieYLimite', {
+                superficie: formatoSuperficie(Number(corral.superficie_ha), regional),
+                limite: corral.limite_superficie ?? 0,
+              })
             : t('corrales.sinSuperficie')}
         </span>
       </div>
@@ -363,16 +370,37 @@ function FormularioCorral({ corral, regional, alGuardar, alCancelar }: Propiedad
   );
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
+  const [carga, setCarga] = useState<CargaAnimal | null>(null);
+
+  useEffect(() => {
+    let vigente = true;
+    api
+      .cargaCorrales()
+      .then((respuesta) => vigente && setCarga(respuesta))
+      .catch(() => undefined);
+    return () => {
+      vigente = false;
+    };
+  }, []);
+
+  // HU-26: lo escrito en acres se cuenta en hectáreas.
+  const superficieHa =
+    superficie === '' ? null : superficieAGuardar(Number(superficie), regional.superficie);
+  const limite =
+    carga && superficieHa !== null && superficieHa > 0
+      ? limitePorSuperficie(superficieHa, carga.animales_por_hectarea)
+      : null;
+  const problema = revisarCorral(capacidad, superficieHa, carga?.animales_por_hectarea ?? null);
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
+    if (problema) return;
     setEnviando(true);
     setError('');
     const datos = {
       nombre,
       capacidad: capacidad === '' ? null : Number(capacidad),
-      // HU-26: lo escrito en acres se guarda en hectáreas.
-      superficie_ha: superficie === '' ? null : superficieAGuardar(Number(superficie), regional.superficie),
+      superficie_ha: superficieHa,
     };
     try {
       const respuesta = corral
@@ -396,7 +424,7 @@ function FormularioCorral({ corral, regional, alGuardar, alCancelar }: Propiedad
             <Boton variante="secundario" onClick={alCancelar} disabled={enviando}>
               {t('comun.cancelar')}
             </Boton>
-            <Boton variante="primario" type="submit" disabled={enviando || !nombre.trim()}>
+            <Boton variante="primario" type="submit" disabled={enviando || !nombre.trim() || problema !== null}>
               {enviando ? t('comun.guardando') : t('comun.guardar')}
             </Boton>
           </div>
@@ -415,9 +443,21 @@ function FormularioCorral({ corral, regional, alGuardar, alCancelar }: Propiedad
           <div className="par">
             <CampoTexto
               etiqueta={t('corrales.formulario.capacidad')}
-              ayuda={t('corrales.formulario.capacidadAyuda')}
+              ayuda={
+                limite !== null
+                  ? t('corrales.formulario.capacidadLimite', { n: limite })
+                  : t('corrales.formulario.capacidadAyuda')
+              }
+              error={
+                problema === 'capacidadInvalida'
+                  ? t('corrales.formulario.capacidadCero')
+                  : problema === 'capacidadExcedida' && limite !== null
+                    ? t('corrales.formulario.capacidadExcedida', { n: limite })
+                    : undefined
+              }
               type="number"
               min={1}
+              max={limite ?? undefined}
               step={1}
               inputMode="numeric"
               value={capacidad}
@@ -425,7 +465,15 @@ function FormularioCorral({ corral, regional, alGuardar, alCancelar }: Propiedad
             />
             <CampoTexto
               etiqueta={t('corrales.formulario.superficie', { unidad })}
-              ayuda={t('corrales.formulario.superficieAyuda')}
+              ayuda={
+                carga
+                  ? t('corrales.formulario.superficieCarga', {
+                      n: String(carga.animales_por_hectarea),
+                      tipo: t(`corrales.tiposProduccion.${carga.tipo_produccion}`),
+                    })
+                  : t('corrales.formulario.superficieAyuda')
+              }
+              error={problema === 'superficieInvalida' ? t('corrales.formulario.superficieCero') : undefined}
               type="number"
               min={0}
               step="any"

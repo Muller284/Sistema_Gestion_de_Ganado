@@ -34,7 +34,6 @@ import {
 import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/contexto';
 import { FormularioFicha } from './FormularioFicha';
 import { armarHistorial, edadEnMeses, type EventoHistorial } from './historial';
-import { nombreRaza } from './razas';
 
 /**
  * La ficha de un animal.
@@ -412,7 +411,7 @@ function DatosDelAnimal({ animal, regional }: { animal: Animal; regional: Region
         <span className="dato">{animal.identificador}</span>
       </Dato>
       <Dato nombre={t('animales.campos.nombre')}>{animal.nombre ?? raya}</Dato>
-      <Dato nombre={t('animales.campos.raza')}>{nombreRaza(animal.raza) ?? raya}</Dato>
+      <Dato nombre={t('animales.campos.raza')}>{animal.raza ?? raya}</Dato>
       <Dato nombre={t('animales.campos.sexo')}>{t(`animales.sexos.${animal.sexo}`)}</Dato>
       <Dato nombre={t('animales.campos.categoria')}>
         {animal.categoria_codigo ? t(`animales.categorias.${animal.categoria_codigo}`) : raya}

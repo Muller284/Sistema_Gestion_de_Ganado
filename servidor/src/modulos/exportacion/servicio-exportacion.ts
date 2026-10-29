@@ -3,7 +3,6 @@ import ExcelJS from 'exceljs';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
-import { esRaza } from '../animales/razas';
 import {
   RepositorioExportacion,
   type ContextoExportacion,
@@ -181,7 +180,7 @@ export class ServicioExportacion {
             identificador: fila.identificador,
             tipo_identificador: t(`animales.tiposIdentificador.${fila.tipo_identificador}`),
             nombre: fila.nombre,
-            raza: fila.raza && esRaza(fila.raza) ? t(`animales.razas.${fila.raza}`) : fila.raza,
+            raza: fila.raza,
             sexo: t(`animales.sexos.${fila.sexo}`),
             categoria: fila.categoria_codigo ? t(`animales.categorias.${fila.categoria_codigo}`) : null,
             fecha_nacimiento: fila.fecha_nacimiento,

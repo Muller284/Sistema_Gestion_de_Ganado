@@ -307,8 +307,7 @@
         "obligatorio": "Required.",
         "corralEjemplo": "North pen",
         "corralAyuda": "The name of a pen that already exists on your ranch, or empty.",
-        "pesoAyuda": "A number in {unidad}, or empty.",
-        "razaAyuda": "One of these breeds, or empty: {razas}."
+        "pesoAyuda": "A number in {unidad}, or empty."
       },
       "motivos": {
         "sinIdentificador": "The identifier is missing.",
@@ -317,7 +316,6 @@
         "sexoInvalido": "“{valor}” is not a valid sex: write male or female.",
         "sinCategoria": "The category is missing.",
         "categoriaInvalida": "“{valor}” is not a category in the catalog.",
-        "razaInvalida": "\"{valor}\" isn't a breed on the list. Use one of the values on the help sheet, \"Other breed\" or \"Crossbred\".",
         "fechaInvalida": "The birth date is not valid. Use {formato}.",
         "fechaFutura": "The birth date can't be in the future.",
         "origenInvalido": "“{valor}” is not a valid origin.",
@@ -350,7 +348,13 @@
       "restaurado": "“{nombre}” is active again.",
       "seleccionInvalida": "Choose between 1 and {n} animals to assign.",
       "asignados": "You assigned {n} animal(s) to “{nombre}”.",
-      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}."
+      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}.",
+      "capacidadExcedeSuperficie": "That area allows up to {limite} animal(s): {carga} per hectare on a {tipo} ranch. Lower the capacity or enlarge the area.",
+      "tiposProduccion": {
+        "carne": "beef",
+        "leche": "dairy",
+        "mixto": "mixed production"
+      }
     },
     "animales": {
       "sinIdentificador": "The identifier is required.",
@@ -383,8 +387,14 @@
       "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
       "restaurado": "{identificador} is active again.",
       "rangoInvalido": "The “from” date can’t be later than the “to” date.",
-      "razaInvalida": "Choose a breed from the list. If it isn't there, use \"Other breed\" or \"Crossbred\".",
-      "sinCategoria": "Choose the animal's category."
+      "sinCategoria": "Choose the animal's category.",
+      "categoriaSexo": "The category “{categoria}” doesn't match a {sexo} animal.",
+      "categoriaEdad": "The category “{categoria}” is for animals {rango}. Check the birth date or choose another category.",
+      "rangos": {
+        "hasta": "up to {max} months old",
+        "entre": "from {min} to {max} months old",
+        "desde": "{min} months old or more"
+      }
     }
   },
   "acceso": {
@@ -1502,7 +1512,12 @@
       "capacidad": "Capacity (animals)",
       "capacidadAyuda": "Optional. Without a capacity there is no overcrowding warning.",
       "superficie": "Area ({unidad})",
-      "superficieAyuda": "Optional."
+      "superficieAyuda": "Optional.",
+      "capacidadLimite": "This area fits up to {n} animals.",
+      "capacidadExcedida": "This area allows up to {n} animals. Lower the capacity or enlarge the area.",
+      "capacidadCero": "Capacity must be a whole number greater than zero.",
+      "superficieCero": "Area must be greater than zero.",
+      "superficieCarga": "{n} animal(s) per hectare fit on a {tipo} ranch."
     },
     "excedidos": "{n} pen(s) are over capacity: {nombres}.",
     "barra": "{n} of {capacidad} animals",
@@ -1512,6 +1527,12 @@
       "confirmar": "Assign ({n})",
       "vacio": "There are no active animals outside this pen.",
       "todos": "Select all ({n})"
+    },
+    "superficieYLimite": "{superficie} · up to {limite} animals",
+    "tiposProduccion": {
+      "carne": "beef",
+      "leche": "dairy",
+      "mixto": "mixed production"
     }
   },
   "animales": {
@@ -1567,63 +1588,11 @@
       "toro": "Bull",
       "buey": "Ox"
     },
-    "razas": {
-      "nelore": "Nellore",
-      "nelore_mocho": "Polled Nellore",
-      "brahman": "Brahman",
-      "gyr": "Gir",
-      "guzera": "Guzerat",
-      "indubrasil": "Indu-Brazil",
-      "tabapua": "Tabapuã",
-      "sindi": "Red Sindhi",
-      "angus": "Angus",
-      "red_angus": "Red Angus",
-      "hereford": "Hereford",
-      "shorthorn": "Shorthorn",
-      "devon": "Devon",
-      "charolais": "Charolais",
-      "limousin": "Limousin",
-      "simmental": "Simmental",
-      "braunvieh": "Braunvieh",
-      "gelbvieh": "Gelbvieh",
-      "chianina": "Chianina",
-      "blonde": "Blonde d'Aquitaine",
-      "holstein": "Holstein",
-      "jersey": "Jersey",
-      "pardo_suizo": "Brown Swiss",
-      "girolando": "Girolando",
-      "guernsey": "Guernsey",
-      "ayrshire": "Ayrshire",
-      "normando": "Normande",
-      "brangus": "Brangus",
-      "braford": "Braford",
-      "santa_gertrudis": "Santa Gertrudis",
-      "simbrah": "Simbrah",
-      "senepol": "Senepol",
-      "beefmaster": "Beefmaster",
-      "bonsmara": "Bonsmara",
-      "canchim": "Canchim",
-      "charbray": "Charbray",
-      "criollo": "Criollo (unspecified)",
-      "criollo_yacumeno": "Yacumeño Criollo",
-      "criollo_saavedreno": "Saavedreño Criollo",
-      "criollo_chaqueno": "Chaqueño Criollo",
-      "criollo_argentino": "Argentine Criollo",
-      "romosinuano": "Romosinuano",
-      "blanco_orejinegro": "Blanco Orejinegro (BON)",
-      "caracu": "Caracu",
-      "texas_longhorn": "Texas Longhorn",
-      "cruza": "Crossbred",
-      "otra": "Other breed"
-    },
     "gruposRaza": {
-      "cebuinas": "Zebu (Bos indicus)",
-      "britanicas": "British",
-      "continentales": "Continental European",
-      "lecheras": "Dairy",
-      "compuestas": "Composite",
-      "criollas": "Criollo",
-      "otras": "Other"
+      "carne": "Beef",
+      "leche": "Dairy",
+      "doble": "Dual purpose",
+      "propias": "My ranch's breeds"
     },
     "campos": {
       "identificador": "Identifier",
@@ -1631,8 +1600,6 @@
       "tipoIdentificador": "Identifier type",
       "nombre": "Name",
       "raza": "Breed",
-      "sinRaza": "Not specified",
-      "razaAyuda": "If it isn't listed, choose \"Other breed\".",
       "sexo": "Sex",
       "categoria": "Category",
       "nacimiento": "Birth date",
@@ -1644,7 +1611,13 @@
       "corralActual": "Current pen",
       "elegir": "Choose…",
       "sinCategoria": "No category",
-      "sinOrigen": "Not specified"
+      "sinOrigen": "Not specified",
+      "categoriaFiltrada": "Only the ones that match the sex and age.",
+      "categoriaNoCorresponde": "This category doesn't match the sex or age. Choose another one.",
+      "razaNuevaAyuda": "Not on the list: it will be saved as a new breed for your ranch.",
+      "razaBuscar": "Type to search or add",
+      "razaAgregar": "Add “{raza}” as a new breed",
+      "razaSinResultados": "No results"
     },
     "formulario": {
       "nuevo": "Register animal",
