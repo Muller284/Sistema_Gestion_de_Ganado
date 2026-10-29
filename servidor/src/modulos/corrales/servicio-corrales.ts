@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
+import { cargaPorHectarea, limitePorSuperficie } from '../../comun/carga-animal';
 import { RepositorioCorrales, type Corral } from './repositorio-corrales';
 
 /**
@@ -22,6 +23,10 @@ import { RepositorioCorrales, type Corral } from './repositorio-corrales';
  * acres si el pais del rancho los usa (HU-26).
  *
  * Dar de baja y restaurar es HU-34: el corral se marca, no se borra.
+ *
+ * Pedido del docente: la capacidad no puede pasar de lo que admite la
+ * superficie segun el tipo de produccion del rancho (comun/carga-animal.ts),
+ * y ni la capacidad ni la superficie pueden ser cero.
  */
 
 const LARGO_NOMBRE = 100;
@@ -37,12 +42,21 @@ export class ServicioCorrales {
 
   async listar(conBajas: boolean, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'corrales', 'ver');
-    return (await this.corrales.listar(ranchoId, conBajas)).map(conAviso);
+    const tipo = await this.corrales.tipoProduccion(ranchoId);
+    return (await this.corrales.listar(ranchoId, conBajas)).map((corral) => conAviso(corral, tipo));
+  }
+
+  /** Cuantos animales admite cada hectarea en este rancho, para el formulario. */
+  async carga(quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'corrales', 'ver');
+    const tipo = await this.corrales.tipoProduccion(ranchoId);
+    return { tipo_produccion: tipo, animales_por_hectarea: cargaPorHectarea(tipo) };
   }
 
   async crear(cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'corrales', 'editar');
-    const datos = this.validar(cuerpo);
+    const tipo = await this.corrales.tipoProduccion(ranchoId);
+    const datos = this.validar(cuerpo, tipo);
     if (await this.corrales.nombreOcupado(datos.nombre, ranchoId, null)) {
       throw new ConflictException(t('servidor.corrales.nombreOcupado', { nombre: datos.nombre }));
     }
@@ -52,7 +66,7 @@ export class ServicioCorrales {
       datos.nombre,
     );
     return {
-      corral: conAviso((await this.corrales.uno(id, ranchoId))!),
+      corral: conAviso((await this.corrales.uno(id, ranchoId))!, tipo),
       mensaje: t('servidor.corrales.creado', { nombre: datos.nombre }),
     };
   }
@@ -60,8 +74,9 @@ export class ServicioCorrales {
   async actualizar(id: string, cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'corrales', 'editar');
     const actual = await this.vigente(id, ranchoId);
+    const tipo = await this.corrales.tipoProduccion(ranchoId);
 
-    const datos = this.validar(cuerpo);
+    const datos = this.validar(cuerpo, tipo);
     if (await this.corrales.nombreOcupado(datos.nombre, ranchoId, actual.id)) {
       throw new ConflictException(t('servidor.corrales.nombreOcupado', { nombre: datos.nombre }));
     }
@@ -70,7 +85,7 @@ export class ServicioCorrales {
       datos.nombre,
     );
     return {
-      corral: conAviso((await this.corrales.uno(actual.id, ranchoId))!),
+      corral: conAviso((await this.corrales.uno(actual.id, ranchoId))!, tipo),
       mensaje: t('servidor.corrales.guardado', { nombre: datos.nombre }),
     };
   }
@@ -113,7 +128,8 @@ export class ServicioCorrales {
     }
 
     const resultado = await this.corrales.asignar(corral.id, [...new Set(pedidos as string[])], ranchoId, quien.id);
-    const actualizado = conAviso((await this.corrales.uno(corral.id, ranchoId))!);
+    const tipo = await this.corrales.tipoProduccion(ranchoId);
+    const actualizado = conAviso((await this.corrales.uno(corral.id, ranchoId))!, tipo);
     return {
       corral: actualizado,
       movidos: resultado.movidos,
@@ -134,8 +150,9 @@ export class ServicioCorrales {
       }
       await this.corrales.marcarBaja(actual.id, ranchoId, false, quien.id);
     }
+    const tipo = await this.corrales.tipoProduccion(ranchoId);
     return {
-      corral: conAviso((await this.corrales.uno(actual.id, ranchoId))!),
+      corral: conAviso((await this.corrales.uno(actual.id, ranchoId))!, tipo),
       mensaje: t('servidor.corrales.restaurado', { nombre: actual.nombre }),
     };
   }
@@ -148,7 +165,7 @@ export class ServicioCorrales {
     return corral;
   }
 
-  private validar(cuerpo: any): {
+  private validar(cuerpo: any, tipo: string): {
     nombre: string;
     capacidad: number | null;
     superficieHa: number | null;
@@ -166,6 +183,19 @@ export class ServicioCorrales {
     const superficieHa = opcional(cuerpo?.superficie_ha);
     if (superficieHa !== null && !(superficieHa > 0)) {
       throw new BadRequestException(t('servidor.corrales.superficieInvalida'));
+    }
+    // Pedido del docente: no mas animales de los que admite la superficie.
+    if (capacidad !== null && superficieHa !== null) {
+      const limite = limitePorSuperficie(superficieHa, tipo);
+      if (capacidad > limite) {
+        throw new BadRequestException(
+          t('servidor.corrales.capacidadExcedeSuperficie', {
+            limite,
+            carga: String(cargaPorHectarea(tipo)),
+            tipo: t(`servidor.corrales.tiposProduccion.${tipo}`),
+          }),
+        );
+      }
     }
     return { nombre, capacidad, superficieHa };
   }
@@ -190,11 +220,16 @@ function opcional(valor: unknown): number | null {
   return Number.isFinite(numero) ? numero : NaN;
 }
 
-/** Criterio 2: el aviso existe solo si hay capacidad cargada. */
-function conAviso(corral: Corral) {
+/**
+ * Criterio 2: el aviso existe solo si hay capacidad cargada.
+ * limite_superficie: lo maximo que admite la superficie (nulo sin superficie).
+ */
+function conAviso(corral: Corral, tipo: string) {
   return {
     ...corral,
     sobrepoblado: corral.capacidad !== null && corral.ocupacion > corral.capacidad,
+    limite_superficie:
+      corral.superficie_ha === null ? null : limitePorSuperficie(Number(corral.superficie_ha), tipo),
   };
 }
 

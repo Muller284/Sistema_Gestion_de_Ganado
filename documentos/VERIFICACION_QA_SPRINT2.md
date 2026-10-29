@@ -109,3 +109,44 @@ ficha»): solo aparece en la ficha del rancho, y el servidor no manda
 5. Agregar pruebas automáticas por historia y dejar en verde lint y pruebas.
 
 Las siete vuelven a **«En Proceso»** hasta que eso esté.
+
+---
+
+## Re-verificación del 21/10/2026
+
+Brian corrigió lo marcado arriba en el PR #18 (commit `13e7a22`, fusionado el
+19/10). Se verificó `main` en `700785b`, que ya incluye además el Sprint 3 de
+Romina (PR #16) y HU-32/HU-35 de Aaron (PR #20).
+
+### Cómo se probó
+
+- Base nueva: `npm run migrar` (8 migraciones, una sola 008) y `npm run sembrar`.
+- Las 27 suites del servidor, una tras otra: **282 de 282**. Brian sumó 7
+  archivos de pruebas propios (`sesiones-contrasena`, `pais-perfil`,
+  `baja-propietario`, `permisos-importacion`, `registro-animal`,
+  `filtros-animales`, `autoria-animales`).
+- Cliente: compilación sin errores, lint en 0, **39 de 39** pruebas, build correcto.
+- Integración continua de `main`: en verde.
+- Además, a mano contra el servidor, se repitieron los mismos ataques y
+  pedidos que fallaron el 12 y el 13/10:
+
+| Historia | Lo que fallaba | Hoy |
+| :-- | :-- | :-- |
+| HU-09 | El refresco viejo seguía sirviendo después de cambiar la contraseña | 401: la sesión vieja queda cerrada |
+| HU-14 | `GET` y `PATCH /usuarios/yo/perfil` daban 500 | 200, y el país se cambia desde Mi perfil |
+| HU-18 | Un colaborador con edición podía dar de baja; permisos en el navegador | 403 al colaborador; las cabeceras falsas no dan permisos |
+| HU-19 | El servidor no rechazaba operaciones sobre módulos no habilitados | El veterinario recibe 403 al registrar, aunque mande `x-usuario-rol: propietario` |
+| HU-23 | La ficha decía siempre «Sistema» | La ficha muestra quién registró y quién modificó |
+| HU-27 | El alta fallaba en una base nueva | Alta con caravana, número interno y RFID; 409 si se repite en el rancho; permitido en otro rancho |
+| HU-29 | `GET /animales` daba 500; filtros en el navegador | Búsqueda y filtros en el servidor; el otro rancho no se ve ni con `x-rancho-id` |
+| PR #17 | Borraba `.env.ejemplo` | `.env.ejemplo` está en `main` |
+
+### Veredicto
+
+**Las siete historias de Brian quedan aprobadas por calidad** (HU-09, 14, 18,
+19, 23, 27 y 29) y pueden pasar a «Finalizado».
+
+Observación, no bloquea: con `USUARIO_DEMO_ID` en el `.env`, un pedido sin
+sesión se atiende como el usuario de demostración. Es el modo de desarrollo
+del Sprint 1 y vale para todos los módulos; antes de publicar el sistema hay
+que quitar esa variable.

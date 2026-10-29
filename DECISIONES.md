@@ -1245,6 +1245,33 @@ menú lateral se oculta y no hay otro menú. En el celular se llega a Animales y
 al alta rápida por la dirección o desde el listado, pero falta una navegación
 para móvil.
 
+**Ajustes pedidos por el docente (28/10, sobre HU-28 y HU-36).**
+- *Raza de una lista, guardada en la base.* La migración 009 crea la tabla
+  `razas`: el catálogo mundial (45 razas, `rancho_id` nulo, agrupadas en carne,
+  leche y doble propósito; el sistema no es solo para Bolivia) y las razas
+  propias de cada rancho. El formulario las pide a `GET /animales/razas` y
+  las muestra en un buscador (`componentes/CampoBuscador.tsx`): lo escrito
+  filtra la lista por cualquier parte del nombre, y si no está aparece
+  «Agregar … como raza nueva» (lo que antes era «Otra»). Si lo escrito ya existe (sin importar
+  mayúsculas, acentos ni espacios: columna `clave`, regla en
+  `servidor/src/comun/razas.ts`), se guarda con el nombre de la lista; si es
+  nueva, queda como raza del rancho y aparece en su lista, en «Razas de mi
+  rancho». Otro rancho no la ve (HU-03). La importación sigue la misma regla.
+  `animales.raza` sigue siendo texto, así no cambia nada de lo que ya lo lee.
+- *Capacidad según la superficie.* La capacidad de un corral no puede pasar de
+  lo que admite su superficie: carne 1, leche 2 y mixto 1,5 animales por
+  hectárea, según el tipo de producción del rancho. La tabla vive solo en
+  `servidor/src/comun/carga-animal.ts`; la pantalla la pide por
+  `GET /corrales/carga` y muestra el límite mientras se escribe. Ni la
+  capacidad ni la superficie aceptan cero. Asignar animales de más sigue
+  avisando sin impedirlo (HU-38).
+- *Categoría según sexo y edad.* Una categoría tiene que corresponder al sexo y
+  a la edad que da la fecha de nacimiento: un animal que nació hoy solo puede
+  ser ternero o ternera; vaca y toro, desde los 18 meses; vaquilla, de 8 a 36
+  meses. La tabla vive solo en `servidor/src/comun/categorias-animal.ts`; el
+  servidor la aplica al registrar, al editar y al importar, y la pantalla la pide
+  por `GET /animales/categorias/reglas` para ofrecer solo las que corresponden.
+  Sin fecha de nacimiento se controla solo el sexo.
 ---
 
 ## 39. Acciones masivas y exportación (Sprint 3, Aaron)
@@ -1347,26 +1374,10 @@ cambio de clave, el restablecimiento y el perfil ya lo pedían; faltaba el
 registro. Que las dos coincidan se revisa en el cliente; las reglas de la
 contraseña siguen en el servidor.
 
-**Raza de lista fija.** `servidor/src/modulos/animales/razas.ts` tiene unas 50
-razas en siete grupos: cebuinas, británicas, continentales, lecheras,
-compuestas, criollas y otras. La lista sale de lo más común en los países del
-sistema: en Bolivia, el Nelore y sus cruzas son la mayor parte del hato de
-carne, y están los criollos Yacumeño, Saavedreño y Chaqueño; en Estados
-Unidos predominan Angus, Hereford, Charolais y Simmental. "Cruza / mestizo" y
-"Otra raza" cubren lo que no está en la lista.
-
-- **Qué se guarda.** El código de la raza (`nelore`, `pardo_suizo`), igual que
-  con la categoría. Cada pantalla muestra el nombre en su idioma
-  (`animales.razas.*`).
-- **Servidor.** `GET /animales/razas` da la lista. El alta y la edición
-  rechazan un texto que no esté en ella.
-- **Animales anteriores a la lista.** Si tenían una raza escrita a mano, esa
-  raza se muestra tal cual. Se pueden editar sin cambiarla, y en el
-  formulario aparece como primera opción.
-- **Importación.** Acepta el nombre en español o en inglés y algunos nombres
-  de uso común: Holando, Aberdeen Angus, mestizo y otros. La hoja de ayuda de
-  la plantilla lista las razas.
-- **Exportación.** Muestra el nombre de la raza, no el código.
+**Raza.** En este mismo ajuste se hizo una lista fija de razas en el código.
+Al fusionar con el trabajo de Romina sobre HU-28 (el catálogo en la base de
+datos con buscador y razas propias de cada rancho, ver arriba), quedó el suyo:
+es su historia y es más completo. La lista fija se quitó.
 
 **Qué es obligatorio.** Se revisó contra cómo trabajan los ranchos reales.
 
@@ -1381,7 +1392,8 @@ Con eso:
 - **Animal.** Obligatorios: identificador, sexo y categoría.
   - La categoría pasó a ser obligatoria al registrar, al editar y al
     importar, y la columna Categoría ya es obligatoria en el archivo. Es con
-    lo que se cuenta el hato, y en el campo siempre se sabe.
+    lo que se cuenta el hato, y en el campo siempre se sabe. Además tiene que
+    corresponder al sexo y a la edad (regla de Romina, ver arriba).
   - Siguen opcionales: nombre, raza, fecha de nacimiento, origen, peso y
     corral. Un animal comprado muchas veces no tiene fecha de nacimiento ni
     raza conocidas.
@@ -1395,9 +1407,8 @@ Con eso:
   colaborador, su tipo.
 
 **Pruebas de otros que se tocaron.** Varias pruebas creaban animales sin
-categoría o con la raza escrita a mano. Solo se les agregó la categoría o se
-cambió la raza por su código; lo que prueban no cambió. Son las de animales,
-corrales, permisos, registro de animal, autoría, baja del propietario,
-importación y permisos de importación. Las pruebas nuevas son
-`servidor/pruebas/ficha-razas.test.js` y
-`cliente/pruebas/contrasenas-razas.test.tsx`.
+categoría. Solo se les agregó la categoría; lo que prueban no cambió. Son las
+de animales, corrales, permisos, registro de animal, autoría, baja del
+propietario, importación y permisos de importación. Las pruebas nuevas son
+`servidor/pruebas/categoria-obligatoria.test.js` y
+`cliente/pruebas/contrasenas-categoria.test.tsx`.

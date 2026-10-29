@@ -9,7 +9,8 @@ import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
 import { avisoDeExceso } from '../corrales/servicio-corrales';
-import { catalogoRazas, esRaza } from './razas';
+import { RepositorioRazas } from './repositorio-razas';
+import { REGLAS_CATEGORIAS, mensajeDeCategoria, problemaDeCategoria } from '../../comun/categorias-animal';
 import {
   RepositorioAnimales,
   type Animal,
@@ -69,18 +70,29 @@ export class ServicioAnimales {
   constructor(
     private readonly animales: RepositorioAnimales,
     private readonly permisos: PermisosModulo,
+    private readonly razas: RepositorioRazas,
   ) {}
+
+  /**
+   * HU-28 · Las razas para elegir: el catálogo mundial más las propias del
+   * rancho, que son las que alguien escribió en «Otra».
+   */
+  async listarRazas(quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'animales', 'ver');
+    return this.razas.listar(ranchoId);
+  }
+
+  /** HU-28: qué sexo y qué edad corresponden a cada categoría. */
+  async reglasDeCategorias(quien: UsuarioActual) {
+    await this.permisos.exigir(quien, 'animales', 'ver');
+    return REGLAS_CATEGORIAS;
+  }
 
   async categorias(quien: UsuarioActual) {
     await this.permisos.exigir(quien, 'animales', 'ver');
     return this.animales.categorias();
   }
 
-  /** La lista fija de razas, por grupo (ver razas.ts). */
-  async razas(quien: UsuarioActual) {
-    await this.permisos.exigir(quien, 'animales', 'ver');
-    return catalogoRazas();
-  }
 
   /**
    * estado: 'todos' o uno de los cuatro. Sin nada, solo los activos (HU-33).
@@ -130,6 +142,8 @@ export class ServicioAnimales {
 
     const ficha = await this.validarFicha(cuerpo);
     const corralId = await this.corralValido(cuerpo?.corral_id, ranchoId);
+    // Una raza que ya existe se guarda como en el catálogo; una nueva queda en el rancho.
+    if (ficha.raza) ficha.raza = await this.razas.resolver(ficha.raza, ranchoId, quien.id);
 
     const id = randomUUID();
     try {
@@ -152,7 +166,8 @@ export class ServicioAnimales {
   async actualizar(id: string, cuerpo: any, quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
     const actual = await this.vigente(id, ranchoId);
-    const ficha = await this.validarFicha(cuerpo, actual.raza);
+    const ficha = await this.validarFicha(cuerpo);
+    if (ficha.raza) ficha.raza = await this.razas.resolver(ficha.raza, ranchoId, quien.id);
     await this.animales.actualizarFicha(actual.id, ranchoId, ficha, quien.id);
     return {
       animal: await this.animales.uno(actual.id, ranchoId),
@@ -270,11 +285,8 @@ export class ServicioAnimales {
     return animal;
   }
 
-  /**
-   * HU-28. razaActual: la que ya tenía el animal. Si es un texto de antes de
-   * la lista fija y no se cambia, se acepta.
-   */
-  private async validarFicha(cuerpo: any, razaActual: string | null = null): Promise<DatosFicha> {
+  /** HU-28. */
+  private async validarFicha(cuerpo: any): Promise<DatosFicha> {
     const sexo = cuerpo?.sexo;
     if (sexo !== 'macho' && sexo !== 'hembra') {
       throw new BadRequestException(t('servidor.animales.sexoInvalido'));
@@ -299,6 +311,10 @@ export class ServicioAnimales {
       }
     }
 
+    // La categoría tiene que corresponder al sexo y a la edad (pedido del docente).
+    const problema = problemaDeCategoria(categoria, sexo, fechaNacimiento, hoy());
+    if (problema) throw new BadRequestException(mensajeDeCategoria(problema, categoria, sexo));
+
     const origen = cuerpo?.origen || null;
     if (origen !== null && !ORIGENES.includes(origen)) {
       throw new BadRequestException(t('servidor.animales.origenInvalido'));
@@ -310,14 +326,9 @@ export class ServicioAnimales {
       if (!(peso > 0)) throw new BadRequestException(t('servidor.animales.pesoInvalido'));
     }
 
-    const raza = texto(cuerpo?.raza, LARGO_TEXTO);
-    if (raza !== null && !esRaza(raza) && raza !== razaActual) {
-      throw new BadRequestException(t('servidor.animales.razaInvalida'));
-    }
-
     return {
       nombre: texto(cuerpo?.nombre, LARGO_TEXTO),
-      raza,
+      raza: texto(cuerpo?.raza, LARGO_TEXTO),
       sexo,
       categoria_codigo: categoria,
       fecha_nacimiento: fechaNacimiento,

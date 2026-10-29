@@ -100,7 +100,7 @@ async function ejecutarPruebas() {
     });
 
     await prueba('Si otro la edita, cambia quien modifico y no quien creo', async () => {
-      const editado = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', categoria_codigo: 'toro', raza: 'gyr' }, CAMPO_A);
+      const editado = await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'macho', categoria_codigo: 'toro', raza: 'Gyr' }, CAMPO_A);
       assert.strictEqual(editado.estado, 200, JSON.stringify(editado.cuerpo));
       const { cuerpo } = await pedir('GET', `/animales/${animal.id}`);
       assert.strictEqual(cuerpo.animal.creado_por_nombre, propietario);
