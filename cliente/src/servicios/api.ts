@@ -516,7 +516,29 @@ export interface Corral {
   superficie_ha: string | null;
   ocupacion: number;
   sobrepoblado: boolean;
+  /** Lo máximo que admite la superficie según el tipo de producción; nulo sin superficie. */
+  limite_superficie: number | null;
   eliminado_en: string | null;
+}
+
+/** Cuántos animales admite cada hectárea en este rancho (comun/carga-animal.ts del servidor). */
+/** HU-28 · Una raza para elegir: del catálogo (con grupo) o propia del rancho (grupo nulo). */
+export interface Raza {
+  nombre: string;
+  grupo: 'carne' | 'leche' | 'doble' | null;
+}
+
+/** HU-28 · Qué sexo y qué edad corresponden a cada categoría (comun/categorias-animal.ts del servidor). */
+export interface ReglaCategoria {
+  codigo: string;
+  sexo: Sexo;
+  edad_minima_meses: number;
+  edad_maxima_meses: number | null;
+}
+
+export interface CargaAnimal {
+  tipo_produccion: 'carne' | 'leche' | 'mixto';
+  animales_por_hectarea: number;
 }
 
 export interface DatosCorral {
@@ -619,6 +641,8 @@ export interface CambioEstado {
   estado_nuevo: EstadoAnimal;
   fecha: string;
   motivo: string;
+  /** HU-32: cuándo quedó guardado; fecha es el día que eligió el usuario. */
+  creado_en: string;
   registrado_por: string | null;
 }
 
@@ -847,6 +871,7 @@ export const api = {
 
   // HU-36 y HU-34 · Corrales
   corrales: (conBajas = false) => pedir<Corral[]>(`/corrales${conBajas ? '?bajas=1' : ''}`),
+  cargaCorrales: () => pedir<CargaAnimal>('/corrales/carga'),
   crearCorral: (datos: DatosCorral) =>
     pedir<RespuestaCorral>('/corrales', { method: 'POST', body: JSON.stringify(datos) }),
   actualizarCorral: (id: string, datos: DatosCorral) =>
@@ -862,6 +887,8 @@ export const api = {
 
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
+  reglasCategorias: () => pedir<ReglaCategoria[]>('/animales/categorias/reglas'),
+  razas: () => pedir<Raza[]>('/animales/razas'),
   animales: (estado: EstadoAnimal | 'todos' = 'activo', conBajas = false, filtros: FiltrosAnimales = {}) => {
     const parametros = new URLSearchParams({ estado });
     if (conBajas) parametros.set('bajas', '1');
@@ -917,4 +944,59 @@ export const api = {
   bajaAnimal: (id: string) => pedir<{ mensaje: string }>(`/animales/${id}`, { method: 'DELETE' }),
   restaurarAnimal: (id: string) =>
     pedir<RespuestaAnimal>(`/animales/${id}/restaurar`, { method: 'POST' }),
+
+  // HU-31 · Acciones masivas sobre animales
+  cambiarEstadoMasivo: (animalIds: string[], estado: EstadoAnimal, motivo: string, fecha: string) =>
+    pedir<RespuestaEstadoMasivo>('/masivo/animales/estado', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds, estado, motivo, fecha }),
+    }),
+  bajaMasiva: (animalIds: string[]) =>
+    pedir<RespuestaBajaMasiva>('/masivo/animales/baja', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds }),
+    }),
+
+  // HU-45 · Exportación
+  exportar: (pedido: PedidoExportacion) => descargar(`/exportacion?${parametrosExportacion(pedido)}`, 'ganado.xlsx'),
 };
+
+/** HU-31. Cuántos cambiaron, cuántos ya estaban en ese estado y cuántos no se encontraron. */
+export interface RespuestaEstadoMasivo {
+  cambiados: number;
+  ya_estaban: number;
+  no_encontrados: number;
+  mensaje: string;
+}
+
+export interface RespuestaBajaMasiva {
+  dados_de_baja: number;
+  no_encontrados: number;
+  mensaje: string;
+}
+
+/** HU-45 · Qué se exporta, en qué formato y con qué filtros del listado. */
+export type ConjuntoExportacion = 'animales' | 'corrales' | 'movimientos' | 'estados';
+export type FormatoExportacion = 'xlsx' | 'csv';
+
+export interface PedidoExportacion {
+  que: ConjuntoExportacion[];
+  formato: FormatoExportacion;
+  /** La pestaña del listado: un estado, todos o las bajas. */
+  vista: EstadoAnimal | 'todos' | 'bajas';
+  filtros: FiltrosAnimales;
+}
+
+/** Los parámetros de GET /exportacion. Los filtros vacíos no se mandan. */
+export function parametrosExportacion(pedido: PedidoExportacion): string {
+  const parametros = new URLSearchParams({
+    que: pedido.que.join(','),
+    formato: pedido.formato,
+    vista: pedido.vista,
+  });
+  for (const [clave, valor] of Object.entries(pedido.filtros)) {
+    const limpio = typeof valor === 'string' ? valor.trim() : '';
+    if (limpio) parametros.set(clave, limpio);
+  }
+  return parametros.toString();
+}

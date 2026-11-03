@@ -24,6 +24,7 @@ import { PaginaImportacion } from './paginas/importacion/PaginaImportacion';
 import { PaginaCorrales } from './paginas/corrales/PaginaCorrales';
 import { PaginaListaAnimales } from './paginas/animales/PaginaListaAnimales';
 import { PaginaFichaAnimal } from './paginas/animales/PaginaFichaAnimal';
+import { PaginaAltaRapida } from './paginas/animales/PaginaAltaRapida';
 import { PaginaPermisosSocio } from './paginas/equipo/PaginaPermisosSocio';
 import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
 import { api, hayAlguienDentro, soporteActual, type EstadoCuenta } from './servicios/api';
@@ -183,6 +184,8 @@ function Sistema() {
         <Route path="/importacion" element={adentro(<PaginaImportacion />)} />
         <Route path="/corrales" element={adentro(<PaginaCorrales />)} />
         <Route path="/animales" element={adentro(<PaginaListaAnimales />)} />
+        {/* HU-35. Va antes de /animales/:id para que "alta-rapida" no se lea como un id. */}
+        <Route path="/animales/alta-rapida" element={adentro(<PaginaAltaRapida />)} />
         <Route path="/animales/:id" element={adentro(<PaginaFichaAnimal />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 

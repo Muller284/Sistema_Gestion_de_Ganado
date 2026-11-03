@@ -14,6 +14,9 @@ import {
   type Valor,
 } from './lector-archivo';
 import { RepositorioImportacion, type AnimalAImportar, type ContextoRancho } from './repositorio-importacion';
+import { mensajeDeCategoria, problemaDeCategoria } from '../../comun/categorias-animal';
+import { claveDeRaza, nombreDeRaza } from '../../comun/razas';
+import { RepositorioRazas } from '../animales/repositorio-razas';
 
 /**
  * Importación de animales desde Excel o CSV.
@@ -117,6 +120,7 @@ export class ServicioImportacion {
   constructor(
     private readonly repositorio: RepositorioImportacion,
     private readonly permisos: PermisosModulo,
+    private readonly razas: RepositorioRazas,
   ) {}
 
   /** HU-40. El Excel en el idioma de quien lo pide y con la unidad de peso de su país. */
@@ -161,7 +165,7 @@ export class ServicioImportacion {
       [t('servidor.importacion.columnas.identificador', { unidad }), t('servidor.importacion.plantilla.obligatorio')],
       [t('servidor.importacion.columnas.tipo_identificador', { unidad }), lista('animales.tiposIdentificador', ['caravana', 'interno', 'rfid'])],
       [t('servidor.importacion.columnas.sexo', { unidad }), `${lista('animales.sexos', ['hembra', 'macho'])}. ${t('servidor.importacion.plantilla.obligatorio')}`],
-      [t('servidor.importacion.columnas.categoria', { unidad }), lista('animales.categorias', contexto.categorias)],
+      [t('servidor.importacion.columnas.categoria', { unidad }), `${lista('animales.categorias', contexto.categorias)}. ${t('servidor.importacion.plantilla.obligatorio')}`],
       [t('servidor.importacion.columnas.fecha_nacimiento', { unidad }), contexto.formatoFecha],
       [t('servidor.importacion.columnas.origen', { unidad }), lista('animales.origenes', ['nacido', 'comprado', 'otro'])],
       [t('servidor.importacion.columnas.corral', { unidad }), t('servidor.importacion.plantilla.corralAyuda')],
@@ -189,7 +193,13 @@ export class ServicioImportacion {
       throw new BadRequestException(t('servidor.importacion.nadaQueCargar'));
     }
     try {
-      const { insertados, actualizados } = await this.repositorio.cargar(ranchoId, nuevas, aActualizar, quien.id);
+      const { insertados, actualizados } = await this.repositorio.cargar(
+        ranchoId,
+        nuevas,
+        aActualizar,
+        quien.id,
+        (nombre, cliente) => this.razas.resolver(nombre, ranchoId, quien.id, cliente),
+      );
       const omitidos = informe.resumen.repetidas - actualizados;
       return {
         mensaje: t('servidor.importacion.completada', {
@@ -236,6 +246,8 @@ export class ServicioImportacion {
 
     const contexto = await this.repositorio.contexto(ranchoId);
     const valores = valoresAceptados(contexto);
+    // HU-28: «NELORE» o «nelóre» se ven y se guardan como «Nelore».
+    const razas = await this.razas.porClave(ranchoId);
 
     const errores: ErrorDeFila[] = [];
     const repetidas: Repetida[] = [];
@@ -247,7 +259,7 @@ export class ServicioImportacion {
     let existentes = 0;
 
     for (const fila of archivo.filas) {
-      const resultado = validarFila(fila, contexto, valores, archivo.unidadPeso);
+      const resultado = validarFila(fila, contexto, valores, archivo.unidadPeso, razas);
       if ('motivo' in resultado) {
         errores.push(resultado);
         continue;
@@ -358,6 +370,7 @@ function validarFila(
   contexto: ContextoRancho,
   valores: ValoresAceptados,
   unidadPeso: 'kg' | 'lb',
+  razas: Map<string, string>,
 ): AnimalAImportar | ErrorDeFila {
   const v = fila.valores;
   const identificador = texto(v.identificador);
@@ -374,17 +387,23 @@ function validarFila(
   const sexo = valores.sexo.get(normalizar(v.sexo));
   if (!sexo) return error(fila, identificador, 'sexo', 'sexoInvalido', { valor: texto(v.sexo) ?? '' });
 
-  let categoria: string | null = null;
-  if (texto(v.categoria)) {
-    categoria = valores.categoria.get(normalizar(v.categoria)) ?? null;
-    if (!categoria) return error(fila, identificador, 'categoria', 'categoriaInvalida', { valor: texto(v.categoria)! });
-  }
+  if (!texto(v.categoria)) return error(fila, identificador, 'categoria', 'sinCategoria');
+  const categoria = valores.categoria.get(normalizar(v.categoria)) ?? null;
+  if (!categoria) return error(fila, identificador, 'categoria', 'categoriaInvalida', { valor: texto(v.categoria)! });
 
   let nacimiento: string | null = null;
   if (texto(v.fecha_nacimiento)) {
     nacimiento = leerFecha(v.fecha_nacimiento!, contexto.formatoFecha);
     if (!nacimiento) return error(fila, identificador, 'fecha_nacimiento', 'fechaInvalida', { formato: contexto.formatoFecha });
     if (nacimiento > new Date().toISOString().slice(0, 10)) return error(fila, identificador, 'fecha_nacimiento', 'fechaFutura');
+  }
+
+  // La misma regla que el alta a mano: la categoría corresponde al sexo y a la edad.
+  if (categoria) {
+    const problema = problemaDeCategoria(categoria, sexo, nacimiento, new Date().toISOString().slice(0, 10));
+    if (problema) {
+      return { fila: fila.fila, identificador, columna: 'categoria', motivo: mensajeDeCategoria(problema, categoria, sexo) };
+    }
   }
 
   let origen: AnimalAImportar['origen'] = null;
@@ -415,7 +434,7 @@ function validarFila(
     identificador,
     tipo_identificador: tipo,
     nombre: texto(v.nombre),
-    raza: texto(v.raza),
+    raza: texto(v.raza) ? (razas.get(claveDeRaza(texto(v.raza)!)) ?? nombreDeRaza(texto(v.raza)!)) : null,
     sexo,
     categoria_codigo: categoria,
     fecha_nacimiento: nacimiento,

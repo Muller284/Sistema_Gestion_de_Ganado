@@ -9,6 +9,8 @@ import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { PermisosModulo } from '../../comun/permisos-modulo';
 import { t } from '../../comun/idioma';
 import { avisoDeExceso } from '../corrales/servicio-corrales';
+import { RepositorioRazas } from './repositorio-razas';
+import { REGLAS_CATEGORIAS, mensajeDeCategoria, problemaDeCategoria } from '../../comun/categorias-animal';
 import {
   RepositorioAnimales,
   type Animal,
@@ -63,7 +65,7 @@ import {
  *   1. El orden y la paginacion se resuelven en la base de datos (ORDER BY,
  *      LIMIT y OFFSET en el SQL), no en el navegador.
  *   2. Con 2.000 animales activos el listado carga en menos de dos segundos:
- *      solo viaja una pagina, y la migracion 009 agrega los indices.
+ *      solo viaja una pagina, y la migracion 011 agrega los indices.
  *   3. El filtro y el orden se mantienen al cambiar de pagina: van en cada
  *      pedido junto con la pagina, y la respuesta los devuelve.
  *   Se pide con ?pagina=N (desde 1) &porPagina= (1 a 100, 25 por defecto)
@@ -86,12 +88,29 @@ export class ServicioAnimales {
   constructor(
     private readonly animales: RepositorioAnimales,
     private readonly permisos: PermisosModulo,
+    private readonly razas: RepositorioRazas,
   ) {}
+
+  /**
+   * HU-28 · Las razas para elegir: el catálogo mundial más las propias del
+   * rancho, que son las que alguien escribió en «Otra».
+   */
+  async listarRazas(quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'animales', 'ver');
+    return this.razas.listar(ranchoId);
+  }
+
+  /** HU-28: qué sexo y qué edad corresponden a cada categoría. */
+  async reglasDeCategorias(quien: UsuarioActual) {
+    await this.permisos.exigir(quien, 'animales', 'ver');
+    return REGLAS_CATEGORIAS;
+  }
 
   async categorias(quien: UsuarioActual) {
     await this.permisos.exigir(quien, 'animales', 'ver');
     return this.animales.categorias();
   }
+
 
   /**
    * estado: 'todos' o uno de los cuatro. Sin nada, solo los activos (HU-33).
@@ -147,6 +166,8 @@ export class ServicioAnimales {
 
     const ficha = await this.validarFicha(cuerpo);
     const corralId = await this.corralValido(cuerpo?.corral_id, ranchoId);
+    // Una raza que ya existe se guarda como en el catálogo; una nueva queda en el rancho.
+    if (ficha.raza) ficha.raza = await this.razas.resolver(ficha.raza, ranchoId, quien.id);
 
     const id = randomUUID();
     try {
@@ -170,6 +191,7 @@ export class ServicioAnimales {
     const ranchoId = await this.permisos.exigir(quien, 'animales', 'editar');
     const actual = await this.vigente(id, ranchoId);
     const ficha = await this.validarFicha(cuerpo);
+    if (ficha.raza) ficha.raza = await this.razas.resolver(ficha.raza, ranchoId, quien.id);
     await this.animales.actualizarFicha(actual.id, ranchoId, ficha, quien.id);
     return {
       animal: await this.animales.uno(actual.id, ranchoId),
@@ -316,12 +338,14 @@ export class ServicioAnimales {
       throw new BadRequestException(t('servidor.animales.sexoInvalido'));
     }
 
-    let categoria: string | null = null;
-    if (cuerpo?.categoria_codigo) {
-      categoria = String(cuerpo.categoria_codigo);
-      if (!(await this.animales.categoriaExiste(categoria))) {
-        throw new BadRequestException(t('servidor.animales.categoriaInvalida'));
-      }
+    // La categoría es obligatoria: es con lo que se cuenta el hato (vacas,
+    // terneros, toros...), y en el campo siempre se sabe.
+    if (!cuerpo?.categoria_codigo) {
+      throw new BadRequestException(t('servidor.animales.sinCategoria'));
+    }
+    const categoria = String(cuerpo.categoria_codigo);
+    if (!(await this.animales.categoriaExiste(categoria))) {
+      throw new BadRequestException(t('servidor.animales.categoriaInvalida'));
     }
 
     let fechaNacimiento: string | null = null;
@@ -332,6 +356,10 @@ export class ServicioAnimales {
         throw new BadRequestException(t('servidor.animales.nacimientoFuturo'));
       }
     }
+
+    // La categoría tiene que corresponder al sexo y a la edad (pedido del docente).
+    const problema = problemaDeCategoria(categoria, sexo, fechaNacimiento, hoy());
+    if (problema) throw new BadRequestException(mensajeDeCategoria(problema, categoria, sexo));
 
     const origen = cuerpo?.origen || null;
     if (origen !== null && !ORIGENES.includes(origen)) {

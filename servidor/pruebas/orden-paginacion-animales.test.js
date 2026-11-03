@@ -58,8 +58,16 @@ async function pedir(ruta, usuarioId = PROPIETARIO_A) {
   return { estado: respuesta.status, cuerpo: await respuesta.json().catch(() => null) };
 }
 
-/** Los animales de esta corrida: busqueda=MARCA filtra solo los nuestros. */
-const pagina = (extra = '') => `/animales?busqueda=${MARCA}&pagina=1&porPagina=25${extra}`;
+/**
+ * Los animales de esta corrida: busqueda=MARCA filtra solo los nuestros.
+ * Lo extra REEMPLAZA a lo de por defecto (no se repite: un parametro repetido
+ * llega como lista y el servidor responde 400, con razon).
+ */
+const pagina = (extra = '') => {
+  const parametros = new URLSearchParams({ busqueda: MARCA, pagina: '1', porPagina: '25' });
+  for (const [clave, valor] of new URLSearchParams(extra.replace(/^&/, ''))) parametros.set(clave, valor);
+  return `/animales?${parametros.toString()}`;
+};
 
 /**
  * 2.000 animales activos de una sola vez, por SQL. Identificadores con ceros
@@ -188,6 +196,12 @@ async function ejecutarPruebas() {
     assert.ok(ultimaDeLaPrimera > primeraDeLaSegunda, `${ultimaDeLaPrimera} / ${primeraDeLaSegunda}`);
     const ids = new Set(primera.cuerpo.animales.map((a) => a.id));
     assert.ok(segunda.cuerpo.animales.every((a) => !ids.has(a.id)));
+  });
+
+  await prueba('HU-30: el ayudante no repite parametros en la URL', async () => {
+    const url = new URL(`http://x${pagina('&porPagina=100&orden=peso')}`);
+    assert.deepStrictEqual(url.searchParams.getAll('porPagina'), ['100']);
+    assert.strictEqual(url.searchParams.get('orden'), 'peso');
   });
 
   await prueba('HU-30: un orden o una pagina mal formados son un 400, nunca SQL', async () => {

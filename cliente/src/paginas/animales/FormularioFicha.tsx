@@ -1,15 +1,19 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Alerta, Boton, CampoLista, CampoTexto, Tarjeta } from '../../componentes';
+import { Alerta, Boton, CampoBuscador, CampoLista, CampoTexto, Tarjeta } from '../../componentes';
 import {
   api,
   type Animal,
   type Corral,
   type DatosFichaAnimal,
   type Origen,
+  type Raza,
+  type ReglaCategoria,
   type Sexo,
   type TipoIdentificador,
 } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
+import { categoriasPermitidas } from '../../servicios/categorias';
+import { buscarRazas, esRazaNueva, razaAGuardar } from '../../servicios/razas';
 import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicios/unidades';
 
 /**
@@ -18,11 +22,18 @@ import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicio
  *
  *   1. El corral es opcional (y solo se elige al registrar: después cambia
  *      con un movimiento, HU-39).
- *   2. La categoría se elige de un catálogo, no se escribe libre.
+ *   2. La categoría se elige de un catálogo, no se escribe libre. Es
+ *      obligatoria: es con lo que se cuenta el hato.
  *   3. La fecha de nacimiento no puede ser futura (el campo no la deja y el
  *      servidor la rechaza igual).
  *
  * HU-26: el peso se escribe en la unidad del país y viaja en kilos.
+ * La raza se busca escribiendo en una lista (catálogo mundial más las
+ * propias del rancho); si lo escrito no está, se guarda como raza nueva y
+ * queda en la lista del rancho (pedido del docente).
+ * La categoría solo ofrece las que corresponden al sexo y a la edad que da la
+ * fecha de nacimiento: si nació hoy no puede ser vaca ni toro (pedido del
+ * docente). Las reglas las manda el servidor, que lo vuelve a controlar.
  */
 
 const TIPOS: TipoIdentificador[] = ['caravana', 'interno', 'rfid'];
@@ -45,10 +56,12 @@ interface Propiedades {
 
 export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Propiedades) {
   const [categorias, setCategorias] = useState<string[]>([]);
+  const [reglas, setReglas] = useState<ReglaCategoria[]>([]);
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [identificador, setIdentificador] = useState('');
   const [tipo, setTipo] = useState<TipoIdentificador>('caravana');
   const [nombre, setNombre] = useState(animal?.nombre ?? '');
+  const [razas, setRazas] = useState<Raza[]>([]);
   const [raza, setRaza] = useState(animal?.raza ?? '');
   const [sexo, setSexo] = useState<Sexo | ''>(animal?.sexo ?? '');
   const [categoria, setCategoria] = useState(animal?.categoria_codigo ?? '');
@@ -67,6 +80,14 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
       .categoriasAnimal()
       .then((lista) => vigente && setCategorias(lista))
       .catch((err: Error) => vigente && setError(err.message));
+    api
+      .razas()
+      .then((lista) => vigente && setRazas(lista))
+      .catch(() => undefined);
+    api
+      .reglasCategorias()
+      .then((lista) => vigente && setReglas(lista))
+      .catch(() => undefined);
     // Los corrales solo hacen falta en el alta. Si no los puede ver, se carga sin corral.
     if (!animal) {
       api
@@ -81,14 +102,14 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
-    if (!sexo) return;
+    if (!sexo || !categoria) return;
     setEnviando(true);
     setError('');
     const ficha: DatosFichaAnimal = {
       nombre: nombre || null,
-      raza: raza || null,
+      raza: razaAGuardar(razas, raza),
       sexo,
-      categoria_codigo: categoria || null,
+      categoria_codigo: categoria,
       fecha_nacimiento: nacimiento || null,
       origen: origen || null,
       peso_kg: peso === '' ? null : pesoAGuardar(Number(peso), regional.peso),
@@ -109,7 +130,21 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
     }
   }
 
-  const listo = Boolean(sexo) && (animal || identificador.trim());
+  const hoy = hoyEn(regional);
+  const permitidas = categoriasPermitidas(categorias, reglas, sexo, nacimiento, hoy);
+  // Una categoría guardada antes de esta regla puede no corresponder: se ve, con su error.
+  const categoriaInvalida = Boolean(categoria) && reglas.length > 0 && !permitidas.includes(categoria);
+  const opcionesCategoria = categoriaInvalida ? [categoria, ...permitidas] : permitidas;
+
+  /** Si al cambiar el sexo o la fecha la categoría deja de corresponder, se vacía. */
+  function revisarCategoria(nuevoSexo: string, nuevaFecha: string) {
+    if (categoria && reglas.length > 0) {
+      const nuevas = categoriasPermitidas(categorias, reglas, nuevoSexo, nuevaFecha, hoy);
+      if (!nuevas.includes(categoria)) setCategoria('');
+    }
+  }
+
+  const listo = Boolean(sexo) && Boolean(categoria) && (animal || identificador.trim()) && !categoriaInvalida;
 
   return (
     <form onSubmit={enviar} noValidate>
@@ -161,12 +196,21 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
-            <CampoTexto
+            <CampoBuscador
               etiqueta={t('animales.campos.raza')}
+              placeholder={t('animales.campos.razaBuscar')}
+              ayuda={esRazaNueva(razas, raza) ? t('animales.campos.razaNuevaAyuda') : undefined}
               maxLength={100}
-              placeholder={t('animales.campos.razaEjemplo')}
               value={raza}
-              onChange={(e) => setRaza(e.target.value)}
+              onChange={setRaza}
+              grupos={buscarRazas(razas, raza).map(({ grupo, razas: delGrupo }) => ({
+                titulo: t(`animales.gruposRaza.${grupo}`),
+                opciones: delGrupo,
+              }))}
+              opcionNueva={
+                esRazaNueva(razas, raza) ? t('animales.campos.razaAgregar', { raza: raza.trim() }) : undefined
+              }
+              sinResultados={t('animales.campos.razaSinResultados')}
             />
           </div>
 
@@ -175,7 +219,10 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
               etiqueta={t('animales.campos.sexo')}
               obligatorio
               value={sexo}
-              onChange={(e) => setSexo(e.target.value as Sexo)}
+              onChange={(e) => {
+                setSexo(e.target.value as Sexo);
+                revisarCategoria(e.target.value, nacimiento);
+              }}
             >
               <option value="">{t('animales.campos.elegir')}</option>
               {SEXOS.map((opcion) => (
@@ -184,14 +231,17 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
                 </option>
               ))}
             </CampoLista>
-            {/* Criterio 2: de un catálogo. */}
+            {/* Criterio 2: de un catálogo, filtrado por sexo y edad. */}
             <CampoLista
               etiqueta={t('animales.campos.categoria')}
+              obligatorio
+              ayuda={sexo || nacimiento ? t('animales.campos.categoriaFiltrada') : undefined}
+              error={categoriaInvalida ? t('animales.campos.categoriaNoCorresponde') : undefined}
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
             >
-              <option value="">{t('animales.campos.sinCategoria')}</option>
-              {categorias.map((codigo) => (
+              <option value="">{t('animales.campos.elegir')}</option>
+              {opcionesCategoria.map((codigo) => (
                 <option key={codigo} value={codigo}>
                   {t(`animales.categorias.${codigo}`)}
                 </option>
@@ -206,7 +256,10 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
               type="date"
               max={hoyEn(regional)}
               value={nacimiento}
-              onChange={(e) => setNacimiento(e.target.value)}
+              onChange={(e) => {
+                setNacimiento(e.target.value);
+                revisarCategoria(sexo, e.target.value);
+              }}
             />
             <CampoLista
               etiqueta={t('animales.campos.origen')}

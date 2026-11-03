@@ -121,6 +121,7 @@ async function ejecutarPruebas() {
     const { estado } = await pedir('POST', '/animales', {
       identificador: `F-${MARCA}`,
       sexo: 'macho',
+      categoria_codigo: 'toro',
       fecha_nacimiento: manana(),
     });
     assert.strictEqual(estado, 400);
@@ -140,11 +141,11 @@ async function ejecutarPruebas() {
 
   await prueba('El identificador no se repite en el rancho, pero si en otro', async () => {
     assert.strictEqual(
-      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' })).estado,
+      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' })).estado,
       409,
     );
     assert.strictEqual(
-      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' }, PROPIETARIO_B)).estado,
+      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' }, PROPIETARIO_B)).estado,
       201,
     );
   });
@@ -189,7 +190,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-39: editar la ficha no cambia el corral por la puerta de atras', async () => {
-    await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'hembra', corral_id: corralUno.id });
+    await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'hembra', categoria_codigo: 'vaca', corral_id: corralUno.id });
     const { cuerpo } = await pedir('GET', `/animales/${animal.id}`);
     assert.strictEqual(cuerpo.animal.corral_id, corralDos.id);
   });
@@ -263,7 +264,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-34: dado de baja libera su identificador', async () => {
-    const { estado } = await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' });
+    const { estado } = await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' });
     assert.strictEqual(estado, 201);
   });
 
@@ -284,8 +285,107 @@ async function ejecutarPruebas() {
     assert.strictEqual(estado, 404);
   });
 
+  // --- Pedido del docente: la categoria corresponde al sexo y a la edad -------
+  const hoyIso = new Date().toISOString().slice(0, 10);
+
+  await prueba('HU-28: las reglas de categoria salen del servidor', async () => {
+    const { estado, cuerpo } = await pedir('GET', '/animales/categorias/reglas');
+    assert.strictEqual(estado, 200);
+    assert.deepStrictEqual(cuerpo.find((r) => r.codigo === 'vaca'), {
+      codigo: 'vaca',
+      sexo: 'hembra',
+      edad_minima_meses: 18,
+      edad_maxima_meses: null,
+    });
+  });
+
+  await prueba('HU-28: una hembra que nacio hoy no puede ser vaca, si ternera', async () => {
+    const vaca = await pedir('POST', '/animales', {
+      identificador: `N-${MARCA}`,
+      sexo: 'hembra',
+      categoria_codigo: 'vaca',
+      fecha_nacimiento: hoyIso,
+    });
+    assert.strictEqual(vaca.estado, 400);
+    assert.match(vaca.cuerpo.message, /18 meses/);
+    const ternera = await pedir('POST', '/animales', {
+      identificador: `N-${MARCA}`,
+      sexo: 'hembra',
+      categoria_codigo: 'ternera',
+      fecha_nacimiento: hoyIso,
+    });
+    assert.strictEqual(ternera.estado, 201);
+  });
+
+  await prueba('HU-28: un macho no puede ser vaca ni vaquilla', async () => {
+    const { estado, cuerpo } = await pedir('POST', '/animales', {
+      identificador: `M-${MARCA}`,
+      sexo: 'macho',
+      categoria_codigo: 'vaquilla',
+    });
+    assert.strictEqual(estado, 400);
+    assert.match(cuerpo.message, /macho/);
+  });
+
+  await prueba('HU-28: sin fecha de nacimiento se controla solo el sexo', async () => {
+    const { estado } = await pedir('POST', '/animales', {
+      identificador: `T-${MARCA}`,
+      sexo: 'macho',
+      categoria_codigo: 'toro',
+    });
+    assert.strictEqual(estado, 201);
+  });
+
+  // --- HU-28: razas del catalogo y propias del rancho ---------------------------
+  const razaNueva = `Criolla ${MARCA}`;
+
+  await prueba('HU-28: el catalogo de razas trae las del mundo con su grupo', async () => {
+    const { estado, cuerpo } = await pedir('GET', '/animales/razas');
+    assert.strictEqual(estado, 200);
+    assert.deepStrictEqual(cuerpo.find((r) => r.nombre === 'Nelore'), { nombre: 'Nelore', grupo: 'carne' });
+    assert.deepStrictEqual(cuerpo.find((r) => r.nombre === 'Holstein'), { nombre: 'Holstein', grupo: 'leche' });
+  });
+
+  await prueba('HU-28: una raza del catalogo escrita distinto se guarda como en el catalogo', async () => {
+    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R1-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro', raza: '  NELÓRE ' });
+    assert.strictEqual(cuerpo.animal.raza, 'Nelore');
+  });
+
+  await prueba('HU-28: una raza nueva queda en la lista del rancho, sin grupo', async () => {
+    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R2-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro', raza: razaNueva });
+    assert.strictEqual(cuerpo.animal.raza, razaNueva);
+    const lista = (await pedir('GET', '/animales/razas')).cuerpo;
+    assert.deepStrictEqual(lista.find((r) => r.nombre === razaNueva), { nombre: razaNueva, grupo: null });
+  });
+
+  await prueba('HU-28: escrita de nuevo con otras mayusculas no se duplica', async () => {
+    const { cuerpo } = await pedir('POST', '/animales', {
+      identificador: `R3-${MARCA}`,
+      sexo: 'macho',
+      categoria_codigo: 'toro',
+      raza: razaNueva.toUpperCase(),
+    });
+    assert.strictEqual(cuerpo.animal.raza, razaNueva);
+    const filas = await pool.query(`SELECT COUNT(*)::int AS n FROM razas WHERE rancho_id = $1 AND nombre ILIKE $2`, [
+      RANCHO_A,
+      razaNueva,
+    ]);
+    assert.strictEqual(filas.rows[0].n, 1);
+  });
+
+  await prueba('HU-03: la raza propia de un rancho no aparece en otro', async () => {
+    const lista = (await pedir('GET', '/animales/razas', undefined, PROPIETARIO_B)).cuerpo;
+    assert.ok(!lista.some((r) => r.nombre === razaNueva));
+    assert.ok(lista.some((r) => r.nombre === 'Nelore'));
+  });
+
   // ------------------------------------------------------------------------
   await pool.query(`DELETE FROM animales WHERE rancho_id IN ($1, $2) AND identificador LIKE $3`, [
+    RANCHO_A,
+    RANCHO_B,
+    `%${MARCA}%`,
+  ]);
+  await pool.query(`DELETE FROM razas WHERE rancho_id IN ($1, $2) AND nombre LIKE $3`, [
     RANCHO_A,
     RANCHO_B,
     `%${MARCA}%`,

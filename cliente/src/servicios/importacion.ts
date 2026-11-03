@@ -74,8 +74,8 @@ export function informeDeErrores(
 // HU-41 y HU-42 · Columnas reconocidas y asignación manual (Brian)
 // ---------------------------------------------------------------------------
 
-/** Las que el archivo tiene que traer sí o sí. Las mismas que exige el servidor. */
-export const COLUMNAS_OBLIGATORIAS: readonly ColumnaImportacion[] = ['identificador', 'sexo'];
+/** Las que el archivo tiene que traer sí o sí. Las mismas que exige el servidor (la categoría también). */
+export const COLUMNAS_OBLIGATORIAS: readonly ColumnaImportacion[] = ['identificador', 'sexo', 'categoria'];
 
 /** HU-42, criterio 1: solo se piden las columnas que el sistema no reconoció. */
 export function noReconocidas(columnas: ColumnaDelArchivo[]): ColumnaDelArchivo[] {

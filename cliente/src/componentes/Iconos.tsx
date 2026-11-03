@@ -64,7 +64,9 @@ export type NombreIcono =
   | 'escudo'
   | 'enviar'
   | 'persona-mas'
-  | 'persona';
+  | 'persona'
+  | 'ojo'
+  | 'ojo-cerrado';
 
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   // tag · la caravana que lleva cada animal, y la marca del sistema
@@ -397,6 +399,24 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <circle cx="9" cy="7" r="4" />
       <line x1="19" x2="19" y1="8" y2="14" />
       <line x1="22" x2="16" y1="11" y2="11" />
+    </>
+  ),
+
+  // eye · mostrar la contraseña
+  ojo: (
+    <>
+      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+
+  // eye-off · ocultar la contraseña
+  'ojo-cerrado': (
+    <>
+      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+      <path d="m2 2 20 20" />
     </>
   ),
 };

@@ -68,7 +68,8 @@ export interface ColumnaDelArchivo {
 export type Asignaciones = Record<string, string>;
 
 export const IGNORAR = 'ignorar';
-export const OBLIGATORIAS: readonly Columna[] = ['identificador', 'sexo'];
+// La categoría es obligatoria desde el ajuste del docente (categoria-obligatoria.test.js).
+export const OBLIGATORIAS: readonly Columna[] = ['identificador', 'sexo', 'categoria'];
 
 export interface ArchivoLeido {
   filas: FilaLeida[];

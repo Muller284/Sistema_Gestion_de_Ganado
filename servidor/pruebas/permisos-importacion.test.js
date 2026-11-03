@@ -84,7 +84,7 @@ async function ejecutarPruebas() {
     // El mismo formato que usa importacion.test.js: el archivo viaja en base64.
     const archivo = {
       nombre_archivo: 'permisos.csv',
-      contenido_base64: Buffer.from(`Identificador;Sexo\nI-${MARCA};hembra\n`, 'utf8').toString('base64'),
+      contenido_base64: Buffer.from(`Identificador;Sexo;Categoría\nI-${MARCA};hembra;vaca\n`, 'utf8').toString('base64'),
     };
 
     await prueba('El encargado de almacen recibe 403 en la vista previa', async () => {

@@ -83,11 +83,12 @@ const COLUMNAS: ColumnaDelArchivo[] = [
   { posicion: 1, encabezado: 'Género', campo: 'sexo', como: 'variante' },
   { posicion: 2, encabezado: 'Raza', campo: 'raza', como: 'plantilla' },
   { posicion: 3, encabezado: 'Color', campo: null, como: null },
+  { posicion: 4, encabezado: 'Categoría', campo: 'categoria', como: 'plantilla' },
 ];
 
 describe('HU-41 · columnas reconocidas', () => {
   it('separa las reconocidas de las que hay que pedir', () => {
-    expect(reconocidas(COLUMNAS).map((c) => c.encabezado)).toEqual(['Género', 'Raza']);
+    expect(reconocidas(COLUMNAS).map((c) => c.encabezado)).toEqual(['Género', 'Raza', 'Categoría']);
     expect(noReconocidas(COLUMNAS).map((c) => c.encabezado)).toEqual(['Animal', 'Color']);
   });
 });
@@ -110,6 +111,12 @@ describe('HU-42 · asignación manual', () => {
   it('criterio 3: una columna ignorada ya está decidida y no ocupa campo', () => {
     expect(sinDecidir(COLUMNAS, { 3: 'ignorar' }).map((c) => c.posicion)).toEqual([0]);
     expect(camposDisponibles(CAMPOS, COLUMNAS, { 3: 'ignorar' }, 0)).toContain('nombre');
+  });
+
+  it('la categoría también es obligatoria', () => {
+    const sinCategoria = COLUMNAS.filter((c) => c.campo !== 'categoria');
+    expect(obligatoriasSinAsignar(sinCategoria, { 0: 'identificador' })).toEqual(['categoria']);
+    expect(columnasListas(sinCategoria, { 0: 'identificador', 3: 'ignorar' })).toBe(false);
   });
 
   it('no deja continuar mientras falte una obligatoria o haya columnas sin decidir', () => {

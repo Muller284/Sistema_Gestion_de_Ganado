@@ -18,10 +18,53 @@
       "numero": "one number",
       "falta": "It still needs at least {faltas}.",
       "necesita": "The password needs at least {faltas}.",
-      "reglas": "At least 8 characters, with one uppercase letter and one number."
+      "reglas": "At least 8 characters, with one uppercase letter and one number.",
+      "mostrar": "Show password",
+      "ocultar": "Hide password"
     }
   },
   "servidor": {
+    "masivo": {
+      "estadoCambiado": "Done, {n} animal(s) changed to {estado}.",
+      "dadosDeBaja": "Done, you removed {n} animal(s). Each one can be restored from its record.",
+      "seleccionInvalida": "Choose between 1 and {n} animals."
+    },
+    "exportacion": {
+      "formatoInvalido": "The format must be Excel (xlsx) or CSV.",
+      "queInvalido": "Choose what to export: animals, pens, movements or status changes.",
+      "csvUnoSolo": "A CSV is a single table: choose only one thing to export, or use Excel.",
+      "archivo": {
+        "todo": "livestock",
+        "animales": "animals",
+        "corrales": "pens",
+        "movimientos": "movements",
+        "estados": "status-changes"
+      },
+      "hojas": {
+        "animales": "Animals",
+        "corrales": "Pens",
+        "movimientos": "Movements",
+        "estados": "Status changes"
+      },
+      "columnas": {
+        "estado": "Status",
+        "dadoDeBaja": "Removed on",
+        "registradoPor": "Registered by",
+        "registradoEl": "Registered on",
+        "corral": "Pen",
+        "capacidad": "Capacity",
+        "superficie_ha": "Area (ha)",
+        "superficie_acre": "Area (acres)",
+        "ocupacion": "Active animals",
+        "fechaHora": "Date and time",
+        "corralOrigen": "From pen",
+        "corralDestino": "To pen",
+        "fecha": "Date",
+        "estadoAnterior": "Previous status",
+        "estadoNuevo": "New status",
+        "motivo": "Reason"
+      }
+    },
     "comun": {
       "enumerar": "{primeros} and {ultimo}"
     },
@@ -271,6 +314,7 @@
         "textoLargo": "The text is longer than {n} characters.",
         "tipoInvalido": "“{valor}” is not a valid identifier type.",
         "sexoInvalido": "“{valor}” is not a valid sex: write male or female.",
+        "sinCategoria": "The category is missing.",
         "categoriaInvalida": "“{valor}” is not a category in the catalog.",
         "fechaInvalida": "The birth date is not valid. Use {formato}.",
         "fechaFutura": "The birth date can't be in the future.",
@@ -307,7 +351,13 @@
       "restaurado": "“{nombre}” is active again.",
       "seleccionInvalida": "Choose between 1 and {n} animals to assign.",
       "asignados": "You assigned {n} animal(s) to “{nombre}”.",
-      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}."
+      "excedido": "Heads up: “{nombre}” now has {n} animals and its capacity is {capacidad}.",
+      "capacidadExcedeSuperficie": "That area allows up to {limite} animal(s): {carga} per hectare on a {tipo} ranch. Lower the capacity or enlarge the area.",
+      "tiposProduccion": {
+        "carne": "beef",
+        "leche": "dairy",
+        "mixto": "mixed production"
+      }
     },
     "animales": {
       "sinIdentificador": "The identifier is required.",
@@ -341,7 +391,15 @@
       "restaurado": "{identificador} is active again.",
       "rangoInvalido": "The “from” date can’t be later than the “to” date.",
       "ordenInvalido": "The list cannot be sorted by that field.",
-      "paginaInvalida": "The requested page is not valid."
+      "paginaInvalida": "The requested page is not valid.",
+      "sinCategoria": "Choose the animal's category.",
+      "categoriaSexo": "The category “{categoria}” doesn't match a {sexo} animal.",
+      "categoriaEdad": "The category “{categoria}” is for animals {rango}. Check the birth date or choose another category.",
+      "rangos": {
+        "hasta": "up to {max} months old",
+        "entre": "from {min} to {max} months old",
+        "desde": "{min} months old or more"
+      }
     }
   },
   "acceso": {
@@ -364,6 +422,7 @@
       "correo": "Email",
       "correoEjemplo": "you@example.com",
       "contrasena": "Password",
+      "repetirContrasena": "Repeat the password",
       "contrasenaNueva": "New password",
       "repetirNueva": "Repeat the new password",
       "alMenos8": "At least 8 characters",
@@ -1209,6 +1268,28 @@
       "tuRancho": "your ranch"
     }
   },
+  "exportacion": {
+    "boton": "Export",
+    "titulo": "Export ranch data",
+    "formato": "Format",
+    "formatos": {
+      "xlsx": "Excel",
+      "csv": "CSV"
+    },
+    "que": "What to export (in Excel, one sheet each)",
+    "queUno": "What to export (a CSV is a single table)",
+    "conjuntos": {
+      "animales": "Animals",
+      "corrales": "Pens",
+      "movimientos": "Movements between pens",
+      "estados": "Status changes"
+    },
+    "filtrosAplicados": "Animals, movements and status changes are exported as in the list: “{vista}” tab.",
+    "conFiltros": "With the search and filters you have set.",
+    "sinFiltros": "No filters: everything in that tab.",
+    "descargar": "Download",
+    "descargando": "Preparing the file…"
+  },
   "mapa": {
     "ariaLienzo": "Map to mark the ranch's location. You can also type the latitude and longitude yourself.",
     "sinImagenes": "The map images couldn't be loaded. Check your connection, or type the latitude and longitude yourself.",
@@ -1474,7 +1555,12 @@
       "capacidad": "Capacity (animals)",
       "capacidadAyuda": "Optional. Without a capacity there is no overcrowding warning.",
       "superficie": "Area ({unidad})",
-      "superficieAyuda": "Optional."
+      "superficieAyuda": "Optional.",
+      "capacidadLimite": "This area fits up to {n} animals.",
+      "capacidadExcedida": "This area allows up to {n} animals. Lower the capacity or enlarge the area.",
+      "capacidadCero": "Capacity must be a whole number greater than zero.",
+      "superficieCero": "Area must be greater than zero.",
+      "superficieCarga": "{n} animal(s) per hectare fit on a {tipo} ranch."
     },
     "excedidos": "{n} pen(s) are over capacity: {nombres}.",
     "barra": "{n} of {capacidad} animals",
@@ -1484,6 +1570,12 @@
       "confirmar": "Assign ({n})",
       "vacio": "There are no active animals outside this pen.",
       "todos": "Select all ({n})"
+    },
+    "superficieYLimite": "{superficie} · up to {limite} animals",
+    "tiposProduccion": {
+      "carne": "beef",
+      "leche": "dairy",
+      "mixto": "mixed production"
     }
   },
   "animales": {
@@ -1539,13 +1631,18 @@
       "toro": "Bull",
       "buey": "Ox"
     },
+    "gruposRaza": {
+      "carne": "Beef",
+      "leche": "Dairy",
+      "doble": "Dual purpose",
+      "propias": "My ranch's breeds"
+    },
     "campos": {
       "identificador": "Identifier",
       "identificadorEjemplo": "4471",
       "tipoIdentificador": "Identifier type",
       "nombre": "Name",
       "raza": "Breed",
-      "razaEjemplo": "Nelore",
       "sexo": "Sex",
       "categoria": "Category",
       "nacimiento": "Birth date",
@@ -1557,13 +1654,130 @@
       "corralActual": "Current pen",
       "elegir": "Choose…",
       "sinCategoria": "No category",
-      "sinOrigen": "Not specified"
+      "sinOrigen": "Not specified",
+      "categoriaFiltrada": "Only the ones that match the sex and age.",
+      "categoriaNoCorresponde": "This category doesn't match the sex or age. Choose another one.",
+      "razaNuevaAyuda": "Not on the list: it will be saved as a new breed for your ranch.",
+      "razaBuscar": "Type to search or add",
+      "razaAgregar": "Add “{raza}” as a new breed",
+      "razaSinResultados": "No results"
     },
     "formulario": {
       "nuevo": "Register animal",
       "editar": "Edit the record of {identificador}"
     },
+    "masivo": {
+      "titulo": "Actions on the selected animals",
+      "cuantos": {
+        "uno": "{n} animal selected",
+        "otros": "{n} animals selected"
+      },
+      "ambito": {
+        "sueltos": "Selected one by one.",
+        "pagina": "Everything on this page.",
+        "filtro": "Every result of the filter, including what doesn't fit on the page."
+      },
+      "acciones": "What to do with them",
+      "accion": {
+        "corral": "Assign to a pen",
+        "estado": "Change status",
+        "baja": "Remove"
+      },
+      "aplicar": "Apply to {n}",
+      "siAplicar": "Yes, apply",
+      "confirmar": {
+        "corral": {
+          "uno": "Assign {n} animal to “{corral}”?",
+          "otros": "Assign {n} animals to “{corral}”?"
+        },
+        "estado": {
+          "uno": "Change the status of {n} animal to {estado}? Its history is kept.",
+          "otros": "Change the status of {n} animals to {estado}? Each one's history is kept."
+        },
+        "baja": {
+          "uno": "Remove {n} animal? It can be restored from its record.",
+          "otros": "Remove {n} animals? Each one can be restored from its record."
+        }
+      },
+      "listo": {
+        "corral": {
+          "uno": "Done, {n} animal is now in “{corral}”.",
+          "otros": "Done, {n} animals are now in “{corral}”."
+        }
+      },
+      "yaEstaban": {
+        "uno": "{n} already had that status.",
+        "otros": "{n} already had that status."
+      },
+      "bajaExplicacion": "Removing doesn't delete: the animals stop showing in regular views and can be restored from their record.",
+      "elegirPagina": "Select everything on this page ({n})",
+      "elegirFiltro": "Select every result of the filter"
+    },
+    "altaRapida": {
+      "boton": "Quick add",
+      "rotulo": "From your phone",
+      "titulo": "Quick animal registration",
+      "intro": "Just the minimum so you don't have to write it on paper: identifier, category and sex. The rest of the record can be filled in later.",
+      "identificador": "Identifier",
+      "identificadorEjemplo": "E.g.: 4471",
+      "identificadorAyuda": "The ear tag number. If you use an internal number or RFID, change it later in the record.",
+      "categoria": "Category",
+      "sexo": "Sex",
+      "sexoAyuda": "It's picked automatically from the category; change it if needed.",
+      "faltan": "Type the identifier and choose the category and sex.",
+      "registrar": "Register",
+      "registrando": "Registering…",
+      "terminar": "Done",
+      "siguiente": "Type the next one.",
+      "sesion": {
+        "titulo": "Registered just now",
+        "cuantos": {
+          "uno": "{n} animal",
+          "otros": "{n} animals"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "You can't register animals",
+        "texto": "Your collaborator type can only view animals. Ask the owner to give you editing access."
+      }
+    },
     "ficha": {
+      "pestanas": {
+        "etiqueta": "Record sections",
+        "resumen": "Summary",
+        "sanidad": "Health",
+        "pesajes": "Weighings",
+        "historial": "History"
+      },
+      "encabezado": {
+        "edad": "Age",
+        "meses": {
+          "uno": "{n} month",
+          "otros": "{n} months"
+        },
+        "anios": {
+          "uno": "{n} year",
+          "otros": "{n} years"
+        },
+        "aniosYMeses": "{anios} and {meses}"
+      },
+      "sanidad": {
+        "titulo": "Health arrives in phase 3",
+        "texto": "This is where this animal's vaccines, treatments and check-ups will appear. The health module isn't available yet."
+      },
+      "pesajes": {
+        "titulo": "Weighings arrive in phase 3",
+        "texto": "This is where this animal's weighings and weight gain will appear. The weighings module isn't available yet.",
+        "textoConPeso": "This is where this animal's weighings and weight gain will appear. For now there's only the weight entered in the record: {peso}."
+      },
+      "historial": {
+        "titulo": "History",
+        "alta": "The animal was registered",
+        "entro": "Moved into {destino}",
+        "estado": "Changed from {anterior} to {nuevo} on {fecha}",
+        "baja": "Removed from records",
+        "quienCuando": "{nombre} · {momento}"
+      },
       "rotulo": "Animal record",
       "titulo": "Animal {identificador}",
       "volver": "Back to animals",

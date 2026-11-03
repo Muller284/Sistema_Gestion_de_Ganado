@@ -27,6 +27,12 @@ const COLUMNAS = `
 export class RepositorioCorrales {
   constructor(@Inject(POOL_BD) private readonly bd: Pool) {}
 
+  /** Carne, leche o mixto: de eso depende cuantos animales caben por hectarea. */
+  async tipoProduccion(ranchoId: string): Promise<string> {
+    const resultado = await this.bd.query(`SELECT tipo_produccion FROM ranchos WHERE id = $1`, [ranchoId]);
+    return resultado.rows[0]?.tipo_produccion ?? 'carne';
+  }
+
   /** Los vigentes; con bajas, tambien los dados de baja (HU-34). */
   async listar(ranchoId: string, conBajas: boolean): Promise<Corral[]> {
     const resultado = await this.bd.query(

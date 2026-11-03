@@ -17,6 +17,7 @@ import { ServicioCorrales } from './servicio-corrales';
  * HU-36 · Corrales (y su baja logica, HU-34).
  *
  *   GET    /corrales                 los vigentes con su ocupacion; ?bajas=1 suma los dados de baja
+ *   GET    /corrales/carga           animales por hectarea segun el tipo de produccion del rancho
  *   POST   /corrales                 { nombre, capacidad?, superficie_ha? }
  *   PATCH  /corrales/:id             lo mismo
  *   DELETE /corrales/:id             baja logica
@@ -32,6 +33,11 @@ export class ControladorCorrales {
   @Get()
   async listar(@Query('bajas') bajas: string | undefined, @Req() peticion: any) {
     return this.servicio.listar(bajas === '1' || bajas === 'true', peticion.usuarioActual);
+  }
+
+  @Get('carga')
+  async carga(@Req() peticion: any) {
+    return this.servicio.carga(peticion.usuarioActual);
   }
 
   @Post()

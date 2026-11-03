@@ -1,6 +1,6 @@
 -- ============================================================================
 --  SISTEMA DE GESTION DE GANADO
---  Migracion 009 - Indices para ordenar y paginar el listado de animales
+--  Migracion 011 - Indices para ordenar y paginar el listado de animales
 --  Responsable: Brian
 -- ============================================================================
 --

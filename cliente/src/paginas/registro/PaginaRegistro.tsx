@@ -4,6 +4,7 @@ import {
   Alerta,
   Boton,
   CampoLista,
+  CampoContrasena,
   CampoTexto,
   Cargando,
   DisenoAcceso,
@@ -18,7 +19,9 @@ import { enumerar, faltasDeContrasena } from '../../servicios/texto';
  * HU-06 · Registro de propietario.
  *
  * Los cuatro criterios de aceptacion, del lado del cliente:
- *   1. Pide nombre, correo, contraseña y pais.
+ *   1. Pide nombre, correo, contraseña y pais. La contraseña se escribe dos
+ *      veces para no crear la cuenta con un error de tipeo, y el ojo deja ver
+ *      lo escrito.
  *   2. Avisa en el momento si la contraseña no llega a ocho caracteres, una
  *      mayuscula y un numero. La regla tambien esta en el servidor: esto es
  *      para no hacerle perder el viaje al usuario, no para reemplazarla.
@@ -35,6 +38,7 @@ const VACIO = {
   nombre: '',
   correo: '',
   contrasena: '',
+  repetir: '',
   pais_codigo: 'BO',
 };
 
@@ -79,6 +83,7 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
 
   const faltas = faltasDeContrasena(formulario.contrasena);
   const contrasenaTocada = formulario.contrasena.length > 0;
+  const noCoinciden = formulario.repetir.length > 0 && formulario.repetir !== formulario.contrasena;
 
   async function registrar(e: React.FormEvent) {
     e.preventDefault();
@@ -87,6 +92,10 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
 
     if (faltas.length > 0) {
       setError(t('comun.contrasena.necesita', { faltas: enumerar(faltas) }));
+      return;
+    }
+    if (formulario.repetir !== formulario.contrasena) {
+      setError(t('acceso.comun.noCoinciden'));
       return;
     }
 
@@ -178,10 +187,9 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
               error={errorCorreo || undefined}
               {...campo('correo')}
             />
-            <CampoTexto
+            <CampoContrasena
               etiqueta={t('acceso.comun.contrasena')}
               obligatorio
-              type="password"
               autoComplete="new-password"
               placeholder={t('acceso.comun.alMenos8')}
               ayuda={t('acceso.comun.ayudaContrasena')}
@@ -191,6 +199,13 @@ export function PaginaRegistro({ alConfirmar }: Propiedades) {
                   : undefined
               }
               {...campo('contrasena')}
+            />
+            <CampoContrasena
+              etiqueta={t('acceso.comun.repetirContrasena')}
+              obligatorio
+              autoComplete="new-password"
+              error={noCoinciden ? t('acceso.comun.noCoinciden') : undefined}
+              {...campo('repetir')}
             />
             <CampoLista
               etiqueta={t('acceso.registro.pais')}

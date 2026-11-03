@@ -111,6 +111,7 @@ async function ejecutarPruebas() {
       const alta = await pedir('POST', '/animales', {
         identificador: `C-${MARCA}-${sufijo}`,
         sexo: 'hembra',
+        categoria_codigo: 'vaca',
         corral_id: corral.id,
       });
       assert.strictEqual(alta.estado, 201, JSON.stringify(alta.cuerpo));
@@ -182,9 +183,9 @@ async function ejecutarPruebas() {
   const chico = (await pedir('POST', '/corrales', { nombre: `Chico ${MARCA}`, capacidad: 1 })).cuerpo.corral;
   const sueltos = [];
   for (const sufijo of ['A', 'B']) {
-    sueltos.push((await pedir('POST', '/animales', { identificador: `S-${MARCA}-${sufijo}`, sexo: 'macho' })).cuerpo.animal);
+    sueltos.push((await pedir('POST', '/animales', { identificador: `S-${MARCA}-${sufijo}`, sexo: 'macho', categoria_codigo: 'toro' })).cuerpo.animal);
   }
-  const ajeno = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-B`, sexo: 'macho' }, PROPIETARIO_B)).cuerpo.animal;
+  const ajeno = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-B`, sexo: 'macho', categoria_codigo: 'toro' }, PROPIETARIO_B)).cuerpo.animal;
   let asignacion;
 
   await prueba('HU-37 criterio 2: se asignan varios animales juntos desde una seleccion', async () => {
@@ -221,7 +222,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-37 criterio 1: tambien desde la ficha, y avisa si el corral se excede', async () => {
-    const otro = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-C`, sexo: 'hembra' })).cuerpo.animal;
+    const otro = (await pedir('POST', '/animales', { identificador: `S-${MARCA}-C`, sexo: 'hembra', categoria_codigo: 'vaca' })).cuerpo.animal;
     const { estado, cuerpo } = await pedir('POST', `/animales/${otro.id}/movimientos`, { corral_id: chico.id });
     assert.strictEqual(estado, 201);
     assert.strictEqual(cuerpo.animal.corral_id, chico.id);
@@ -243,6 +244,57 @@ async function ejecutarPruebas() {
   await prueba('HU-37: una seleccion vacia se rechaza', async () => {
     const { estado } = await pedir('POST', `/corrales/${chico.id}/animales`, { animal_ids: [] });
     assert.strictEqual(estado, 400);
+  });
+
+  // --- Pedido del docente: capacidad segun la superficie ----------------------
+  await prueba('La carga depende del tipo de produccion: carne 1 por ha, leche 2 por ha', async () => {
+    assert.deepStrictEqual((await pedir('GET', '/corrales/carga')).cuerpo, {
+      tipo_produccion: 'carne',
+      animales_por_hectarea: 1,
+    });
+    assert.strictEqual((await pedir('GET', '/corrales/carga', undefined, PROPIETARIO_B)).cuerpo.animales_por_hectarea, 2);
+  });
+
+  await prueba('Rancho de carne: 1 ha admite 1 animal; 2 en 1 ha se rechaza', async () => {
+    const { estado, cuerpo } = await pedir('POST', '/corrales', { nombre: `Ha ${MARCA}`, capacidad: 2, superficie_ha: 1 });
+    assert.strictEqual(estado, 400);
+    assert.match(cuerpo.message, /hasta 1 animal/);
+    const bien = await pedir('POST', '/corrales', { nombre: `Ha ${MARCA}`, capacidad: 1, superficie_ha: 1 });
+    assert.strictEqual(bien.estado, 201);
+    assert.strictEqual(bien.cuerpo.corral.limite_superficie, 1);
+  });
+
+  await prueba('Rancho de leche: 1 ha admite 2 animales', async () => {
+    const { estado, cuerpo } = await pedir(
+      'POST',
+      '/corrales',
+      { nombre: `Leche ${MARCA}`, capacidad: 2, superficie_ha: 1 },
+      PROPIETARIO_B,
+    );
+    assert.strictEqual(estado, 201, JSON.stringify(cuerpo));
+    const demas = await pedir('POST', '/corrales', { nombre: `Leche2 ${MARCA}`, capacidad: 3, superficie_ha: 1 }, PROPIETARIO_B);
+    assert.strictEqual(demas.estado, 400);
+  });
+
+  await prueba('Editar tampoco deja pasar del limite, ni achicar la superficie por debajo de la capacidad', async () => {
+    const corralHa = (await pedir('GET', '/corrales')).cuerpo.find((c) => c.nombre === `Ha ${MARCA}`);
+    assert.strictEqual(
+      (await pedir('PATCH', `/corrales/${corralHa.id}`, { nombre: corralHa.nombre, capacidad: 5, superficie_ha: 1 })).estado,
+      400,
+    );
+    assert.strictEqual(
+      (await pedir('PATCH', `/corrales/${corralHa.id}`, { nombre: corralHa.nombre, capacidad: 5, superficie_ha: 5 })).estado,
+      200,
+    );
+    assert.strictEqual(
+      (await pedir('PATCH', `/corrales/${corralHa.id}`, { nombre: corralHa.nombre, capacidad: 5, superficie_ha: 2 })).estado,
+      400,
+    );
+  });
+
+  await prueba('No se acepta capacidad ni superficie en cero', async () => {
+    assert.strictEqual((await pedir('POST', '/corrales', { nombre: `Cero ${MARCA}`, capacidad: 0 })).estado, 400);
+    assert.strictEqual((await pedir('POST', '/corrales', { nombre: `Cero ${MARCA}`, superficie_ha: 0 })).estado, 400);
   });
 
   // ------------------------------------------------------------------------

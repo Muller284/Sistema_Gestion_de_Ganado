@@ -1237,4 +1237,303 @@ El orden se elige de una lista cerrada (`ORDENES`): nunca se pega al SQL lo
 que llega en la URL. Los nulos van al final y el identificador y el id
 desempatan, para que las páginas no se pisen. La vista de bajas usa
 `bajas=solo`, porque filtrarlas en el navegador rompería la paginación. La
-migración 009 suma índices por rancho para cada columna de orden.
+migración 011 suma índices por rancho para cada columna de orden.
+
+**Al integrar con main (3 de noviembre).** La categoría pasó a ser obligatoria
+al importar (§40), así que es la tercera columna obligatoria de HU-42: si el
+archivo no la trae, la vista previa la pide (`faltan`) y se puede asignar a
+mano; confirmar sin ella sigue siendo 400. Se ajustó la prueba de Aaron que
+esperaba el 400 en la vista previa, igual que antes la de Romina. La
+migración de índices pasó de `009_hu30_...` a `011_hu30_...`, porque main ya
+usaba el 009 (razas) y el 010 (sanidad y pesajes); solo crea índices con
+`IF NOT EXISTS`, así que no importa en qué orden corra. La prueba de HU-30
+repetía `porPagina` en la URL (llegaba como lista y el servidor respondía
+400): el ayudante ahora reemplaza el valor en lugar de sumarlo.
+
+---
+
+## 38. Ficha con pestañas y alta rápida desde el celular (Sprint 3, Aaron)
+
+Historias: HU-32 y HU-35.
+
+**La ficha se arma con lo que ya existía (HU-32).** No hizo falta tocar el
+servidor: `GET /animales/:id` ya traía el animal con su autoría (HU-23), los
+movimientos (HU-39) y los cambios de estado (HU-33), cada uno con quién lo
+registró. La pantalla junta todo en una sola línea de tiempo
+(`cliente/src/paginas/animales/historial.ts`), lo más nuevo primero. En un
+cambio de estado el "cuándo" es el momento en que se guardó (`creado_en`), y la
+fecha que eligió el usuario va en el texto: pueden ser días distintos. La baja
+sale de `eliminado_en` y `modificado_por`, que es quien la hizo, porque después
+de una baja la ficha no se puede editar.
+
+**Pestañas en la dirección.** Resumen, sanidad, pesajes e historial usan
+`Segmentos`, y la elegida queda en `?pestana=`: el enlace se puede compartir y
+el botón Atrás la respeta. Sanidad y pesajes son de la fase 3: la pestaña está
+y explica por qué todavía está vacía (pesajes muestra el peso cargado en la
+ficha, si hay).
+
+**Alta rápida (HU-35) en `/animales/alta-rapida`.** Pide identificador,
+categoría y sexo, y nada más; el tipo de identificador es caravana y el resto
+se completa en la ficha. Usa el mismo `POST /animales`, así que valen las
+mismas reglas (identificador único, categoría del catálogo, permiso de edición
+en animales). Las opciones son botones grandes y no listas desplegables, y
+todo lo tocable usa `--alto-control-movil` (52 px; el mínimo pedido es 48). La
+barra de Terminar y Registrar queda pegada abajo. Al registrar se vacía el
+identificador y vuelve a tener el foco; la categoría y el sexo se quedan para
+la siguiente, porque en el corral se cargan tandas parecidas. Elegir la
+categoría marca el sexo que le corresponde (vaca, hembra; toro, macho), y se
+puede cambiar.
+
+**Estilos en `animal.css`.** Archivo aparte de `ganado.css` para que el trabajo
+de cada uno no choque en el mismo archivo.
+
+**Pendiente, fuera de estas historias:** en pantallas de menos de 860 px el
+menú lateral se oculta y no hay otro menú. En el celular se llega a Animales y
+al alta rápida por la dirección o desde el listado, pero falta una navegación
+para móvil.
+
+**Ajustes pedidos por el docente (28/10, sobre HU-28 y HU-36).**
+- *Raza de una lista, guardada en la base.* La migración 009 crea la tabla
+  `razas`: el catálogo mundial (45 razas, `rancho_id` nulo, agrupadas en carne,
+  leche y doble propósito; el sistema no es solo para Bolivia) y las razas
+  propias de cada rancho. El formulario las pide a `GET /animales/razas` y
+  las muestra en un buscador (`componentes/CampoBuscador.tsx`): lo escrito
+  filtra la lista por cualquier parte del nombre, y si no está aparece
+  «Agregar … como raza nueva» (lo que antes era «Otra»). Si lo escrito ya existe (sin importar
+  mayúsculas, acentos ni espacios: columna `clave`, regla en
+  `servidor/src/comun/razas.ts`), se guarda con el nombre de la lista; si es
+  nueva, queda como raza del rancho y aparece en su lista, en «Razas de mi
+  rancho». Otro rancho no la ve (HU-03). La importación sigue la misma regla.
+  `animales.raza` sigue siendo texto, así no cambia nada de lo que ya lo lee.
+- *Capacidad según la superficie.* La capacidad de un corral no puede pasar de
+  lo que admite su superficie: carne 1, leche 2 y mixto 1,5 animales por
+  hectárea, según el tipo de producción del rancho. La tabla vive solo en
+  `servidor/src/comun/carga-animal.ts`; la pantalla la pide por
+  `GET /corrales/carga` y muestra el límite mientras se escribe. Ni la
+  capacidad ni la superficie aceptan cero. Asignar animales de más sigue
+  avisando sin impedirlo (HU-38).
+- *Categoría según sexo y edad.* Una categoría tiene que corresponder al sexo y
+  a la edad que da la fecha de nacimiento: un animal que nació hoy solo puede
+  ser ternero o ternera; vaca y toro, desde los 18 meses; vaquilla, de 8 a 36
+  meses. La tabla vive solo en `servidor/src/comun/categorias-animal.ts`; el
+  servidor la aplica al registrar, al editar y al importar, y la pantalla la pide
+  por `GET /animales/categorias/reglas` para ofrecer solo las que corresponden.
+  Sin fecha de nacimiento se controla solo el sexo.
+---
+
+## 39. Acciones masivas y exportación (Sprint 3, Aaron)
+
+Historias: HU-31 y HU-45. Incluye la decisión sobre HU-18, criterio 1.
+
+**Elegir (HU-31, criterio 1).** En el listado cada fila tiene su casilla, y
+arriba hay dos opciones más: "Elegir los de esta página", que marca lo que se
+ve, y "Elegir todo el resultado del filtro", que vuelve a pedir la lista
+completa al servidor con la misma pestaña y los mismos filtros. Así incluye
+también lo que no entra en la página, antes y después de la paginación de
+HU-30. Se pueden elegir animales vigentes de cualquier estado; los dados de
+baja no.
+
+**La barra (criterios 2 y 3).** `AccionesMasivas.tsx` muestra cuántos animales
+hay elegidos, cómo se eligieron y las acciones posibles:
+
+- Asignar a un corral (HU-37).
+- Cambiar estado, con fecha y motivo (HU-33).
+- Dar de baja (HU-34), solo para el propietario y el Admin (HU-18, criterio 3).
+
+Ninguna acción se manda hasta confirmar en un aviso que dice cuántos animales
+afecta.
+
+**Servidor.** Hay dos rutas nuevas bajo su propio prefijo, para no chocar con
+`/animales/:id/estado`:
+
+- `POST /masivo/animales/estado` cambia el estado y guarda cada cambio en
+  `cambios_estado_animal` con su autor. Es una sola sentencia, así que si falla
+  no se aplica ningún cambio.
+- `POST /masivo/animales/baja` da de baja a todos los elegidos.
+
+Las dos reciben hasta 5000 ids. Responden cuántos se cambiaron, cuántos ya
+estaban en ese estado y cuántos no se encontraron (de otro rancho, inexistentes
+o dados de baja). Los permisos son los mismos que en las acciones de a uno.
+Asignar a un corral usa `POST /corrales/:id/animales`, que acepta hasta 1000
+por pedido; la pantalla manda en tandas una selección más grande.
+
+**Exportar (HU-45).** `GET /exportacion` recibe tres cosas:
+
+- `que`: animales, corrales, movimientos y cambios de estado.
+- `formato`: `xlsx` arma una hoja por cada cosa; `csv` es una sola tabla, así
+  que se elige una sola cosa.
+- Los mismos filtros que `GET /animales` (criterio 2). Se aplican a los
+  animales y a sus movimientos y cambios de estado.
+
+El archivo se llama, por ejemplo, `ganado_rancho-el-cerrito_2026-10-27.xlsx` o
+`animales_rancho-el-cerrito_2026-10-27.csv` (criterio 3). La fecha es la de hoy
+en la zona horaria del país del rancho.
+
+Otras reglas del archivo:
+
+- El peso y la superficie salen en las unidades del país, y las fechas en su
+  formato (HU-26).
+- La hoja de animales empieza con los títulos de la plantilla de importación
+  (HU-40), así un archivo exportado se puede volver a importar.
+- Exportar es leer: pide permiso de ver cada módulo (corrales pide corrales y el
+  resto pide animales).
+- El CSV lleva BOM para que Excel lea bien los acentos.
+
+**HU-18, criterio 1: un usuario recién creado.** Decisión del equipo (27/10):
+un usuario no puede crear, editar ni eliminar nada cuando recién es creado;
+cuando ya tiene su rol asignado, puede hacer lo que su rol le permite. Esto ya
+se cumple sin una marca nueva:
+
+- Al darlo de alta queda con contraseña temporal y `debe_cambiar_contrasena`.
+  Mientras no la cambie, `GuardiaCuentaLista` le cierra todo con el motivo
+  `debe_cambiar_contrasena` (HU-10).
+- Un colaborador no se puede crear sin tipo, y el tipo es su rol: cuando entra,
+  ya tiene asignado qué ve y qué edita.
+
+Esto también cierra la pregunta pendiente del punto 31: el tipo elegido al darlo
+de alta cuenta como la asignación del rol. Lo prueba
+`servidor/pruebas/usuario-nuevo.test.js`.
+
+**Pruebas.**
+
+- Servidor: `acciones-masivas.test.js`, `exportacion.test.js` y
+  `usuario-nuevo.test.js`, ya incluidas en `npm test`.
+- Cliente: `acciones-masivas.test.tsx` y `exportacion.test.tsx`.
+
+---
+
+## 40. Contraseñas con ojo, raza de lista fija y campos obligatorios (Sprint 3, Aaron)
+
+Ajustes pedidos antes de cerrar el sprint.
+
+**Contraseñas.** Todo campo de contraseña usa el nuevo componente
+`CampoContrasena`, que tiene un botón con un ojo para ver lo que se va
+escribiendo. Está en el ingreso, el registro, el cambio de la clave temporal,
+el restablecimiento y el perfil.
+
+- El botón queda dentro del campo, a la derecha, y mide lo mismo que el campo
+  de alto.
+- Dice con `aria-pressed` si está mostrando la contraseña.
+- No envía el formulario.
+
+Donde se crea o se cambia una contraseña, hay que escribirla dos veces. El
+cambio de clave, el restablecimiento y el perfil ya lo pedían; faltaba el
+registro. Que las dos coincidan se revisa en el cliente; las reglas de la
+contraseña siguen en el servidor.
+
+**Raza.** En este mismo ajuste se hizo una lista fija de razas en el código.
+Al fusionar con el trabajo de Romina sobre HU-28 (el catálogo en la base de
+datos con buscador y razas propias de cada rancho, ver arriba), quedó el suyo:
+es su historia y es más completo. La lista fija se quitó.
+
+**Qué es obligatorio.** Se revisó contra cómo trabajan los ranchos reales.
+
+- Los sistemas de trazabilidad exigen por animal el número oficial de
+  identificación, la caravana (SAG Chile, Res. 8202/2015).
+- El software ganadero usado en ranchos (CattleMax) exige solo el
+  identificador, el estado y el tipo de animal. Raza, nacimiento, peso,
+  origen y padres son opcionales, porque muchas veces no se conocen.
+
+Con eso:
+
+- **Animal.** Obligatorios: identificador, sexo y categoría.
+  - La categoría pasó a ser obligatoria al registrar, al editar y al
+    importar, y la columna Categoría ya es obligatoria en el archivo. Es con
+    lo que se cuenta el hato, y en el campo siempre se sabe. Además tiene que
+    corresponder al sexo y a la edad (regla de Romina, ver arriba).
+  - Siguen opcionales: nombre, raza, fecha de nacimiento, origen, peso y
+    corral. Un animal comprado muchas veces no tiene fecha de nacimiento ni
+    raza conocidas.
+- **Corral.** Solo el nombre es obligatorio. La capacidad y la superficie
+  siguen opcionales: muchos corrales y potreros no están medidos. Sin
+  capacidad no hay aviso de sobrepoblación, y el formulario ya lo dice.
+- **Rancho.** Sin cambios. Son obligatorios el nombre, el país, el
+  departamento, la localidad, la superficie y el tipo de producción. La
+  ubicación GPS es opcional.
+- **Integrante del equipo.** Sin cambios: nombre, correo, rol y, para un
+  colaborador, su tipo.
+
+**Pruebas de otros que se tocaron.** Varias pruebas creaban animales sin
+categoría. Solo se les agregó la categoría; lo que prueban no cambió. Son las
+de animales, corrales, permisos, registro de animal, autoría, baja del
+propietario, importación y permisos de importación. Las pruebas nuevas son
+`servidor/pruebas/categoria-obligatoria.test.js` y
+`cliente/pruebas/contrasenas-categoria.test.tsx`.
+
+---
+
+## 41. Base de datos de la fase 3: sanidad y pesajes (Sprint 4, Aaron)
+
+Tarea MT-03. La migración 010 crea las cuatro tablas sobre las que se construye
+el Sprint 4. Romina y Brian trabajan encima de ellas, así que aquí queda el
+contrato.
+
+| Tabla | Para qué | Historias |
+| :-- | :-- | :-- |
+| `productos_sanitarios` | Catálogo de cada rancho: nombre, `clave`, tipo, laboratorio, dosis y unidad | HU-46 |
+| `esquemas_vacunacion` | Producto, a quién se aplica, cuántas dosis y cada cuánto | HU-47, HU-50 |
+| `aplicaciones_sanitarias` | Cada dosis aplicada, con quién la aplicó | HU-48, HU-49 |
+| `pesajes` | El peso de un animal en una fecha | HU-53, HU-54 |
+
+**Reglas de siempre.** Identificador generado en el cliente, autoría
+(`creado_por`, `modificado_por`), marca de modificación y baja lógica
+(`eliminado_en`) en las cuatro tablas.
+
+**Aislamiento también en la base.** Las referencias entre tablas incluyen el
+rancho: `(animal_id, rancho_id)` apunta a `animales(id, rancho_id)`, y lo mismo
+pasa con productos y esquemas. Así una aplicación o un pesaje no puede apuntar a
+un animal, un producto o un esquema de otro rancho, aunque el servidor tuviera
+un error. Para eso se agregó a `animales` la restricción única
+`(id, rancho_id)`.
+
+**Productos (HU-46).**
+
+- `tipo` admite cinco valores: `vacuna`, `antiparasitario`, `vitamina`,
+  `antibiotico` y `otro`.
+- `clave` es el nombre sin mayúsculas, sin acentos y sin espacios de más, con
+  la misma regla que `claveDeRaza` de `servidor/src/comun/razas.ts`.
+- Un índice único sobre `(rancho_id, clave)` entre los vigentes impide repetir
+  el nombre dentro del rancho.
+- `dosis` y `unidad` (`ml`, `g`, `mg` o `dosis`) van juntas o ninguna de las
+  dos.
+
+**Esquemas (HU-47).**
+
+- **A quién se aplica:**
+  - `categorias` es un arreglo de códigos; nulo quiere decir todas.
+  - `sexo` nulo quiere decir los dos.
+  - `edad_minima_meses` y `edad_maxima_meses` dan el rango de edad, con la misma
+    cuenta de meses cumplidos que las reglas de categoría.
+- **Cuándo:**
+  - La primera dosis toca al cumplir la edad mínima.
+  - Cada dosis siguiente toca `intervalo_dias` después de la anterior. Este
+    campo es obligatorio si hay más de una dosis.
+  - Después de la última, si hay `refuerzo_dias`, se repite con esa frecuencia.
+
+**Aplicaciones (HU-48, HU-49).**
+
+- `aplicado_por` es quien la aplicó, que puede no ser quien la registra
+  (`creado_por`). No tiene clave foránea a `usuarios`, igual que `creado_por`,
+  para que las semillas puedan recrear los usuarios.
+- `esquema_id` y `numero_dosis` son opcionales: un tratamiento suelto no es
+  parte de ningún esquema.
+- Las filas de una aplicación masiva comparten `lote_id`.
+
+**Pesajes (HU-53, HU-54).**
+
+- El peso se guarda siempre en kilos (HU-26).
+- Un animal no puede tener dos pesajes vigentes el mismo día: la ganancia
+  diaria divide por los días que pasaron entre dos pesajes.
+- El último pesaje pasa a ser el `peso_kg` de la ficha.
+
+**Semilla 002.** Corre después de la 001 y deja datos para ver la fase 3 sin
+cargar nada a mano:
+
+- **Rancho El Cerrito:** seis animales con caravanas 0501 a 0506, cuatro
+  productos, dos esquemas (aftosa para todo el rodeo y brucelosis para
+  terneras), una aplicación masiva, dosis al día, próximas y vencidas, y tres
+  pesajes por animal.
+- **Hacienda La Floresta:** dos vacas con lo mínimo para probar el aislamiento.
+
+Las caravanas no chocan con las del Excel de demostración (1001 a 1040). La
+prueba es `servidor/pruebas/sanidad-pesajes-base.test.js`.

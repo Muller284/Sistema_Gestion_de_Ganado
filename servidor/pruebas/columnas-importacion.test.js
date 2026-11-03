@@ -104,8 +104,8 @@ async function ejecutarPruebas() {
     const { estado, cuerpo } = await pedir('POST', '/importacion/vista-previa', {
       nombre_archivo: 'hato.xlsx',
       contenido_base64: await excel([
-        ['Caravana', 'Sexo'],
-        [id('x1'), 'Hembra'],
+        ['Caravana', 'Sexo', 'Categoría'],
+        [id('x1'), 'Hembra', 'Vaca'],
       ]),
     });
     assert.strictEqual(estado, 200, JSON.stringify(cuerpo));
@@ -114,7 +114,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-41 criterio 1: acepta CSV con coma y con punto y coma', async () => {
-    for (const texto of [`Caravana,Sexo\n${id('c1')},M\n`, `Caravana;Sexo\n${id('c2')};H\n`]) {
+    for (const texto of [`Caravana,Sexo,Clase\n${id('c1')},M,Toro\n`, `Caravana;Sexo;Clase\n${id('c2')};H;Vaca\n`]) {
       const { estado, cuerpo } = await pedir('POST', '/importacion/vista-previa', {
         nombre_archivo: 'hato.csv',
         contenido_base64: csv(texto),
@@ -162,7 +162,7 @@ async function ejecutarPruebas() {
   await prueba('HU-41 criterio 2: reconoce variantes en ingles y sin importar mayusculas ni signos', async () => {
     const { estado, cuerpo } = await pedir('POST', '/importacion/vista-previa', {
       nombre_archivo: 'english.csv',
-      contenido_base64: csv(`EAR_TAG,sex,BREED,D.O.B,Weight kg,Paddock\n${id('e1')},female,Angus,2024-03-01,410,\n`),
+      contenido_base64: csv(`EAR_TAG,sex,BREED,D.O.B,Weight kg,Paddock,Category\n${id('e1')},female,Angus,2024-03-01,410,,Cow\n`),
     });
     assert.strictEqual(estado, 200, JSON.stringify(cuerpo));
     assert.deepStrictEqual(mapa(cuerpo.columnas), {
@@ -172,6 +172,7 @@ async function ejecutarPruebas() {
       'D.O.B': 'fecha_nacimiento',
       'Weight kg': 'peso',
       Paddock: 'corral',
+      Category: 'categoria',
     });
     assert.strictEqual(cuerpo.vista_previa[0].peso_kg, 410);
   });
@@ -189,7 +190,7 @@ async function ejecutarPruebas() {
   await prueba('HU-41 criterio 3: dice que columna tomo como que campo, y como la reconocio', async () => {
     const { cuerpo } = await pedir('POST', '/importacion/vista-previa', {
       nombre_archivo: 'mixto.csv',
-      contenido_base64: csv(`Identificador,Arete,Sexo,Observaciones\n${id('m1')},99,hembra,mansa\n`),
+      contenido_base64: csv(`Identificador,Arete,Sexo,Observaciones,Categoría\n${id('m1')},99,hembra,mansa,vaca\n`),
     });
     assert.deepStrictEqual(
       cuerpo.columnas.map((c) => [c.posicion, c.encabezado, c.campo, c.como]),
@@ -199,6 +200,7 @@ async function ejecutarPruebas() {
         [1, 'Arete', null, null],
         [2, 'Sexo', 'sexo', 'plantilla'],
         [3, 'Observaciones', null, null],
+        [4, 'Categoría', 'categoria', 'plantilla'],
       ],
     );
     assert.ok(Array.isArray(cuerpo.campos) && cuerpo.campos.includes('raza'));
@@ -206,7 +208,7 @@ async function ejecutarPruebas() {
 
   await prueba('HU-41 criterio 4: admite 5.000 filas y rechaza 5.001', async () => {
     const filas = (n) =>
-      ['Caravana,Sexo', ...Array.from({ length: n }, (_, i) => `${id(`g${i}`)},${i % 2 ? 'M' : 'H'}`)].join('\n');
+      ['Caravana,Sexo,Clase', ...Array.from({ length: n }, (_, i) => `${id(`g${i}`)},${i % 2 ? 'M,Toro' : 'H,Vaca'}`)].join('\n');
     const cinco = await pedir('POST', '/importacion/vista-previa', {
       nombre_archivo: 'grande.csv',
       contenido_base64: csv(filas(5000)),
@@ -223,8 +225,8 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-41 criterio 4: un Excel de 5.000 filas se confirma completo', async () => {
-    const filas = [['Arete', 'Género', 'Raza']];
-    for (let i = 0; i < 5000; i++) filas.push([id(`x${i}`), i % 2 ? 'Macho' : 'Hembra', 'Brahman']);
+    const filas = [['Arete', 'Género', 'Raza', 'Clase']];
+    for (let i = 0; i < 5000; i++) filas.push([id(`x${i}`), i % 2 ? 'Macho' : 'Hembra', 'Brahman', i % 2 ? 'Toro' : 'Vaca']);
     const { estado, cuerpo } = await pedir('POST', '/importacion/confirmar', {
       nombre_archivo: 'grande.xlsx',
       contenido_base64: await excel(filas),
@@ -236,9 +238,9 @@ async function ejecutarPruebas() {
 
   // --- HU-42 ---------------------------------------------------------------
   const desconocido = csv(
-    'Animal;Sexo;Color;Observaciones\n' +
-      `${id('d1')};hembra;Nelore;mansa\n` +
-      `${id('d2')};macho;Gir;arisco\n`,
+    'Animal;Sexo;Color;Observaciones;Categoría\n' +
+      `${id('d1')};hembra;Nelore;mansa;vaca\n` +
+      `${id('d2')};macho;Gir;arisco;toro\n`,
   );
   const archivo = { nombre_archivo: 'desconocido.csv', contenido_base64: desconocido };
 
@@ -269,6 +271,7 @@ async function ejecutarPruebas() {
         ['Sexo', 'sexo', 'plantilla'],
         ['Color', 'raza', 'manual'],
         ['Observaciones', null, 'ignorada'],
+        ['Categoría', 'categoria', 'plantilla'],
       ],
     );
     assert.strictEqual(cuerpo.resumen.cargan, 2);

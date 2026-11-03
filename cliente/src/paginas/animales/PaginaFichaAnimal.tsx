@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import {
   Alerta,
   Boton,
@@ -12,6 +12,7 @@ import {
   EstadoVacio,
   Icono,
   Insignia,
+  Segmentos,
   Tarjeta,
 } from '../../componentes';
 import {
@@ -21,7 +22,7 @@ import {
   type EstadoAnimal,
   type FichaAnimal,
 } from '../../servicios/api';
-import { t } from '../../servicios/idioma';
+import { t, tn } from '../../servicios/idioma';
 import { conTransicion } from '../../servicios/transicion';
 import {
   formatoFecha,
@@ -32,6 +33,7 @@ import {
 } from '../../servicios/unidades';
 import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/contexto';
 import { FormularioFicha } from './FormularioFicha';
+import { armarHistorial, edadEnMeses, type EventoHistorial } from './historial';
 
 /**
  * La ficha de un animal.
@@ -48,12 +50,31 @@ import { FormularioFicha } from './FormularioFicha';
  * HU-22  quien solo puede ver, ve la ficha y los dos historiales (criterio 3).
  * HU-23  quién registró la ficha y quién la modificó por última vez, con la
  *        fecha y hora en la zona del rancho.
+ * HU-32  la ficha con todo su historial:
+ *          1. el encabezado muestra el identificador en grande, el estado y
+ *             los datos principales (EncabezadoAnimal);
+ *          2. pestañas de resumen, sanidad, pesajes e historial;
+ *          3. sanidad y pesajes son de la fase 3: la pestaña existe y explica
+ *             por qué todavía está vacía;
+ *          4. el historial junta alta, movimientos, cambios de estado y baja,
+ *             cada uno con quién lo registró y cuándo (historial.ts).
+ *        La pestaña elegida va en la dirección (?pestana=historial), así se
+ *        puede compartir el enlace y el botón Atrás del navegador la respeta.
  */
 
 const ESTADOS: EstadoAnimal[] = ['activo', 'vendido', 'muerto', 'archivado'];
 
+type Pestana = 'resumen' | 'sanidad' | 'pesajes' | 'historial';
+const PESTANAS: Pestana[] = ['resumen', 'sanidad', 'pesajes', 'historial'];
+
+function pestanaDe(valor: string | null): Pestana {
+  return PESTANAS.find((pestana) => pestana === valor) ?? 'resumen';
+}
+
 export function PaginaFichaAnimal() {
   const { id = '' } = useParams();
+  const [parametros, setParametros] = useSearchParams();
+  const pestana = pestanaDe(parametros.get('pestana'));
   const contexto = useContextoGanado();
   const [ficha, setFicha] = useState<FichaAnimal | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -90,6 +111,13 @@ export function PaginaFichaAnimal() {
   const eliminable = puedeEliminar(contexto);
   const animal = ficha?.animal;
   const vigente = Boolean(animal && !animal.eliminado_en);
+  const historial = useMemo(() => (ficha ? armarHistorial(ficha) : []), [ficha]);
+
+  function cambiarPestana(nueva: Pestana) {
+    conTransicion(() =>
+      setParametros(nueva === 'resumen' ? {} : { pestana: nueva }, { replace: true }),
+    );
+  }
 
   async function alHacer(hacer: () => Promise<{ mensaje: string; aviso?: string | null }>) {
     setOcupado(true);
@@ -145,127 +173,234 @@ export function PaginaFichaAnimal() {
 
         {animal && ficha && !editando && (
           <>
-            <Tarjeta
-              titulo={t('animales.ficha.datos')}
-              accion={
-                <div className="fila g8 centro">
-                  <Insignia variante={animal.estado}>{t(`animales.estados.${animal.estado}`)}</Insignia>
-                  {animal.eliminado_en && <Insignia variante="archivado">{t('animales.deBaja')}</Insignia>}
-                </div>
-              }
-              pie={
-                puedeEditar && (
-                  <div className="fila g8 centro">
-                    {vigente && !confirmandoBaja && (
-                      <>
-                        <Boton variante="secundario" onClick={() => conTransicion(() => setEditando(true))}>
-                          <Icono nombre="lapiz" tamano={16} />
-                          {t('animales.ficha.editar')}
-                        </Boton>
-                        {eliminable && (
-                          <Boton variante="fantasma" onClick={() => setConfirmandoBaja(true)}>
-                            <Icono nombre="archivar" tamano={16} />
-                            {t('animales.ficha.darDeBaja')}
+            <EncabezadoAnimal animal={animal} regional={contexto.regional} />
+
+            <Segmentos
+              etiqueta={t('animales.ficha.pestanas.etiqueta')}
+              valor={pestana}
+              alCambiar={cambiarPestana}
+              opciones={PESTANAS.map((clave) => ({
+                clave,
+                nombre: t(`animales.ficha.pestanas.${clave}`),
+                cantidad: clave === 'historial' ? historial.length : undefined,
+              }))}
+            />
+
+            {pestana === 'resumen' && (
+              <>
+                <Tarjeta
+                  titulo={t('animales.ficha.datos')}
+                  pie={
+                    puedeEditar && (
+                      <div className="fila g8 centro">
+                        {vigente && !confirmandoBaja && (
+                          <>
+                            <Boton variante="secundario" onClick={() => conTransicion(() => setEditando(true))}>
+                              <Icono nombre="lapiz" tamano={16} />
+                              {t('animales.ficha.editar')}
+                            </Boton>
+                            {eliminable && (
+                              <Boton variante="fantasma" onClick={() => setConfirmandoBaja(true)}>
+                                <Icono nombre="archivar" tamano={16} />
+                                {t('animales.ficha.darDeBaja')}
+                              </Boton>
+                            )}
+                          </>
+                        )}
+                        {vigente && confirmandoBaja && (
+                          <>
+                            <span className="pie c-600">
+                              {t('animales.ficha.confirmarBaja', { identificador: animal.identificador })}
+                            </span>
+                            <Boton variante="secundario" onClick={() => setConfirmandoBaja(false)} disabled={ocupado}>
+                              {t('comun.cancelar')}
+                            </Boton>
+                            <Boton
+                              variante="destructivo"
+                              onClick={() => alHacer(() => api.bajaAnimal(animal.id))}
+                              disabled={ocupado}
+                            >
+                              {t('animales.ficha.darDeBaja')}
+                            </Boton>
+                          </>
+                        )}
+                        {!vigente && eliminable && (
+                          <Boton
+                            variante="primario"
+                            onClick={() => alHacer(() => api.restaurarAnimal(animal.id))}
+                            disabled={ocupado}
+                          >
+                            {t('animales.ficha.restaurar')}
                           </Boton>
                         )}
-                      </>
-                    )}
-                    {vigente && confirmandoBaja && (
-                      <>
-                        <span className="pie c-600">
-                          {t('animales.ficha.confirmarBaja', { identificador: animal.identificador })}
-                        </span>
-                        <Boton variante="secundario" onClick={() => setConfirmandoBaja(false)} disabled={ocupado}>
-                          {t('comun.cancelar')}
-                        </Boton>
-                        <Boton
-                          variante="destructivo"
-                          onClick={() => alHacer(() => api.bajaAnimal(animal.id))}
-                          disabled={ocupado}
-                        >
-                          {t('animales.ficha.darDeBaja')}
-                        </Boton>
-                      </>
-                    )}
-                    {!vigente && eliminable && (
-                      <Boton
-                        variante="primario"
-                        onClick={() => alHacer(() => api.restaurarAnimal(animal.id))}
-                        disabled={ocupado}
-                      >
-                        {t('animales.ficha.restaurar')}
-                      </Boton>
-                    )}
-                  </div>
-                )
-              }
-            >
-              <DatosDelAnimal animal={animal} regional={contexto.regional} />
-            </Tarjeta>
+                      </div>
+                    )
+                  }
+                >
+                  <DatosDelAnimal animal={animal} regional={contexto.regional} />
+                </Tarjeta>
 
-            {puedeEditar && vigente && (
-              <div className="par">
-                <MoverDeCorral animal={animal} alHacer={alHacer} ocupado={ocupado} />
-                <CambiarEstado animal={animal} regional={contexto.regional} alHacer={alHacer} ocupado={ocupado} />
-              </div>
+                {puedeEditar && vigente && (
+                  <div className="par">
+                    <MoverDeCorral animal={animal} alHacer={alHacer} ocupado={ocupado} />
+                    <CambiarEstado animal={animal} regional={contexto.regional} alHacer={alHacer} ocupado={ocupado} />
+                  </div>
+                )}
+              </>
             )}
 
-            <Tarjeta titulo={t('animales.ficha.movimientos.titulo')}>
-              {ficha.movimientos.length === 0 ? (
+            {pestana === 'sanidad' && (
+              <Tarjeta titulo={t('animales.ficha.pestanas.sanidad')}>
                 <EstadoVacio
-                  icono="corral"
-                  titulo={t('animales.ficha.movimientos.vacio')}
-                  texto={t('animales.ficha.movimientos.vacioTexto')}
+                  icono="sanidad"
+                  titulo={t('animales.ficha.sanidad.titulo')}
+                  texto={t('animales.ficha.sanidad.texto')}
                 />
-              ) : (
-                <ul className="ganado__historial">
-                  {ficha.movimientos.map((movimiento) => (
-                    <li key={movimiento.id}>
-                      <span className="dato">{formatoMomento(movimiento.fecha, contexto.regional)}</span>
-                      <span className="flex1">
-                        {t('animales.ficha.movimientos.de', {
-                          origen: movimiento.corral_origen ?? t('animales.sinCorral'),
-                          destino: movimiento.corral_destino ?? t('animales.sinCorral'),
-                        })}
-                      </span>
-                      <span className="pie c-500">
-                        {t('animales.ficha.registro', { nombre: movimiento.registrado_por ?? '—' })}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Tarjeta>
+              </Tarjeta>
+            )}
 
-            <Tarjeta titulo={t('animales.ficha.estados.titulo')}>
-              {ficha.estados.length === 0 ? (
-                <p className="cuerpo c-600">{t('animales.ficha.estados.vacio')}</p>
-              ) : (
-                <ul className="ganado__historial">
-                  {ficha.estados.map((cambio) => (
-                    <li key={cambio.id}>
-                      <span className="dato">{formatoFecha(cambio.fecha, contexto.regional)}</span>
-                      <span className="flex1">
-                        {t('animales.ficha.estados.de', {
-                          anterior: t(`animales.estados.${cambio.estado_anterior}`),
-                          nuevo: t(`animales.estados.${cambio.estado_nuevo}`),
-                        })}
-                        {' · '}
-                        {cambio.motivo}
-                      </span>
-                      <span className="pie c-500">
-                        {t('animales.ficha.registro', { nombre: cambio.registrado_por ?? '—' })}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Tarjeta>
+            {pestana === 'pesajes' && (
+              <Tarjeta titulo={t('animales.ficha.pestanas.pesajes')}>
+                <EstadoVacio
+                  icono="balanza"
+                  titulo={t('animales.ficha.pesajes.titulo')}
+                  texto={
+                    animal.peso_kg
+                      ? t('animales.ficha.pesajes.textoConPeso', {
+                          peso: formatoPeso(animal.peso_kg, contexto.regional),
+                        })
+                      : t('animales.ficha.pesajes.texto')
+                  }
+                />
+              </Tarjeta>
+            )}
+
+            {pestana === 'historial' && (
+              <Tarjeta titulo={t('animales.ficha.historial.titulo')}>
+                <Historial eventos={historial} regional={contexto.regional} />
+              </Tarjeta>
+            )}
           </>
         )}
       </div>
     </DisenoApp>
   );
+}
+
+/**
+ * HU-32, criterio 1. El identificador es lo que se busca con el animal
+ * delante (la caravana en la oreja), por eso es lo más grande de la pantalla.
+ */
+function EncabezadoAnimal({ animal, regional }: { animal: Animal; regional: Regional }) {
+  const meses = edadEnMeses(animal.fecha_nacimiento, hoyEn(regional));
+  const raya = '—';
+
+  return (
+    <section className="animal-encabezado" aria-labelledby="animal-identificador">
+      <div className="animal-encabezado__titulo">
+        <span className="etiqueta c-600">{t(`animales.tiposIdentificador.${animal.tipo_identificador}`)}</span>
+        <span id="animal-identificador" className="animal-encabezado__numero">
+          {animal.identificador}
+        </span>
+        {animal.nombre && <span className="cuerpo-g c-700">{animal.nombre}</span>}
+      </div>
+
+      <div className="fila g8 centro animal-encabezado__estado">
+        <Insignia variante={animal.estado}>{t(`animales.estados.${animal.estado}`)}</Insignia>
+        {animal.eliminado_en && <Insignia variante="archivado">{t('animales.deBaja')}</Insignia>}
+      </div>
+
+      <dl className="animal-encabezado__datos">
+        <div>
+          <dt>{t('animales.campos.categoria')}</dt>
+          <dd>{animal.categoria_codigo ? t(`animales.categorias.${animal.categoria_codigo}`) : raya}</dd>
+        </div>
+        <div>
+          <dt>{t('animales.campos.sexo')}</dt>
+          <dd>{t(`animales.sexos.${animal.sexo}`)}</dd>
+        </div>
+        <div>
+          <dt>{t('animales.ficha.encabezado.edad')}</dt>
+          <dd>{meses === null ? raya : textoEdad(meses)}</dd>
+        </div>
+        <div>
+          <dt>{t('animales.campos.pesoActual')}</dt>
+          <dd>{animal.peso_kg ? formatoPeso(animal.peso_kg, regional) : raya}</dd>
+        </div>
+        <div>
+          <dt>{t('animales.campos.corralActual')}</dt>
+          <dd>{animal.corral_nombre ?? t('animales.sinCorral')}</dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+/** "1 año y 3 meses", "8 meses". Menos de un mes también es "0 meses". */
+function textoEdad(meses: number): string {
+  const anios = Math.floor(meses / 12);
+  const resto = meses % 12;
+  if (anios === 0) return tn('animales.ficha.encabezado.meses', resto);
+  if (resto === 0) return tn('animales.ficha.encabezado.anios', anios);
+  return t('animales.ficha.encabezado.aniosYMeses', {
+    anios: tn('animales.ficha.encabezado.anios', anios),
+    meses: tn('animales.ficha.encabezado.meses', resto),
+  });
+}
+
+const ICONO_EVENTO = {
+  alta: 'mas',
+  movimiento: 'corral',
+  estado: 'regla',
+  baja: 'archivar',
+} as const;
+
+/** HU-32, criterio 4: qué pasó, quién lo registró y cuándo. */
+function Historial({ eventos, regional }: { eventos: EventoHistorial[]; regional: Regional }) {
+  return (
+    <ol className="animal-historial">
+      {eventos.map((evento) => (
+        <li key={evento.clave} className={`animal-historial__evento animal-historial__evento--${evento.tipo}`}>
+          <span className="animal-historial__icono" aria-hidden="true">
+            <Icono nombre={ICONO_EVENTO[evento.tipo]} tamano={16} />
+          </span>
+          <div className="col g4 flex1">
+            <span className="cuerpo">{descripcion(evento, regional)}</span>
+            {evento.tipo === 'estado' && <span className="pie c-600">«{evento.motivo}»</span>}
+            <span className="pie c-500">
+              {t('animales.ficha.historial.quienCuando', {
+                nombre: evento.quien ?? t('animales.ficha.autoria.sistema'),
+                momento: formatoMomento(evento.momento, regional),
+              })}
+            </span>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function descripcion(evento: EventoHistorial, regional: Regional): string {
+  switch (evento.tipo) {
+    case 'alta':
+      return t('animales.ficha.historial.alta');
+    case 'movimiento':
+      if (!evento.origen && evento.destino) {
+        return t('animales.ficha.historial.entro', { destino: evento.destino });
+      }
+      return t('animales.ficha.movimientos.de', {
+        origen: evento.origen ?? t('animales.sinCorral'),
+        destino: evento.destino ?? t('animales.sinCorral'),
+      });
+    case 'estado':
+      return t('animales.ficha.historial.estado', {
+        anterior: t(`animales.estados.${evento.anterior}`),
+        nuevo: t(`animales.estados.${evento.nuevo}`),
+        fecha: formatoFecha(evento.fecha, regional),
+      });
+    case 'baja':
+      return t('animales.ficha.historial.baja');
+  }
 }
 
 function DatosDelAnimal({ animal, regional }: { animal: Animal; regional: Regional }) {
