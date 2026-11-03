@@ -1412,3 +1412,81 @@ de animales, corrales, permisos, registro de animal, autoría, baja del
 propietario, importación y permisos de importación. Las pruebas nuevas son
 `servidor/pruebas/categoria-obligatoria.test.js` y
 `cliente/pruebas/contrasenas-categoria.test.tsx`.
+
+---
+
+## 41. Base de datos de la fase 3: sanidad y pesajes (Sprint 4, Aaron)
+
+Tarea MT-03. La migración 010 crea las cuatro tablas sobre las que se construye
+el Sprint 4. Romina y Brian trabajan encima de ellas, así que aquí queda el
+contrato.
+
+| Tabla | Para qué | Historias |
+| :-- | :-- | :-- |
+| `productos_sanitarios` | Catálogo de cada rancho: nombre, `clave`, tipo, laboratorio, dosis y unidad | HU-46 |
+| `esquemas_vacunacion` | Producto, a quién se aplica, cuántas dosis y cada cuánto | HU-47, HU-50 |
+| `aplicaciones_sanitarias` | Cada dosis aplicada, con quién la aplicó | HU-48, HU-49 |
+| `pesajes` | El peso de un animal en una fecha | HU-53, HU-54 |
+
+**Reglas de siempre.** Identificador generado en el cliente, autoría
+(`creado_por`, `modificado_por`), marca de modificación y baja lógica
+(`eliminado_en`) en las cuatro tablas.
+
+**Aislamiento también en la base.** Las referencias entre tablas incluyen el
+rancho: `(animal_id, rancho_id)` apunta a `animales(id, rancho_id)`, y lo mismo
+pasa con productos y esquemas. Así una aplicación o un pesaje no puede apuntar a
+un animal, un producto o un esquema de otro rancho, aunque el servidor tuviera
+un error. Para eso se agregó a `animales` la restricción única
+`(id, rancho_id)`.
+
+**Productos (HU-46).**
+
+- `tipo` admite cinco valores: `vacuna`, `antiparasitario`, `vitamina`,
+  `antibiotico` y `otro`.
+- `clave` es el nombre sin mayúsculas, sin acentos y sin espacios de más, con
+  la misma regla que `claveDeRaza` de `servidor/src/comun/razas.ts`.
+- Un índice único sobre `(rancho_id, clave)` entre los vigentes impide repetir
+  el nombre dentro del rancho.
+- `dosis` y `unidad` (`ml`, `g`, `mg` o `dosis`) van juntas o ninguna de las
+  dos.
+
+**Esquemas (HU-47).**
+
+- **A quién se aplica:**
+  - `categorias` es un arreglo de códigos; nulo quiere decir todas.
+  - `sexo` nulo quiere decir los dos.
+  - `edad_minima_meses` y `edad_maxima_meses` dan el rango de edad, con la misma
+    cuenta de meses cumplidos que las reglas de categoría.
+- **Cuándo:**
+  - La primera dosis toca al cumplir la edad mínima.
+  - Cada dosis siguiente toca `intervalo_dias` después de la anterior. Este
+    campo es obligatorio si hay más de una dosis.
+  - Después de la última, si hay `refuerzo_dias`, se repite con esa frecuencia.
+
+**Aplicaciones (HU-48, HU-49).**
+
+- `aplicado_por` es quien la aplicó, que puede no ser quien la registra
+  (`creado_por`). No tiene clave foránea a `usuarios`, igual que `creado_por`,
+  para que las semillas puedan recrear los usuarios.
+- `esquema_id` y `numero_dosis` son opcionales: un tratamiento suelto no es
+  parte de ningún esquema.
+- Las filas de una aplicación masiva comparten `lote_id`.
+
+**Pesajes (HU-53, HU-54).**
+
+- El peso se guarda siempre en kilos (HU-26).
+- Un animal no puede tener dos pesajes vigentes el mismo día: la ganancia
+  diaria divide por los días que pasaron entre dos pesajes.
+- El último pesaje pasa a ser el `peso_kg` de la ficha.
+
+**Semilla 002.** Corre después de la 001 y deja datos para ver la fase 3 sin
+cargar nada a mano:
+
+- **Rancho El Cerrito:** seis animales con caravanas 0501 a 0506, cuatro
+  productos, dos esquemas (aftosa para todo el rodeo y brucelosis para
+  terneras), una aplicación masiva, dosis al día, próximas y vencidas, y tres
+  pesajes por animal.
+- **Hacienda La Floresta:** dos vacas con lo mínimo para probar el aislamiento.
+
+Las caravanas no chocan con las del Excel de demostración (1001 a 1040). La
+prueba es `servidor/pruebas/sanidad-pesajes-base.test.js`.
