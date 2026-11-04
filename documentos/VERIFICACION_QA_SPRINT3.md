@@ -107,3 +107,4 @@ Se verificaron las historias contra los **criterios de aceptación de Trello**, 
 
 Todas las tarjetas correspondientes que se encuentran en la columna **«En Revisión»** de Trello quedan autorizadas para moverse a la columna **«Finalizado»**.
 La tarjeta de control **`QA-S3 QA de HU-31, HU-32, HU-35 y HU-45 [Romina]`** queda con sus criterios verificados y cumplidos.
+
