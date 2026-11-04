@@ -596,6 +596,10 @@
       "cuentas": {
         "carlos": "Carlos · owner with a ranch",
         "mariaRene": "María René · partner",
+        "jorge": "Dr. Jorge · veterinarian",
+        "roberto": "Roberto · field manager",
+        "gonzalo": "Gonzalo · warehouse manager",
+        "fernando": "Fernando · owner of another ranch",
         "ariel": "Ariel · owner without a ranch",
         "lucia": "Lucía · email not confirmed",
         "ruben": "Rubén · with a temporary password",

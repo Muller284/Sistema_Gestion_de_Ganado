@@ -596,6 +596,10 @@
       "cuentas": {
         "carlos": "Carlos · propietario con rancho",
         "mariaRene": "María René · socia",
+        "jorge": "Dr. Jorge · veterinario",
+        "roberto": "Roberto · encargado de campo",
+        "gonzalo": "Gonzalo · encargado de almacén",
+        "fernando": "Fernando · propietario de otro rancho",
         "ariel": "Ariel · propietario sin rancho",
         "lucia": "Lucía · correo sin confirmar",
         "ruben": "Rubén · con clave temporal",

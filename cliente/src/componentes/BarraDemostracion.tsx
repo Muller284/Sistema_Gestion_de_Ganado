@@ -28,6 +28,12 @@ import { t } from '../servicios/idioma';
 const CUENTAS = [
   { id: 'a1000000-0000-4000-8000-000000000001', nombre: 'app.demo.cuentas.carlos' },
   { id: 'a1000000-0000-4000-8000-000000000002', nombre: 'app.demo.cuentas.mariaRene' },
+  // Colaboradores de El Cerrito, cada uno con los permisos de su tipo (HU-22).
+  { id: 'a1000000-0000-4000-8000-000000000003', nombre: 'app.demo.cuentas.jorge' },
+  { id: 'a1000000-0000-4000-8000-000000000004', nombre: 'app.demo.cuentas.roberto' },
+  { id: 'a1000000-0000-4000-8000-000000000005', nombre: 'app.demo.cuentas.gonzalo' },
+  // El otro rancho, para mostrar que no ve nada de El Cerrito (HU-03).
+  { id: 'b1000000-0000-4000-8000-000000000001', nombre: 'app.demo.cuentas.fernando' },
   { id: 'c1000000-0000-4000-8000-000000000001', nombre: 'app.demo.cuentas.ariel' },
   { id: 'c1000000-0000-4000-8000-000000000002', nombre: 'app.demo.cuentas.lucia' },
   { id: 'c1000000-0000-4000-8000-000000000003', nombre: 'app.demo.cuentas.ruben' },
