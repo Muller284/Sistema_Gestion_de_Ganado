@@ -169,6 +169,93 @@
 
 .ganado__tabla tr:last-child td { border-bottom: 0; }
 
+/* HU-41 y HU-42 · Columnas del archivo a importar (Brian). */
+.importacion__columnas {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--e-16);
+}
+
+.importacion__columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  padding: var(--e-12);
+  border: var(--borde) solid var(--arena-100);
+  border-radius: var(--r-md);
+}
+
+.importacion__columna label:last-child {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  font-size: var(--t-etiqueta);
+}
+
+.importacion__resumen-columnas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8) var(--e-16);
+}
+
+/* Botón para elegir el archivo a importar: el input nativo queda oculto
+   pero accesible (teclado y lector de pantalla), y su etiqueta es el botón. */
+.selector-archivo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-12);
+}
+
+.selector-archivo__control {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.selector-archivo__boton { cursor: pointer; }
+.selector-archivo__boton.desactivado { opacity: .5; pointer-events: none; }
+.selector-archivo__control:focus-visible + .selector-archivo__boton {
+  outline: 2px solid var(--corral-600);
+  outline-offset: 2px;
+}
+
+/* HU-30 · Orden y paginación del listado (Brian). */
+.ganado__orden {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--e-12) var(--e-16);
+}
+
+.ganado__orden > .campo { min-width: 200px; }
+
+.ganado__paginas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12) var(--e-16);
+}
+
+.ganado__paginas-botones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-8);
+}
+
+.ganado__paginas-por-pagina { display: flex; align-items: flex-end; gap: var(--e-8); }
+.ganado__paginas-por-pagina > .campo { min-width: 110px; }
+
+.ganado__lista.ocupada { opacity: .6; transition: opacity var(--t-rapido) var(--curva); }
+
 @media (prefers-reduced-motion: reduce) {
   .ganado__barra > span { transition: none; }
 }

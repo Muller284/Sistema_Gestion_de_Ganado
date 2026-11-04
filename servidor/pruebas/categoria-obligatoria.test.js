@@ -95,11 +95,18 @@ async function ejecutarPruebas() {
       assert.strictEqual(porFila[3].columna, 'categoria');
     });
 
-    await prueba('Importar: un archivo sin la columna Categoría se rechaza', async () => {
-      const { estado, cuerpo } = await pedir('POST', '/importacion/vista-previa', {
+    // Desde HU-42 (Brian) la vista previa no rechaza el archivo: avisa que falta
+    // la columna para asignarla a mano (DECISIONES.md, 37). Confirmar sí lo rechaza.
+    await prueba('Importar: un archivo sin la columna Categoría no se carga', async () => {
+      const archivoSinCategoria = {
         nombre_archivo: 'categorias.csv',
         contenido_base64: csv(`Identificador,Sexo\nI8-${MARCA},hembra\n`),
-      });
+      };
+      const previa = await pedir('POST', '/importacion/vista-previa', archivoSinCategoria);
+      assert.strictEqual(previa.estado, 200, JSON.stringify(previa.cuerpo));
+      assert.strictEqual(previa.cuerpo.listo, false);
+      assert.deepStrictEqual(previa.cuerpo.faltan, ['categoria']);
+      const { estado, cuerpo } = await pedir('POST', '/importacion/confirmar', archivoSinCategoria);
       assert.strictEqual(estado, 400);
       assert.match(cuerpo.message, /Categoría/);
     });

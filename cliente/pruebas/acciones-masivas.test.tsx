@@ -205,7 +205,21 @@ describe('HU-31 · elegir en el listado (criterio 1)', () => {
     vi.spyOn(api, 'corrales').mockResolvedValue([CORRAL]);
   });
 
+  /** HU-30: la pantalla pide la página con paginaAnimales; "todo el filtro" sigue con animales. */
+  function simularPagina(lista: Animal[]) {
+    return vi.spyOn(api, 'paginaAnimales').mockResolvedValue({
+      animales: lista,
+      total: lista.length,
+      pagina: 1,
+      por_pagina: 25,
+      paginas: 1,
+      orden: 'identificador',
+      direccion: 'asc',
+    });
+  }
+
   async function abrir(lista: Animal[] = pagina) {
+    simularPagina(lista);
     const pedirAnimales = vi.spyOn(api, 'animales').mockResolvedValue(lista);
     render(
       <MemoryRouter>
@@ -260,6 +274,7 @@ describe('HU-31 · elegir en el listado (criterio 1)', () => {
 
   it('quien solo consulta no ve casillas ni barra', async () => {
     vi.spyOn(api, 'misPermisos').mockResolvedValue({ animales: 'ver' });
+    simularPagina(pagina);
     vi.spyOn(api, 'animales').mockResolvedValue(pagina);
     render(
       <MemoryRouter>
