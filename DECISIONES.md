@@ -1483,10 +1483,88 @@ un error. Para eso se agregó a `animales` la restricción única
 cargar nada a mano:
 
 - **Rancho El Cerrito:** seis animales con caravanas 0501 a 0506, cuatro
-  productos, dos esquemas (aftosa para todo el rodeo y brucelosis para
-  terneras), una aplicación masiva, dosis al día, próximas y vencidas, y tres
+  productos, tres esquemas (aftosa para todo el rodeo, brucelosis para
+  terneras y vitamina ADE para vacas, ver §42), dos aplicaciones masivas, dosis al día, próximas y vencidas, y tres
   pesajes por animal.
 - **Hacienda La Floresta:** dos vacas con lo mínimo para probar el aislamiento.
 
 Las caravanas no chocan con las del Excel de demostración (1001 a 1040). La
 prueba es `servidor/pruebas/sanidad-pesajes-base.test.js`.
+
+
+## 42. Esquemas de vacunación, calendario sanitario y avisos (Sprint 4, Aaron)
+
+HU-47, HU-50 y HU-51. El módulo es `servidor/src/modulos/vacunacion/` y
+atiende bajo `/sanidad`. Las pantallas están en `cliente/src/paginas/sanidad/`.
+Los productos (HU-46, Romina) y las aplicaciones (HU-48 y HU-49, Romina) se
+suman a ese mismo prefijo desde sus módulos, y a las pantallas como una pestaña
+más en `PestanasSanidad.tsx`.
+
+**Rutas.**
+
+| Ruta | Qué hace | Permiso |
+|---|---|---|
+| `GET /sanidad/esquemas` | esquemas vigentes, productos y categorías para el formulario | sanidad · ver |
+| `POST /sanidad/esquemas` | crea | sanidad · editar |
+| `PATCH /sanidad/esquemas/:id` | cambia | sanidad · editar |
+| `DELETE /sanidad/esquemas/:id` | baja lógica | sanidad · editar |
+| `GET /sanidad/calendario` | dosis pendientes, con `desde`, `hasta`, `producto`, `corral`, `estado`, `pagina` y `porPagina` (hasta 200) | sanidad · ver |
+| `GET /sanidad/avisos` | cuántas dosis están vencidas y cuántas próximas | sanidad · ver |
+
+Con las semillas: el veterinario edita, la socia ve, y el encargado de campo y
+el de almacén reciben 403.
+
+**Esquemas (HU-47).**
+
+- El nombre no se repite entre los vigentes del rancho, sin mirar mayúsculas.
+- Solo se eligen productos vigentes del propio rancho.
+- Una categoría del otro sexo se rechaza: no hay vacas en un esquema solo para
+  machos. El formulario directamente no las ofrece.
+- Con una sola dosis, el intervalo se descarta en vez de dar error.
+- Cambiar un esquema no toca las aplicaciones ya registradas.
+- Darlo de baja lo saca del calendario; sus aplicaciones quedan en el
+  historial del animal y el nombre se libera.
+
+**Cómo se calcula el calendario (HU-50).** Lo calcula la base en una sola
+consulta (`DOSIS_PENDIENTES` en el repositorio). No se guarda nada, así que
+registrar una aplicación o cambiar un esquema se ve al instante. Para cada
+animal activo y cada esquema vigente que le corresponde por categoría y sexo,
+se cuentan sus aplicaciones de ese esquema (n):
+
+- **n = 0:** la primera dosis vence al cumplir la edad mínima.
+- **0 < n < dosis:** la siguiente vence `intervalo_dias` después de la última.
+- **n ≥ dosis:** si hay refuerzo, vence `refuerzo_dias` después de la última.
+  Si no hay, el esquema está completo y no aparece.
+
+Dos reglas de criterio:
+
+- **No se reclaman dosis de antes de que el esquema existiera.** Si un animal
+  cumplió la edad mínima antes de que se creara el esquema, o no tiene fecha de
+  nacimiento, la primera dosis vence el día en que se creó el esquema. Sin esta
+  regla, crear hoy el esquema de aftosa pondría todo el rodeo como «vencido
+  hace años». Por eso las semillas fechan sus esquemas en marzo de 2026.
+- **Pasada la edad máxima sin empezar, el esquema ya no le toca.** Por ejemplo,
+  la brucelosis después de los 8 meses. Si ya había empezado, la serie sigue.
+
+**Estados.** Una dosis está vencida si su fecha ya pasó. Está próxima si vence
+dentro de los próximos `DIAS_PROXIMA` días (7). Si no, está programada. «Hoy»
+es la fecha en la zona horaria del país del rancho, la misma que usan las
+fechas de creación.
+
+El resumen por estado respeta los filtros de fecha, producto y corral, pero no
+el de estado. Así las pestañas muestran cuántas hay en cada una.
+
+**Avisos (HU-51).** Los muestra el inicio a quien tiene sanidad, con un enlace
+al calendario ya filtrado (`/sanidad?estado=vencida` o `proxima`). Si no hay
+nada vencido ni próximo, no aparecen. La guía de configuración (HU-16) habilita
+su paso «Define tus vacunas», que lleva a los esquemas.
+
+**Rendimiento.** Con 2000 animales más en el rancho, el calendario responde en
+menos de 100 ms en la máquina de pruebas; el criterio pide menos de 2 s.
+
+**Pruebas.**
+
+- Servidor: `pruebas/esquemas-vacunacion.test.js` (12) y
+  `pruebas/calendario-sanitario.test.js` (18). Este último arma sus fechas
+  alrededor de hoy, así que da lo mismo cualquier día que se corra.
+- Cliente: `pruebas/sanidad.test.tsx` (21).

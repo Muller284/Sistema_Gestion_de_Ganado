@@ -35,7 +35,8 @@ const MODULOS: Modulo[] = [
   // HU-28 y HU-36. Llegaron en el Sprint 2.
   { clave: 'animales', nombre: 'app.modulos.animales', icono: 'animal', ruta: '/animales' },
   { clave: 'corrales', nombre: 'app.modulos.corrales', icono: 'corral', ruta: '/corrales' },
-  { clave: 'sanidad', nombre: 'app.modulos.sanidad', icono: 'sanidad', fase: 3 },
+  // HU-47, HU-50 y HU-51. Llegó en el Sprint 4.
+  { clave: 'sanidad', nombre: 'app.modulos.sanidad', icono: 'sanidad', ruta: '/sanidad' },
   { clave: 'pesajes', nombre: 'app.modulos.pesajes', icono: 'balanza', fase: 3 },
   // HU-17. Llegó antes que su fase: el alta del equipo es del Sprint 2.
   { clave: 'equipo', nombre: 'app.modulos.equipo', icono: 'equipo', ruta: '/equipo' },

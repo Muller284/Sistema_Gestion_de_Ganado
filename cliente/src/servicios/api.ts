@@ -815,6 +815,22 @@ export const api = {
   restaurarCorral: (id: string) =>
     pedir<RespuestaCorral>(`/corrales/${id}/restaurar`, { method: 'POST' }),
 
+  // HU-47, HU-50 y HU-51 · Sanidad: esquemas, calendario y avisos
+  esquemasVacunacion: () => pedir<ListaEsquemas>('/sanidad/esquemas'),
+  crearEsquema: (datos: DatosEsquema) =>
+    pedir<RespuestaEsquema>('/sanidad/esquemas', { method: 'POST', body: JSON.stringify(datos) }),
+  actualizarEsquema: (id: string, datos: DatosEsquema) =>
+    pedir<RespuestaEsquema>(`/sanidad/esquemas/${id}`, { method: 'PATCH', body: JSON.stringify(datos) }),
+  bajaEsquema: (id: string) => pedir<{ mensaje: string }>(`/sanidad/esquemas/${id}`, { method: 'DELETE' }),
+  calendarioSanitario: (filtro: FiltroCalendario) => {
+    const parametros = new URLSearchParams();
+    for (const [clave, valor] of Object.entries(filtro)) {
+      if (valor !== undefined && valor !== null && valor !== '') parametros.set(clave, String(valor));
+    }
+    return pedir<CalendarioSanitario>(`/sanidad/calendario?${parametros.toString()}`);
+  },
+  avisosSanidad: () => pedir<AvisosSanidad>('/sanidad/avisos'),
+
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
   reglasCategorias: () => pedir<ReglaCategoria[]>('/animales/categorias/reglas'),
@@ -906,4 +922,107 @@ export function parametrosExportacion(pedido: PedidoExportacion): string {
     if (limpio) parametros.set(clave, limpio);
   }
   return parametros.toString();
+}
+
+// ---------------------------------------------------------------------------
+// HU-47 · Esquemas de vacunación
+// ---------------------------------------------------------------------------
+
+export interface EsquemaVacunacion {
+  id: string;
+  producto_id: string;
+  producto_nombre: string;
+  producto_tipo: string;
+  nombre: string;
+  /** Nulo: todas las categorías. */
+  categorias: string[] | null;
+  /** Nulo: los dos sexos. */
+  sexo: Sexo | null;
+  edad_minima_meses: number;
+  edad_maxima_meses: number | null;
+  dosis: number;
+  intervalo_dias: number | null;
+  refuerzo_dias: number | null;
+  /** Animales activos que entran por categoría y sexo. */
+  animales: number;
+  creado_en: string;
+}
+
+export interface ProductoSanitarioElegible {
+  id: string;
+  nombre: string;
+  tipo: string;
+}
+
+export interface ListaEsquemas {
+  esquemas: EsquemaVacunacion[];
+  productos: ProductoSanitarioElegible[];
+  categorias: string[];
+}
+
+export interface DatosEsquema {
+  producto_id: string;
+  nombre: string;
+  categorias: string[] | null;
+  sexo: Sexo | null;
+  edad_minima_meses: number | null;
+  edad_maxima_meses: number | null;
+  dosis: number | null;
+  intervalo_dias: number | null;
+  refuerzo_dias: number | null;
+}
+
+export interface RespuestaEsquema {
+  esquema: EsquemaVacunacion;
+  mensaje: string;
+}
+
+// ---------------------------------------------------------------------------
+// HU-50 y HU-51 · Calendario sanitario y avisos
+// ---------------------------------------------------------------------------
+
+export type EstadoDosis = 'vencida' | 'proxima' | 'programada';
+
+export interface FiltroCalendario {
+  desde?: string;
+  hasta?: string;
+  producto?: string;
+  corral?: string;
+  estado?: EstadoDosis | '';
+  pagina?: number;
+  porPagina?: number;
+}
+
+export interface DosisPendiente {
+  animal_id: string;
+  identificador: string;
+  animal_nombre: string | null;
+  categoria_codigo: string | null;
+  corral_nombre: string | null;
+  esquema_id: string;
+  esquema_nombre: string;
+  producto_nombre: string;
+  /** Qué dosis de la serie toca; nulo si es un refuerzo. */
+  numero_dosis: number | null;
+  dosis_total: number;
+  /** AAAA-MM-DD. */
+  vence: string;
+  /** Días que faltan; negativo si está vencida. */
+  dias: number;
+  estado: EstadoDosis;
+}
+
+export interface CalendarioSanitario {
+  resumen: Record<EstadoDosis, number>;
+  total: number;
+  dosis: DosisPendiente[];
+  pagina: number;
+  por_pagina: number;
+  dias_proxima: number;
+}
+
+export interface AvisosSanidad {
+  vencidas: number;
+  proximas: number;
+  dias_proxima: number;
 }

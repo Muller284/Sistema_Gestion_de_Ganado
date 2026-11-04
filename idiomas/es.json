@@ -395,6 +395,31 @@
         "entre": "de {min} a {max} meses",
         "desde": "de {min} meses o más"
       }
+    },
+    "sanidad": {
+      "sinNombre": "Ponle un nombre al esquema.",
+      "nombreLargo": "El nombre no puede pasar de {n} caracteres.",
+      "nombreOcupado": "Ya tienes un esquema llamado «{nombre}».",
+      "sinProducto": "Elige el producto que se aplica.",
+      "productoNoExiste": "Ese producto no está en el catálogo de tu rancho.",
+      "sexoInvalido": "El sexo tiene que ser macho, hembra o los dos.",
+      "categoriaInvalida": "Alguna de las categorías elegidas no existe.",
+      "categoriaOtroSexo": "La categoría «{categoria}» no tiene animales de sexo {sexo}. Quítala o cambia el sexo del esquema.",
+      "edadInvalida": "Las edades van en meses enteros, de 0 a {n}.",
+      "edadesCruzadas": "La edad máxima no puede ser menor que la mínima.",
+      "dosisInvalida": "La cantidad de dosis tiene que ser un número entero de 1 a {n}.",
+      "sinIntervalo": "Con más de una dosis, indica cada cuántos días va la siguiente.",
+      "diasInvalidos": "Los días tienen que ser un número entero de 1 a {n}.",
+      "esquemaNoExiste": "Ese esquema no existe en tu rancho.",
+      "esquemaCreado": "Listo, creaste el esquema «{nombre}».",
+      "esquemaGuardado": "Guardaste los cambios de «{nombre}». Las aplicaciones ya registradas no cambian.",
+      "esquemaDadoDeBaja": "Diste de baja el esquema «{nombre}». Ya no aparece en el calendario; sus aplicaciones quedan en el historial.",
+      "fechaInvalida": "Las fechas van con el formato AAAA-MM-DD.",
+      "fechasCruzadas": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
+      "estadoInvalido": "El estado tiene que ser vencida, próxima o programada.",
+      "paginaInvalida": "La página tiene que ser un número entero desde 1.",
+      "porPaginaInvalida": "Se muestran de 1 a {n} dosis por página.",
+      "filtroRepetido": "Cada filtro va una sola vez."
     }
   },
   "acceso": {
@@ -1798,6 +1823,129 @@
       "quitar": "Quitar la selección",
       "todos": "Elegir todos los activos ({n})",
       "elegir": "Elegir {identificador}"
+    }
+  },
+  "sanidad": {
+    "titulo": "Sanidad",
+    "rotulo": "Mi rancho",
+    "soloConsulta": "Puedes ver la sanidad del rancho, pero no modificarla.",
+    "pestanas": {
+      "etiqueta": "Secciones de sanidad",
+      "calendario": "Calendario",
+      "esquemas": "Esquemas de vacunación"
+    },
+    "estados": {
+      "vencida": "Vencida",
+      "proxima": "Próxima",
+      "programada": "Programada"
+    },
+    "vencimiento": {
+      "hoy": "Vence hoy",
+      "atrasada": {
+        "uno": "Venció hace 1 día",
+        "otros": "Venció hace {n} días"
+      },
+      "faltan": {
+        "uno": "Vence mañana",
+        "otros": "Vence en {n} días"
+      }
+    },
+    "dosis": {
+      "numero": "Dosis {n} de {total}",
+      "refuerzo": "Refuerzo"
+    },
+    "calendario": {
+      "titulo": "Calendario sanitario",
+      "ayuda": "Próximas son las dosis que vencen en los próximos {n} días. Las fechas se calculan con la edad de cada animal y las aplicaciones registradas.",
+      "estado": "Estado de las dosis",
+      "todas": "Todas",
+      "filtros": {
+        "titulo": "Filtros",
+        "desde": "Vence desde",
+        "hasta": "Vence hasta",
+        "producto": "Producto",
+        "todosProductos": "Todos los productos",
+        "corral": "Corral",
+        "todosCorrales": "Todos los corrales",
+        "limpiar": "Limpiar filtros"
+      },
+      "vacio": {
+        "titulo": "No hay dosis para mostrar",
+        "texto": "Con los filtros elegidos no hay dosis pendientes.",
+        "sinEsquemas": "Todavía no hay esquemas de vacunación. Cuando definas uno, aquí verás qué le toca a cada animal y cuándo.",
+        "irEsquemas": "Definir un esquema"
+      },
+      "mostrando": "{desde}–{hasta} de {total} dosis",
+      "anterior": "Anterior",
+      "siguiente": "Siguiente",
+      "verFicha": "Ver ficha"
+    },
+    "esquemas": {
+      "nuevo": "Nuevo esquema",
+      "vacio": {
+        "titulo": "Todavía no hay esquemas",
+        "texto": "Define qué vacuna se aplica, a qué animales y cada cuánto: el calendario se arma solo.",
+        "textoConsulta": "Cuando el rancho defina sus esquemas de vacunación, los verás aquí."
+      },
+      "sinProductos": "Para definir un esquema primero hace falta al menos un producto en el catálogo sanitario del rancho.",
+      "dosisUnica": "Una dosis",
+      "serie": "{n} dosis cada {dias} días",
+      "refuerzo": "refuerzo cada {n} días",
+      "sinRefuerzo": "sin refuerzo",
+      "todasCategorias": "Todas las categorías",
+      "sexos": {
+        "macho": "solo machos",
+        "hembra": "solo hembras"
+      },
+      "edad": {
+        "desde": "desde los {n} meses",
+        "rango": "de {min} a {max} meses",
+        "hasta": "hasta los {n} meses"
+      },
+      "animales": {
+        "cero": "Ningún animal activo entra hoy",
+        "uno": "1 animal activo entra por categoría y sexo",
+        "otros": "{n} animales activos entran por categoría y sexo"
+      },
+      "editar": "Editar",
+      "darDeBaja": "Dar de baja",
+      "confirmarBaja": "¿Dar de baja «{nombre}»? Sale del calendario; las aplicaciones registradas se conservan.",
+      "formulario": {
+        "nuevo": "Nuevo esquema de vacunación",
+        "editar": "Editar «{nombre}»",
+        "nombre": "Nombre del esquema",
+        "nombreEjemplo": "Ej.: Aftosa (todo el rodeo)",
+        "producto": "Producto",
+        "elegirProducto": "Elige un producto",
+        "categorias": "Categorías",
+        "categoriasAyuda": "Si no marcas ninguna, se aplica a todas.",
+        "sexo": "Sexo",
+        "ambos": "Los dos",
+        "edadMinima": "Edad mínima (meses)",
+        "edadMinimaAyuda": "La primera dosis vence al cumplirla.",
+        "edadMaxima": "Edad máxima (meses)",
+        "edadMaximaAyuda": "Opcional. Si la pasa sin empezar, ya no le toca.",
+        "dosis": "Cantidad de dosis",
+        "intervalo": "Días entre dosis",
+        "intervaloAyuda": "Obligatorio con más de una dosis.",
+        "refuerzo": "Refuerzo cada (días)",
+        "refuerzoAyuda": "Opcional. Después de la última dosis se repite cada tantos días.",
+        "edadesCruzadas": "La edad máxima no puede ser menor que la mínima.",
+        "faltaIntervalo": "Indica cada cuántos días va la siguiente dosis.",
+        "avisoCambio": "Los cambios no tocan las aplicaciones ya registradas."
+      }
+    },
+    "avisos": {
+      "vencidas": {
+        "uno": "Hay 1 dosis de vacunación vencida.",
+        "otros": "Hay {n} dosis de vacunación vencidas."
+      },
+      "proximas": {
+        "uno": "1 dosis vence en los próximos {dias} días.",
+        "otros": "{n} dosis vencen en los próximos {dias} días."
+      },
+      "verVencidas": "Ver las vencidas",
+      "verProximas": "Ver las próximas"
     }
   },
   "permisosSocio": {

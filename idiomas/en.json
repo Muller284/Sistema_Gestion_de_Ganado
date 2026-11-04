@@ -395,6 +395,31 @@
         "entre": "from {min} to {max} months old",
         "desde": "{min} months old or more"
       }
+    },
+    "sanidad": {
+      "sinNombre": "Give the schedule a name.",
+      "nombreLargo": "The name can't be longer than {n} characters.",
+      "nombreOcupado": "You already have a schedule called “{nombre}”.",
+      "sinProducto": "Choose the product to apply.",
+      "productoNoExiste": "That product isn't in your ranch's catalog.",
+      "sexoInvalido": "Sex must be male, female or both.",
+      "categoriaInvalida": "One of the chosen categories doesn't exist.",
+      "categoriaOtroSexo": "The category “{categoria}” has no {sexo} animals. Remove it or change the schedule's sex.",
+      "edadInvalida": "Ages are whole months, from 0 to {n}.",
+      "edadesCruzadas": "The maximum age can't be lower than the minimum.",
+      "dosisInvalida": "The number of doses must be a whole number from 1 to {n}.",
+      "sinIntervalo": "With more than one dose, say how many days until the next one.",
+      "diasInvalidos": "Days must be a whole number from 1 to {n}.",
+      "esquemaNoExiste": "That schedule doesn't exist in your ranch.",
+      "esquemaCreado": "Done, you created the schedule “{nombre}”.",
+      "esquemaGuardado": "You saved the changes to “{nombre}”. Applications already recorded don't change.",
+      "esquemaDadoDeBaja": "You removed the schedule “{nombre}”. It no longer shows in the calendar; its applications stay in the history.",
+      "fechaInvalida": "Dates use the YYYY-MM-DD format.",
+      "fechasCruzadas": "The “from” date can't be after the “to” date.",
+      "estadoInvalido": "The status must be overdue, upcoming or scheduled.",
+      "paginaInvalida": "The page must be a whole number from 1.",
+      "porPaginaInvalida": "From 1 to {n} doses are shown per page.",
+      "filtroRepetido": "Each filter goes only once."
     }
   },
   "acceso": {
@@ -1798,6 +1823,129 @@
       "quitar": "Clear selection",
       "todos": "Select all active ({n})",
       "elegir": "Select {identificador}"
+    }
+  },
+  "sanidad": {
+    "titulo": "Health",
+    "rotulo": "My ranch",
+    "soloConsulta": "You can see the ranch's health records, but not change them.",
+    "pestanas": {
+      "etiqueta": "Health sections",
+      "calendario": "Calendar",
+      "esquemas": "Vaccination schedules"
+    },
+    "estados": {
+      "vencida": "Overdue",
+      "proxima": "Upcoming",
+      "programada": "Scheduled"
+    },
+    "vencimiento": {
+      "hoy": "Due today",
+      "atrasada": {
+        "uno": "Was due 1 day ago",
+        "otros": "Was due {n} days ago"
+      },
+      "faltan": {
+        "uno": "Due tomorrow",
+        "otros": "Due in {n} days"
+      }
+    },
+    "dosis": {
+      "numero": "Dose {n} of {total}",
+      "refuerzo": "Booster"
+    },
+    "calendario": {
+      "titulo": "Health calendar",
+      "ayuda": "Upcoming doses are the ones due in the next {n} days. Dates come from each animal's age and the applications recorded.",
+      "estado": "Dose status",
+      "todas": "All",
+      "filtros": {
+        "titulo": "Filters",
+        "desde": "Due from",
+        "hasta": "Due until",
+        "producto": "Product",
+        "todosProductos": "All products",
+        "corral": "Pen",
+        "todosCorrales": "All pens",
+        "limpiar": "Clear filters"
+      },
+      "vacio": {
+        "titulo": "No doses to show",
+        "texto": "There are no pending doses with the chosen filters.",
+        "sinEsquemas": "There are no vaccination schedules yet. Once you define one, you'll see here what each animal needs and when.",
+        "irEsquemas": "Define a schedule"
+      },
+      "mostrando": "{desde}–{hasta} of {total} doses",
+      "anterior": "Previous",
+      "siguiente": "Next",
+      "verFicha": "View record"
+    },
+    "esquemas": {
+      "nuevo": "New schedule",
+      "vacio": {
+        "titulo": "No schedules yet",
+        "texto": "Define which vaccine is applied, to which animals and how often: the calendar builds itself.",
+        "textoConsulta": "When the ranch defines its vaccination schedules, you'll see them here."
+      },
+      "sinProductos": "To define a schedule you first need at least one product in the ranch's health catalog.",
+      "dosisUnica": "One dose",
+      "serie": "{n} doses every {dias} days",
+      "refuerzo": "booster every {n} days",
+      "sinRefuerzo": "no booster",
+      "todasCategorias": "All categories",
+      "sexos": {
+        "macho": "males only",
+        "hembra": "females only"
+      },
+      "edad": {
+        "desde": "from {n} months",
+        "rango": "from {min} to {max} months",
+        "hasta": "up to {n} months"
+      },
+      "animales": {
+        "cero": "No active animal qualifies today",
+        "uno": "1 active animal qualifies by category and sex",
+        "otros": "{n} active animals qualify by category and sex"
+      },
+      "editar": "Edit",
+      "darDeBaja": "Remove",
+      "confirmarBaja": "Remove “{nombre}”? It leaves the calendar; recorded applications are kept.",
+      "formulario": {
+        "nuevo": "New vaccination schedule",
+        "editar": "Edit “{nombre}”",
+        "nombre": "Schedule name",
+        "nombreEjemplo": "E.g.: Foot-and-mouth (whole herd)",
+        "producto": "Product",
+        "elegirProducto": "Choose a product",
+        "categorias": "Categories",
+        "categoriasAyuda": "If you don't check any, it applies to all.",
+        "sexo": "Sex",
+        "ambos": "Both",
+        "edadMinima": "Minimum age (months)",
+        "edadMinimaAyuda": "The first dose is due when the animal reaches it.",
+        "edadMaxima": "Maximum age (months)",
+        "edadMaximaAyuda": "Optional. Past that age without starting, it no longer applies.",
+        "dosis": "Number of doses",
+        "intervalo": "Days between doses",
+        "intervaloAyuda": "Required with more than one dose.",
+        "refuerzo": "Booster every (days)",
+        "refuerzoAyuda": "Optional. After the last dose it repeats every so many days.",
+        "edadesCruzadas": "The maximum age can't be lower than the minimum.",
+        "faltaIntervalo": "Say how many days until the next dose.",
+        "avisoCambio": "Changes don't affect applications already recorded."
+      }
+    },
+    "avisos": {
+      "vencidas": {
+        "uno": "There is 1 overdue vaccination dose.",
+        "otros": "There are {n} overdue vaccination doses."
+      },
+      "proximas": {
+        "uno": "1 dose is due in the next {dias} days.",
+        "otros": "{n} doses are due in the next {dias} days."
+      },
+      "verVencidas": "See overdue",
+      "verProximas": "See upcoming"
     }
   },
   "permisosSocio": {

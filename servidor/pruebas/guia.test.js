@@ -104,24 +104,16 @@ async function ejecutarPruebas() {
       assert.strictEqual(cuerpo.total, 4);
     });
 
-    await prueba('Los pasos de fases posteriores se ven, marcados como no disponibles', async () => {
+    await prueba('Criterio 4: con la fase 3 (Sprint 4) los cuatro pasos ya estan disponibles', async () => {
       const { cuerpo } = await pedir('/guia', {}, ARIEL);
-      // Animales y corrales llegaron en el Sprint 2 (HU-28 y HU-36): queda vacunas.
-      for (const clave of ['vacunas']) {
-        const p = paso(cuerpo, clave);
-        assert.strictEqual(p.disponible, false, `${clave} figura disponible`);
-        assert.ok(p.fase > 1, `${clave} no dice en que fase llega`);
-        assert.strictEqual(p.ruta, null, `${clave} lleva a una pantalla que no existe`);
-      }
-      for (const clave of ['animales', 'corrales', 'equipo']) {
+      // Animales y corrales llegaron en el Sprint 2 (HU-28 y HU-36); vacunas,
+      // en el Sprint 4 con los esquemas de vacunacion (HU-47).
+      for (const clave of ['animales', 'corrales', 'vacunas', 'equipo']) {
         assert.strictEqual(paso(cuerpo, clave).disponible, true, `${clave} no figura disponible`);
       }
-    });
-
-    await prueba('Un paso no disponible no se puede marcar', async () => {
-      const { estado, cuerpo } = await post('/guia/pasos/vacunas/completar', ARIEL);
-      assert.strictEqual(estado, 400);
-      assert.match(cuerpo.message, /fase 3/);
+      const vacunas = paso(cuerpo, 'vacunas');
+      assert.strictEqual(vacunas.fase, 3);
+      assert.strictEqual(vacunas.ruta, '/sanidad/esquemas');
     });
 
     await prueba('Un paso que no existe da 404', async () => {

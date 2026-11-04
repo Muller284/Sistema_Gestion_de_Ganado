@@ -14,6 +14,7 @@
  *   equipo.css       el equipo (HU-17) y la guia de configuracion (HU-16).
  *   ganado.css       animales y corrales (HU-28, HU-33, HU-36 y HU-39).
  *   animal.css       la ficha con pestañas (HU-32) y el alta rápida (HU-35).
+ *   sanidad.css      esquemas, calendario y avisos de vacunación (HU-47, HU-50 y HU-51).
  *   landing.css      la pagina publica. Va al final porque usa las
  *                    animaciones que define movimiento.css.
  *
@@ -28,4 +29,5 @@
 @import './equipo.css';
 @import './ganado.css';
 @import './animal.css';
+@import './sanidad.css';
 @import './landing.css';

@@ -69,8 +69,9 @@ const CATALOGO: DefinicionPaso[] = [
   {
     clave: 'vacunas',
     fase: 3,
-    disponible: false,
-    ruta: null,
+    // Llego en el Sprint 4 con los esquemas de vacunacion (HU-47).
+    disponible: true,
+    ruta: '/sanidad/esquemas',
     tabla: 'esquemas_vacunacion',
   },
   {
