@@ -16,6 +16,7 @@ import { ModuloCorrales } from './modulos/corrales/modulo-corrales';
 import { ModuloAnimales } from './modulos/animales/modulo-animales';
 import { ModuloAccionesMasivas } from './modulos/masivo/modulo-acciones-masivas';
 import { ModuloExportacion } from './modulos/exportacion/modulo-exportacion';
+import { ModuloVacunacion } from './modulos/vacunacion/modulo-vacunacion';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ModuloExportacion } from './modulos/exportacion/modulo-exportacion';
     ModuloAnimales, // HU-28, HU-33, HU-34 y HU-39
     ModuloAccionesMasivas, // HU-31
     ModuloExportacion, // HU-45
+    ModuloVacunacion, // HU-47, HU-50 y HU-51
   ],
 })
 export class AppModule {}

@@ -1,0 +1,101 @@
+/* ============================================================================
+ * SPRINT 4 · Sanidad
+ * ----------------------------------------------------------------------------
+ *   HU-47  los esquemas de vacunación y su formulario
+ *   HU-50  el calendario sanitario en lista
+ *   HU-51  el aviso de vencimientos en el inicio
+ *
+ * Solo tokens. La lista con filas, los filtros y las casillas son los de
+ * ganado.css: acá están las pestañas del módulo y lo propio del calendario.
+ * ==========================================================================*/
+
+/* Pestañas del módulo: enlaces con el mismo aspecto que los segmentos. */
+.sanidad__pestanas {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--e-4);
+  padding: var(--e-4);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-full);
+  background: var(--arena-50);
+  align-self: flex-start;
+}
+
+.sanidad__pestana {
+  display: inline-flex;
+  align-items: center;
+  height: var(--e-32);
+  padding: 0 var(--e-14);
+  border-radius: var(--r-full);
+  color: var(--arena-600);
+  font-size: var(--t-etiqueta);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+  transition: color var(--t-rapido) var(--curva), background var(--t-rapido) var(--curva);
+}
+
+.sanidad__pestana:hover { color: var(--arena-900); }
+
+.sanidad__pestana.activa {
+  background: var(--arena-0);
+  box-shadow: var(--s-sm);
+  color: var(--corral-700);
+}
+
+/* HU-50: la fecha de vencimiento y cuánto falta, una arriba de la otra. */
+.sanidad__vence {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  min-width: 132px;
+}
+
+.sanidad__esquema {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-4);
+  min-width: 180px;
+  flex: 1;
+}
+
+/* En pantalla ancha, las columnas del calendario quedan alineadas fila a fila.
+ * En el celular siguen siendo la fila flexible de ganado.css. */
+@media (min-width: 900px) {
+  .ganado__fila.sanidad__dosis {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) minmax(200px, 1.4fr) 150px 110px auto;
+  }
+
+  .sanidad__dosis .insignia { justify-self: start; }
+}
+
+/* Los filtros del calendario no tienen búsqueda: ninguno ocupa la fila entera. */
+.sanidad__filtros > .campo:first-child { grid-column: auto; }
+
+/* Paginado del calendario. */
+.sanidad__paginas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12);
+}
+
+/* HU-51: los avisos del inicio llevan su enlace en la misma línea. */
+.sanidad__aviso a {
+  margin-left: var(--e-8);
+  font-weight: var(--peso-medio);
+  color: inherit;
+}
+
+/* HU-47: las categorías del esquema, como casillas. */
+.sanidad__categorias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sanidad__categorias legend { padding: 0; margin-bottom: var(--e-8); }

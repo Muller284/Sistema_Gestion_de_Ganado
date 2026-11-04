@@ -18,6 +18,7 @@ import {
   PasosDeAlta,
   Tarjeta,
 } from '../../componentes';
+import { AvisosSanidad } from '../sanidad/AvisosSanidad';
 import {
   api,
   type EstadoRancho,
@@ -261,6 +262,8 @@ export function PaginaRancho() {
 
         {!cargando && rancho && !editando && (
           <>
+            {/* HU-51: dosis vencidas y próximas, para quien tiene sanidad. */}
+            <AvisosSanidad />
             <div className="rejilla-cifras">
               <Cifra
                 rotulo={t('rancho.campos.superficie')}
