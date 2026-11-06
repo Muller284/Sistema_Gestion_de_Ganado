@@ -425,6 +425,28 @@
       "paginaInvalida": "The page must be a whole number from 1.",
       "porPaginaInvalida": "From 1 to {n} doses are shown per page.",
       "filtroRepetido": "Each filter goes only once."
+    },
+    "pesajes": {
+      "sinAnimal": "Choose the animal you weighed.",
+      "animalNoExiste": "That animal doesn't exist on your ranch.",
+      "animalDeBaja": "{identificador} has been removed: it can't be weighed.",
+      "animalNoActivo": "{identificador} is {estado}: only active animals are weighed.",
+      "pesoInvalido": "The weight must be a number greater than zero and up to {max} kg.",
+      "pesoInvalidoDe": "The weight of {identificador} must be a number greater than zero and up to {max} kg.",
+      "fechaInvalida": "The weighing date isn't valid.",
+      "fechaFutura": "The weighing date can't be in the future.",
+      "antesDelNacimiento": "The weighing date is before the birth of: {lista}.",
+      "observacionInvalida": "The note must be text.",
+      "observacionLarga": "The note can't be longer than {n} characters.",
+      "yaPesado": "{identificador} already has a weighing on that date. There's only one per animal per day.",
+      "yaPesadosMasivo": "{n} animal(s) already have a weighing on that date: {lista}. Nothing was saved.",
+      "yaPesadoAhora": "Someone just recorded a weighing for that animal on that date. Nothing was saved.",
+      "animalCambio": "One of the animals changed while you were weighing it (it was removed or is no longer active). Nothing was saved.",
+      "seleccionInvalida": "Choose between 1 and {n} animals to weigh.",
+      "animalRepetido": "The same animal appears twice in the weighing.",
+      "noPesables": "{n} of the animals can't be weighed: they're not on your ranch, they were removed or they're not active. Nothing was saved.",
+      "registrado": "Done, you recorded the weighing of {identificador}.",
+      "registradosMasivo": "Done, you recorded {n} weighing(s)."
     }
   },
   "acceso": {
@@ -1710,7 +1732,8 @@
       "accion": {
         "corral": "Assign to a pen",
         "estado": "Change status",
-        "baja": "Remove"
+        "baja": "Remove",
+        "pesaje": "Record weighing"
       },
       "aplicar": "Apply to {n}",
       "siAplicar": "Yes, apply",
@@ -1740,7 +1763,35 @@
       },
       "bajaExplicacion": "Removing doesn't delete: the animals stop showing in regular views and can be restored from their record.",
       "elegirPagina": "Select everything on this page ({n})",
-      "elegirFiltro": "Select every result of the filter"
+      "elegirFiltro": "Select every result of the filter",
+      "pesaje": {
+        "fecha": "Weighing date",
+        "explicacion": "Enter each animal's weight in {unidad}. The ones you leave empty aren't recorded.",
+        "animal": "Animal",
+        "pesoActual": "Current weight",
+        "pesoNuevo": "New weight ({unidad})",
+        "pesoDe": "Weight of {identificador}",
+        "pesoInvalido": "Check the weight of {identificador}: it must be a number greater than zero.",
+        "ninguno": "None of the chosen animals can be weighed: only active ones are weighed.",
+        "demasiados": "To weigh many at once, choose up to {n} animals at a time.",
+        "noPesables": {
+          "uno": "{n} of the chosen animals can't be weighed because it isn't active. It's not in the list.",
+          "otros": "{n} of the chosen animals can't be weighed because they aren't active. They're not in the list."
+        },
+        "cuantosConPeso": {
+          "uno": "{n} of {total} with a weight entered",
+          "otros": "{n} of {total} with a weight entered"
+        },
+        "boton": {
+          "cero": "Record weighings",
+          "uno": "Record {n} weighing",
+          "otros": "Record {n} weighings"
+        },
+        "confirmar": {
+          "uno": "Record the weighing of {n} animal on {fecha}?",
+          "otros": "Record the weighing of {n} animals on {fecha}? They're all saved together or none is."
+        }
+      }
     },
     "altaRapida": {
       "boton": "Quick add",
@@ -1795,9 +1846,36 @@
         "texto": "This is where this animal's vaccines, treatments and check-ups will appear. The health module isn't available yet."
       },
       "pesajes": {
-        "titulo": "Weighings arrive in phase 3",
-        "texto": "This is where this animal's weighings and weight gain will appear. The weighings module isn't available yet.",
-        "textoConPeso": "This is where this animal's weighings and weight gain will appear. For now there's only the weight entered in the record: {peso}."
+        "sinAcceso": {
+          "titulo": "You don't have access to weighings",
+          "texto": "Ask the owner to enable the weighings module for you to see this animal's weights."
+        },
+        "vacio": {
+          "titulo": "No weighings yet",
+          "texto": "Record the first one to start tracking how it gains weight.",
+          "textoConPeso": "No weighings yet. The record's weight ({peso}) was entered by hand when the animal was registered."
+        },
+        "nuevo": {
+          "titulo": "New weighing",
+          "peso": "Weight ({unidad})",
+          "fecha": "Weighing date",
+          "observacion": "Note",
+          "observacionEjemplo": "E.g.: north pen scale",
+          "boton": "Record weighing"
+        },
+        "pesoInvalido": "Enter a weight greater than zero.",
+        "noSePesa": "Only active animals that haven't been removed are weighed. Their weighing history stays visible.",
+        "tabla": {
+          "titulo": "Recorded weighings",
+          "fecha": "Date",
+          "peso": "Weight",
+          "quien": "Recorded by",
+          "observacion": "Note"
+        },
+        "cuantos": {
+          "uno": "{n} weighing",
+          "otros": "{n} weighings"
+        }
       },
       "historial": {
         "titulo": "History",
@@ -1805,7 +1883,8 @@
         "entro": "Moved into {destino}",
         "estado": "Changed from {anterior} to {nuevo} on {fecha}",
         "baja": "Removed from records",
-        "quienCuando": "{nombre} · {momento}"
+        "quienCuando": "{nombre} · {momento}",
+        "pesaje": "Weighed: {peso} on {fecha}"
       },
       "rotulo": "Animal record",
       "titulo": "Animal {identificador}",

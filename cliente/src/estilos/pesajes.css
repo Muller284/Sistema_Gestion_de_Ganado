@@ -1,0 +1,56 @@
+/* ============================================================================
+ * SPRINT 4 · Pesajes
+ * ----------------------------------------------------------------------------
+ *   HU-53  el formulario de la pestaña Pesajes de la ficha, su tabla y el
+ *          pesaje masivo de la barra de acciones.
+ *
+ * Solo tokens. La tabla es la de ganado.css (.ganado__tabla).
+ * ==========================================================================*/
+
+/* Peso y fecha lado a lado; en el celular, uno debajo del otro. */
+.pesajes__campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--e-16);
+}
+
+.pesajes__observacion {
+  white-space: normal;
+  color: var(--arena-600);
+}
+
+/* Pesaje masivo: la lista de animales desplaza dentro de su caja. */
+.pesajes__masivo {
+  margin: 0;
+  max-height: 420px;
+  overflow-y: auto;
+  border: var(--borde) solid var(--arena-100);
+  border-radius: var(--r-md);
+}
+
+/* El mismo aspecto que los campos del sistema de diseño (.campo input), con al
+ * menos 48 px de alto para tocar con el dedo, como HU-35. */
+.pesajes__entrada {
+  width: 120px;
+  min-height: 48px;
+  padding: 0 var(--e-12);
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-sm);
+  background: var(--arena-0);
+  font-family: var(--f-cuerpo);
+  font-size: var(--t-cuerpo);
+  color: var(--arena-800);
+}
+
+.pesajes__entrada:focus {
+  outline: none;
+  border: 2px solid var(--corral-600);
+  padding: 0 11px;
+}
+
+.pesajes__entrada[aria-invalid='true'] { border-color: var(--error-base); }
+
+.pesajes__entrada:disabled {
+  background: var(--arena-100);
+  color: var(--arena-500);
+}
