@@ -17,6 +17,7 @@ import { ModuloAnimales } from './modulos/animales/modulo-animales';
 import { ModuloAccionesMasivas } from './modulos/masivo/modulo-acciones-masivas';
 import { ModuloExportacion } from './modulos/exportacion/modulo-exportacion';
 import { ModuloVacunacion } from './modulos/vacunacion/modulo-vacunacion';
+import { ModuloPesajes } from './modulos/pesajes/modulo-pesajes';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ModuloVacunacion } from './modulos/vacunacion/modulo-vacunacion';
     ModuloAccionesMasivas, // HU-31
     ModuloExportacion, // HU-45
     ModuloVacunacion, // HU-47, HU-50 y HU-51
+    ModuloPesajes, // HU-53 (Brian)
   ],
 })
 export class AppModule {}

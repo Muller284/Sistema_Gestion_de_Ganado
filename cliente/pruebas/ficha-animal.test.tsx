@@ -166,14 +166,15 @@ describe('HU-32 · la pantalla de la ficha', () => {
     }
   });
 
-  it('criterio 3: sanidad y pesajes explican por qué están vacías', async () => {
+  it('criterio 3: sanidad explica por qué está vacía; pesajes, si no hay acceso (HU-53)', async () => {
     abrir();
     fireEvent.click(await screen.findByText(t('animales.ficha.pestanas.sanidad')));
     expect(await screen.findByText(t('animales.ficha.sanidad.titulo'))).toBeTruthy();
     expect(screen.getByText(t('animales.ficha.sanidad.texto'))).toBeTruthy();
 
+    // Estos permisos no incluyen pesajes: la pestaña lo explica (los pesajes se prueban en pesajes.test.tsx).
     fireEvent.click(screen.getByText(t('animales.ficha.pestanas.pesajes')));
-    expect(await screen.findByText(t('animales.ficha.pesajes.titulo'))).toBeTruthy();
+    expect(await screen.findByText(t('animales.ficha.pesajes.sinAcceso.titulo'))).toBeTruthy();
   });
 
   it('criterio 4: el historial dice quién registró cada evento', async () => {
@@ -188,6 +189,6 @@ describe('HU-32 · la pantalla de la ficha', () => {
 
   it('la pestaña elegida queda en la dirección', async () => {
     abrir('/animales/a-1?pestana=pesajes');
-    await waitFor(() => expect(screen.getByText(t('animales.ficha.pesajes.titulo'))).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(t('animales.ficha.pesajes.sinAcceso.titulo'))).toBeTruthy());
   });
 });

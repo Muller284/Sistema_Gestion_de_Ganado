@@ -1615,3 +1615,82 @@ menos de 100 ms en la máquina de pruebas; el criterio pide menos de 2 s.
   `pruebas/calendario-sanitario.test.js` (18). Este último arma sus fechas
   alrededor de hoy, así que da lo mismo cualquier día que se corra.
 - Cliente: `pruebas/sanidad.test.tsx` (21).
+
+
+## 43. Registro de pesaje individual y masivo (Sprint 4, Brian)
+
+**HU-53.** El encargado de campo anota el peso de uno o varios animales con su
+fecha. Todo vive en el módulo «pesajes»: el encargado de campo y el
+veterinario lo editan, el socio lo ve y almacén no entra (HU-21, HU-22).
+
+**Rutas.** Un módulo propio en `servidor/src/modulos/pesajes/`, con su prefijo
+`/pesajes`, para no tocar los módulos de animales ni de acciones masivas:
+
+| Ruta | Qué hace | Nivel |
+|------|----------|-------|
+| `GET /pesajes/animales/:id` | Los pesajes del animal, del más nuevo al más viejo | ver |
+| `POST /pesajes` | Un pesaje: `animal_id`, `peso_kg`, `fecha?`, `observacion?` | editar |
+| `POST /pesajes/masivo/animales` | De los elegidos, cuáles se pueden pesar | editar |
+| `POST /pesajes/masivo` | Un peso por animal, la misma fecha para todos | editar |
+
+**Unidades (criterio 1).** El peso se escribe en kilos o libras según el país
+y la pantalla lo convierte con `pesoAGuardar` (HU-26). Al servidor siempre
+llega `peso_kg`, que se redondea a dos decimales. Tiene que ser mayor que cero
+y de hasta 3000 kg: más que eso es un error de tipeo o de unidad.
+
+**La fecha (criterio 1).** No puede ser futura. «Hoy» es la fecha en la zona
+horaria del país del rancho, calculada en la base, igual que en el calendario
+sanitario. Sin fecha, el pesaje es de hoy. Tampoco puede ser anterior al
+nacimiento del animal.
+
+**Peso actual (criterio 3).** Al guardar, `animales.peso_kg` toma el peso del
+pesaje vigente con la fecha más nueva. Si se carga un pesaje atrasado (por
+ejemplo, de una planilla vieja), el peso actual no cambia. La ficha se vuelve
+a pedir después de guardar, así el encabezado muestra el peso nuevo.
+
+**Masivo (criterio 2).** Se eligen los animales como en las acciones masivas
+(HU-31) y se agrega «Registrar pesaje» a la barra. La pantalla pide al
+servidor cuáles de los elegidos se pueden pesar y arma un campo de peso por
+animal. Los que quedan vacíos no se registran. Antes de guardar se confirma
+cuántos van. Se guarda todo en una transacción: si un animal no se puede
+pesar, si un peso está mal o si un animal ya tiene pesaje ese día, no se
+guarda ninguno, y el mensaje dice cuáles. Las filas de una misma carga
+comparten `lote_id`. El tope es de 500 animales por carga: cada uno lleva su
+campo y más que eso no se carga a mano.
+
+El veterinario edita pesajes pero no animales. Antes no podía elegir animales
+en el listado, porque la selección era solo para quien edita animales. Ahora
+también elige quien edita pesajes, y en su barra solo aparece «Registrar
+pesaje».
+
+**Qué animales se pesan.** Solo los vigentes y activos del rancho. Un dado de
+baja, vendido o muerto no se pesa (HU-34), pero su pestaña sigue mostrando
+sus pesajes. Uno de otro rancho responde 404, como el resto (HU-03).
+
+**Un pesaje por animal y por día.** Lo pide el índice `ux_pesajes_animal_fecha`
+de la migración 010: la ganancia diaria (HU-54) divide por los días entre dos
+pesajes. El servidor lo controla antes y, si dos cargas chocan al mismo tiempo,
+el índice lo frena y se responde 409 sin guardar nada.
+
+**Pestaña y historial (criterio 4).** La pestaña Pesajes de la ficha
+(`cliente/src/paginas/pesajes/PestanaPesajes.tsx`) tiene el formulario y la
+tabla con fecha, peso, quién lo registró y la observación. Los pesajes se
+piden aparte de la ficha, solo si quien entra ve el módulo pesajes, y se suman
+al historial (HU-32) como un evento más, con quién y cuándo. Quien no ve
+pesajes encuentra la pestaña explicando por qué está vacía.
+
+**Para HU-54 y HU-55.** La ganancia diaria y el gráfico se agregan en
+`PestanaPesajes.tsx`, con los mismos pesajes que ya trae
+`GET /pesajes/animales/:id`. El registro rápido desde el celular usa
+`POST /pesajes`.
+
+**Fuera de alcance.** Corregir o dar de baja un pesaje no está en los
+criterios. La tabla ya tiene baja lógica (`eliminado_en`), así que se puede
+sumar sin cambiar la base.
+
+**Pruebas.**
+
+- Servidor: `pruebas/pesajes.test.js` (16). Borra lo que crea y deja el peso de
+  cada ficha como estaba, así no hace falta volver a sembrar.
+- Cliente: `pruebas/pesajes.test.tsx` (15). `pruebas/ficha-animal.test.tsx`
+  cambia la pestaña Pesajes: sin acceso a pesajes, lo explica.

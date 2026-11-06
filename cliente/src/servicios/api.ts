@@ -973,6 +973,18 @@ export const api = {
       body: JSON.stringify({ animal_ids: animalIds }),
     }),
 
+  // HU-53 · Pesajes. El peso va siempre en kilos (HU-26): convierte quien llama.
+  pesajesAnimal: (id: string) => pedir<PesajesDeAnimal>(`/pesajes/animales/${id}`),
+  registrarPesaje: (datos: DatosPesaje) =>
+    pedir<RespuestaPesaje>('/pesajes', { method: 'POST', body: JSON.stringify(datos) }),
+  pesablesMasivo: (animalIds: string[]) =>
+    pedir<RespuestaPesables>('/pesajes/masivo/animales', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds }),
+    }),
+  registrarPesajeMasivo: (datos: DatosPesajeMasivo) =>
+    pedir<RespuestaPesajeMasivo>('/pesajes/masivo', { method: 'POST', body: JSON.stringify(datos) }),
+
   // HU-45 · Exportación
   exportar: (pedido: PedidoExportacion) => descargar(`/exportacion?${parametrosExportacion(pedido)}`, 'ganado.xlsx'),
 };
@@ -1118,4 +1130,81 @@ export interface AvisosSanidad {
   vencidas: number;
   proximas: number;
   dias_proxima: number;
+}
+
+// ---------------------------------------------------------------------------
+// HU-53 · Pesajes
+// ---------------------------------------------------------------------------
+
+export interface Pesaje {
+  id: string;
+  animal_id: string;
+  /** AAAA-MM-DD, el día del pesaje. */
+  fecha: string;
+  /** Siempre en kilos (HU-26). */
+  peso_kg: number;
+  observacion: string | null;
+  /** Los de una misma carga masiva comparten lote. */
+  lote_id: string | null;
+  /** Cuándo quedó guardado (para el historial). */
+  creado_en: string;
+  registrado_por: string | null;
+}
+
+export interface PesajesDeAnimal {
+  animal: {
+    id: string;
+    identificador: string;
+    estado: EstadoAnimal;
+    eliminado: boolean;
+    peso_kg: number | null;
+  };
+  /** Del más nuevo al más viejo. */
+  pesajes: Pesaje[];
+  maximo_kg: number;
+}
+
+export interface DatosPesaje {
+  animal_id: string;
+  peso_kg: number;
+  fecha: string;
+  observacion?: string | null;
+}
+
+export interface RespuestaPesaje {
+  pesaje: Pesaje;
+  peso_actual_kg: number | null;
+  mensaje: string;
+}
+
+/** Un animal elegido que se puede pesar: vigente, activo y del rancho. */
+export interface AnimalPesable {
+  id: string;
+  identificador: string;
+  nombre: string | null;
+  categoria_codigo: string | null;
+  corral_nombre: string | null;
+  estado: EstadoAnimal;
+  fecha_nacimiento: string | null;
+  peso_kg: number | null;
+}
+
+export interface RespuestaPesables {
+  animales: AnimalPesable[];
+  /** Los elegidos que no se pueden pesar (dados de baja, no activos o de otro rancho). */
+  no_pesables: number;
+  maximo: number;
+  maximo_kg: number;
+}
+
+export interface DatosPesajeMasivo {
+  fecha: string;
+  observacion?: string | null;
+  pesajes: { animal_id: string; peso_kg: number }[];
+}
+
+export interface RespuestaPesajeMasivo {
+  registrados: number;
+  lote_id: string;
+  mensaje: string;
 }

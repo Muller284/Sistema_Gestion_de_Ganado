@@ -1,4 +1,4 @@
-import type { FichaAnimal } from '../../servicios/api';
+import type { FichaAnimal, Pesaje } from '../../servicios/api';
 
 /**
  * HU-32 · El historial de un animal en una sola línea de tiempo.
@@ -11,6 +11,9 @@ import type { FichaAnimal } from '../../servicios/api';
  *   baja        si hoy está dado de baja: animales.eliminado_en y quién lo
  *               hizo. Es modificado_por, que la baja deja puesto, y después
  *               de una baja no se puede editar la ficha (HU-34)
+ *   pesaje      pesajes: peso, fecha del pesaje y quién lo registró (HU-53,
+ *               criterio 4). Llegan aparte (GET /pesajes/animales/:id) porque
+ *               son del módulo pesajes: quien no lo ve, no los recibe.
  *
  * Criterio 4: cada evento dice quién lo registró y cuándo. "Cuándo" es el
  * momento en que quedó guardado, no la fecha que eligió el usuario: en un
@@ -45,17 +48,27 @@ export type EventoHistorial =
       fecha: string;
       motivo: string;
     }
-  | { tipo: 'baja'; clave: string; momento: string; quien: string | null };
+  | { tipo: 'baja'; clave: string; momento: string; quien: string | null }
+  | {
+      tipo: 'pesaje';
+      clave: string;
+      momento: string;
+      quien: string | null;
+      fecha: string;
+      peso_kg: number;
+      observacion: string | null;
+    };
 
 /** El orden entre eventos del mismo instante: el alta siempre es el primero. */
 const ORDEN_EN_EMPATE: Record<EventoHistorial['tipo'], number> = {
   baja: 0,
   estado: 1,
-  movimiento: 2,
-  alta: 3,
+  pesaje: 2,
+  movimiento: 3,
+  alta: 4,
 };
 
-export function armarHistorial(ficha: FichaAnimal): EventoHistorial[] {
+export function armarHistorial(ficha: FichaAnimal, pesajes: Pesaje[] = []): EventoHistorial[] {
   const { animal } = ficha;
   const eventos: EventoHistorial[] = [
     {
@@ -87,6 +100,18 @@ export function armarHistorial(ficha: FichaAnimal): EventoHistorial[] {
       nuevo: cambio.estado_nuevo,
       fecha: cambio.fecha,
       motivo: cambio.motivo,
+    });
+  }
+
+  for (const pesaje of pesajes) {
+    eventos.push({
+      tipo: 'pesaje',
+      clave: `pesaje-${pesaje.id}`,
+      momento: pesaje.creado_en,
+      quien: pesaje.registrado_por,
+      fecha: pesaje.fecha,
+      peso_kg: pesaje.peso_kg,
+      observacion: pesaje.observacion,
     });
   }
 
