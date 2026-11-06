@@ -456,6 +456,15 @@
         "numeroSinEsquema": "The dose number is only set with a schedule.",
         "aplicadorNoExiste": "Whoever applied it must be someone on your ranch.",
         "observacionLarga": "The note can be up to {n} characters."
+      },
+      "masiva": {
+        "ninguno": "None of the selected animals is active on your ranch.",
+        "antesDeNacer": "The date is before the birth of {n} animal(s) ({caravanas}). No application was recorded.",
+        "registradas": "{producto} recorded for {n} animal(s)."
+      },
+      "rapido": {
+        "sinIdentificador": "Enter the animal's tag.",
+        "noEncontrado": "There is no active animal with tag {identificador} on your ranch."
       }
     }
   },
@@ -1742,7 +1751,8 @@
       "accion": {
         "corral": "Assign to a pen",
         "estado": "Change status",
-        "baja": "Remove"
+        "baja": "Remove",
+        "aplicar": "Apply product"
       },
       "aplicar": "Apply to {n}",
       "siAplicar": "Yes, apply",
@@ -1942,7 +1952,8 @@
       "etiqueta": "Health sections",
       "calendario": "Calendar",
       "esquemas": "Vaccination schedules",
-      "productos": "Products"
+      "productos": "Products",
+      "rapido": "From your phone"
     },
     "estados": {
       "vencida": "Overdue",
@@ -2142,6 +2153,47 @@
         "refuerzo": "Booster",
         "observacion": "Note (optional)",
         "observacionEjemplo": "November campaign"
+      }
+    },
+    "masiva": {
+      "aplicar": {
+        "uno": "Apply to 1 animal",
+        "otros": "Apply to {n} animals"
+      },
+      "confirmar": {
+        "uno": "Record {producto} for 1 animal? Everything is saved together or nothing is.",
+        "otros": "Record {producto} for {n} animals? Everything is saved together or nothing is."
+      },
+      "siAplicar": "Yes, record",
+      "noContados": {
+        "uno": "1 of the selected was not counted (removed or from another ranch).",
+        "otros": "{n} of the selected were not counted (removed or from another ranch)."
+      }
+    },
+    "rapido": {
+      "rotulo": "Health · at the chute",
+      "titulo": "Record vaccine",
+      "intro": "Type the tag, choose the product and record it. Then go on with the next animal.",
+      "caravana": "Tag",
+      "buscar": "Find animal",
+      "buscando": "Searching…",
+      "producto": "Product",
+      "dosis": "Dose: {dosis} · today's date",
+      "registrar": "Record vaccine",
+      "terminar": "Finish",
+      "siguiente": "Type the next tag.",
+      "faltaCaravana": "Type the tag to find the animal.",
+      "faltaProducto": "Choose the product you applied.",
+      "sesion": {
+        "titulo": "Recorded now",
+        "cuantas": {
+          "uno": "1 application",
+          "otros": "{n} applications"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "You can't record vaccines",
+        "texto": "Recording vaccines from your phone is for whoever can edit health."
       }
     }
   },

@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { POOL_BD } from '../../comun/modulo-base-datos';
 
 /**
- * HU-46 y HU-48 · Productos sanitarios y aplicaciones.
+ * HU-46, HU-48, HU-49 y HU-52 · Productos sanitarios y aplicaciones.
  *
  * Como todos los repositorios, cada método recibe el rancho de quien pregunta
  * y lo pone en el WHERE (HU-03). Además, las tablas de la migración 010 no
@@ -56,8 +56,8 @@ export interface Aplicacion {
   registrado_por: string | null;
 }
 
+/** Lo que tiene una aplicación, sin el animal: es lo mismo de a uno o de a muchos. */
 export interface DatosAplicacion {
-  animal_id: string;
   producto_id: string;
   esquema_id: string | null;
   numero_dosis: number | null;
@@ -80,6 +80,20 @@ export interface Integrante {
   id: string;
   nombre: string;
 }
+
+/** Lo que hace falta de un animal para registrarle algo. */
+export interface AnimalSanidad {
+  id: string;
+  identificador: string;
+  nombre: string | null;
+  sexo: string;
+  categoria_codigo: string | null;
+  fecha_nacimiento: string | null;
+  eliminado_en: string | null;
+}
+
+const COLUMNAS_ANIMAL = `id, identificador, nombre, sexo, categoria_codigo,
+  fecha_nacimiento::text AS fecha_nacimiento, eliminado_en`;
 
 const COLUMNAS_PRODUCTO = `
   p.id, p.nombre, p.tipo, p.laboratorio, p.dosis::float AS dosis, p.unidad,
@@ -156,13 +170,34 @@ export class RepositorioSanidad {
   // ------------------------------------------------------------- aplicaciones
 
   /** El animal del rancho, aunque esté dado de baja: así se puede decir por qué no. */
-  async animal(id: string, ranchoId: string) {
+  async animal(id: string, ranchoId: string): Promise<AnimalSanidad | null> {
     const resultado = await this.bd.query(
-      `SELECT id, identificador, fecha_nacimiento::text AS fecha_nacimiento, eliminado_en
-         FROM animales WHERE id::text = $1 AND rancho_id = $2`,
+      `SELECT ${COLUMNAS_ANIMAL} FROM animales WHERE id::text = $1 AND rancho_id = $2`,
       [id, ranchoId],
     );
     return resultado.rows[0] ?? null;
+  }
+
+  /** HU-52 · El animal vigente con esa caravana, sin mirar mayúsculas ni espacios. */
+  async animalPorIdentificador(identificador: string, ranchoId: string): Promise<AnimalSanidad | null> {
+    const resultado = await this.bd.query(
+      `SELECT ${COLUMNAS_ANIMAL} FROM animales
+        WHERE rancho_id = $1 AND eliminado_en IS NULL AND LOWER(identificador) = LOWER($2)
+        LIMIT 1`,
+      [ranchoId, identificador],
+    );
+    return resultado.rows[0] ?? null;
+  }
+
+  /** HU-49 · De los ids pedidos, los animales vigentes del rancho. Los demás no cuentan. */
+  async animalesVigentes(ids: string[], ranchoId: string): Promise<AnimalSanidad[]> {
+    const resultado = await this.bd.query(
+      `SELECT ${COLUMNAS_ANIMAL} FROM animales
+        WHERE rancho_id = $1 AND eliminado_en IS NULL AND id::text = ANY($2::text[])
+        ORDER BY identificador`,
+      [ranchoId, ids],
+    );
+    return resultado.rows;
   }
 
   /** Hoy en la zona horaria del país del rancho, como el calendario (HU-50). */
@@ -227,7 +262,13 @@ export class RepositorioSanidad {
     return resultado.rows;
   }
 
-  async crearAplicacion(id: string, ranchoId: string, datos: DatosAplicacion, autorId: string): Promise<void> {
+  async crearAplicacion(
+    id: string,
+    ranchoId: string,
+    animalId: string,
+    datos: DatosAplicacion,
+    autorId: string,
+  ): Promise<void> {
     await this.bd.query(
       `INSERT INTO aplicaciones_sanitarias
               (id, rancho_id, animal_id, producto_id, esquema_id, numero_dosis, fecha, dosis,
@@ -236,7 +277,7 @@ export class RepositorioSanidad {
       [
         id,
         ranchoId,
-        datos.animal_id,
+        animalId,
         datos.producto_id,
         datos.esquema_id,
         datos.numero_dosis,
@@ -247,5 +288,39 @@ export class RepositorioSanidad {
         autorId,
       ],
     );
+  }
+
+  /**
+   * HU-49 · La misma aplicación a muchos animales, con un lote en común. Es
+   * una sola sentencia: o se guardan todas o ninguna (criterio 3).
+   */
+  async crearAplicacionesMasivas(
+    animalIds: string[],
+    ranchoId: string,
+    loteId: string,
+    datos: DatosAplicacion,
+    autorId: string,
+  ): Promise<number> {
+    const resultado = await this.bd.query(
+      `INSERT INTO aplicaciones_sanitarias
+              (id, rancho_id, animal_id, producto_id, esquema_id, numero_dosis, fecha, dosis,
+               aplicado_por, observacion, lote_id, creado_por, modificado_por)
+       SELECT gen_random_uuid(), $1, animal_id, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11
+         FROM UNNEST($2::uuid[]) AS animal_id`,
+      [
+        ranchoId,
+        animalIds,
+        datos.producto_id,
+        datos.esquema_id,
+        datos.numero_dosis,
+        datos.fecha,
+        datos.dosis,
+        datos.aplicado_por,
+        datos.observacion,
+        loteId,
+        autorId,
+      ],
+    );
+    return resultado.rowCount ?? 0;
   }
 }

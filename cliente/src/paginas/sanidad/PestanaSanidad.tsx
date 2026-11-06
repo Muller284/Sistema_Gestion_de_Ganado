@@ -1,17 +1,16 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Alerta, Boton, Cargando, CampoLista, CampoTexto, EstadoVacio, Icono, Insignia, Tarjeta } from '../../componentes';
+import { Alerta, Boton, Cargando, EstadoVacio, Icono, Insignia, Tarjeta } from '../../componentes';
 import { api, type AplicacionSanitaria, type Animal, type OpcionesAplicacion } from '../../servicios/api';
 import {
   aDatosAplicacion,
-  conProducto,
   detalleAplicacion,
-  esquemasDelProducto,
   formularioAplicacion,
   problemaAplicacion,
   type FormularioAplicacion,
 } from '../../servicios/aplicaciones';
 import { t } from '../../servicios/idioma';
 import { formatoFecha, formatoMomento, type Regional } from '../../servicios/unidades';
+import { CamposAplicacion } from './CamposAplicacion';
 
 /**
  * HU-48 · La pestaña Sanidad de la ficha del animal.
@@ -143,22 +142,8 @@ export function FormularioAplicacionSanitaria({ animal, quienId, alGuardar, alCa
     };
   }, [quienId]);
 
-  function cambiar<K extends keyof FormularioAplicacion>(clave: K, valor: FormularioAplicacion[K]) {
-    setFormulario((previo) => (previo ? { ...previo, [clave]: valor } : previo));
-  }
-
   const problema = formulario && opciones ? problemaAplicacion(formulario, opciones.hoy, animal.fecha_nacimiento) : null;
   const completo = Boolean(formulario?.producto_id && formulario.fecha);
-  const esquemas = formulario && opciones ? esquemasDelProducto(opciones.esquemas, formulario.producto_id) : [];
-  const esquema = esquemas.find((e) => e.id === formulario?.esquema_id);
-  const unidad = opciones?.productos.find((p) => p.id === formulario?.producto_id)?.unidad ?? null;
-  // Quien registra va primero; si no es del rancho (el Admin en soporte), igual se ofrece.
-  const integrantes = opciones
-    ? [
-        ...opciones.integrantes.filter((p) => p.id === quienId),
-        ...opciones.integrantes.filter((p) => p.id !== quienId),
-      ]
-    : [];
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
@@ -197,110 +182,14 @@ export function FormularioAplicacionSanitaria({ animal, quienId, alGuardar, alCa
           )}
 
           {formulario && opciones && (
-            <>
-              <div className="par">
-                <CampoLista
-                  etiqueta={t('sanidad.aplicaciones.formulario.producto')}
-                  obligatorio
-                  value={formulario.producto_id}
-                  onChange={(e) => setFormulario(conProducto(formulario, e.target.value, opciones))}
-                >
-                  <option value="">{t('sanidad.esquemas.formulario.elegirProducto')}</option>
-                  {opciones.productos.map((producto) => (
-                    <option key={producto.id} value={producto.id}>
-                      {producto.nombre}
-                    </option>
-                  ))}
-                </CampoLista>
-                <CampoTexto
-                  etiqueta={t('sanidad.aplicaciones.formulario.fecha')}
-                  obligatorio
-                  type="date"
-                  max={opciones.hoy}
-                  min={animal.fecha_nacimiento ?? undefined}
-                  error={problema === 'fechaFutura' || problema === 'antesDeNacer'
-                    ? t(`sanidad.aplicaciones.formulario.${problema}`)
-                    : undefined}
-                  value={formulario.fecha}
-                  onChange={(e) => cambiar('fecha', e.target.value)}
-                />
-              </div>
-
-              <div className="par">
-                <CampoTexto
-                  etiqueta={
-                    unidad
-                      ? t('sanidad.aplicaciones.formulario.dosisCon', { unidad: t(`sanidad.productos.unidadesNombre.${unidad}`) })
-                      : t('sanidad.aplicaciones.formulario.dosis')
-                  }
-                  ayuda={t('sanidad.aplicaciones.formulario.dosisAyuda')}
-                  error={problema === 'dosisInvalida' ? t('sanidad.productos.formulario.dosisInvalida') : undefined}
-                  inputMode="decimal"
-                  value={formulario.dosis}
-                  onChange={(e) => cambiar('dosis', e.target.value)}
-                />
-                <CampoLista
-                  etiqueta={t('sanidad.aplicaciones.formulario.aplicadoPor')}
-                  value={formulario.aplicado_por}
-                  onChange={(e) => cambiar('aplicado_por', e.target.value)}
-                >
-                  {!integrantes.some((p) => p.id === quienId) && (
-                    <option value={quienId}>{t('sanidad.aplicaciones.formulario.yo')}</option>
-                  )}
-                  {integrantes.map((persona) => (
-                    <option key={persona.id} value={persona.id}>
-                      {persona.id === quienId
-                        ? t('sanidad.aplicaciones.formulario.yoConNombre', { nombre: persona.nombre })
-                        : persona.nombre}
-                    </option>
-                  ))}
-                </CampoLista>
-              </div>
-
-              {esquemas.length > 0 && (
-                <div className="par">
-                  <CampoLista
-                    etiqueta={t('sanidad.aplicaciones.formulario.esquema')}
-                    ayuda={t('sanidad.aplicaciones.formulario.esquemaAyuda')}
-                    value={formulario.esquema_id}
-                    onChange={(e) =>
-                      setFormulario({ ...formulario, esquema_id: e.target.value, numero_dosis: e.target.value ? '1' : '' })
-                    }
-                  >
-                    <option value="">{t('sanidad.aplicaciones.formulario.sinEsquema')}</option>
-                    {esquemas.map((opcion) => (
-                      <option key={opcion.id} value={opcion.id}>
-                        {opcion.nombre}
-                      </option>
-                    ))}
-                  </CampoLista>
-                  {esquema && (
-                    <CampoLista
-                      etiqueta={t('sanidad.aplicaciones.formulario.numeroDosis')}
-                      value={formulario.numero_dosis}
-                      onChange={(e) => cambiar('numero_dosis', e.target.value)}
-                    >
-                      {Array.from({ length: esquema.dosis }, (_, i) => String(i + 1)).map((numero) => (
-                        <option key={numero} value={numero}>
-                          {t('sanidad.aplicaciones.formulario.dosisNumero', { n: numero, total: esquema.dosis })}
-                        </option>
-                      ))}
-                      {esquema.refuerzo_dias && (
-                        <option value="">{t('sanidad.aplicaciones.formulario.refuerzo')}</option>
-                      )}
-                    </CampoLista>
-                  )}
-                </div>
-              )}
-
-              <CampoTexto
-                etiqueta={t('sanidad.aplicaciones.formulario.observacion')}
-                maxLength={500}
-                placeholder={t('sanidad.aplicaciones.formulario.observacionEjemplo')}
-                value={formulario.observacion}
-                onChange={(e) => cambiar('observacion', e.target.value)}
-              />
-            </>
+            <CamposAplicacion
+              formulario={formulario}
+              opciones={opciones}
+              quienId={quienId}
+              nacimiento={animal.fecha_nacimiento}
+              problema={problema}
+              alCambiar={setFormulario}
+            />
           )}
         </div>
       </Tarjeta>

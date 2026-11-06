@@ -53,7 +53,7 @@ import { ModuloSanidad } from './modulos/sanidad/modulo-sanidad';
     ModuloAccionesMasivas, // HU-31
     ModuloExportacion, // HU-45
     ModuloVacunacion, // HU-47, HU-50 y HU-51
-    ModuloSanidad, // HU-46 y HU-48
+    ModuloSanidad, // HU-46, HU-48, HU-49 y HU-52
   ],
 })
 export class AppModule {}

@@ -1685,3 +1685,52 @@ como ese usuario y las pruebas «sin sesión no…» de acciones masivas y
 exportación dan 200 en vez de 401. En la integración continua no pasa porque
 esa variable no existe. Para correr todo igual que allá:
 `USUARIO_DEMO_ID= node dist/main.js`.
+
+
+## 45. Aplicación masiva y vacuna desde el celular (Sprint 4, Romina)
+
+HU-49 y HU-52, en el mismo módulo `servidor/src/modulos/sanidad/` que §44.
+
+| Ruta | Qué hace | Permiso |
+|---|---|---|
+| `POST /sanidad/aplicaciones/masiva` | `{ animal_ids, ... }` con los mismos datos que una aplicación de a uno | sanidad · editar |
+| `GET /sanidad/animales/buscar?identificador=` | el animal vigente con esa caravana | sanidad · editar |
+
+**Aplicación masiva (HU-49).**
+
+- Es una acción más de la barra de HU-31, «Aplicar producto»
+  (`cliente/src/paginas/sanidad/AplicacionMasiva.tsx`). Aparece para quien
+  edita sanidad; quien edita sanidad pero no animales (el veterinario) elige
+  animales en el listado y solo ve esta acción. Es la misma forma que usa
+  Brian para el pesaje masivo (§43), así las dos barras se unen sin rehacer
+  nada.
+- Los campos son los mismos que en la ficha (`CamposAplicacion.tsx`, que usan
+  las dos pantallas).
+- Antes de guardar se confirma cuántos animales se van a registrar.
+- **O todas o ninguna.** Se guardan con una sola sentencia `INSERT ... SELECT
+  FROM UNNEST`, que la base aplica entera o no aplica. Todas comparten
+  `lote_id`. Si la fecha es anterior al nacimiento de alguno, no se guarda
+  ninguna y el mensaje nombra hasta cinco caravanas.
+- Los dados de baja, los de otro rancho, los que no existen y los repetidos no
+  se cuentan; la respuesta dice cuántos fueron (`no_contados`). Si no queda
+  ninguno, es un 400.
+- Tope de 5000 animales por pedido, el mismo de las acciones masivas.
+
+**Vacuna desde el celular (HU-52).**
+
+- `/sanidad/registro-rapido`, una pestaña más de Sanidad («Desde el
+  celular»). Usa los estilos del alta rápida de Aaron (HU-35): controles de
+  52 px y las acciones en la barra pegada abajo.
+- Un solo botón principal: primero «Buscar animal» (la búsqueda no mira
+  mayúsculas ni espacios, y solo encuentra animales vigentes); con el animal a
+  la vista, «Registrar vacuna». Cambiar la caravana obliga a buscar de nuevo,
+  para no vacunar al que no es.
+- Registra con la ruta de HU-48: la fecha de hoy del rancho, la dosis del
+  catálogo y aplicada por quien la registra.
+- Para encadenar, la caravana se vacía y recupera el foco, y el producto queda
+  elegido. Lo registrado en la tanda se ve abajo.
+
+**Pruebas.**
+
+- Servidor: `pruebas/aplicacion-masiva.test.js` (8).
+- Cliente: `pruebas/sanidad-celular.test.tsx` (11).

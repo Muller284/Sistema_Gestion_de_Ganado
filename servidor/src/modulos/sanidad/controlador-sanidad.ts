@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { GuardiaCuentaLista } from '../../comun/guardia-cuenta-lista';
 import { ServicioSanidad } from './servicio-sanidad';
 
 /**
- * HU-46 y HU-48 · Productos y aplicaciones, en el mismo prefijo /sanidad que
+ * HU-46, HU-48, HU-49 y HU-52 · Productos y aplicaciones, en el mismo prefijo /sanidad que
  * los esquemas y el calendario de Aaron (modulos/vacunacion).
  *
  *   GET    /sanidad/productos                  { productos }               sanidad · ver
@@ -14,6 +14,8 @@ import { ServicioSanidad } from './servicio-sanidad';
  *   GET    /sanidad/animales/:id/aplicaciones  { aplicaciones }            sanidad · ver
  *   POST   /sanidad/animales/:id/aplicaciones  { producto_id, fecha, dosis?, esquema_id?,
  *                                                numero_dosis?, aplicado_por?, observacion? }
+ *   POST   /sanidad/aplicaciones/masiva        { animal_ids, ...lo mismo }  sanidad · editar
+ *   GET    /sanidad/animales/buscar            ?identificador=0501         sanidad · editar
  */
 @UseGuards(GuardiaCuentaLista)
 @Controller('sanidad')
@@ -43,6 +45,16 @@ export class ControladorSanidad {
   @Get('aplicaciones/opciones')
   async opcionesAplicacion(@Req() peticion: any) {
     return this.servicio.opcionesAplicacion(peticion.usuarioActual);
+  }
+
+  @Post('aplicaciones/masiva')
+  async registrarMasiva(@Body() cuerpo: any, @Req() peticion: any) {
+    return this.servicio.registrarMasiva(cuerpo, peticion.usuarioActual);
+  }
+
+  @Get('animales/buscar')
+  async buscarAnimal(@Query('identificador') identificador: unknown, @Req() peticion: any) {
+    return this.servicio.buscarAnimal(identificador, peticion.usuarioActual);
   }
 
   @Get('animales/:id/aplicaciones')

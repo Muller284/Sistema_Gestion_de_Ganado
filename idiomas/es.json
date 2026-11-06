@@ -456,6 +456,15 @@
         "numeroSinEsquema": "El número de dosis solo se indica con un esquema.",
         "aplicadorNoExiste": "Quien la aplicó tiene que ser alguien de tu rancho.",
         "observacionLarga": "La observación puede tener hasta {n} caracteres."
+      },
+      "masiva": {
+        "ninguno": "Ninguno de los animales elegidos está vigente en tu rancho.",
+        "antesDeNacer": "La fecha es anterior al nacimiento de {n} animal(es) ({caravanas}). No se registró ninguna aplicación.",
+        "registradas": "{producto} registrado en {n} animal(es)."
+      },
+      "rapido": {
+        "sinIdentificador": "Escribe la caravana del animal.",
+        "noEncontrado": "No hay ningún animal vigente con la caravana {identificador} en tu rancho."
       }
     }
   },
@@ -1742,7 +1751,8 @@
       "accion": {
         "corral": "Asignar a un corral",
         "estado": "Cambiar estado",
-        "baja": "Dar de baja"
+        "baja": "Dar de baja",
+        "aplicar": "Aplicar producto"
       },
       "aplicar": "Aplicar a {n}",
       "siAplicar": "Sí, aplicar",
@@ -1942,7 +1952,8 @@
       "etiqueta": "Secciones de sanidad",
       "calendario": "Calendario",
       "esquemas": "Esquemas de vacunación",
-      "productos": "Productos"
+      "productos": "Productos",
+      "rapido": "Desde el celular"
     },
     "estados": {
       "vencida": "Vencida",
@@ -2142,6 +2153,47 @@
         "refuerzo": "Refuerzo",
         "observacion": "Observación (opcional)",
         "observacionEjemplo": "Campaña de noviembre"
+      }
+    },
+    "masiva": {
+      "aplicar": {
+        "uno": "Aplicar a 1 animal",
+        "otros": "Aplicar a {n} animales"
+      },
+      "confirmar": {
+        "uno": "¿Registrar {producto} en 1 animal? Se guarda todo junto o nada.",
+        "otros": "¿Registrar {producto} en {n} animales? Se guarda todo junto o nada."
+      },
+      "siAplicar": "Sí, registrar",
+      "noContados": {
+        "uno": "1 de los elegidos no se contó (dado de baja o de otro rancho).",
+        "otros": "{n} de los elegidos no se contaron (dados de baja o de otro rancho)."
+      }
+    },
+    "rapido": {
+      "rotulo": "Sanidad · en la manga",
+      "titulo": "Registrar vacuna",
+      "intro": "Escribe la caravana, elige el producto y registra. Después sigue con el próximo animal.",
+      "caravana": "Caravana",
+      "buscar": "Buscar animal",
+      "buscando": "Buscando…",
+      "producto": "Producto",
+      "dosis": "Dosis: {dosis} · fecha de hoy",
+      "registrar": "Registrar vacuna",
+      "terminar": "Terminar",
+      "siguiente": "Escribe la caravana del siguiente.",
+      "faltaCaravana": "Escribe la caravana para buscar el animal.",
+      "faltaProducto": "Elige el producto que le aplicaste.",
+      "sesion": {
+        "titulo": "Registradas ahora",
+        "cuantas": {
+          "uno": "1 aplicación",
+          "otros": "{n} aplicaciones"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "No puedes registrar vacunas",
+        "texto": "Registrar vacunas desde el celular es para quien tiene permiso de edición en sanidad."
       }
     }
   },

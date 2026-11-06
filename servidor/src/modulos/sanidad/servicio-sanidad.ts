@@ -6,6 +6,7 @@ import { t } from '../../comun/idioma';
 import { claveDeRaza } from '../../comun/razas';
 import {
   RepositorioSanidad,
+  type AnimalSanidad,
   type DatosAplicacion,
   type DatosProducto,
   type TipoProducto,
@@ -31,12 +32,27 @@ import {
  *      se elija.
  *   3. Se ve en la pestaña Sanidad y en el historial de la ficha (HU-32).
  *   4. No se registra en un animal dado de baja (HU-34).
+ *
+ * HU-49 · Aplicación masiva.
+ *   1. Los animales se eligen en el listado como en las acciones masivas
+ *      (HU-31): acá llegan los ids.
+ *   2. La pantalla confirma cuántos se van a registrar.
+ *   3. Se guarda en una sola sentencia: o todas o ninguna. Si la fecha es
+ *      anterior al nacimiento de alguno, no se guarda ninguna y se dice cuál.
+ *   4. Los dados de baja y los de otro rancho no se cuentan.
+ *
+ * HU-52 · Registrar vacuna desde el celular: busca el animal por su caravana
+ *   y registra con la misma ruta que HU-48.
  */
 
 const TIPOS: TipoProducto[] = ['vacuna', 'antiparasitario', 'vitamina', 'antibiotico', 'otro'];
 const UNIDADES: UnidadDosis[] = ['ml', 'g', 'mg', 'dosis'];
 const LARGO_NOMBRE = 120;
 const LARGO_OBSERVACION = 500;
+/** El mismo tope que las acciones masivas (HU-31). */
+const MAXIMO_MASIVA = 5000;
+/** Cuántas caravanas se nombran cuando la fecha no le sirve a alguno. */
+const NOMBRADOS = 5;
 /** NUMERIC(10,2) de la migración 010. */
 const MAXIMA_DOSIS = 99999999.99;
 
@@ -123,9 +139,12 @@ export class ServicioSanidad {
       );
     }
 
-    const datos = await this.validarAplicacion(cuerpo, animal, ranchoId, quien);
+    const datos = await this.validarAplicacion(cuerpo, ranchoId, quien);
+    if (nacidosDespues([animal], datos.fecha).length > 0) {
+      throw new BadRequestException(t('servidor.sanidad.aplicaciones.antesDeNacer'));
+    }
     const id = randomUUID();
-    await this.repositorio.crearAplicacion(id, ranchoId, datos, quien.id);
+    await this.repositorio.crearAplicacion(id, ranchoId, animal.id, datos, quien.id);
     const aplicacion = (await this.repositorio.aplicaciones(animal.id, ranchoId)).find((a) => a.id === id);
     return {
       aplicacion,
@@ -134,6 +153,61 @@ export class ServicioSanidad {
         identificador: animal.identificador,
       }),
     };
+  }
+
+  /** HU-49 · La misma aplicación a todos los animales elegidos. */
+  async registrarMasiva(cuerpo: any, quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'sanidad', 'editar');
+    const pedidos: unknown = cuerpo?.animal_ids;
+    if (
+      !Array.isArray(pedidos) ||
+      pedidos.length === 0 ||
+      pedidos.length > MAXIMO_MASIVA ||
+      pedidos.some((id) => typeof id !== 'string' || !id)
+    ) {
+      throw new BadRequestException(t('servidor.masivo.seleccionInvalida', { n: MAXIMO_MASIVA }));
+    }
+    const ids = [...new Set(pedidos as string[])];
+
+    const datos = await this.validarAplicacion(cuerpo, ranchoId, quien);
+    const animales = await this.repositorio.animalesVigentes(ids, ranchoId);
+    if (animales.length === 0) throw new BadRequestException(t('servidor.sanidad.masiva.ninguno'));
+
+    const antes = nacidosDespues(animales, datos.fecha);
+    if (antes.length > 0) {
+      throw new BadRequestException(
+        t('servidor.sanidad.masiva.antesDeNacer', {
+          n: antes.length,
+          caravanas: antes.slice(0, NOMBRADOS).map((a) => a.identificador).join(', '),
+        }),
+      );
+    }
+
+    const loteId = randomUUID();
+    const registradas = await this.repositorio.crearAplicacionesMasivas(
+      animales.map((a) => a.id),
+      ranchoId,
+      loteId,
+      datos,
+      quien.id,
+    );
+    const producto = await this.repositorio.producto(datos.producto_id, ranchoId);
+    return {
+      registradas,
+      no_contados: ids.length - registradas,
+      lote_id: loteId,
+      mensaje: t('servidor.sanidad.masiva.registradas', { n: registradas, producto: producto?.nombre ?? '' }),
+    };
+  }
+
+  /** HU-52 · El animal vigente con esa caravana, para registrarle algo desde el celular. */
+  async buscarAnimal(identificador: unknown, quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'sanidad', 'editar');
+    const buscado = limpio(identificador);
+    if (!buscado) throw new BadRequestException(t('servidor.sanidad.rapido.sinIdentificador'));
+    const animal = await this.repositorio.animalPorIdentificador(buscado, ranchoId);
+    if (!animal) throw new NotFoundException(t('servidor.sanidad.rapido.noEncontrado', { identificador: buscado }));
+    return { animal };
   }
 
   // --------------------------------------------------------------------------
@@ -173,12 +247,8 @@ export class ServicioSanidad {
     return { nombre, clave, tipo, laboratorio, dosis, unidad };
   }
 
-  private async validarAplicacion(
-    cuerpo: any,
-    animal: { id: string; fecha_nacimiento: string | null },
-    ranchoId: string,
-    quien: UsuarioActual,
-  ): Promise<DatosAplicacion> {
+  /** Lo común a una aplicación de a uno y de a muchos. El nacimiento lo mira quien la usa. */
+  private async validarAplicacion(cuerpo: any, ranchoId: string, quien: UsuarioActual): Promise<DatosAplicacion> {
     const productoId = typeof cuerpo?.producto_id === 'string' ? cuerpo.producto_id : '';
     if (!productoId) throw new BadRequestException(t('servidor.sanidad.aplicaciones.sinProducto'));
     const producto = await this.repositorio.producto(productoId, ranchoId);
@@ -188,9 +258,6 @@ export class ServicioSanidad {
     if (!fecha) throw new BadRequestException(t('servidor.sanidad.aplicaciones.fechaInvalida'));
     if (fecha > (await this.repositorio.hoy(ranchoId))) {
       throw new BadRequestException(t('servidor.sanidad.aplicaciones.fechaFutura'));
-    }
-    if (animal.fecha_nacimiento && fecha < animal.fecha_nacimiento) {
-      throw new BadRequestException(t('servidor.sanidad.aplicaciones.antesDeNacer'));
     }
 
     // Sin dosis escrita, la del producto.
@@ -237,7 +304,6 @@ export class ServicioSanidad {
     }
 
     return {
-      animal_id: animal.id,
       producto_id: producto.id,
       esquema_id: esquemaId,
       numero_dosis: numeroDosis,
@@ -259,6 +325,11 @@ export class ServicioSanidad {
       throw error;
     }
   }
+}
+
+/** Los animales que nacieron después de la fecha: a ellos no se les pudo aplicar. */
+function nacidosDespues(animales: AnimalSanidad[], fecha: string): AnimalSanidad[] {
+  return animales.filter((animal) => animal.fecha_nacimiento !== null && fecha < animal.fecha_nacimiento);
 }
 
 function vacio(valor: unknown): boolean {

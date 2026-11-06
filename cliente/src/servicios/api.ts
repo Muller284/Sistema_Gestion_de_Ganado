@@ -916,6 +916,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(datos),
     }),
+  // HU-49 y HU-52
+  aplicacionMasiva: (animalIds: string[], datos: DatosAplicacion) =>
+    pedir<RespuestaAplicacionMasiva>('/sanidad/aplicaciones/masiva', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds, ...datos }),
+    }),
+  buscarAnimalSanidad: (identificador: string) =>
+    pedir<{ animal: AnimalSanidad }>(
+      `/sanidad/animales/buscar?${new URLSearchParams({ identificador }).toString()}`,
+    ),
 
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
@@ -1224,4 +1234,27 @@ export interface DatosAplicacion {
 export interface RespuestaAplicacion {
   aplicacion: AplicacionSanitaria;
   mensaje: string;
+}
+
+// ---------------------------------------------------------------------------
+// HU-49 · Aplicación masiva y HU-52 · Registrar vacuna desde el celular
+// ---------------------------------------------------------------------------
+
+export interface RespuestaAplicacionMasiva {
+  registradas: number;
+  /** Elegidos que no contaron: dados de baja, de otro rancho o repetidos. */
+  no_contados: number;
+  lote_id: string;
+  mensaje: string;
+}
+
+/** El animal que se encontró por su caravana. */
+export interface AnimalSanidad {
+  id: string;
+  identificador: string;
+  nombre: string | null;
+  sexo: Sexo;
+  categoria_codigo: string | null;
+  fecha_nacimiento: string | null;
+  eliminado_en: string | null;
 }
