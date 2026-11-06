@@ -3,6 +3,7 @@ import { Alerta, Boton, CampoLista, CampoTexto, Segmentos } from '../../componen
 import { api, type Corral, type EstadoAnimal } from '../../servicios/api';
 import { t, tn } from '../../servicios/idioma';
 import { hoyEn, type Regional } from '../../servicios/unidades';
+import { AplicacionMasiva } from '../sanidad/AplicacionMasiva';
 
 /**
  * HU-31 · La barra de acciones masivas del listado de animales.
@@ -19,12 +20,15 @@ import { hoyEn, type Regional } from '../../servicios/unidades';
  *   estado  HU-33: el nuevo estado, la fecha y el motivo.
  *   baja    HU-34: solo el propietario y el Admin (HU-18, criterio 3); el
  *           botón ni aparece para los demás, y el servidor lo vuelve a exigir.
+ *   aplicar HU-49: el mismo producto a todos (AplicacionMasiva.tsx). Solo
+ *           para quien edita sanidad; tiene su propia confirmación. Quien
+ *           edita sanidad pero no animales (el veterinario) solo ve esta.
  *
  * Elegir de a uno, la página o todo el filtro (criterio 1) lo hace el
  * listado: acá llegan los ids ya elegidos.
  */
 
-export type Accion = 'corral' | 'estado' | 'baja';
+export type Accion = 'corral' | 'estado' | 'baja' | 'aplicar';
 export type Ambito = 'sueltos' | 'pagina' | 'filtro';
 
 const ESTADOS: EstadoAnimal[] = ['activo', 'vendido', 'muerto', 'archivado'];
@@ -35,6 +39,12 @@ interface Propiedades {
   ambito: Ambito;
   corrales: Corral[];
   puedeEliminar: boolean;
+  /** HU-49: edita sanidad. */
+  puedeAplicar?: boolean;
+  /** Edita animales: corral y estado. Por defecto sí (antes era la única forma de elegir). */
+  puedeEditarAnimales?: boolean;
+  /** HU-49: quien registra; es quien aplicó si no se elige otra persona. */
+  quienId?: string;
   regional: Regional;
   alQuitar: () => void;
   alTerminar: (mensaje: string, aviso?: string | null) => void;
@@ -45,11 +55,19 @@ export function AccionesMasivas({
   ambito,
   corrales,
   puedeEliminar,
+  puedeAplicar = false,
+  puedeEditarAnimales = true,
+  quienId = '',
   regional,
   alQuitar,
   alTerminar,
 }: Propiedades) {
-  const [accion, setAccion] = useState<Accion>('corral');
+  const acciones: Accion[] = [
+    ...(puedeEditarAnimales ? (['corral', 'estado'] as Accion[]) : []),
+    ...(puedeAplicar ? (['aplicar'] as Accion[]) : []),
+    ...(puedeEliminar && puedeEditarAnimales ? (['baja'] as Accion[]) : []),
+  ];
+  const [accion, setAccion] = useState<Accion>(acciones[0] ?? 'corral');
   const [corral, setCorral] = useState('');
   const [estado, setEstado] = useState<EstadoAnimal | ''>('');
   const [fecha, setFecha] = useState(hoyEn(regional));
@@ -59,7 +77,6 @@ export function AccionesMasivas({
   const [error, setError] = useState('');
 
   const n = seleccion.length;
-  const acciones: Accion[] = puedeEliminar ? ['corral', 'estado', 'baja'] : ['corral', 'estado'];
   const nombreCorral = corrales.find((c) => c.id === corral)?.nombre ?? '';
   const lista =
     accion === 'corral'
@@ -136,9 +153,13 @@ export function AccionesMasivas({
         opciones={acciones.map((clave) => ({ clave, nombre: t(`animales.masivo.accion.${clave}`) }))}
       />
 
-      {error && <Alerta variante="error">{error}</Alerta>}
+      {accion === 'aplicar' && (
+        <AplicacionMasiva seleccion={seleccion} quienId={quienId} alTerminar={(mensaje) => alTerminar(mensaje)} />
+      )}
 
-      <div className="acciones-masivas__campos">
+      {accion !== 'aplicar' && error && <Alerta variante="error">{error}</Alerta>}
+
+      <div className="acciones-masivas__campos" hidden={accion === 'aplicar'}>
         {accion === 'corral' && (
           <CampoLista
             etiqueta={t('animales.seleccion.corral')}
@@ -195,7 +216,7 @@ export function AccionesMasivas({
         {accion === 'baja' && <p className="cuerpo c-600">{t('animales.masivo.bajaExplicacion')}</p>}
       </div>
 
-      {confirmando ? (
+      {accion === 'aplicar' ? null : confirmando ? (
         <div className="col g12">
           <Alerta variante="adv">{pregunta()}</Alerta>
           <div className="fila g8">

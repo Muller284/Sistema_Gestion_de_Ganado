@@ -424,7 +424,48 @@
       "estadoInvalido": "El estado tiene que ser vencida, próxima o programada.",
       "paginaInvalida": "La página tiene que ser un número entero desde 1.",
       "porPaginaInvalida": "Se muestran de 1 a {n} dosis por página.",
-      "filtroRepetido": "Cada filtro va una sola vez."
+      "filtroRepetido": "Cada filtro va una sola vez.",
+      "productos": {
+        "creado": "Producto «{nombre}» agregado al catálogo.",
+        "guardado": "Producto «{nombre}» guardado.",
+        "dadoDeBaja": "Producto «{nombre}» dado de baja. Las aplicaciones que lo usaron lo siguen mostrando.",
+        "noExiste": "Ese producto no existe en tu rancho.",
+        "sinNombre": "Escribe el nombre del producto.",
+        "nombreLargo": "El nombre puede tener hasta {n} caracteres.",
+        "nombreOcupado": "Ya tienes un producto llamado «{nombre}».",
+        "tipoInvalido": "Elige el tipo: vacuna, antiparasitario, vitamina, antibiótico u otro.",
+        "laboratorioLargo": "El laboratorio puede tener hasta {n} caracteres.",
+        "dosisInvalida": "La dosis tiene que ser un número mayor que cero, con dos decimales como mucho.",
+        "unidadInvalida": "Elige la unidad: ml, g, mg o dosis.",
+        "dosisSinUnidad": "La dosis y su unidad van juntas: completa las dos o deja las dos vacías.",
+        "usadoEnEsquemas": "«{nombre}» se usa en {n} esquema(s) de vacunación. Da de baja esos esquemas o cámbiales el producto primero."
+      },
+      "aplicaciones": {
+        "registrada": "{producto} registrado en el animal {identificador}.",
+        "animalNoExiste": "Ese animal no existe en tu rancho.",
+        "animalDadoDeBaja": "El animal {identificador} está dado de baja: restáuralo para registrarle una aplicación.",
+        "sinProducto": "Elige el producto que se aplicó.",
+        "productoNoExiste": "Ese producto no está en el catálogo de tu rancho.",
+        "fechaInvalida": "Elige una fecha válida.",
+        "fechaFutura": "La fecha no puede ser futura.",
+        "antesDeNacer": "La fecha no puede ser anterior al nacimiento del animal.",
+        "dosisInvalida": "La dosis tiene que ser un número mayor que cero, con dos decimales como mucho.",
+        "esquemaNoExiste": "Ese esquema no existe en tu rancho.",
+        "esquemaDeOtroProducto": "El esquema «{esquema}» no es de {producto}.",
+        "numeroDosisInvalido": "El número de dosis va de 1 a {n}.",
+        "numeroSinEsquema": "El número de dosis solo se indica con un esquema.",
+        "aplicadorNoExiste": "Quien la aplicó tiene que ser alguien de tu rancho.",
+        "observacionLarga": "La observación puede tener hasta {n} caracteres."
+      },
+      "masiva": {
+        "ninguno": "Ninguno de los animales elegidos está vigente en tu rancho.",
+        "antesDeNacer": "La fecha es anterior al nacimiento de {n} animal(es) ({caravanas}). No se registró ninguna aplicación.",
+        "registradas": "{producto} registrado en {n} animal(es)."
+      },
+      "rapido": {
+        "sinIdentificador": "Escribe la caravana del animal.",
+        "noEncontrado": "No hay ningún animal vigente con la caravana {identificador} en tu rancho."
+      }
     }
   },
   "acceso": {
@@ -1710,7 +1751,8 @@
       "accion": {
         "corral": "Asignar a un corral",
         "estado": "Cambiar estado",
-        "baja": "Dar de baja"
+        "baja": "Dar de baja",
+        "aplicar": "Aplicar producto"
       },
       "aplicar": "Aplicar a {n}",
       "siAplicar": "Sí, aplicar",
@@ -1791,8 +1833,10 @@
         "aniosYMeses": "{anios} y {meses}"
       },
       "sanidad": {
-        "titulo": "Sanidad llega en la fase 3",
-        "texto": "Acá se van a ver las vacunas, los tratamientos y las revisiones de este animal. Por ahora el módulo de sanidad todavía no está disponible."
+        "sinAcceso": {
+          "titulo": "No tienes acceso a sanidad",
+          "texto": "Las vacunas y los tratamientos de este animal los ve quien tiene permiso en el módulo de sanidad."
+        }
       },
       "pesajes": {
         "titulo": "Pesajes llega en la fase 3",
@@ -1805,7 +1849,8 @@
         "entro": "Entró a {destino}",
         "estado": "Pasó de {anterior} a {nuevo} el {fecha}",
         "baja": "Se dio de baja",
-        "quienCuando": "{nombre} · {momento}"
+        "quienCuando": "{nombre} · {momento}",
+        "aplicacion": "Se le aplicó {producto} el {fecha}"
       },
       "rotulo": "Ficha del animal",
       "titulo": "Animal {identificador}",
@@ -1906,7 +1951,9 @@
     "pestanas": {
       "etiqueta": "Secciones de sanidad",
       "calendario": "Calendario",
-      "esquemas": "Esquemas de vacunación"
+      "esquemas": "Esquemas de vacunación",
+      "productos": "Productos",
+      "rapido": "Desde el celular"
     },
     "estados": {
       "vencida": "Vencida",
@@ -2020,6 +2067,135 @@
       },
       "verVencidas": "Ver las vencidas",
       "verProximas": "Ver las próximas"
+    },
+    "productos": {
+      "nuevo": "Nuevo producto",
+      "editar": "Editar",
+      "darDeBaja": "Dar de baja",
+      "confirmarBaja": "¿Dar de baja «{nombre}»? Sale del catálogo; las aplicaciones que lo usaron lo siguen mostrando.",
+      "enUso": "En uso en un esquema",
+      "sinDosis": "Sin dosis fija",
+      "esquemas": {
+        "cero": "Ningún esquema lo usa",
+        "uno": "Lo usa 1 esquema",
+        "otros": "Lo usan {n} esquemas"
+      },
+      "tipos": {
+        "vacuna": "Vacuna",
+        "antiparasitario": "Antiparasitario",
+        "vitamina": "Vitamina",
+        "antibiotico": "Antibiótico",
+        "otro": "Otro"
+      },
+      "unidades": {
+        "ml": "{n} ml",
+        "g": "{n} g",
+        "mg": "{n} mg",
+        "dosis": "{n} dosis"
+      },
+      "unidadesNombre": {
+        "ml": "mililitros (ml)",
+        "g": "gramos (g)",
+        "mg": "miligramos (mg)",
+        "dosis": "dosis"
+      },
+      "vacio": {
+        "titulo": "Todavía no hay productos",
+        "texto": "Carga las vacunas, antiparasitarios y demás productos que usas, así después se eligen de una lista al registrar cada aplicación.",
+        "textoConsulta": "Cuando quien maneja sanidad cargue los productos del rancho, se van a ver acá."
+      },
+      "formulario": {
+        "nuevo": "Nuevo producto",
+        "editar": "Editar «{nombre}»",
+        "nombre": "Nombre",
+        "nombreEjemplo": "Vacuna antiaftosa",
+        "tipo": "Tipo",
+        "elegirTipo": "Elegir…",
+        "laboratorio": "Laboratorio (opcional)",
+        "dosis": "Dosis por animal (opcional)",
+        "dosisAyuda": "Se sugiere sola al registrar una aplicación.",
+        "dosisInvalida": "Tiene que ser un número mayor que cero, con dos decimales como mucho.",
+        "unidad": "Unidad",
+        "sinUnidad": "Sin unidad",
+        "dosisSinUnidad": "La dosis y su unidad van juntas: completa las dos o deja las dos vacías."
+      }
+    },
+    "aplicaciones": {
+      "registrar": "Registrar aplicación",
+      "dadoDeBaja": "El animal está dado de baja: para registrarle una aplicación, primero hay que restaurarlo.",
+      "productoDeBaja": "Producto dado de baja",
+      "aplicadaPor": "La aplicó {nombre}",
+      "dosisDelEsquema": "dosis {n} de {esquema}",
+      "refuerzoDelEsquema": "refuerzo de {esquema}",
+      "vacio": {
+        "titulo": "Sin aplicaciones registradas",
+        "texto": "Las vacunas y los tratamientos que se le apliquen a este animal van a aparecer acá y en su historial."
+      },
+      "formulario": {
+        "titulo": "Registrar aplicación en {identificador}",
+        "guardar": "Registrar",
+        "sinProductos": "El catálogo del rancho no tiene productos. Cárgalos primero en Sanidad › Productos.",
+        "producto": "Producto",
+        "fecha": "Fecha de aplicación",
+        "fechaFutura": "La fecha no puede ser futura.",
+        "antesDeNacer": "La fecha no puede ser anterior al nacimiento del animal.",
+        "dosis": "Dosis",
+        "dosisCon": "Dosis en {unidad}",
+        "dosisAyuda": "Viene la del catálogo; cámbiala si se aplicó otra.",
+        "aplicadoPor": "Quién la aplicó",
+        "yo": "Yo",
+        "yoConNombre": "{nombre} (yo)",
+        "esquema": "Esquema de vacunación (opcional)",
+        "esquemaAyuda": "Si es parte de un esquema, cuenta para su calendario.",
+        "sinEsquema": "No es parte de un esquema",
+        "numeroDosis": "Qué dosis es",
+        "dosisNumero": "Dosis {n} de {total}",
+        "refuerzo": "Refuerzo",
+        "observacion": "Observación (opcional)",
+        "observacionEjemplo": "Campaña de noviembre"
+      }
+    },
+    "masiva": {
+      "aplicar": {
+        "uno": "Aplicar a 1 animal",
+        "otros": "Aplicar a {n} animales"
+      },
+      "confirmar": {
+        "uno": "¿Registrar {producto} en 1 animal? Se guarda todo junto o nada.",
+        "otros": "¿Registrar {producto} en {n} animales? Se guarda todo junto o nada."
+      },
+      "siAplicar": "Sí, registrar",
+      "noContados": {
+        "uno": "1 de los elegidos no se contó (dado de baja o de otro rancho).",
+        "otros": "{n} de los elegidos no se contaron (dados de baja o de otro rancho)."
+      }
+    },
+    "rapido": {
+      "rotulo": "Sanidad · en la manga",
+      "titulo": "Registrar vacuna",
+      "intro": "Escribe la caravana, elige el producto y registra. Después sigue con el próximo animal.",
+      "caravana": "Caravana",
+      "buscar": "Buscar animal",
+      "buscando": "Buscando…",
+      "producto": "Producto",
+      "dosis": "Dosis: {dosis} · fecha de hoy",
+      "registrar": "Registrar vacuna",
+      "terminar": "Terminar",
+      "siguiente": "Escribe la caravana del siguiente.",
+      "faltaCaravana": "Escribe la caravana para buscar el animal.",
+      "faltaProducto": "Elige el producto que le aplicaste.",
+      "sesion": {
+        "titulo": "Registradas ahora",
+        "cuantas": {
+          "uno": "1 aplicación",
+          "otros": "{n} aplicaciones"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "No puedes registrar vacunas",
+        "texto": "Registrar vacunas desde el celular es para quien tiene permiso de edición en sanidad."
+      },
+      "sinAnimal": "El animal aparece acá al buscarlo."
     }
   },
   "permisosSocio": {
