@@ -18,10 +18,53 @@
       "numero": "un número",
       "falta": "Falta al menos {faltas}.",
       "necesita": "La contraseña necesita al menos {faltas}.",
-      "reglas": "Al menos 8 caracteres, con una mayúscula y un número."
+      "reglas": "Al menos 8 caracteres, con una mayúscula y un número.",
+      "mostrar": "Mostrar la contraseña",
+      "ocultar": "Ocultar la contraseña"
     }
   },
   "servidor": {
+    "masivo": {
+      "estadoCambiado": "Listo, {n} animal(es) pasaron a {estado}.",
+      "dadosDeBaja": "Listo, diste de baja {n} animal(es). Se pueden restaurar desde la ficha de cada uno.",
+      "seleccionInvalida": "Elige entre 1 y {n} animales."
+    },
+    "exportacion": {
+      "formatoInvalido": "El formato tiene que ser Excel (xlsx) o CSV.",
+      "queInvalido": "Elige qué exportar: animales, corrales, movimientos o cambios de estado.",
+      "csvUnoSolo": "Un CSV es una sola tabla: elige una sola cosa para exportar, o usa Excel.",
+      "archivo": {
+        "todo": "ganado",
+        "animales": "animales",
+        "corrales": "corrales",
+        "movimientos": "movimientos",
+        "estados": "cambios-de-estado"
+      },
+      "hojas": {
+        "animales": "Animales",
+        "corrales": "Corrales",
+        "movimientos": "Movimientos",
+        "estados": "Cambios de estado"
+      },
+      "columnas": {
+        "estado": "Estado",
+        "dadoDeBaja": "Dado de baja el",
+        "registradoPor": "Registrado por",
+        "registradoEl": "Registrado el",
+        "corral": "Corral",
+        "capacidad": "Capacidad",
+        "superficie_ha": "Superficie (ha)",
+        "superficie_acre": "Superficie (acres)",
+        "ocupacion": "Animales activos",
+        "fechaHora": "Fecha y hora",
+        "corralOrigen": "Corral de origen",
+        "corralDestino": "Corral de destino",
+        "fecha": "Fecha",
+        "estadoAnterior": "Estado anterior",
+        "estadoNuevo": "Estado nuevo",
+        "motivo": "Motivo"
+      }
+    },
     "comun": {
       "enumerar": "{primeros} y {ultimo}"
     },
@@ -238,7 +281,7 @@
       "muyGrande": "El archivo pesa más de 5 MB. Divídelo en partes.",
       "formatoInvalido": "No se pudo leer el archivo. Guárdalo como Excel (.xlsx) o CSV y vuelve a subirlo.",
       "sinFilas": "El archivo no tiene filas para importar.",
-      "faltanColumnas": "Al archivo le faltan columnas obligatorias: {columnas}. Usa los encabezados de la plantilla.",
+      "faltanColumnas": "Al archivo le faltan columnas obligatorias: {columnas}. Asígnalas a una columna del archivo o usa los encabezados de la plantilla.",
       "demasiadasFilas": "El archivo tiene más de {n} filas. Divídelo en partes.",
       "nadaQueCargar": "No hay ninguna fila para cargar: todas tienen errores o están repetidas.",
       "cambioMientras": "Alguien registró uno de estos animales mientras revisabas el archivo. Vuelve a generar la vista previa.",
@@ -271,13 +314,17 @@
         "textoLargo": "El texto pasa de {n} caracteres.",
         "tipoInvalido": "«{valor}» no es un tipo de identificador válido.",
         "sexoInvalido": "«{valor}» no es un sexo válido: escribe macho o hembra.",
+        "sinCategoria": "Falta la categoría.",
         "categoriaInvalida": "«{valor}» no es una categoría del catálogo.",
         "fechaInvalida": "La fecha de nacimiento no es válida. Usa {formato}.",
         "fechaFutura": "La fecha de nacimiento no puede ser futura.",
         "origenInvalido": "«{valor}» no es un origen válido.",
         "corralInexistente": "No hay ningún corral llamado «{valor}» en tu rancho.",
         "pesoInvalido": "El peso tiene que ser un número mayor que cero."
-      }
+      },
+      "extensionInvalida": "El archivo tiene que ser Excel (.xlsx) o CSV (.csv).",
+      "asignacionInvalida": "La asignación de columnas no es válida. Vuelve a elegir los campos.",
+      "campoYaAsignado": "El campo «{campo}» ya está asignado a la columna «{columna}». Elige otro o ignora la columna."
     },
     "permisos": {
       "sinRancho": "Todavía no perteneces a ningún rancho.",
@@ -343,6 +390,9 @@
       "dadoDeBaja": "Diste de baja a {identificador}. Puedes restaurarlo cuando quieras.",
       "restaurado": "{identificador} volvió a estar vigente.",
       "rangoInvalido": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
+      "ordenInvalido": "No se puede ordenar el listado por ese campo.",
+      "paginaInvalida": "La página pedida no es válida.",
+      "sinCategoria": "Elige la categoría del animal.",
       "categoriaSexo": "La categoría «{categoria}» no corresponde a un animal {sexo}.",
       "categoriaEdad": "La categoría «{categoria}» es para animales {rango}. Revisa la fecha de nacimiento o elige otra categoría.",
       "rangos": {
@@ -350,6 +400,31 @@
         "entre": "de {min} a {max} meses",
         "desde": "de {min} meses o más"
       }
+    },
+    "sanidad": {
+      "sinNombre": "Ponle un nombre al esquema.",
+      "nombreLargo": "El nombre no puede pasar de {n} caracteres.",
+      "nombreOcupado": "Ya tienes un esquema llamado «{nombre}».",
+      "sinProducto": "Elige el producto que se aplica.",
+      "productoNoExiste": "Ese producto no está en el catálogo de tu rancho.",
+      "sexoInvalido": "El sexo tiene que ser macho, hembra o los dos.",
+      "categoriaInvalida": "Alguna de las categorías elegidas no existe.",
+      "categoriaOtroSexo": "La categoría «{categoria}» no tiene animales de sexo {sexo}. Quítala o cambia el sexo del esquema.",
+      "edadInvalida": "Las edades van en meses enteros, de 0 a {n}.",
+      "edadesCruzadas": "La edad máxima no puede ser menor que la mínima.",
+      "dosisInvalida": "La cantidad de dosis tiene que ser un número entero de 1 a {n}.",
+      "sinIntervalo": "Con más de una dosis, indica cada cuántos días va la siguiente.",
+      "diasInvalidos": "Los días tienen que ser un número entero de 1 a {n}.",
+      "esquemaNoExiste": "Ese esquema no existe en tu rancho.",
+      "esquemaCreado": "Listo, creaste el esquema «{nombre}».",
+      "esquemaGuardado": "Guardaste los cambios de «{nombre}». Las aplicaciones ya registradas no cambian.",
+      "esquemaDadoDeBaja": "Diste de baja el esquema «{nombre}». Ya no aparece en el calendario; sus aplicaciones quedan en el historial.",
+      "fechaInvalida": "Las fechas van con el formato AAAA-MM-DD.",
+      "fechasCruzadas": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
+      "estadoInvalido": "El estado tiene que ser vencida, próxima o programada.",
+      "paginaInvalida": "La página tiene que ser un número entero desde 1.",
+      "porPaginaInvalida": "Se muestran de 1 a {n} dosis por página.",
+      "filtroRepetido": "Cada filtro va una sola vez."
     }
   },
   "acceso": {
@@ -372,6 +447,7 @@
       "correo": "Correo",
       "correoEjemplo": "tu@ejemplo.com",
       "contrasena": "Contraseña",
+      "repetirContrasena": "Repetir la contraseña",
       "contrasenaNueva": "Contraseña nueva",
       "repetirNueva": "Repetir la contraseña nueva",
       "alMenos8": "Al menos 8 caracteres",
@@ -520,6 +596,10 @@
       "cuentas": {
         "carlos": "Carlos · propietario con rancho",
         "mariaRene": "María René · socia",
+        "jorge": "Dr. Jorge · veterinario",
+        "roberto": "Roberto · encargado de campo",
+        "gonzalo": "Gonzalo · encargado de almacén",
+        "fernando": "Fernando · propietario de otro rancho",
         "ariel": "Ariel · propietario sin rancho",
         "lucia": "Lucía · correo sin confirmar",
         "ruben": "Rubén · con clave temporal",
@@ -1130,7 +1210,10 @@
       "pais": "País {codigo}",
       "existencias": "Existencias totales",
       "corrales": "Corrales",
-      "llegaFase2": "Llega en la fase 2"
+      "llegaFase2": "Llega en la fase 2",
+      "existenciasDetalle": "{machos} machos · {hembras} hembras activos",
+      "corralesDetalle": "{n} animales asignados a corrales",
+      "sinDatos": "Sin datos todavía"
     },
     "datos": {
       "titulo": "Datos del rancho",
@@ -1213,6 +1296,28 @@
       "segunPaisDetalle": "{idioma}, el de {pais}",
       "tuRancho": "tu rancho"
     }
+  },
+  "exportacion": {
+    "boton": "Exportar",
+    "titulo": "Exportar datos del rancho",
+    "formato": "Formato",
+    "formatos": {
+      "xlsx": "Excel",
+      "csv": "CSV"
+    },
+    "que": "Qué exportar (en Excel, una hoja por cada uno)",
+    "queUno": "Qué exportar (un CSV es una sola tabla)",
+    "conjuntos": {
+      "animales": "Animales",
+      "corrales": "Corrales",
+      "movimientos": "Movimientos entre corrales",
+      "estados": "Cambios de estado"
+    },
+    "filtrosAplicados": "Animales, movimientos y cambios de estado salen como en la lista: pestaña «{vista}».",
+    "conFiltros": "Con la búsqueda y los filtros que tienes puestos.",
+    "sinFiltros": "Sin filtros: todos los de esa pestaña.",
+    "descargar": "Descargar",
+    "descargando": "Preparando el archivo…"
   },
   "mapa": {
     "ariaLienzo": "Mapa para marcar la ubicación del rancho. También puedes escribir la latitud y la longitud a mano.",
@@ -1356,7 +1461,10 @@
     "archivo": {
       "titulo": "2. Sube tu archivo",
       "etiqueta": "Archivo de Excel (.xlsx) o CSV",
-      "ayuda": "Todavía no se guarda nada: primero vas a ver cómo quedaría."
+      "ayuda": "Hasta 5.000 filas. Todavía no se guarda nada: primero vas a ver cómo quedaría.",
+      "elegir": "Elegir archivo",
+      "cambiar": "Cambiar archivo",
+      "ninguno": "Ningún archivo elegido"
     },
     "resumen": {
       "total": "Filas en el archivo",
@@ -1400,6 +1508,38 @@
       "titulo": "Importación terminada",
       "otra": "Importar otro archivo",
       "verAnimales": "Ver animales"
+    },
+    "columnas": {
+      "titulo": "Columnas de tu archivo",
+      "texto": "Así entendimos cada columna. Revisa que esté bien antes de continuar.",
+      "encabezado": "Columna del archivo",
+      "campo": "Se toma como",
+      "reconocidas": "Reconocidas ({n})",
+      "plantilla": "Igual a la plantilla",
+      "variante": "Reconocida por su nombre",
+      "manual": "Elegida por ti",
+      "ignorada": "Se ignora",
+      "sinReconocer": "Columnas que no reconocimos ({n})",
+      "sinReconocerTexto": "Elige a qué campo corresponde cada una, o márcala para ignorarla.",
+      "elegirCampo": "Elige un campo…",
+      "ignorar": "Ignorar esta columna",
+      "faltan": "Todavía falta asignar: {campos}.",
+      "pendientes": "Decide qué hacer con {n} columna(s) antes de continuar.",
+      "continuar": "Continuar con la vista previa",
+      "cambiar": "Revisar columnas",
+      "campos": {
+        "identificador": "Identificador",
+        "tipo_identificador": "Tipo de identificador",
+        "nombre": "Nombre",
+        "raza": "Raza",
+        "sexo": "Sexo",
+        "categoria": "Categoría",
+        "fecha_nacimiento": "Fecha de nacimiento",
+        "origen": "Origen",
+        "corral": "Corral",
+        "peso": "Peso"
+      },
+      "obligatorio": "obligatorio"
     }
   },
   "unidades": {
@@ -1520,6 +1660,12 @@
       "toro": "Toro",
       "buey": "Buey"
     },
+    "gruposRaza": {
+      "carne": "Carne",
+      "leche": "Leche",
+      "doble": "Doble propósito",
+      "propias": "Razas de mi rancho"
+    },
     "campos": {
       "identificador": "Identificador",
       "identificadorEjemplo": "4471",
@@ -1548,6 +1694,53 @@
     "formulario": {
       "nuevo": "Registrar animal",
       "editar": "Editar la ficha de {identificador}"
+    },
+    "masivo": {
+      "titulo": "Acciones con los animales elegidos",
+      "cuantos": {
+        "uno": "{n} animal elegido",
+        "otros": "{n} animales elegidos"
+      },
+      "ambito": {
+        "sueltos": "Elegidos de a uno.",
+        "pagina": "Todos los de esta página.",
+        "filtro": "Todo el resultado del filtro, también lo que no entra en la página."
+      },
+      "acciones": "Qué hacer con ellos",
+      "accion": {
+        "corral": "Asignar a un corral",
+        "estado": "Cambiar estado",
+        "baja": "Dar de baja"
+      },
+      "aplicar": "Aplicar a {n}",
+      "siAplicar": "Sí, aplicar",
+      "confirmar": {
+        "corral": {
+          "uno": "¿Asignar {n} animal a «{corral}»?",
+          "otros": "¿Asignar {n} animales a «{corral}»?"
+        },
+        "estado": {
+          "uno": "¿Cambiar el estado de {n} animal a {estado}? Su historia queda guardada.",
+          "otros": "¿Cambiar el estado de {n} animales a {estado}? La historia de cada uno queda guardada."
+        },
+        "baja": {
+          "uno": "¿Dar de baja {n} animal? Se puede restaurar desde su ficha.",
+          "otros": "¿Dar de baja {n} animales? Cada uno se puede restaurar desde su ficha."
+        }
+      },
+      "listo": {
+        "corral": {
+          "uno": "Listo, {n} animal quedó en «{corral}».",
+          "otros": "Listo, {n} animales quedaron en «{corral}»."
+        }
+      },
+      "yaEstaban": {
+        "uno": "{n} ya estaba en ese estado.",
+        "otros": "{n} ya estaban en ese estado."
+      },
+      "bajaExplicacion": "La baja no borra: los animales dejan de aparecer en las consultas normales y se pueden restaurar desde su ficha.",
+      "elegirPagina": "Elegir los de esta página ({n})",
+      "elegirFiltro": "Elegir todo el resultado del filtro"
     },
     "altaRapida": {
       "boton": "Alta rápida",
@@ -1678,11 +1871,155 @@
       "todos": "Elegir todos los activos ({n})",
       "elegir": "Elegir {identificador}"
     },
-    "gruposRaza": {
-      "carne": "Carne",
-      "leche": "Leche",
-      "doble": "Doble propósito",
-      "propias": "Razas de mi rancho"
+    "orden": {
+      "etiqueta": "Ordenar por",
+      "direccion": "Sentido",
+      "asc": "Ascendente",
+      "desc": "Descendente",
+      "campos": {
+        "identificador": "Identificador",
+        "nombre": "Nombre",
+        "sexo": "Sexo",
+        "categoria": "Categoría",
+        "nacimiento": "Fecha de nacimiento",
+        "corral": "Corral",
+        "estado": "Estado",
+        "peso": "Peso",
+        "creado": "Fecha de registro"
+      }
+    },
+    "paginas": {
+      "rango": "{desde}–{hasta} de {total}",
+      "pagina": "Página {n} de {total}",
+      "anterior": "Anterior",
+      "siguiente": "Siguiente",
+      "primera": "Primera",
+      "ultima": "Última",
+      "porPagina": "Por página",
+      "navegacion": "Páginas del listado"
+    }
+  },
+  "sanidad": {
+    "titulo": "Sanidad",
+    "rotulo": "Mi rancho",
+    "soloConsulta": "Puedes ver la sanidad del rancho, pero no modificarla.",
+    "pestanas": {
+      "etiqueta": "Secciones de sanidad",
+      "calendario": "Calendario",
+      "esquemas": "Esquemas de vacunación"
+    },
+    "estados": {
+      "vencida": "Vencida",
+      "proxima": "Próxima",
+      "programada": "Programada"
+    },
+    "vencimiento": {
+      "hoy": "Vence hoy",
+      "atrasada": {
+        "uno": "Venció hace 1 día",
+        "otros": "Venció hace {n} días"
+      },
+      "faltan": {
+        "uno": "Vence mañana",
+        "otros": "Vence en {n} días"
+      }
+    },
+    "dosis": {
+      "numero": "Dosis {n} de {total}",
+      "refuerzo": "Refuerzo"
+    },
+    "calendario": {
+      "titulo": "Calendario sanitario",
+      "ayuda": "Próximas son las dosis que vencen en los próximos {n} días. Las fechas se calculan con la edad de cada animal y las aplicaciones registradas.",
+      "estado": "Estado de las dosis",
+      "todas": "Todas",
+      "filtros": {
+        "titulo": "Filtros",
+        "desde": "Vence desde",
+        "hasta": "Vence hasta",
+        "producto": "Producto",
+        "todosProductos": "Todos los productos",
+        "corral": "Corral",
+        "todosCorrales": "Todos los corrales",
+        "limpiar": "Limpiar filtros"
+      },
+      "vacio": {
+        "titulo": "No hay dosis para mostrar",
+        "texto": "Con los filtros elegidos no hay dosis pendientes.",
+        "sinEsquemas": "Todavía no hay esquemas de vacunación. Cuando definas uno, aquí verás qué le toca a cada animal y cuándo.",
+        "irEsquemas": "Definir un esquema"
+      },
+      "mostrando": "{desde}–{hasta} de {total} dosis",
+      "anterior": "Anterior",
+      "siguiente": "Siguiente",
+      "verFicha": "Ver ficha"
+    },
+    "esquemas": {
+      "nuevo": "Nuevo esquema",
+      "vacio": {
+        "titulo": "Todavía no hay esquemas",
+        "texto": "Define qué vacuna se aplica, a qué animales y cada cuánto: el calendario se arma solo.",
+        "textoConsulta": "Cuando el rancho defina sus esquemas de vacunación, los verás aquí."
+      },
+      "sinProductos": "Para definir un esquema primero hace falta al menos un producto en el catálogo sanitario del rancho.",
+      "dosisUnica": "Una dosis",
+      "serie": "{n} dosis cada {dias} días",
+      "refuerzo": "refuerzo cada {n} días",
+      "sinRefuerzo": "sin refuerzo",
+      "todasCategorias": "Todas las categorías",
+      "sexos": {
+        "macho": "solo machos",
+        "hembra": "solo hembras"
+      },
+      "edad": {
+        "desde": "desde los {n} meses",
+        "rango": "de {min} a {max} meses",
+        "hasta": "hasta los {n} meses"
+      },
+      "animales": {
+        "cero": "Ningún animal activo entra hoy",
+        "uno": "1 animal activo entra por categoría y sexo",
+        "otros": "{n} animales activos entran por categoría y sexo"
+      },
+      "editar": "Editar",
+      "darDeBaja": "Dar de baja",
+      "confirmarBaja": "¿Dar de baja «{nombre}»? Sale del calendario; las aplicaciones registradas se conservan.",
+      "formulario": {
+        "nuevo": "Nuevo esquema de vacunación",
+        "editar": "Editar «{nombre}»",
+        "nombre": "Nombre del esquema",
+        "nombreEjemplo": "Ej.: Aftosa (todo el rodeo)",
+        "producto": "Producto",
+        "elegirProducto": "Elige un producto",
+        "categorias": "Categorías",
+        "categoriasAyuda": "Si no marcas ninguna, se aplica a todas.",
+        "sexo": "Sexo",
+        "ambos": "Los dos",
+        "edadMinima": "Edad mínima (meses)",
+        "edadMinimaAyuda": "La primera dosis vence al cumplirla.",
+        "edadMaxima": "Edad máxima (meses)",
+        "edadMaximaAyuda": "Opcional. Si la pasa sin empezar, ya no le toca.",
+        "dosis": "Cantidad de dosis",
+        "intervalo": "Días entre dosis",
+        "intervaloAyuda": "Obligatorio con más de una dosis.",
+        "refuerzo": "Refuerzo cada (días)",
+        "refuerzoAyuda": "Opcional. Después de la última dosis se repite cada tantos días.",
+        "edadesCruzadas": "La edad máxima no puede ser menor que la mínima.",
+        "faltaIntervalo": "Indica cada cuántos días va la siguiente dosis.",
+        "avisoCambio": "Los cambios no tocan las aplicaciones ya registradas."
+      }
+    },
+    "avisos": {
+      "vencidas": {
+        "uno": "Hay 1 dosis de vacunación vencida.",
+        "otros": "Hay {n} dosis de vacunación vencidas."
+      },
+      "proximas": {
+        "uno": "1 dosis vence en los próximos {dias} días.",
+        "otros": "{n} dosis vencen en los próximos {dias} días."
+      },
+      "verVencidas": "Ver las vencidas",
+      "verProximas": "Ver las próximas"
     }
   },
   "permisosSocio": {

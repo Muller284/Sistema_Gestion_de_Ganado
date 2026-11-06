@@ -121,6 +121,7 @@ async function ejecutarPruebas() {
     const { estado } = await pedir('POST', '/animales', {
       identificador: `F-${MARCA}`,
       sexo: 'macho',
+      categoria_codigo: 'toro',
       fecha_nacimiento: manana(),
     });
     assert.strictEqual(estado, 400);
@@ -140,11 +141,11 @@ async function ejecutarPruebas() {
 
   await prueba('El identificador no se repite en el rancho, pero si en otro', async () => {
     assert.strictEqual(
-      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' })).estado,
+      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' })).estado,
       409,
     );
     assert.strictEqual(
-      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' }, PROPIETARIO_B)).estado,
+      (await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' }, PROPIETARIO_B)).estado,
       201,
     );
   });
@@ -189,7 +190,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-39: editar la ficha no cambia el corral por la puerta de atras', async () => {
-    await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'hembra', corral_id: corralUno.id });
+    await pedir('PATCH', `/animales/${animal.id}`, { sexo: 'hembra', categoria_codigo: 'vaca', corral_id: corralUno.id });
     const { cuerpo } = await pedir('GET', `/animales/${animal.id}`);
     assert.strictEqual(cuerpo.animal.corral_id, corralDos.id);
   });
@@ -263,7 +264,7 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-34: dado de baja libera su identificador', async () => {
-    const { estado } = await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho' });
+    const { estado } = await pedir('POST', '/animales', { identificador: `A-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro' });
     assert.strictEqual(estado, 201);
   });
 
@@ -346,12 +347,12 @@ async function ejecutarPruebas() {
   });
 
   await prueba('HU-28: una raza del catalogo escrita distinto se guarda como en el catalogo', async () => {
-    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R1-${MARCA}`, sexo: 'macho', raza: '  NELÓRE ' });
+    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R1-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro', raza: '  NELÓRE ' });
     assert.strictEqual(cuerpo.animal.raza, 'Nelore');
   });
 
   await prueba('HU-28: una raza nueva queda en la lista del rancho, sin grupo', async () => {
-    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R2-${MARCA}`, sexo: 'macho', raza: razaNueva });
+    const { cuerpo } = await pedir('POST', '/animales', { identificador: `R2-${MARCA}`, sexo: 'macho', categoria_codigo: 'toro', raza: razaNueva });
     assert.strictEqual(cuerpo.animal.raza, razaNueva);
     const lista = (await pedir('GET', '/animales/razas')).cuerpo;
     assert.deepStrictEqual(lista.find((r) => r.nombre === razaNueva), { nombre: razaNueva, grupo: null });
@@ -361,6 +362,7 @@ async function ejecutarPruebas() {
     const { cuerpo } = await pedir('POST', '/animales', {
       identificador: `R3-${MARCA}`,
       sexo: 'macho',
+      categoria_codigo: 'toro',
       raza: razaNueva.toUpperCase(),
     });
     assert.strictEqual(cuerpo.animal.raza, razaNueva);

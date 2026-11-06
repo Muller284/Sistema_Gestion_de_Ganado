@@ -18,10 +18,53 @@
       "numero": "one number",
       "falta": "It still needs at least {faltas}.",
       "necesita": "The password needs at least {faltas}.",
-      "reglas": "At least 8 characters, with one uppercase letter and one number."
+      "reglas": "At least 8 characters, with one uppercase letter and one number.",
+      "mostrar": "Show password",
+      "ocultar": "Hide password"
     }
   },
   "servidor": {
+    "masivo": {
+      "estadoCambiado": "Done, {n} animal(s) changed to {estado}.",
+      "dadosDeBaja": "Done, you removed {n} animal(s). Each one can be restored from its record.",
+      "seleccionInvalida": "Choose between 1 and {n} animals."
+    },
+    "exportacion": {
+      "formatoInvalido": "The format must be Excel (xlsx) or CSV.",
+      "queInvalido": "Choose what to export: animals, pens, movements or status changes.",
+      "csvUnoSolo": "A CSV is a single table: choose only one thing to export, or use Excel.",
+      "archivo": {
+        "todo": "livestock",
+        "animales": "animals",
+        "corrales": "pens",
+        "movimientos": "movements",
+        "estados": "status-changes"
+      },
+      "hojas": {
+        "animales": "Animals",
+        "corrales": "Pens",
+        "movimientos": "Movements",
+        "estados": "Status changes"
+      },
+      "columnas": {
+        "estado": "Status",
+        "dadoDeBaja": "Removed on",
+        "registradoPor": "Registered by",
+        "registradoEl": "Registered on",
+        "corral": "Pen",
+        "capacidad": "Capacity",
+        "superficie_ha": "Area (ha)",
+        "superficie_acre": "Area (acres)",
+        "ocupacion": "Active animals",
+        "fechaHora": "Date and time",
+        "corralOrigen": "From pen",
+        "corralDestino": "To pen",
+        "fecha": "Date",
+        "estadoAnterior": "Previous status",
+        "estadoNuevo": "New status",
+        "motivo": "Reason"
+      }
+    },
     "comun": {
       "enumerar": "{primeros} and {ultimo}"
     },
@@ -238,7 +281,7 @@
       "muyGrande": "The file is larger than 5 MB. Split it into parts.",
       "formatoInvalido": "The file could not be read. Save it as Excel (.xlsx) or CSV and upload it again.",
       "sinFilas": "The file has no rows to import.",
-      "faltanColumnas": "The file is missing required columns: {columnas}. Use the template headers.",
+      "faltanColumnas": "The file is missing required columns: {columnas}. Assign them to a column of the file or use the template headers.",
       "demasiadasFilas": "The file has more than {n} rows. Split it into parts.",
       "nadaQueCargar": "There are no rows to load: all of them have errors or are repeated.",
       "cambioMientras": "Someone registered one of these animals while you were reviewing the file. Generate the preview again.",
@@ -271,13 +314,17 @@
         "textoLargo": "The text is longer than {n} characters.",
         "tipoInvalido": "“{valor}” is not a valid identifier type.",
         "sexoInvalido": "“{valor}” is not a valid sex: write male or female.",
+        "sinCategoria": "The category is missing.",
         "categoriaInvalida": "“{valor}” is not a category in the catalog.",
         "fechaInvalida": "The birth date is not valid. Use {formato}.",
         "fechaFutura": "The birth date can't be in the future.",
         "origenInvalido": "“{valor}” is not a valid origin.",
         "corralInexistente": "There is no pen called “{valor}” on your ranch.",
         "pesoInvalido": "Weight must be a number greater than zero."
-      }
+      },
+      "extensionInvalida": "The file must be Excel (.xlsx) or CSV (.csv).",
+      "asignacionInvalida": "The column assignment is not valid. Choose the fields again.",
+      "campoYaAsignado": "The field “{campo}” is already assigned to the column “{columna}”. Choose another or ignore the column."
     },
     "permisos": {
       "sinRancho": "You don't belong to any ranch yet.",
@@ -343,6 +390,9 @@
       "dadoDeBaja": "You removed {identificador}. You can restore it whenever you want.",
       "restaurado": "{identificador} is active again.",
       "rangoInvalido": "The “from” date can’t be later than the “to” date.",
+      "ordenInvalido": "The list cannot be sorted by that field.",
+      "paginaInvalida": "The requested page is not valid.",
+      "sinCategoria": "Choose the animal's category.",
       "categoriaSexo": "The category “{categoria}” doesn't match a {sexo} animal.",
       "categoriaEdad": "The category “{categoria}” is for animals {rango}. Check the birth date or choose another category.",
       "rangos": {
@@ -350,6 +400,31 @@
         "entre": "from {min} to {max} months old",
         "desde": "{min} months old or more"
       }
+    },
+    "sanidad": {
+      "sinNombre": "Give the schedule a name.",
+      "nombreLargo": "The name can't be longer than {n} characters.",
+      "nombreOcupado": "You already have a schedule called “{nombre}”.",
+      "sinProducto": "Choose the product to apply.",
+      "productoNoExiste": "That product isn't in your ranch's catalog.",
+      "sexoInvalido": "Sex must be male, female or both.",
+      "categoriaInvalida": "One of the chosen categories doesn't exist.",
+      "categoriaOtroSexo": "The category “{categoria}” has no {sexo} animals. Remove it or change the schedule's sex.",
+      "edadInvalida": "Ages are whole months, from 0 to {n}.",
+      "edadesCruzadas": "The maximum age can't be lower than the minimum.",
+      "dosisInvalida": "The number of doses must be a whole number from 1 to {n}.",
+      "sinIntervalo": "With more than one dose, say how many days until the next one.",
+      "diasInvalidos": "Days must be a whole number from 1 to {n}.",
+      "esquemaNoExiste": "That schedule doesn't exist in your ranch.",
+      "esquemaCreado": "Done, you created the schedule “{nombre}”.",
+      "esquemaGuardado": "You saved the changes to “{nombre}”. Applications already recorded don't change.",
+      "esquemaDadoDeBaja": "You removed the schedule “{nombre}”. It no longer shows in the calendar; its applications stay in the history.",
+      "fechaInvalida": "Dates use the YYYY-MM-DD format.",
+      "fechasCruzadas": "The “from” date can't be after the “to” date.",
+      "estadoInvalido": "The status must be overdue, upcoming or scheduled.",
+      "paginaInvalida": "The page must be a whole number from 1.",
+      "porPaginaInvalida": "From 1 to {n} doses are shown per page.",
+      "filtroRepetido": "Each filter goes only once."
     }
   },
   "acceso": {
@@ -372,6 +447,7 @@
       "correo": "Email",
       "correoEjemplo": "you@example.com",
       "contrasena": "Password",
+      "repetirContrasena": "Repeat the password",
       "contrasenaNueva": "New password",
       "repetirNueva": "Repeat the new password",
       "alMenos8": "At least 8 characters",
@@ -520,6 +596,10 @@
       "cuentas": {
         "carlos": "Carlos · owner with a ranch",
         "mariaRene": "María René · partner",
+        "jorge": "Dr. Jorge · veterinarian",
+        "roberto": "Roberto · field manager",
+        "gonzalo": "Gonzalo · warehouse manager",
+        "fernando": "Fernando · owner of another ranch",
         "ariel": "Ariel · owner without a ranch",
         "lucia": "Lucía · email not confirmed",
         "ruben": "Rubén · with a temporary password",
@@ -1130,7 +1210,10 @@
       "pais": "Country {codigo}",
       "existencias": "Total livestock",
       "corrales": "Pens",
-      "llegaFase2": "Coming in phase 2"
+      "llegaFase2": "Coming in phase 2",
+      "existenciasDetalle": "{machos} males · {hembras} females active",
+      "corralesDetalle": "{n} animals assigned to pens",
+      "sinDatos": "No data yet"
     },
     "datos": {
       "titulo": "Ranch details",
@@ -1213,6 +1296,28 @@
       "segunPaisDetalle": "{idioma}, the one for {pais}",
       "tuRancho": "your ranch"
     }
+  },
+  "exportacion": {
+    "boton": "Export",
+    "titulo": "Export ranch data",
+    "formato": "Format",
+    "formatos": {
+      "xlsx": "Excel",
+      "csv": "CSV"
+    },
+    "que": "What to export (in Excel, one sheet each)",
+    "queUno": "What to export (a CSV is a single table)",
+    "conjuntos": {
+      "animales": "Animals",
+      "corrales": "Pens",
+      "movimientos": "Movements between pens",
+      "estados": "Status changes"
+    },
+    "filtrosAplicados": "Animals, movements and status changes are exported as in the list: “{vista}” tab.",
+    "conFiltros": "With the search and filters you have set.",
+    "sinFiltros": "No filters: everything in that tab.",
+    "descargar": "Download",
+    "descargando": "Preparing the file…"
   },
   "mapa": {
     "ariaLienzo": "Map to mark the ranch's location. You can also type the latitude and longitude yourself.",
@@ -1356,7 +1461,10 @@
     "archivo": {
       "titulo": "2. Upload your file",
       "etiqueta": "Excel (.xlsx) or CSV file",
-      "ayuda": "Nothing is saved yet: first you'll see how it would look."
+      "ayuda": "Up to 5,000 rows. Nothing is saved yet: you will see how it would look first.",
+      "elegir": "Choose file",
+      "cambiar": "Change file",
+      "ninguno": "No file chosen"
     },
     "resumen": {
       "total": "Rows in the file",
@@ -1400,6 +1508,38 @@
       "titulo": "Import finished",
       "otra": "Import another file",
       "verAnimales": "See animals"
+    },
+    "columnas": {
+      "titulo": "Columns in your file",
+      "texto": "This is how we read each column. Check it before you continue.",
+      "encabezado": "Column in the file",
+      "campo": "Read as",
+      "reconocidas": "Recognized ({n})",
+      "plantilla": "Same as the template",
+      "variante": "Recognized by its name",
+      "manual": "Chosen by you",
+      "ignorada": "Ignored",
+      "sinReconocer": "Columns we did not recognize ({n})",
+      "sinReconocerTexto": "Choose which field each one is, or mark it to be ignored.",
+      "elegirCampo": "Choose a field…",
+      "ignorar": "Ignore this column",
+      "faltan": "Still to assign: {campos}.",
+      "pendientes": "Decide what to do with {n} column(s) before you continue.",
+      "continuar": "Continue to the preview",
+      "cambiar": "Review columns",
+      "campos": {
+        "identificador": "Identifier",
+        "tipo_identificador": "Identifier type",
+        "nombre": "Name",
+        "raza": "Breed",
+        "sexo": "Sex",
+        "categoria": "Category",
+        "fecha_nacimiento": "Birth date",
+        "origen": "Origin",
+        "corral": "Pen",
+        "peso": "Weight"
+      },
+      "obligatorio": "required"
     }
   },
   "unidades": {
@@ -1520,6 +1660,12 @@
       "toro": "Bull",
       "buey": "Ox"
     },
+    "gruposRaza": {
+      "carne": "Beef",
+      "leche": "Dairy",
+      "doble": "Dual purpose",
+      "propias": "My ranch's breeds"
+    },
     "campos": {
       "identificador": "Identifier",
       "identificadorEjemplo": "4471",
@@ -1548,6 +1694,53 @@
     "formulario": {
       "nuevo": "Register animal",
       "editar": "Edit the record of {identificador}"
+    },
+    "masivo": {
+      "titulo": "Actions on the selected animals",
+      "cuantos": {
+        "uno": "{n} animal selected",
+        "otros": "{n} animals selected"
+      },
+      "ambito": {
+        "sueltos": "Selected one by one.",
+        "pagina": "Everything on this page.",
+        "filtro": "Every result of the filter, including what doesn't fit on the page."
+      },
+      "acciones": "What to do with them",
+      "accion": {
+        "corral": "Assign to a pen",
+        "estado": "Change status",
+        "baja": "Remove"
+      },
+      "aplicar": "Apply to {n}",
+      "siAplicar": "Yes, apply",
+      "confirmar": {
+        "corral": {
+          "uno": "Assign {n} animal to “{corral}”?",
+          "otros": "Assign {n} animals to “{corral}”?"
+        },
+        "estado": {
+          "uno": "Change the status of {n} animal to {estado}? Its history is kept.",
+          "otros": "Change the status of {n} animals to {estado}? Each one's history is kept."
+        },
+        "baja": {
+          "uno": "Remove {n} animal? It can be restored from its record.",
+          "otros": "Remove {n} animals? Each one can be restored from its record."
+        }
+      },
+      "listo": {
+        "corral": {
+          "uno": "Done, {n} animal is now in “{corral}”.",
+          "otros": "Done, {n} animals are now in “{corral}”."
+        }
+      },
+      "yaEstaban": {
+        "uno": "{n} already had that status.",
+        "otros": "{n} already had that status."
+      },
+      "bajaExplicacion": "Removing doesn't delete: the animals stop showing in regular views and can be restored from their record.",
+      "elegirPagina": "Select everything on this page ({n})",
+      "elegirFiltro": "Select every result of the filter"
     },
     "altaRapida": {
       "boton": "Quick add",
@@ -1678,11 +1871,155 @@
       "todos": "Select all active ({n})",
       "elegir": "Select {identificador}"
     },
-    "gruposRaza": {
-      "carne": "Beef",
-      "leche": "Dairy",
-      "doble": "Dual purpose",
-      "propias": "My ranch's breeds"
+    "orden": {
+      "etiqueta": "Sort by",
+      "direccion": "Direction",
+      "asc": "Ascending",
+      "desc": "Descending",
+      "campos": {
+        "identificador": "Identifier",
+        "nombre": "Name",
+        "sexo": "Sex",
+        "categoria": "Category",
+        "nacimiento": "Birth date",
+        "corral": "Pen",
+        "estado": "Status",
+        "peso": "Weight",
+        "creado": "Date registered"
+      }
+    },
+    "paginas": {
+      "rango": "{desde}–{hasta} of {total}",
+      "pagina": "Page {n} of {total}",
+      "anterior": "Previous",
+      "siguiente": "Next",
+      "primera": "First",
+      "ultima": "Last",
+      "porPagina": "Per page",
+      "navegacion": "List pages"
+    }
+  },
+  "sanidad": {
+    "titulo": "Health",
+    "rotulo": "My ranch",
+    "soloConsulta": "You can see the ranch's health records, but not change them.",
+    "pestanas": {
+      "etiqueta": "Health sections",
+      "calendario": "Calendar",
+      "esquemas": "Vaccination schedules"
+    },
+    "estados": {
+      "vencida": "Overdue",
+      "proxima": "Upcoming",
+      "programada": "Scheduled"
+    },
+    "vencimiento": {
+      "hoy": "Due today",
+      "atrasada": {
+        "uno": "Was due 1 day ago",
+        "otros": "Was due {n} days ago"
+      },
+      "faltan": {
+        "uno": "Due tomorrow",
+        "otros": "Due in {n} days"
+      }
+    },
+    "dosis": {
+      "numero": "Dose {n} of {total}",
+      "refuerzo": "Booster"
+    },
+    "calendario": {
+      "titulo": "Health calendar",
+      "ayuda": "Upcoming doses are the ones due in the next {n} days. Dates come from each animal's age and the applications recorded.",
+      "estado": "Dose status",
+      "todas": "All",
+      "filtros": {
+        "titulo": "Filters",
+        "desde": "Due from",
+        "hasta": "Due until",
+        "producto": "Product",
+        "todosProductos": "All products",
+        "corral": "Pen",
+        "todosCorrales": "All pens",
+        "limpiar": "Clear filters"
+      },
+      "vacio": {
+        "titulo": "No doses to show",
+        "texto": "There are no pending doses with the chosen filters.",
+        "sinEsquemas": "There are no vaccination schedules yet. Once you define one, you'll see here what each animal needs and when.",
+        "irEsquemas": "Define a schedule"
+      },
+      "mostrando": "{desde}–{hasta} of {total} doses",
+      "anterior": "Previous",
+      "siguiente": "Next",
+      "verFicha": "View record"
+    },
+    "esquemas": {
+      "nuevo": "New schedule",
+      "vacio": {
+        "titulo": "No schedules yet",
+        "texto": "Define which vaccine is applied, to which animals and how often: the calendar builds itself.",
+        "textoConsulta": "When the ranch defines its vaccination schedules, you'll see them here."
+      },
+      "sinProductos": "To define a schedule you first need at least one product in the ranch's health catalog.",
+      "dosisUnica": "One dose",
+      "serie": "{n} doses every {dias} days",
+      "refuerzo": "booster every {n} days",
+      "sinRefuerzo": "no booster",
+      "todasCategorias": "All categories",
+      "sexos": {
+        "macho": "males only",
+        "hembra": "females only"
+      },
+      "edad": {
+        "desde": "from {n} months",
+        "rango": "from {min} to {max} months",
+        "hasta": "up to {n} months"
+      },
+      "animales": {
+        "cero": "No active animal qualifies today",
+        "uno": "1 active animal qualifies by category and sex",
+        "otros": "{n} active animals qualify by category and sex"
+      },
+      "editar": "Edit",
+      "darDeBaja": "Remove",
+      "confirmarBaja": "Remove “{nombre}”? It leaves the calendar; recorded applications are kept.",
+      "formulario": {
+        "nuevo": "New vaccination schedule",
+        "editar": "Edit “{nombre}”",
+        "nombre": "Schedule name",
+        "nombreEjemplo": "E.g.: Foot-and-mouth (whole herd)",
+        "producto": "Product",
+        "elegirProducto": "Choose a product",
+        "categorias": "Categories",
+        "categoriasAyuda": "If you don't check any, it applies to all.",
+        "sexo": "Sex",
+        "ambos": "Both",
+        "edadMinima": "Minimum age (months)",
+        "edadMinimaAyuda": "The first dose is due when the animal reaches it.",
+        "edadMaxima": "Maximum age (months)",
+        "edadMaximaAyuda": "Optional. Past that age without starting, it no longer applies.",
+        "dosis": "Number of doses",
+        "intervalo": "Days between doses",
+        "intervaloAyuda": "Required with more than one dose.",
+        "refuerzo": "Booster every (days)",
+        "refuerzoAyuda": "Optional. After the last dose it repeats every so many days.",
+        "edadesCruzadas": "The maximum age can't be lower than the minimum.",
+        "faltaIntervalo": "Say how many days until the next dose.",
+        "avisoCambio": "Changes don't affect applications already recorded."
+      }
+    },
+    "avisos": {
+      "vencidas": {
+        "uno": "There is 1 overdue vaccination dose.",
+        "otros": "There are {n} overdue vaccination doses."
+      },
+      "proximas": {
+        "uno": "1 dose is due in the next {dias} days.",
+        "otros": "{n} doses are due in the next {dias} days."
+      },
+      "verVencidas": "See overdue",
+      "verProximas": "See upcoming"
     }
   },
   "permisosSocio": {

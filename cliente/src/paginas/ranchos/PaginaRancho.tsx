@@ -18,6 +18,7 @@ import {
   PasosDeAlta,
   Tarjeta,
 } from '../../componentes';
+import { AvisosSanidad } from '../sanidad/AvisosSanidad';
 import {
   api,
   type EstadoRancho,
@@ -77,6 +78,9 @@ export function PaginaRancho() {
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
   const [cargando, setCargando] = useState(true);
+  // Las cifras del hato: animales activos (por sexo) y corrales con su ocupación.
+  const [existencias, setExistencias] = useState<{ total: number; machos: number } | null>(null);
+  const [corrales, setCorrales] = useState<{ cantidad: number; ocupados: number } | null>(null);
 
   // Estados para el formulario de invitar colaborador (HU-13)
 
@@ -141,6 +145,34 @@ export function PaginaRancho() {
       vigente = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Existencias totales y corrales. Se piden aparte: si quien entra no ve
+  // esos módulos (permisos), la tarjeta queda con la raya y el resto anda igual.
+  // Para contar se pide una página de un solo animal: el total lo da la base (HU-30).
+  useEffect(() => {
+    let vigente = true;
+    const contar = { pagina: 1, porPagina: 1, orden: 'identificador', direccion: 'asc' } as const;
+    Promise.all([
+      api.paginaAnimales('activo', 'no', {}, contar),
+      api.paginaAnimales('activo', 'no', { sexo: 'macho' }, contar),
+    ])
+      .then(([todos, machos]) => vigente && setExistencias({ total: todos.total, machos: machos.total }))
+      .catch(() => undefined);
+    api
+      .corrales()
+      .then(
+        (lista) =>
+          vigente &&
+          setCorrales({
+            cantidad: lista.length,
+            ocupados: lista.reduce((suma, corral) => suma + corral.ocupacion, 0),
+          }),
+      )
+      .catch(() => undefined);
+    return () => {
+      vigente = false;
+    };
   }, []);
 
   function campo(nombre: keyof typeof VACIO) {
@@ -230,6 +262,8 @@ export function PaginaRancho() {
 
         {!cargando && rancho && !editando && (
           <>
+            {/* HU-51: dosis vencidas y próximas, para quien tiene sanidad. */}
+            <AvisosSanidad />
             <div className="rejilla-cifras">
               <Cifra
                 rotulo={t('rancho.campos.superficie')}
@@ -246,14 +280,23 @@ export function PaginaRancho() {
               <Cifra
                 rotulo={t('rancho.cifras.existencias')}
                 icono="animal"
-                valor="—"
-                detalle={t('rancho.cifras.llegaFase2')}
+                valor={existencias ? String(existencias.total) : '—'}
+                detalle={
+                  existencias
+                    ? t('rancho.cifras.existenciasDetalle', {
+                        machos: existencias.machos,
+                        hembras: existencias.total - existencias.machos,
+                      })
+                    : t('rancho.cifras.sinDatos')
+                }
               />
               <Cifra
                 rotulo={t('rancho.cifras.corrales')}
                 icono="corral"
-                valor="—"
-                detalle={t('rancho.cifras.llegaFase2')}
+                valor={corrales ? String(corrales.cantidad) : '—'}
+                detalle={
+                  corrales ? t('rancho.cifras.corralesDetalle', { n: corrales.ocupados }) : t('rancho.cifras.sinDatos')
+                }
               />
             </div>
 

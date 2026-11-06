@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Alerta, Boton, CampoTexto, DisenoAcceso,  } from '../../componentes';
+import { Alerta, Boton, CampoContrasena, DisenoAcceso,  } from '../../componentes';
 import { api } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { enumerar, faltasDeContrasena } from '../../servicios/texto';
@@ -98,10 +98,9 @@ export function PaginaRestablecerContrasena() {
         {error && <Alerta variante="error">{error}</Alerta>}
 
         <form onSubmit={guardar} className="col g16">
-          <CampoTexto
+          <CampoContrasena
             etiqueta={t('acceso.comun.contrasenaNueva')}
             obligatorio
-            type="password"
             autoComplete="new-password"
             placeholder={t('acceso.comun.alMenos8')}
             ayuda={t('acceso.comun.ayudaContrasena')}
@@ -113,10 +112,9 @@ export function PaginaRestablecerContrasena() {
             value={nueva}
             onChange={(e) => setNueva(e.target.value)}
           />
-          <CampoTexto
+          <CampoContrasena
             etiqueta={t('acceso.comun.repetirNueva')}
             obligatorio
-            type="password"
             autoComplete="new-password"
             error={noCoinciden ? t('acceso.comun.noCoinciden') : undefined}
             value={repetir}

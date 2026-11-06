@@ -22,7 +22,8 @@ import { hoyEn, pesoAGuardar, pesoAMostrar, type Regional } from '../../servicio
  *
  *   1. El corral es opcional (y solo se elige al registrar: después cambia
  *      con un movimiento, HU-39).
- *   2. La categoría se elige de un catálogo, no se escribe libre.
+ *   2. La categoría se elige de un catálogo, no se escribe libre. Es
+ *      obligatoria: es con lo que se cuenta el hato.
  *   3. La fecha de nacimiento no puede ser futura (el campo no la deja y el
  *      servidor la rechaza igual).
  *
@@ -101,14 +102,14 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
-    if (!sexo) return;
+    if (!sexo || !categoria) return;
     setEnviando(true);
     setError('');
     const ficha: DatosFichaAnimal = {
       nombre: nombre || null,
       raza: razaAGuardar(razas, raza),
       sexo,
-      categoria_codigo: categoria || null,
+      categoria_codigo: categoria,
       fecha_nacimiento: nacimiento || null,
       origen: origen || null,
       peso_kg: peso === '' ? null : pesoAGuardar(Number(peso), regional.peso),
@@ -143,7 +144,7 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
     }
   }
 
-  const listo = Boolean(sexo) && (animal || identificador.trim()) && !categoriaInvalida;
+  const listo = Boolean(sexo) && Boolean(categoria) && (animal || identificador.trim()) && !categoriaInvalida;
 
   return (
     <form onSubmit={enviar} noValidate>
@@ -233,12 +234,13 @@ export function FormularioFicha({ animal, regional, alGuardar, alCancelar }: Pro
             {/* Criterio 2: de un catálogo, filtrado por sexo y edad. */}
             <CampoLista
               etiqueta={t('animales.campos.categoria')}
+              obligatorio
               ayuda={sexo || nacimiento ? t('animales.campos.categoriaFiltrada') : undefined}
               error={categoriaInvalida ? t('animales.campos.categoriaNoCorresponde') : undefined}
               value={categoria}
               onChange={(e) => setCategoria(e.target.value)}
             >
-              <option value="">{t('animales.campos.sinCategoria')}</option>
+              <option value="">{t('animales.campos.elegir')}</option>
               {opcionesCategoria.map((codigo) => (
                 <option key={codigo} value={codigo}>
                   {t(`animales.categorias.${codigo}`)}

@@ -6,7 +6,7 @@ import { RepositorioImportacion } from './repositorio-importacion';
 import { ServicioImportacion } from './servicio-importacion';
 import { RepositorioRazas } from '../animales/repositorio-razas';
 
-/** HU-40, HU-43 y HU-44. RepositorioUsuarioActual lo pide GuardiaCuentaLista. */
+/** HU-40, HU-41, HU-42, HU-43 y HU-44. RepositorioUsuarioActual lo pide GuardiaCuentaLista. */
 @Module({
   controllers: [ControladorImportacion],
   providers: [ServicioImportacion, RepositorioImportacion, RepositorioRazas, PermisosModulo, RepositorioUsuarioActual],

@@ -27,6 +27,8 @@ import { PaginaFichaAnimal } from './paginas/animales/PaginaFichaAnimal';
 import { PaginaAltaRapida } from './paginas/animales/PaginaAltaRapida';
 import { PaginaPermisosSocio } from './paginas/equipo/PaginaPermisosSocio';
 import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
+import { PaginaCalendario } from './paginas/sanidad/PaginaCalendario';
+import { PaginaEsquemas } from './paginas/sanidad/PaginaEsquemas';
 import { api, hayAlguienDentro, soporteActual, type EstadoCuenta } from './servicios/api';
 import { cambiarIdioma } from './servicios/idioma';
 
@@ -187,6 +189,8 @@ function Sistema() {
         {/* HU-35. Va antes de /animales/:id para que "alta-rapida" no se lea como un id. */}
         <Route path="/animales/alta-rapida" element={adentro(<PaginaAltaRapida />)} />
         <Route path="/animales/:id" element={adentro(<PaginaFichaAnimal />)} />
+        <Route path="/sanidad" element={adentro(<PaginaCalendario />)} />
+        <Route path="/sanidad/esquemas" element={adentro(<PaginaEsquemas />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}

@@ -1,4 +1,6 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
+import { t } from '../servicios/idioma';
+import { Icono } from './Iconos';
 import type {
   InputHTMLAttributes,
   ReactNode,
@@ -15,6 +17,8 @@ import type {
  * Campo       la envoltura, por si el control no es un input ni un select.
  * CampoTexto  un input de cualquier tipo.
  * CampoLista  un select.
+ * CampoContrasena  un input de contraseña con el botón del ojo para ver lo
+ *             que se va escribiendo.
  */
 
 interface PropiedadesComunes {
@@ -139,6 +143,62 @@ export function CampoLista({
         >
           {children}
         </select>
+      )}
+    </Campo>
+  );
+}
+
+type PropiedadesCampoContrasena = Omit<PropiedadesCampoTexto, 'type' | 'mono'>;
+
+/**
+ * Contraseña con el botón del ojo: muestra u oculta lo escrito. Se usa en
+ * todos los lugares donde se escribe una contraseña. El botón queda dentro
+ * del campo, a la derecha, y dice con aria-pressed si está mostrando.
+ */
+export function CampoContrasena({
+  etiqueta,
+  ayuda,
+  error,
+  obligatorio = false,
+  movil = false,
+  className,
+  ...resto
+}: PropiedadesCampoContrasena) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Campo
+      etiqueta={etiqueta}
+      ayuda={ayuda}
+      error={error}
+      obligatorio={obligatorio}
+      movil={movil}
+    >
+      {(id) => (
+        <div className="campo-contrasena">
+          <input
+            id={id}
+            className={className}
+            type={visible ? 'text' : 'password'}
+            required={obligatorio}
+            aria-invalid={error ? true : undefined}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            {...resto}
+          />
+          <button
+            type="button"
+            className="campo-contrasena__ojo"
+            aria-label={visible ? t('comun.contrasena.ocultar') : t('comun.contrasena.mostrar')}
+            aria-pressed={visible}
+            aria-controls={id}
+            title={visible ? t('comun.contrasena.ocultar') : t('comun.contrasena.mostrar')}
+            onClick={() => setVisible((previo) => !previo)}
+          >
+            <Icono nombre={visible ? 'ojo-cerrado' : 'ojo'} tamano={20} />
+          </button>
+        </div>
       )}
     </Campo>
   );

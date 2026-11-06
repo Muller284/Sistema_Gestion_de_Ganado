@@ -452,8 +452,33 @@ export interface FilaPrevia {
   peso_kg: number | null;
 }
 
+/**
+ * HU-41 y HU-42 · Cómo se interpretó cada columna del archivo.
+ * plantilla: igual a la plantilla; variante: por un sinónimo o con un error de
+ * tipeo; manual: la eligió el usuario; ignorada: el usuario no la quiere;
+ * null: no se reconoció y hay que preguntarla.
+ */
+export type ComoSeReconocio = 'plantilla' | 'variante' | 'manual' | 'ignorada' | null;
+
+export interface ColumnaDelArchivo {
+  /** Posición en el archivo, desde 0: la clave en `asignaciones`. */
+  posicion: number;
+  encabezado: string;
+  campo: ColumnaImportacion | null;
+  como: ComoSeReconocio;
+}
+
+/** HU-42 · Para cada columna no reconocida: el campo elegido o 'ignorar'. */
+export type AsignacionesColumnas = Record<string, ColumnaImportacion | 'ignorar'>;
+
 export interface InformeImportacion {
   estrategia: EstrategiaDuplicados;
+  /** false mientras falte asignar una columna obligatoria (HU-42). */
+  listo: boolean;
+  /** HU-41, criterio 3. */
+  columnas: ColumnaDelArchivo[];
+  faltan: ColumnaImportacion[];
+  campos: ColumnaImportacion[];
   resumen: {
     total: number;
     cargan: number;
@@ -563,6 +588,42 @@ export interface FiltrosAnimales {
   fechaDesde?: string;
   fechaHasta?: string;
 }
+
+/** HU-30 · Por qué columna se ordena el listado (las mismas claves que el servidor). */
+export type OrdenAnimales =
+  | 'identificador'
+  | 'nombre'
+  | 'sexo'
+  | 'categoria'
+  | 'nacimiento'
+  | 'corral'
+  | 'estado'
+  | 'peso'
+  | 'creado';
+
+export type DireccionOrden = 'asc' | 'desc';
+
+/** HU-30 · Qué página se pide y cómo ordenada. */
+export interface PedidoPagina {
+  pagina: number;
+  porPagina: number;
+  orden: OrdenAnimales;
+  direccion: DireccionOrden;
+}
+
+/** HU-30 · Una página del listado, ordenada y paginada en la base. */
+export interface PaginaAnimales {
+  animales: Animal[];
+  total: number;
+  pagina: number;
+  por_pagina: number;
+  paginas: number;
+  orden: OrdenAnimales;
+  direccion: DireccionOrden;
+}
+
+/** HU-34 · Qué bajas trae el listado: ninguna, también las bajas o solo las bajas. */
+export type BajasListado = 'no' | 'con' | 'solo';
 
 export interface MovimientoCorral {
   id: string;
@@ -780,15 +841,24 @@ export const api = {
 
   // HU-40, HU-43 y HU-44 · Importación de animales
   descargarPlantilla: () => descargar('/importacion/plantilla', 'plantilla.xlsx'),
-  vistaPreviaImportacion: (archivo: ArchivoAImportar, estrategia: EstrategiaDuplicados) =>
+  // HU-41 y HU-42: `asignaciones` lleva lo elegido a mano para las columnas no reconocidas.
+  vistaPreviaImportacion: (
+    archivo: ArchivoAImportar,
+    estrategia: EstrategiaDuplicados,
+    asignaciones: AsignacionesColumnas = {},
+  ) =>
     pedir<InformeImportacion>('/importacion/vista-previa', {
       method: 'POST',
-      body: JSON.stringify({ ...archivo, estrategia }),
+      body: JSON.stringify({ ...archivo, estrategia, asignaciones }),
     }),
-  confirmarImportacion: (archivo: ArchivoAImportar, estrategia: EstrategiaDuplicados) =>
+  confirmarImportacion: (
+    archivo: ArchivoAImportar,
+    estrategia: EstrategiaDuplicados,
+    asignaciones: AsignacionesColumnas = {},
+  ) =>
     pedir<ResultadoImportacion>('/importacion/confirmar', {
       method: 'POST',
-      body: JSON.stringify({ ...archivo, estrategia }),
+      body: JSON.stringify({ ...archivo, estrategia, asignaciones }),
     }),
   // HU-21 y HU-22 · Permisos por módulo
   misPermisos: () => pedir<MisPermisos>('/permisos/mios'),
@@ -815,6 +885,22 @@ export const api = {
   restaurarCorral: (id: string) =>
     pedir<RespuestaCorral>(`/corrales/${id}/restaurar`, { method: 'POST' }),
 
+  // HU-47, HU-50 y HU-51 · Sanidad: esquemas, calendario y avisos
+  esquemasVacunacion: () => pedir<ListaEsquemas>('/sanidad/esquemas'),
+  crearEsquema: (datos: DatosEsquema) =>
+    pedir<RespuestaEsquema>('/sanidad/esquemas', { method: 'POST', body: JSON.stringify(datos) }),
+  actualizarEsquema: (id: string, datos: DatosEsquema) =>
+    pedir<RespuestaEsquema>(`/sanidad/esquemas/${id}`, { method: 'PATCH', body: JSON.stringify(datos) }),
+  bajaEsquema: (id: string) => pedir<{ mensaje: string }>(`/sanidad/esquemas/${id}`, { method: 'DELETE' }),
+  calendarioSanitario: (filtro: FiltroCalendario) => {
+    const parametros = new URLSearchParams();
+    for (const [clave, valor] of Object.entries(filtro)) {
+      if (valor !== undefined && valor !== null && valor !== '') parametros.set(clave, String(valor));
+    }
+    return pedir<CalendarioSanitario>(`/sanidad/calendario?${parametros.toString()}`);
+  },
+  avisosSanidad: () => pedir<AvisosSanidad>('/sanidad/avisos'),
+
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
   reglasCategorias: () => pedir<ReglaCategoria[]>('/animales/categorias/reglas'),
@@ -827,6 +913,29 @@ export const api = {
       if (limpio) parametros.set(clave, limpio);
     }
     return pedir<Animal[]>(`/animales?${parametros.toString()}`);
+  },
+  /**
+   * HU-30 · Una página del listado. El filtro, el orden y la página viajan
+   * juntos en cada pedido, así que cambiar de página no pierde ninguno.
+   */
+  paginaAnimales: (
+    estado: EstadoAnimal | 'todos',
+    bajas: BajasListado,
+    filtros: FiltrosAnimales,
+    pagina: PedidoPagina,
+  ) => {
+    const parametros = new URLSearchParams({ estado });
+    if (bajas === 'con') parametros.set('bajas', '1');
+    if (bajas === 'solo') parametros.set('bajas', 'solo');
+    for (const [clave, valor] of Object.entries(filtros)) {
+      const limpio = typeof valor === 'string' ? valor.trim() : '';
+      if (limpio) parametros.set(clave, limpio);
+    }
+    parametros.set('pagina', String(pagina.pagina));
+    parametros.set('porPagina', String(pagina.porPagina));
+    parametros.set('orden', pagina.orden);
+    parametros.set('direccion', pagina.direccion);
+    return pedir<PaginaAnimales>(`/animales?${parametros.toString()}`);
   },
   fichaAnimal: (id: string) => pedir<FichaAnimal>(`/animales/${id}`),
   crearAnimal: (
@@ -851,4 +960,162 @@ export const api = {
   bajaAnimal: (id: string) => pedir<{ mensaje: string }>(`/animales/${id}`, { method: 'DELETE' }),
   restaurarAnimal: (id: string) =>
     pedir<RespuestaAnimal>(`/animales/${id}/restaurar`, { method: 'POST' }),
+
+  // HU-31 · Acciones masivas sobre animales
+  cambiarEstadoMasivo: (animalIds: string[], estado: EstadoAnimal, motivo: string, fecha: string) =>
+    pedir<RespuestaEstadoMasivo>('/masivo/animales/estado', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds, estado, motivo, fecha }),
+    }),
+  bajaMasiva: (animalIds: string[]) =>
+    pedir<RespuestaBajaMasiva>('/masivo/animales/baja', {
+      method: 'POST',
+      body: JSON.stringify({ animal_ids: animalIds }),
+    }),
+
+  // HU-45 · Exportación
+  exportar: (pedido: PedidoExportacion) => descargar(`/exportacion?${parametrosExportacion(pedido)}`, 'ganado.xlsx'),
 };
+
+/** HU-31. Cuántos cambiaron, cuántos ya estaban en ese estado y cuántos no se encontraron. */
+export interface RespuestaEstadoMasivo {
+  cambiados: number;
+  ya_estaban: number;
+  no_encontrados: number;
+  mensaje: string;
+}
+
+export interface RespuestaBajaMasiva {
+  dados_de_baja: number;
+  no_encontrados: number;
+  mensaje: string;
+}
+
+/** HU-45 · Qué se exporta, en qué formato y con qué filtros del listado. */
+export type ConjuntoExportacion = 'animales' | 'corrales' | 'movimientos' | 'estados';
+export type FormatoExportacion = 'xlsx' | 'csv';
+
+export interface PedidoExportacion {
+  que: ConjuntoExportacion[];
+  formato: FormatoExportacion;
+  /** La pestaña del listado: un estado, todos o las bajas. */
+  vista: EstadoAnimal | 'todos' | 'bajas';
+  filtros: FiltrosAnimales;
+}
+
+/** Los parámetros de GET /exportacion. Los filtros vacíos no se mandan. */
+export function parametrosExportacion(pedido: PedidoExportacion): string {
+  const parametros = new URLSearchParams({
+    que: pedido.que.join(','),
+    formato: pedido.formato,
+    vista: pedido.vista,
+  });
+  for (const [clave, valor] of Object.entries(pedido.filtros)) {
+    const limpio = typeof valor === 'string' ? valor.trim() : '';
+    if (limpio) parametros.set(clave, limpio);
+  }
+  return parametros.toString();
+}
+
+// ---------------------------------------------------------------------------
+// HU-47 · Esquemas de vacunación
+// ---------------------------------------------------------------------------
+
+export interface EsquemaVacunacion {
+  id: string;
+  producto_id: string;
+  producto_nombre: string;
+  producto_tipo: string;
+  nombre: string;
+  /** Nulo: todas las categorías. */
+  categorias: string[] | null;
+  /** Nulo: los dos sexos. */
+  sexo: Sexo | null;
+  edad_minima_meses: number;
+  edad_maxima_meses: number | null;
+  dosis: number;
+  intervalo_dias: number | null;
+  refuerzo_dias: number | null;
+  /** Animales activos que entran por categoría y sexo. */
+  animales: number;
+  creado_en: string;
+}
+
+export interface ProductoSanitarioElegible {
+  id: string;
+  nombre: string;
+  tipo: string;
+}
+
+export interface ListaEsquemas {
+  esquemas: EsquemaVacunacion[];
+  productos: ProductoSanitarioElegible[];
+  categorias: string[];
+}
+
+export interface DatosEsquema {
+  producto_id: string;
+  nombre: string;
+  categorias: string[] | null;
+  sexo: Sexo | null;
+  edad_minima_meses: number | null;
+  edad_maxima_meses: number | null;
+  dosis: number | null;
+  intervalo_dias: number | null;
+  refuerzo_dias: number | null;
+}
+
+export interface RespuestaEsquema {
+  esquema: EsquemaVacunacion;
+  mensaje: string;
+}
+
+// ---------------------------------------------------------------------------
+// HU-50 y HU-51 · Calendario sanitario y avisos
+// ---------------------------------------------------------------------------
+
+export type EstadoDosis = 'vencida' | 'proxima' | 'programada';
+
+export interface FiltroCalendario {
+  desde?: string;
+  hasta?: string;
+  producto?: string;
+  corral?: string;
+  estado?: EstadoDosis | '';
+  pagina?: number;
+  porPagina?: number;
+}
+
+export interface DosisPendiente {
+  animal_id: string;
+  identificador: string;
+  animal_nombre: string | null;
+  categoria_codigo: string | null;
+  corral_nombre: string | null;
+  esquema_id: string;
+  esquema_nombre: string;
+  producto_nombre: string;
+  /** Qué dosis de la serie toca; nulo si es un refuerzo. */
+  numero_dosis: number | null;
+  dosis_total: number;
+  /** AAAA-MM-DD. */
+  vence: string;
+  /** Días que faltan; negativo si está vencida. */
+  dias: number;
+  estado: EstadoDosis;
+}
+
+export interface CalendarioSanitario {
+  resumen: Record<EstadoDosis, number>;
+  total: number;
+  dosis: DosisPendiente[];
+  pagina: number;
+  por_pagina: number;
+  dias_proxima: number;
+}
+
+export interface AvisosSanidad {
+  vencidas: number;
+  proximas: number;
+  dias_proxima: number;
+}
