@@ -901,6 +901,22 @@ export const api = {
   },
   avisosSanidad: () => pedir<AvisosSanidad>('/sanidad/avisos'),
 
+  // HU-46 y HU-48 · Sanidad: catálogo de productos y aplicaciones
+  productosSanitarios: () => pedir<{ productos: ProductoSanitario[] }>('/sanidad/productos'),
+  crearProducto: (datos: DatosProducto) =>
+    pedir<RespuestaProducto>('/sanidad/productos', { method: 'POST', body: JSON.stringify(datos) }),
+  actualizarProducto: (id: string, datos: DatosProducto) =>
+    pedir<RespuestaProducto>(`/sanidad/productos/${id}`, { method: 'PATCH', body: JSON.stringify(datos) }),
+  bajaProducto: (id: string) => pedir<{ mensaje: string }>(`/sanidad/productos/${id}`, { method: 'DELETE' }),
+  opcionesAplicacion: () => pedir<OpcionesAplicacion>('/sanidad/aplicaciones/opciones'),
+  aplicacionesAnimal: (animalId: string) =>
+    pedir<{ aplicaciones: AplicacionSanitaria[] }>(`/sanidad/animales/${animalId}/aplicaciones`),
+  registrarAplicacion: (animalId: string, datos: DatosAplicacion) =>
+    pedir<RespuestaAplicacion>(`/sanidad/animales/${animalId}/aplicaciones`, {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }),
+
   // HU-28, HU-33, HU-34 y HU-39 · Animales
   categoriasAnimal: () => pedir<string[]>('/animales/categorias'),
   reglasCategorias: () => pedir<ReglaCategoria[]>('/animales/categorias/reglas'),
@@ -1118,4 +1134,94 @@ export interface AvisosSanidad {
   vencidas: number;
   proximas: number;
   dias_proxima: number;
+}
+
+// ---------------------------------------------------------------------------
+// HU-46 · Catálogo de productos sanitarios
+// ---------------------------------------------------------------------------
+
+export type TipoProducto = 'vacuna' | 'antiparasitario' | 'vitamina' | 'antibiotico' | 'otro';
+export type UnidadDosis = 'ml' | 'g' | 'mg' | 'dosis';
+
+export interface ProductoSanitario {
+  id: string;
+  nombre: string;
+  tipo: TipoProducto;
+  laboratorio: string | null;
+  /** Dosis por animal; va con su unidad o no va. */
+  dosis: number | null;
+  unidad: UnidadDosis | null;
+  /** Esquemas vigentes que lo usan: mientras haya, no se da de baja. */
+  esquemas: number;
+  aplicaciones: number;
+}
+
+export interface DatosProducto {
+  nombre: string;
+  tipo: TipoProducto | '';
+  laboratorio: string | null;
+  dosis: number | null;
+  unidad: UnidadDosis | null;
+}
+
+export interface RespuestaProducto {
+  producto: ProductoSanitario;
+  mensaje: string;
+}
+
+// ---------------------------------------------------------------------------
+// HU-48 · Registro de aplicación individual
+// ---------------------------------------------------------------------------
+
+export interface AplicacionSanitaria {
+  id: string;
+  fecha: string;
+  producto_id: string;
+  producto_nombre: string;
+  producto_tipo: TipoProducto;
+  /** HU-46: el producto se dio de baja después; la aplicación lo sigue mostrando. */
+  producto_dado_de_baja: boolean;
+  esquema_id: string | null;
+  esquema_nombre: string | null;
+  /** Qué dosis del esquema fue; nulo con esquema es un refuerzo. */
+  numero_dosis: number | null;
+  dosis: number | null;
+  unidad: UnidadDosis | null;
+  aplicado_por: string;
+  aplicado_por_nombre: string | null;
+  observacion: string | null;
+  /** HU-32: cuándo quedó guardada; fecha es el día que se aplicó. */
+  creado_en: string;
+  registrado_por: string | null;
+}
+
+export interface EsquemaElegible {
+  id: string;
+  nombre: string;
+  producto_id: string;
+  dosis: number;
+  refuerzo_dias: number | null;
+}
+
+export interface OpcionesAplicacion {
+  productos: ProductoSanitario[];
+  esquemas: EsquemaElegible[];
+  integrantes: { id: string; nombre: string }[];
+  /** Hoy en la zona horaria del rancho: la fecha no puede pasar de acá. */
+  hoy: string;
+}
+
+export interface DatosAplicacion {
+  producto_id: string;
+  fecha: string;
+  dosis: number | null;
+  esquema_id: string | null;
+  numero_dosis: number | null;
+  aplicado_por: string | null;
+  observacion: string | null;
+}
+
+export interface RespuestaAplicacion {
+  aplicacion: AplicacionSanitaria;
+  mensaje: string;
 }

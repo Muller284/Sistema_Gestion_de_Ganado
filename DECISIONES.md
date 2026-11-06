@@ -1615,3 +1615,73 @@ menos de 100 ms en la máquina de pruebas; el criterio pide menos de 2 s.
   `pruebas/calendario-sanitario.test.js` (18). Este último arma sus fechas
   alrededor de hoy, así que da lo mismo cualquier día que se corra.
 - Cliente: `pruebas/sanidad.test.tsx` (21).
+
+
+## 44. Catálogo de productos sanitarios y aplicación individual (Sprint 4, Romina)
+
+HU-46 y HU-48. El módulo es `servidor/src/modulos/sanidad/` y atiende bajo el
+mismo prefijo `/sanidad` que los esquemas de Aaron (§42), sin tocar su módulo.
+Las pantallas son `cliente/src/paginas/sanidad/PaginaProductos.tsx` (una
+pestaña más en `PestanasSanidad.tsx`) y `PestanaSanidad.tsx`, que usa la ficha
+del animal.
+
+**Rutas.**
+
+| Ruta | Qué hace | Permiso |
+|---|---|---|
+| `GET /sanidad/productos` | productos vigentes del rancho | sanidad · ver |
+| `POST /sanidad/productos` | crea | sanidad · editar |
+| `PATCH /sanidad/productos/:id` | cambia | sanidad · editar |
+| `DELETE /sanidad/productos/:id` | baja lógica | sanidad · editar |
+| `GET /sanidad/aplicaciones/opciones` | productos, esquemas, personas del rancho y la fecha de hoy, para el formulario | sanidad · editar |
+| `GET /sanidad/animales/:id/aplicaciones` | aplicaciones del animal, la más nueva primero | sanidad · ver |
+| `POST /sanidad/animales/:id/aplicaciones` | registra una | sanidad · editar |
+
+**Productos (HU-46).**
+
+- El nombre no se repite entre los vigentes del rancho sin importar
+  mayúsculas, acentos ni espacios: se compara la columna `clave`, calculada con
+  `claveDeRaza` (`servidor/src/comun/razas.ts`), la misma regla de las razas.
+  Si dos guardan el mismo nombre a la vez, el índice único frena al segundo y
+  se responde 409 igual.
+- Otro rancho puede tener un producto con el mismo nombre (HU-03).
+- La dosis y su unidad van juntas o ninguna; la dosis acepta coma decimal y
+  hasta dos decimales.
+- **Mientras un esquema vigente use el producto, no se puede dar de baja**
+  (409). Si se pudiera, el calendario (HU-50) seguiría pidiendo un producto que
+  ya no está en el catálogo. La pantalla no ofrece el botón y dice por qué.
+- Darlo de baja no borra nada: las aplicaciones que lo usaron lo siguen
+  mostrando con la marca «Producto dado de baja», y el nombre se libera.
+
+**Aplicaciones (HU-48).**
+
+- La fecha no puede ser futura: «hoy» es la fecha en la zona horaria del país
+  del rancho, como en el calendario. Tampoco puede ser anterior al nacimiento
+  del animal.
+- Sin dosis escrita se guarda la del producto; la pantalla además la sugiere
+  al elegir el producto.
+- El esquema es opcional y tiene que ser del mismo producto. El número de
+  dosis va de 1 a las que tiene el esquema; vacío es un refuerzo. Una
+  aplicación con esquema cuenta para el calendario al instante, porque el
+  calendario se calcula en cada consulta.
+- `aplicado_por` es quien la registra, salvo que se elija otra persona activa
+  del rancho; `creado_por` siempre es quien la registró.
+- No se registra en un animal dado de baja (400) y un animal de otro rancho
+  da 404.
+- La ficha pide las aplicaciones aparte, solo si quien entra ve sanidad, y el
+  historial las suma a su línea de tiempo (`historial.ts`). Quien no ve sanidad
+  encuentra la pestaña explicando por qué está vacía. Es el mismo patrón que
+  usa Brian para los pesajes (§43), así las dos partes encajan al unirse.
+
+**Pruebas.**
+
+- Servidor: `pruebas/productos-sanitarios.test.js` (10) y
+  `pruebas/aplicaciones-sanitarias.test.js` (11).
+- Cliente: `pruebas/productos-aplicaciones.test.tsx` (23).
+
+**Para correr las pruebas en una máquina local.** Si el `.env` tiene
+`USUARIO_DEMO_ID` (viene así en `.env.ejemplo`), un pedido sin sesión entra
+como ese usuario y las pruebas «sin sesión no…» de acciones masivas y
+exportación dan 200 en vez de 401. En la integración continua no pasa porque
+esa variable no existe. Para correr todo igual que allá:
+`USUARIO_DEMO_ID= node dist/main.js`.

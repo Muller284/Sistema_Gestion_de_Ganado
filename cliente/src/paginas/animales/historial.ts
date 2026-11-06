@@ -1,4 +1,4 @@
-import type { FichaAnimal } from '../../servicios/api';
+import type { AplicacionSanitaria, FichaAnimal } from '../../servicios/api';
 
 /**
  * HU-32 · El historial de un animal en una sola línea de tiempo.
@@ -11,6 +11,10 @@ import type { FichaAnimal } from '../../servicios/api';
  *   baja        si hoy está dado de baja: animales.eliminado_en y quién lo
  *               hizo. Es modificado_por, que la baja deja puesto, y después
  *               de una baja no se puede editar la ficha (HU-34)
+ *   aplicacion  aplicaciones_sanitarias: producto, fecha en que se aplicó y
+ *               quién la registró (HU-48, criterio 3). Llegan aparte (GET
+ *               /sanidad/animales/:id/aplicaciones) porque son del módulo
+ *               sanidad: quien no lo ve, no las recibe.
  *
  * Criterio 4: cada evento dice quién lo registró y cuándo. "Cuándo" es el
  * momento en que quedó guardado, no la fecha que eligió el usuario: en un
@@ -45,17 +49,26 @@ export type EventoHistorial =
       fecha: string;
       motivo: string;
     }
-  | { tipo: 'baja'; clave: string; momento: string; quien: string | null };
+  | { tipo: 'baja'; clave: string; momento: string; quien: string | null }
+  | {
+      tipo: 'aplicacion';
+      clave: string;
+      momento: string;
+      quien: string | null;
+      producto: string;
+      fecha: string;
+    };
 
 /** El orden entre eventos del mismo instante: el alta siempre es el primero. */
 const ORDEN_EN_EMPATE: Record<EventoHistorial['tipo'], number> = {
   baja: 0,
   estado: 1,
-  movimiento: 2,
-  alta: 3,
+  aplicacion: 2,
+  movimiento: 3,
+  alta: 4,
 };
 
-export function armarHistorial(ficha: FichaAnimal): EventoHistorial[] {
+export function armarHistorial(ficha: FichaAnimal, aplicaciones: AplicacionSanitaria[] = []): EventoHistorial[] {
   const { animal } = ficha;
   const eventos: EventoHistorial[] = [
     {
@@ -87,6 +100,17 @@ export function armarHistorial(ficha: FichaAnimal): EventoHistorial[] {
       nuevo: cambio.estado_nuevo,
       fecha: cambio.fecha,
       motivo: cambio.motivo,
+    });
+  }
+
+  for (const aplicacion of aplicaciones) {
+    eventos.push({
+      tipo: 'aplicacion',
+      clave: `aplicacion-${aplicacion.id}`,
+      momento: aplicacion.creado_en,
+      quien: aplicacion.registrado_por,
+      producto: aplicacion.producto_nombre,
+      fecha: aplicacion.fecha,
     });
   }
 

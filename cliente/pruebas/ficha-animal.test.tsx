@@ -166,11 +166,11 @@ describe('HU-32 · la pantalla de la ficha', () => {
     }
   });
 
-  it('criterio 3: sanidad y pesajes explican por qué están vacías', async () => {
+  it('criterio 3: sanidad sin acceso y pesajes explican por qué están vacías', async () => {
     abrir();
     fireEvent.click(await screen.findByText(t('animales.ficha.pestanas.sanidad')));
-    expect(await screen.findByText(t('animales.ficha.sanidad.titulo'))).toBeTruthy();
-    expect(screen.getByText(t('animales.ficha.sanidad.texto'))).toBeTruthy();
+    expect(await screen.findByText(t('animales.ficha.sanidad.sinAcceso.titulo'))).toBeTruthy();
+    expect(screen.getByText(t('animales.ficha.sanidad.sinAcceso.texto'))).toBeTruthy();
 
     fireEvent.click(screen.getByText(t('animales.ficha.pestanas.pesajes')));
     expect(await screen.findByText(t('animales.ficha.pesajes.titulo'))).toBeTruthy();
