@@ -106,7 +106,26 @@ Se verificaron las historias contra los **criterios de aceptación de Trello**, 
 
 ---
 
-## 3. Veredicto final
+## 3. Recorrido manual en el navegador (6 de noviembre)
+
+Criterios de las historias de Aaron probados a mano, sobre una base recién sembrada (`npm run sembrar`), como Carlos (propietario) en la barra de demostración.
+
+| Historia | Qué se hizo | Resultado |
+| :-- | :-- | :-- |
+| **HU-31** criterio 1 | Elegir 0501 y 0502 de a uno («2 animales elegidos · elegidos de a uno»); elegir la página («Aplicar a 6»); filtrar hembras y «Elegir todo el resultado del filtro» («3 animales elegidos · todo el resultado del filtro»). | Cumple |
+| **HU-31** criterios 2 y 3 | La barra muestra la cantidad y las acciones. Cambiar estado a vendido pide «¿Cambiar el estado de 3 animales a Vendido?» antes de aplicar; al confirmar: «Listo, 3 animal(es) pasaron a vendido». | Cumple |
+| **HU-32** criterios 1 y 2 | Ficha del 0501: caravana en grande, estado «Vendido», categoría, sexo, edad, peso y corral; pestañas Resumen, Sanidad, Pesajes e Historial. | Cumple |
+| **HU-32** criterios 3 y 4 | Pesajes (fase 3) muestra su estado vacío explicado. El historial muestra el cambio recién hecho con quién y cuándo: «Pasó de Activo a Vendido el 06/11/2026 · Carlos Gutierrez Mendoza · 06/11/2026 15:38». | Cumple |
+| **HU-35** criterios 1 a 3 | El formulario pide solo Identificador, Categoría y Sexo. Medido en la página: los 13 elementos tocables miden 52 px o más; Terminar y Registrar están a 711 px en una ventana de 889 (mitad inferior). | Cumple |
+| **HU-35** criterio 4 | Se registraron 7001 y 7002 seguidos: después de cada alta la caravana queda vacía y con el foco, y categoría y sexo siguen elegidos; abajo, «Registrados ahora · 2 animales». | Cumple |
+| **HU-45** criterio 1 | El panel deja elegir Excel o CSV y qué exportar (animales, corrales, movimientos y cambios de estado). | Cumple |
+| **HU-45** criterios 2 y 3 | Con el filtro «machos» el CSV trae 3 animales (0503, 0504, 0506); sin filtro, los 5 activos. El archivo se llama `animales_rancho-el-cerrito_2026-11-06.csv` (CSV) o `ganado_rancho-el-cerrito_2026-11-06.xlsx` (Excel). | Cumple |
+
+*Observaciones menores, no bloquean:*
+- HU-35: al completar el formulario desaparece el texto de ayuda de arriba de los botones y la barra sube unos píxeles; en un celular puede hacer que el pulgar no acierte el primer toque.
+- La ventana del navegador no se pudo achicar al ancho de un celular durante la prueba; las medidas de 52 px y la posición de los botones se tomaron con la ventana de escritorio.
+
+## 4. Veredicto final
 
 **Se aprueban la totalidad de las historias del Sprint 3 de Aaron Taborga, Brian Aranibar y Romina Poma.**
 
