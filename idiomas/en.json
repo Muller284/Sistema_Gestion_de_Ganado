@@ -2194,7 +2194,8 @@
       "sinPermiso": {
         "titulo": "You can't record vaccines",
         "texto": "Recording vaccines from your phone is for whoever can edit health."
-      }
+      },
+      "sinAnimal": "The animal shows up here when you find it."
     }
   },
   "permisosSocio": {

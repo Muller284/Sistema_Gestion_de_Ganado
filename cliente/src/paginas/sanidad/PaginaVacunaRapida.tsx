@@ -16,6 +16,8 @@ import { nivel, useContextoGanado, usuarioDe } from '../ganado/contexto';
  *      móvil del sistema de diseño (52 px) y los productos son botones
  *      grandes. Las acciones van en la barra pegada al borde inferior, como
  *      en el alta rápida (HU-35, animal.css).
+ *      La pista de qué falta ocupa siempre su lugar, así los botones no se
+ *      mueven bajo el dedo.
  *   3. Se encadenan animales: al registrar, la caravana se vacía y vuelve a
  *      tener el foco; el producto se queda, porque en una jornada se aplica
  *      el mismo a todos.
@@ -152,17 +154,23 @@ export function PaginaVacunaRapida() {
             onChange={(e) => cambiarCaravana(e.target.value)}
           />
 
-          {animal && (
-            <div className="alta-rapida__encontrado" role="status">
-              <Icono nombre="exito" tamano={20} />
-              <span className="dato">{animal.identificador}</span>
-              <span className="cuerpo c-600">
-                {[animal.nombre, animal.categoria_codigo ? t(`animales.categorias.${animal.categoria_codigo}`) : null]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </span>
-            </div>
-          )}
+          {/* El lugar del animal encontrado está siempre: así los productos no
+              bajan justo cuando se va a elegir uno. */}
+          <div className="alta-rapida__encontrado" role="status">
+            {animal ? (
+              <>
+                <Icono nombre="exito" tamano={20} />
+                <span className="dato">{animal.identificador}</span>
+                <span className="cuerpo c-600">
+                  {[animal.nombre, animal.categoria_codigo ? t(`animales.categorias.${animal.categoria_codigo}`) : null]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </span>
+              </>
+            ) : (
+              <span className="pie c-500">{t('sanidad.rapido.sinAnimal')}</span>
+            )}
+          </div>
 
           {opciones && opciones.productos.length > 0 && (
             <fieldset className="alta-rapida__grupo">
@@ -180,13 +188,14 @@ export function PaginaVacunaRapida() {
                   </button>
                 ))}
               </div>
-              {producto && (
-                <span className="pie c-500">
-                  {t('sanidad.rapido.dosis', {
-                    dosis: textoDosis(producto.dosis, producto.unidad) ?? t('sanidad.productos.sinDosis'),
-                  })}
-                </span>
-              )}
+              {/* También con su lugar fijo: aparece justo antes del toque final. */}
+              <span className="pie c-500 alta-rapida__pista">
+                {producto
+                  ? t('sanidad.rapido.dosis', {
+                      dosis: textoDosis(producto.dosis, producto.unidad) ?? t('sanidad.productos.sinDosis'),
+                    })
+                  : ''}
+              </span>
             </fieldset>
           )}
 
@@ -209,8 +218,12 @@ export function PaginaVacunaRapida() {
             </Tarjeta>
           )}
 
-          {!animal && caravana.trim() === '' && <p className="pie c-500">{t('sanidad.rapido.faltaCaravana')}</p>}
-          {animal && !producto && <p className="pie c-500">{t('sanidad.rapido.faltaProducto')}</p>}
+          {/* Siempre ocupa su lugar, aunque no diga nada: si apareciera y
+              desapareciera, empujaría los botones justo cuando se van a tocar. */}
+          <p className="pie c-500 alta-rapida__pista" aria-live="polite">
+            {!animal && caravana.trim() === '' ? t('sanidad.rapido.faltaCaravana') : ''}
+            {animal && !producto ? t('sanidad.rapido.faltaProducto') : ''}
+          </p>
 
           <div className="alta-rapida__acciones">
             <Link className="btn btn-secundario btn-movil" to="/sanidad">

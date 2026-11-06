@@ -1729,6 +1729,10 @@ HU-49 y HU-52, en el mismo módulo `servidor/src/modulos/sanidad/` que §44.
   catálogo y aplicada por quien la registra.
 - Para encadenar, la caravana se vacía y recupera el foco, y el producto queda
   elegido. Lo registrado en la tanda se ve abajo.
+- **Nada se mueve bajo el dedo.** El lugar del animal encontrado, la línea de
+  la dosis y la pista de qué falta están siempre, aunque estén vacíos
+  (`.alta-rapida__pista`). Medido en 390 × 844 px: los productos y el botón
+  principal no cambian de lugar en todo el recorrido.
 
 **Pruebas.**
 

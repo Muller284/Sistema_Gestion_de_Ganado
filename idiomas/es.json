@@ -2194,7 +2194,8 @@
       "sinPermiso": {
         "titulo": "No puedes registrar vacunas",
         "texto": "Registrar vacunas desde el celular es para quien tiene permiso de edición en sanidad."
-      }
+      },
+      "sinAnimal": "El animal aparece acá al buscarlo."
     }
   },
   "permisosSocio": {

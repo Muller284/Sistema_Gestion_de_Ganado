@@ -248,3 +248,10 @@
   border-left: 3px solid var(--corral-600);
   color: var(--corral-700);
 }
+
+/* HU-52 · La pista de qué falta tiene siempre su alto, esté vacía o no. */
+.alta-rapida__pista {
+  display: block;
+  min-height: var(--lh-pie);
+  margin: 0;
+}
