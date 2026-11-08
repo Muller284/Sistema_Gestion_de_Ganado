@@ -3,6 +3,7 @@ import { Alerta, Boton, CampoLista, CampoTexto, Segmentos } from '../../componen
 import { api, type Corral, type EstadoAnimal } from '../../servicios/api';
 import { t, tn } from '../../servicios/idioma';
 import { hoyEn, type Regional } from '../../servicios/unidades';
+import { PesajeMasivo } from '../pesajes/PesajeMasivo';
 
 /**
  * HU-31 · La barra de acciones masivas del listado de animales.
@@ -19,12 +20,15 @@ import { hoyEn, type Regional } from '../../servicios/unidades';
  *   estado  HU-33: el nuevo estado, la fecha y el motivo.
  *   baja    HU-34: solo el propietario y el Admin (HU-18, criterio 3); el
  *           botón ni aparece para los demás, y el servidor lo vuelve a exigir.
+ *   pesaje  HU-53: un peso por animal, con la misma fecha (PesajeMasivo.tsx).
+ *           Solo para quien edita pesajes; tiene su propia confirmación.
+ *           Quien edita pesajes pero no animales (el veterinario) solo ve esta.
  *
  * Elegir de a uno, la página o todo el filtro (criterio 1) lo hace el
  * listado: acá llegan los ids ya elegidos.
  */
 
-export type Accion = 'corral' | 'estado' | 'baja';
+export type Accion = 'corral' | 'estado' | 'baja' | 'pesaje';
 export type Ambito = 'sueltos' | 'pagina' | 'filtro';
 
 const ESTADOS: EstadoAnimal[] = ['activo', 'vendido', 'muerto', 'archivado'];
@@ -35,6 +39,10 @@ interface Propiedades {
   ambito: Ambito;
   corrales: Corral[];
   puedeEliminar: boolean;
+  /** HU-53: edita pesajes. */
+  puedePesar?: boolean;
+  /** Edita animales: corral y estado. Por defecto sí (antes era la única forma de elegir). */
+  puedeEditarAnimales?: boolean;
   regional: Regional;
   alQuitar: () => void;
   alTerminar: (mensaje: string, aviso?: string | null) => void;
@@ -45,11 +53,18 @@ export function AccionesMasivas({
   ambito,
   corrales,
   puedeEliminar,
+  puedePesar = false,
+  puedeEditarAnimales = true,
   regional,
   alQuitar,
   alTerminar,
 }: Propiedades) {
-  const [accion, setAccion] = useState<Accion>('corral');
+  const acciones: Accion[] = [
+    ...(puedeEditarAnimales ? (['corral', 'estado'] as Accion[]) : []),
+    ...(puedePesar ? (['pesaje'] as Accion[]) : []),
+    ...(puedeEliminar && puedeEditarAnimales ? (['baja'] as Accion[]) : []),
+  ];
+  const [accion, setAccion] = useState<Accion>(acciones[0] ?? 'corral');
   const [corral, setCorral] = useState('');
   const [estado, setEstado] = useState<EstadoAnimal | ''>('');
   const [fecha, setFecha] = useState(hoyEn(regional));
@@ -59,7 +74,6 @@ export function AccionesMasivas({
   const [error, setError] = useState('');
 
   const n = seleccion.length;
-  const acciones: Accion[] = puedeEliminar ? ['corral', 'estado', 'baja'] : ['corral', 'estado'];
   const nombreCorral = corrales.find((c) => c.id === corral)?.nombre ?? '';
   const lista =
     accion === 'corral'
@@ -136,66 +150,70 @@ export function AccionesMasivas({
         opciones={acciones.map((clave) => ({ clave, nombre: t(`animales.masivo.accion.${clave}`) }))}
       />
 
-      {error && <Alerta variante="error">{error}</Alerta>}
+      {accion === 'pesaje' && <PesajeMasivo seleccion={seleccion} regional={regional} alTerminar={alTerminar} />}
 
-      <div className="acciones-masivas__campos">
-        {accion === 'corral' && (
-          <CampoLista
-            etiqueta={t('animales.seleccion.corral')}
-            value={corral}
-            disabled={confirmando}
-            onChange={(e) => setCorral(e.target.value)}
-          >
-            <option value="">{t('animales.campos.elegir')}</option>
-            {corrales.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nombre}
-              </option>
-            ))}
-          </CampoLista>
-        )}
+      {accion !== 'pesaje' && error && <Alerta variante="error">{error}</Alerta>}
 
-        {accion === 'estado' && (
-          <>
+      {accion !== 'pesaje' && (
+        <div className="acciones-masivas__campos">
+          {accion === 'corral' && (
             <CampoLista
-              etiqueta={t('animales.ficha.estado.nuevo')}
-              obligatorio
-              value={estado}
+              etiqueta={t('animales.seleccion.corral')}
+              value={corral}
               disabled={confirmando}
-              onChange={(e) => setEstado(e.target.value as EstadoAnimal)}
+              onChange={(e) => setCorral(e.target.value)}
             >
               <option value="">{t('animales.campos.elegir')}</option>
-              {ESTADOS.map((opcion) => (
-                <option key={opcion} value={opcion}>
-                  {t(`animales.estados.${opcion}`)}
+              {corrales.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
                 </option>
               ))}
             </CampoLista>
-            <CampoTexto
-              etiqueta={t('animales.ficha.estado.fecha')}
-              obligatorio
-              type="date"
-              max={hoyEn(regional)}
-              value={fecha}
-              disabled={confirmando}
-              onChange={(e) => setFecha(e.target.value)}
-            />
-            <CampoTexto
-              etiqueta={t('animales.ficha.estado.motivo')}
-              obligatorio
-              maxLength={500}
-              placeholder={t('animales.ficha.estado.motivoEjemplo')}
-              value={motivo}
-              disabled={confirmando}
-              onChange={(e) => setMotivo(e.target.value)}
-            />
-          </>
-        )}
+          )}
 
-        {accion === 'baja' && <p className="cuerpo c-600">{t('animales.masivo.bajaExplicacion')}</p>}
-      </div>
+          {accion === 'estado' && (
+            <>
+              <CampoLista
+                etiqueta={t('animales.ficha.estado.nuevo')}
+                obligatorio
+                value={estado}
+                disabled={confirmando}
+                onChange={(e) => setEstado(e.target.value as EstadoAnimal)}
+              >
+                <option value="">{t('animales.campos.elegir')}</option>
+                {ESTADOS.map((opcion) => (
+                  <option key={opcion} value={opcion}>
+                    {t(`animales.estados.${opcion}`)}
+                  </option>
+                ))}
+              </CampoLista>
+              <CampoTexto
+                etiqueta={t('animales.ficha.estado.fecha')}
+                obligatorio
+                type="date"
+                max={hoyEn(regional)}
+                value={fecha}
+                disabled={confirmando}
+                onChange={(e) => setFecha(e.target.value)}
+              />
+              <CampoTexto
+                etiqueta={t('animales.ficha.estado.motivo')}
+                obligatorio
+                maxLength={500}
+                placeholder={t('animales.ficha.estado.motivoEjemplo')}
+                value={motivo}
+                disabled={confirmando}
+                onChange={(e) => setMotivo(e.target.value)}
+              />
+            </>
+          )}
 
-      {confirmando ? (
+          {accion === 'baja' && <p className="cuerpo c-600">{t('animales.masivo.bajaExplicacion')}</p>}
+        </div>
+      )}
+
+      {accion === 'pesaje' ? null : confirmando ? (
         <div className="col g12">
           <Alerta variante="adv">{pregunta()}</Alerta>
           <div className="fila g8">

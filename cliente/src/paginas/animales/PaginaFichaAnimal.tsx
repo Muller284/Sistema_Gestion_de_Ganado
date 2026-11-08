@@ -21,6 +21,7 @@ import {
   type Corral,
   type EstadoAnimal,
   type FichaAnimal,
+  type Pesaje,
 } from '../../servicios/api';
 import { t, tn } from '../../servicios/idioma';
 import { conTransicion } from '../../servicios/transicion';
@@ -34,6 +35,7 @@ import {
 import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/contexto';
 import { FormularioFicha } from './FormularioFicha';
 import { armarHistorial, edadEnMeses, type EventoHistorial } from './historial';
+import { PestanaPesajes } from '../pesajes/PestanaPesajes';
 
 /**
  * La ficha de un animal.
@@ -54,10 +56,13 @@ import { armarHistorial, edadEnMeses, type EventoHistorial } from './historial';
  *          1. el encabezado muestra el identificador en grande, el estado y
  *             los datos principales (EncabezadoAnimal);
  *          2. pestañas de resumen, sanidad, pesajes e historial;
- *          3. sanidad y pesajes son de la fase 3: la pestaña existe y explica
- *             por qué todavía está vacía;
- *          4. el historial junta alta, movimientos, cambios de estado y baja,
- *             cada uno con quién lo registró y cuándo (historial.ts).
+ *          3. sanidad es de la fase 3: la pestaña existe y explica por qué
+ *             todavía está vacía;
+ *          4. el historial junta alta, movimientos, cambios de estado, pesajes
+ *             y baja, cada uno con quién lo registró y cuándo (historial.ts).
+ * HU-53  la pestaña Pesajes registra y lista los pesajes (PestanaPesajes.tsx).
+ *        Se piden aparte, solo si quien entra ve el módulo pesajes; quien no
+ *        lo ve encuentra la pestaña explicando por qué está vacía.
  *        La pestaña elegida va en la dirección (?pestana=historial), así se
  *        puede compartir el enlace y el botón Atrás del navegador la respeta.
  */
@@ -85,6 +90,9 @@ export function PaginaFichaAnimal() {
   const [editando, setEditando] = useState(false);
   const [confirmandoBaja, setConfirmandoBaja] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  // HU-53: los pesajes del animal, si quien entra ve el módulo pesajes.
+  const [pesajes, setPesajes] = useState<Pesaje[] | null>(null);
+  const [errorPesajes, setErrorPesajes] = useState('');
 
   // Cambiar la versión vuelve a pedir la ficha.
   const [version, setVersion] = useState(0);
@@ -106,12 +114,31 @@ export function PaginaFichaAnimal() {
     };
   }, [id, version]);
 
+  const veoPesajes = nivel(contexto, 'pesajes') !== 'ninguno';
+  const editoPesajes = nivel(contexto, 'pesajes') === 'editar';
+
+  useEffect(() => {
+    if (!veoPesajes) return;
+    let vigente = true;
+    api
+      .pesajesAnimal(id)
+      .then((respuesta) => {
+        if (!vigente) return;
+        setPesajes(respuesta.pesajes);
+        setErrorPesajes('');
+      })
+      .catch((err: Error) => vigente && setErrorPesajes(err.message));
+    return () => {
+      vigente = false;
+    };
+  }, [id, version, veoPesajes]);
+
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
   // HU-18, criterio 3: dar de baja y restaurar, solo el propietario y el Admin.
   const eliminable = puedeEliminar(contexto);
   const animal = ficha?.animal;
   const vigente = Boolean(animal && !animal.eliminado_en);
-  const historial = useMemo(() => (ficha ? armarHistorial(ficha) : []), [ficha]);
+  const historial = useMemo(() => (ficha ? armarHistorial(ficha, pesajes ?? []) : []), [ficha, pesajes]);
 
   function cambiarPestana(nueva: Pestana) {
     conTransicion(() =>
@@ -259,18 +286,27 @@ export function PaginaFichaAnimal() {
               </Tarjeta>
             )}
 
-            {pestana === 'pesajes' && (
+            {pestana === 'pesajes' && veoPesajes && (
+              <PestanaPesajes
+                animal={animal}
+                pesajes={pesajes}
+                error={errorPesajes}
+                regional={contexto.regional}
+                puedeEditar={editoPesajes}
+                alRegistrar={(mensaje) => {
+                  setError('');
+                  setAviso(mensaje);
+                  recargar();
+                }}
+              />
+            )}
+
+            {pestana === 'pesajes' && !veoPesajes && (
               <Tarjeta titulo={t('animales.ficha.pestanas.pesajes')}>
                 <EstadoVacio
                   icono="balanza"
-                  titulo={t('animales.ficha.pesajes.titulo')}
-                  texto={
-                    animal.peso_kg
-                      ? t('animales.ficha.pesajes.textoConPeso', {
-                          peso: formatoPeso(animal.peso_kg, contexto.regional),
-                        })
-                      : t('animales.ficha.pesajes.texto')
-                  }
+                  titulo={t('animales.ficha.pesajes.sinAcceso.titulo')}
+                  texto={t('animales.ficha.pesajes.sinAcceso.texto')}
                 />
               </Tarjeta>
             )}
@@ -352,6 +388,7 @@ const ICONO_EVENTO = {
   alta: 'mas',
   movimiento: 'corral',
   estado: 'regla',
+  pesaje: 'balanza',
   baja: 'archivar',
 } as const;
 
@@ -367,6 +404,9 @@ function Historial({ eventos, regional }: { eventos: EventoHistorial[]; regional
           <div className="col g4 flex1">
             <span className="cuerpo">{descripcion(evento, regional)}</span>
             {evento.tipo === 'estado' && <span className="pie c-600">«{evento.motivo}»</span>}
+            {evento.tipo === 'pesaje' && evento.observacion && (
+              <span className="pie c-600">«{evento.observacion}»</span>
+            )}
             <span className="pie c-500">
               {t('animales.ficha.historial.quienCuando', {
                 nombre: evento.quien ?? t('animales.ficha.autoria.sistema'),
@@ -396,6 +436,11 @@ function descripcion(evento: EventoHistorial, regional: Regional): string {
       return t('animales.ficha.historial.estado', {
         anterior: t(`animales.estados.${evento.anterior}`),
         nuevo: t(`animales.estados.${evento.nuevo}`),
+        fecha: formatoFecha(evento.fecha, regional),
+      });
+    case 'pesaje':
+      return t('animales.ficha.historial.pesaje', {
+        peso: formatoPeso(evento.peso_kg, regional),
         fecha: formatoFecha(evento.fecha, regional),
       });
     case 'baja':

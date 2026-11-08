@@ -425,6 +425,28 @@
       "paginaInvalida": "La página tiene que ser un número entero desde 1.",
       "porPaginaInvalida": "Se muestran de 1 a {n} dosis por página.",
       "filtroRepetido": "Cada filtro va una sola vez."
+    },
+    "pesajes": {
+      "sinAnimal": "Elige el animal que pesaste.",
+      "animalNoExiste": "Ese animal no existe en tu rancho.",
+      "animalDeBaja": "{identificador} está dado de baja: no se puede pesar.",
+      "animalNoActivo": "{identificador} está {estado}: solo se pesan animales activos.",
+      "pesoInvalido": "El peso tiene que ser un número mayor que cero y de hasta {max} kg.",
+      "pesoInvalidoDe": "El peso de {identificador} tiene que ser un número mayor que cero y de hasta {max} kg.",
+      "fechaInvalida": "La fecha del pesaje no es válida.",
+      "fechaFutura": "La fecha del pesaje no puede ser futura.",
+      "antesDelNacimiento": "La fecha del pesaje es anterior al nacimiento de: {lista}.",
+      "observacionInvalida": "La observación tiene que ser un texto.",
+      "observacionLarga": "La observación no puede pasar de {n} caracteres.",
+      "yaPesado": "{identificador} ya tiene un pesaje en esa fecha. Hay uno solo por animal y por día.",
+      "yaPesadosMasivo": "{n} animal(es) ya tienen un pesaje en esa fecha: {lista}. No se guardó ninguno.",
+      "yaPesadoAhora": "Alguien registró un pesaje de ese animal en esa fecha recién. No se guardó nada.",
+      "animalCambio": "Uno de los animales cambió mientras lo pesabas (se dio de baja o dejó de estar activo). No se guardó nada.",
+      "seleccionInvalida": "Elige entre 1 y {n} animales para pesar.",
+      "animalRepetido": "Un mismo animal aparece dos veces en el pesaje.",
+      "noPesables": "{n} de los animales no se pueden pesar: no son de tu rancho, están dados de baja o no están activos. No se guardó ninguno.",
+      "registrado": "Listo, registraste el pesaje de {identificador}.",
+      "registradosMasivo": "Listo, registraste {n} pesaje(s)."
     }
   },
   "acceso": {
@@ -1710,7 +1732,8 @@
       "accion": {
         "corral": "Asignar a un corral",
         "estado": "Cambiar estado",
-        "baja": "Dar de baja"
+        "baja": "Dar de baja",
+        "pesaje": "Registrar pesaje"
       },
       "aplicar": "Aplicar a {n}",
       "siAplicar": "Sí, aplicar",
@@ -1740,7 +1763,35 @@
       },
       "bajaExplicacion": "La baja no borra: los animales dejan de aparecer en las consultas normales y se pueden restaurar desde su ficha.",
       "elegirPagina": "Elegir los de esta página ({n})",
-      "elegirFiltro": "Elegir todo el resultado del filtro"
+      "elegirFiltro": "Elegir todo el resultado del filtro",
+      "pesaje": {
+        "fecha": "Fecha del pesaje",
+        "explicacion": "Escribe el peso de cada animal en {unidad}. Los que dejes vacíos no se registran.",
+        "animal": "Animal",
+        "pesoActual": "Peso actual",
+        "pesoNuevo": "Peso nuevo ({unidad})",
+        "pesoDe": "Peso de {identificador}",
+        "pesoInvalido": "Revisa el peso de {identificador}: tiene que ser un número mayor que cero.",
+        "ninguno": "Ninguno de los animales elegidos se puede pesar: solo se pesan los activos.",
+        "demasiados": "Para pesar de a muchos, elige hasta {n} animales a la vez.",
+        "noPesables": {
+          "uno": "{n} de los elegidos no se puede pesar porque no está activo. No aparece en la lista.",
+          "otros": "{n} de los elegidos no se pueden pesar porque no están activos. No aparecen en la lista."
+        },
+        "cuantosConPeso": {
+          "uno": "{n} de {total} con peso escrito",
+          "otros": "{n} de {total} con peso escrito"
+        },
+        "boton": {
+          "cero": "Registrar pesajes",
+          "uno": "Registrar {n} pesaje",
+          "otros": "Registrar {n} pesajes"
+        },
+        "confirmar": {
+          "uno": "¿Registrar el pesaje de {n} animal el {fecha}?",
+          "otros": "¿Registrar el pesaje de {n} animales el {fecha}? Se guardan todos juntos o ninguno."
+        }
+      }
     },
     "altaRapida": {
       "boton": "Alta rápida",
@@ -1795,9 +1846,36 @@
         "texto": "Acá se van a ver las vacunas, los tratamientos y las revisiones de este animal. Por ahora el módulo de sanidad todavía no está disponible."
       },
       "pesajes": {
-        "titulo": "Pesajes llega en la fase 3",
-        "texto": "Acá se van a ver los pesajes y la ganancia de peso de este animal. Por ahora el módulo de pesajes todavía no está disponible.",
-        "textoConPeso": "Acá se van a ver los pesajes y la ganancia de peso de este animal. Por ahora solo está el peso que se cargó en la ficha: {peso}."
+        "sinAcceso": {
+          "titulo": "No tienes acceso a pesajes",
+          "texto": "Pídele al propietario que te habilite el módulo de pesajes para ver los pesos de este animal."
+        },
+        "vacio": {
+          "titulo": "Todavía no hay pesajes",
+          "texto": "Registra el primero para empezar a seguir cómo engorda.",
+          "textoConPeso": "Todavía no hay pesajes. El peso de la ficha ({peso}) se cargó a mano al registrar el animal."
+        },
+        "nuevo": {
+          "titulo": "Nuevo pesaje",
+          "peso": "Peso ({unidad})",
+          "fecha": "Fecha del pesaje",
+          "observacion": "Observación",
+          "observacionEjemplo": "Ej.: balanza del corral norte",
+          "boton": "Registrar pesaje"
+        },
+        "pesoInvalido": "Escribe un peso mayor que cero.",
+        "noSePesa": "Solo se pesan animales activos y que no están dados de baja. Su historial de pesajes queda a la vista.",
+        "tabla": {
+          "titulo": "Pesajes registrados",
+          "fecha": "Fecha",
+          "peso": "Peso",
+          "quien": "Registró",
+          "observacion": "Observación"
+        },
+        "cuantos": {
+          "uno": "{n} pesaje",
+          "otros": "{n} pesajes"
+        }
       },
       "historial": {
         "titulo": "Historial",
@@ -1805,7 +1883,8 @@
         "entro": "Entró a {destino}",
         "estado": "Pasó de {anterior} a {nuevo} el {fecha}",
         "baja": "Se dio de baja",
-        "quienCuando": "{nombre} · {momento}"
+        "quienCuando": "{nombre} · {momento}",
+        "pesaje": "Se pesó: {peso} el {fecha}"
       },
       "rotulo": "Ficha del animal",
       "titulo": "Animal {identificador}",
