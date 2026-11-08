@@ -12,6 +12,7 @@
  *   componentes.css  boton, campo, tarjeta, insignia, estado vacio y alerta.
  *   movimiento.css   las transiciones y las animaciones de todo el sistema.
  *   equipo.css       el equipo (HU-17) y la guia de configuracion (HU-16).
+ *   paneles.css      paneles, gráficos, comparativa de pesajes y calendario mensual (Sprint 4).
  *   ganado.css       animales y corrales (HU-28, HU-33, HU-36 y HU-39).
  *   animal.css       la ficha con pestañas (HU-32) y el alta rápida (HU-35).
  *   sanidad.css      esquemas, calendario y avisos de vacunación (HU-47, HU-50 y HU-51).
@@ -27,6 +28,7 @@
 @import './componentes.css';
 @import './movimiento.css';
 @import './equipo.css';
+@import './paneles.css';
 @import './ganado.css';
 @import './animal.css';
 @import './sanidad.css';

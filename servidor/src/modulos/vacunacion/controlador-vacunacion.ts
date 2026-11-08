@@ -11,6 +11,7 @@ import { ServicioVacunacion } from './servicio-vacunacion';
  *   PATCH  /sanidad/esquemas/:id    lo mismo
  *   DELETE /sanidad/esquemas/:id    baja lógica
  *   GET    /sanidad/calendario      ?desde&hasta&producto&corral&estado&pagina&porPagina
+ *   GET    /sanidad/calendario/mes  ?mes=AAAA-MM&producto&corral: dosis por día (HU-59)
  *   GET    /sanidad/avisos          { vencidas, proximas, dias_proxima }
  *
  * Los productos (HU-46) y las aplicaciones (HU-48 y HU-49) se suman a este
@@ -44,6 +45,11 @@ export class ControladorVacunacion {
   @Get('calendario')
   async calendario(@Query() consulta: any, @Req() peticion: any) {
     return this.servicio.calendario(consulta, peticion.usuarioActual);
+  }
+
+  @Get('calendario/mes')
+  async calendarioMes(@Query() consulta: any, @Req() peticion: any) {
+    return this.servicio.calendarioMes(consulta, peticion.usuarioActual);
   }
 
   @Get('avisos')

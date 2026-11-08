@@ -16,12 +16,14 @@ import {
   api,
   type CalendarioSanitario,
   type Corral,
+  type DosisPendiente,
   type EstadoDosis,
   type ProductoSanitarioElegible,
 } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
 import { nombreDosis, textoVencimiento, VARIANTE_ESTADO } from '../../servicios/sanidad';
-import { formatoFecha } from '../../servicios/unidades';
+import { formatoFecha, type Regional } from '../../servicios/unidades';
+import { CalendarioMensual } from './CalendarioMensual';
 import { nivel, useContextoGanado, usuarioDe } from '../ganado/contexto';
 import { PestanasSanidad } from './PestanasSanidad';
 
@@ -36,11 +38,15 @@ import { PestanasSanidad } from './PestanasSanidad';
  *
  * HU-51: el aviso del inicio trae ?estado=vencida o ?estado=proxima, y la
  * pantalla abre con ese filtro puesto.
+ *
+ * HU-59: ?vista=mes muestra el mismo calendario como un mes
+ * (CalendarioMensual.tsx), con los filtros de producto y corral.
  */
 
 const POR_PAGINA = 50;
 const ESTADOS: EstadoDosis[] = ['vencida', 'proxima', 'programada'];
 type FiltroEstado = EstadoDosis | 'todas';
+type Vista = 'lista' | 'mes';
 
 interface Filtros {
   desde: string;
@@ -59,6 +65,7 @@ export function PaginaCalendario() {
   const contexto = useContextoGanado();
   const [parametros, setParametros] = useSearchParams();
   const estado = estadoDeLaRuta(parametros.get('estado'));
+  const vista: Vista = parametros.get('vista') === 'mes' ? 'mes' : 'lista';
   const [filtros, setFiltros] = useState<Filtros>(SIN_FILTROS);
   const [pagina, setPagina] = useState(1);
   const [calendario, setCalendario] = useState<CalendarioSanitario | null>(null);
@@ -90,6 +97,8 @@ export function PaginaCalendario() {
   }, []);
 
   useEffect(() => {
+    // En la vista mensual la lista no se usa: la pide CalendarioMensual, día por día.
+    if (vista === 'mes') return;
     let vigente = true;
     api
       .calendarioSanitario({
@@ -108,7 +117,7 @@ export function PaginaCalendario() {
     return () => {
       vigente = false;
     };
-  }, [filtros, estado, pagina]);
+  }, [filtros, estado, pagina, vista]);
 
   /** Cada cambio vuelve a pedir el calendario: se marca como cargando acá, no en el efecto. */
   function irAPagina(numero: number) {
@@ -119,6 +128,11 @@ export function PaginaCalendario() {
   function cambiarFiltro(clave: keyof Filtros, valor: string) {
     irAPagina(1);
     setFiltros((previos) => ({ ...previos, [clave]: valor }));
+  }
+
+  function cambiarVista(nueva: Vista) {
+    if (nueva === 'lista') setCargando(true);
+    setParametros(nueva === 'mes' ? { vista: 'mes' } : {}, { replace: true });
   }
 
   function cambiarEstado(nuevo: FiltroEstado) {
@@ -150,35 +164,51 @@ export function PaginaCalendario() {
         <p className="pie c-600">{t('sanidad.calendario.ayuda', { n: calendario?.dias_proxima ?? 7 })}</p>
 
         <Segmentos
-          etiqueta={t('sanidad.calendario.estado')}
-          valor={estado}
-          alCambiar={cambiarEstado}
+          etiqueta={t('calendarioMensual.vistas.etiqueta')}
+          valor={vista}
+          alCambiar={cambiarVista}
           opciones={[
-            {
-              clave: 'todas' as FiltroEstado,
-              nombre: t('sanidad.calendario.todas'),
-              cantidad: resumen.vencida + resumen.proxima + resumen.programada,
-            },
-            ...ESTADOS.map((clave) => ({ clave, nombre: t(`sanidad.estados.${clave}`), cantidad: resumen[clave] })),
+            { clave: 'lista' as Vista, nombre: t('calendarioMensual.vistas.lista') },
+            { clave: 'mes' as Vista, nombre: t('calendarioMensual.vistas.mes') },
           ]}
         />
 
+        {vista === 'lista' && (
+          <Segmentos
+            etiqueta={t('sanidad.calendario.estado')}
+            valor={estado}
+            alCambiar={cambiarEstado}
+            opciones={[
+              {
+                clave: 'todas' as FiltroEstado,
+                nombre: t('sanidad.calendario.todas'),
+                cantidad: resumen.vencida + resumen.proxima + resumen.programada,
+              },
+              ...ESTADOS.map((clave) => ({ clave, nombre: t(`sanidad.estados.${clave}`), cantidad: resumen[clave] })),
+            ]}
+          />
+        )}
+
         <Tarjeta titulo={t('sanidad.calendario.filtros.titulo')}>
           <div className="ganado__filtros sanidad__filtros">
-            <CampoTexto
-              etiqueta={t('sanidad.calendario.filtros.desde')}
-              type="date"
-              value={filtros.desde}
-              max={filtros.hasta || undefined}
-              onChange={(evento) => cambiarFiltro('desde', evento.target.value)}
-            />
-            <CampoTexto
-              etiqueta={t('sanidad.calendario.filtros.hasta')}
-              type="date"
-              value={filtros.hasta}
-              min={filtros.desde || undefined}
-              onChange={(evento) => cambiarFiltro('hasta', evento.target.value)}
-            />
+            {vista === 'lista' && (
+              <>
+                <CampoTexto
+                  etiqueta={t('sanidad.calendario.filtros.desde')}
+                  type="date"
+                  value={filtros.desde}
+                  max={filtros.hasta || undefined}
+                  onChange={(evento) => cambiarFiltro('desde', evento.target.value)}
+                />
+                <CampoTexto
+                  etiqueta={t('sanidad.calendario.filtros.hasta')}
+                  type="date"
+                  value={filtros.hasta}
+                  min={filtros.desde || undefined}
+                  onChange={(evento) => cambiarFiltro('hasta', evento.target.value)}
+                />
+              </>
+            )}
             <CampoLista
               etiqueta={t('sanidad.calendario.filtros.producto')}
               value={filtros.producto}
@@ -221,9 +251,13 @@ export function PaginaCalendario() {
           )}
         </Tarjeta>
 
-        {cargando && !calendario && <Cargando lineas={5} />}
+        {vista === 'mes' && (
+          <CalendarioMensual producto={filtros.producto} corral={filtros.corral} regional={contexto.regional} />
+        )}
 
-        {calendario && !error && dosis.length === 0 && (
+        {vista === 'lista' && cargando && !calendario && <Cargando lineas={5} />}
+
+        {vista === 'lista' && calendario && !error && dosis.length === 0 && (
           <EstadoVacio
             icono="sanidad"
             titulo={t('sanidad.calendario.vacio.titulo')}
@@ -238,46 +272,17 @@ export function PaginaCalendario() {
           />
         )}
 
-        {dosis.length > 0 && (
+        {vista === 'lista' && dosis.length > 0 && (
           <Tarjeta>
             <ul className="ganado__lista" aria-busy={cargando}>
               {dosis.map((fila) => (
-                <li key={`${fila.animal_id}-${fila.esquema_id}`} className="ganado__fila sanidad__dosis">
-                  <div className="ganado__principal">
-                    <span className="dato">{fila.identificador}</span>
-                    <span className="pie c-500">
-                      {[
-                        fila.animal_nombre,
-                        fila.categoria_codigo && t(`animales.categorias.${fila.categoria_codigo}`),
-                        fila.corral_nombre ?? t('animales.sinCorral'),
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </span>
-                  </div>
-                  <div className="sanidad__esquema">
-                    <span className="cuerpo-m">{fila.esquema_nombre}</span>
-                    <span className="pie c-500">
-                      {fila.producto_nombre} · {nombreDosis(fila)}
-                    </span>
-                  </div>
-                  <div className="sanidad__vence">
-                    <span className="cuerpo-m">{formatoFecha(fila.vence, contexto.regional)}</span>
-                    <span className="pie c-500">{textoVencimiento(fila.dias)}</span>
-                  </div>
-                  <Insignia variante={VARIANTE_ESTADO[fila.estado]}>{t(`sanidad.estados.${fila.estado}`)}</Insignia>
-                  <div className="ganado__acciones">
-                    <Link className="btn btn-fantasma" to={`/animales/${fila.animal_id}`}>
-                      {t('sanidad.calendario.verFicha')}
-                    </Link>
-                  </div>
-                </li>
+                <FilaDosis key={`${fila.animal_id}-${fila.esquema_id}`} fila={fila} regional={contexto.regional} />
               ))}
             </ul>
           </Tarjeta>
         )}
 
-        {total > POR_PAGINA && (
+        {vista === 'lista' && total > POR_PAGINA && (
           <div className="sanidad__paginas">
             <span className="pie c-600">
               {t('sanidad.calendario.mostrando', {
@@ -302,5 +307,41 @@ export function PaginaCalendario() {
         )}
       </div>
     </DisenoApp>
+  );
+}
+
+/** Una dosis pendiente: el animal, el esquema, cuándo vence y su estado. La usa también la vista mensual (HU-59). */
+export function FilaDosis({ fila, regional }: { fila: DosisPendiente; regional: Regional }) {
+  return (
+    <li className="ganado__fila sanidad__dosis">
+      <div className="ganado__principal">
+        <span className="dato">{fila.identificador}</span>
+        <span className="pie c-500">
+          {[
+            fila.animal_nombre,
+            fila.categoria_codigo && t(`animales.categorias.${fila.categoria_codigo}`),
+            fila.corral_nombre ?? t('animales.sinCorral'),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </span>
+      </div>
+      <div className="sanidad__esquema">
+        <span className="cuerpo-m">{fila.esquema_nombre}</span>
+        <span className="pie c-500">
+          {fila.producto_nombre} · {nombreDosis(fila)}
+        </span>
+      </div>
+      <div className="sanidad__vence">
+        <span className="cuerpo-m">{formatoFecha(fila.vence, regional)}</span>
+        <span className="pie c-500">{textoVencimiento(fila.dias)}</span>
+      </div>
+      <Insignia variante={VARIANTE_ESTADO[fila.estado]}>{t(`sanidad.estados.${fila.estado}`)}</Insignia>
+      <div className="ganado__acciones">
+        <Link className="btn btn-fantasma" to={`/animales/${fila.animal_id}`}>
+          {t('sanidad.calendario.verFicha')}
+        </Link>
+      </div>
+    </li>
   );
 }

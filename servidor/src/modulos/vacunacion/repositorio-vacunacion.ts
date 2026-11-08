@@ -75,6 +75,14 @@ export interface Dosis {
   estado: EstadoDosis;
 }
 
+/** HU-59 · Un día del mes con cuántas dosis vencen, por estado. */
+export interface DiaCalendario {
+  fecha: string;
+  vencida: number;
+  proxima: number;
+  programada: number;
+}
+
 /** Cuántos días antes cuenta como próxima (HU-50 y HU-51). */
 export const DIAS_PROXIMA = 7;
 
@@ -104,8 +112,10 @@ const COLUMNAS_ESQUEMA = `
  * El estado sale de comparar con hoy en la zona horaria del país del rancho.
  *
  * $1 rancho. El resto de los parámetros los agrega quien la usa.
+ * La exporta también el panel del propietario (HU-57), para contar la
+ * cobertura de vacunación con la misma cuenta que el calendario.
  */
-const DOSIS_PENDIENTES = `
+export const DOSIS_PENDIENTES = `
   WITH hoy AS (
     SELECT (CURRENT_TIMESTAMP AT TIME ZONE COALESCE(pa.zona_horaria, 'UTC'))::date AS fecha,
            COALESCE(pa.zona_horaria, 'UTC') AS zona
@@ -302,6 +312,49 @@ export class RepositorioVacunacion {
       total: fila.total as number,
       dosis: fila.dosis as Dosis[],
     };
+  }
+
+  /**
+   * HU-59 · Cuántas dosis vencen cada día entre dos fechas, por estado, para la
+   * vista mensual. Mismos filtros de producto y corral que la lista.
+   */
+  async porDia(
+    ranchoId: string,
+    desde: string,
+    hasta: string,
+    productoId: string | null,
+    corralId: string | null,
+  ): Promise<{ hoy: string; dias: DiaCalendario[] }> {
+    const resultado = await this.bd.query(
+      `${DOSIS_PENDIENTES}
+       SELECT (SELECT to_char(fecha, 'YYYY-MM-DD') FROM hoy) AS hoy,
+              COALESCE((
+                SELECT json_agg(dia ORDER BY dia.fecha)
+                  FROM (
+                    SELECT to_char(d.vence, 'YYYY-MM-DD') AS fecha,
+                           COUNT(*) FILTER (WHERE d.estado = 'vencida')::int AS vencida,
+                           COUNT(*) FILTER (WHERE d.estado = 'proxima')::int AS proxima,
+                           COUNT(*) FILTER (WHERE d.estado = 'programada')::int AS programada
+                      FROM dosis d
+                     WHERE d.vence BETWEEN $2::date AND $3::date
+                       AND ($4::text IS NULL OR d.producto_id::text = $4)
+                       AND ($5::text IS NULL OR d.corral_id::text = $5)
+                     GROUP BY d.vence
+                  ) AS dia), '[]'::json) AS dias`,
+      [ranchoId, desde, hasta, productoId, corralId],
+    );
+    return resultado.rows[0];
+  }
+
+  /** La fecha de hoy en la zona horaria del país del rancho, AAAA-MM-DD. */
+  async hoy(ranchoId: string): Promise<string> {
+    const resultado = await this.bd.query(
+      `SELECT to_char((CURRENT_TIMESTAMP AT TIME ZONE COALESCE(pa.zona_horaria, 'UTC'))::date, 'YYYY-MM-DD') AS hoy
+         FROM ranchos r LEFT JOIN paises pa ON pa.codigo = r.pais_codigo
+        WHERE r.id = $1`,
+      [ranchoId],
+    );
+    return resultado.rows[0]?.hoy;
   }
 
   /** HU-51 · Cuántas dosis están vencidas y cuántas vencen en los próximos días. */

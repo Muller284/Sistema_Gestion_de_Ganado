@@ -1,0 +1,268 @@
+/* ============================================================================
+ * SPRINT 4 · Paneles e indicadores (Aaron)
+ * ----------------------------------------------------------------------------
+ *   HU-54  la evolución del peso en la pestaña Pesajes de la ficha
+ *   HU-56  la comparativa de peso por corral y categoría
+ *   HU-57  el panel del propietario en el inicio
+ *   HU-58  el mismo panel, recortado según el rol
+ *   HU-59  la vista mensual del calendario sanitario
+ *
+ * Solo tokens. Un tono por serie: corral para lo que crece (altas, peso),
+ * arena para las bajas, que además van hacia abajo del eje. Los colores de
+ * estado (error, adv, info) quedan para vencida, próxima y programada.
+ * ==========================================================================*/
+
+/* --- Gráficos ------------------------------------------------------------ */
+
+.grafico { position: relative; width: 100%; }
+.grafico svg { display: block; overflow: visible; }
+
+.grafico__eje { stroke: var(--arena-300); stroke-width: 1; }
+.grafico__guia { stroke: var(--arena-100); stroke-width: 1; }
+.grafico__alta { fill: var(--corral-500); }
+.grafico__baja { fill: var(--arena-400); }
+.grafico__linea { fill: none; stroke: var(--corral-500); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.grafico__punto { fill: var(--corral-500); stroke: var(--arena-0); stroke-width: 2; }
+.grafico__zona { fill: transparent; cursor: pointer; }
+
+.grafico__mes,
+.grafico__rotulo {
+  font-family: var(--f-cuerpo);
+  font-size: 11px;
+  fill: var(--arena-500);
+}
+
+.grafico__rotulo { fill: var(--arena-700); font-family: var(--f-dato); }
+.grafico__rotulo--fuerte { font-size: 12px; font-weight: var(--peso-medio); fill: var(--arena-900); }
+
+.grafico__globo {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: var(--e-6) var(--e-10);
+  border-radius: var(--r-sm);
+  background: var(--arena-900);
+  color: var(--arena-0);
+  font-size: var(--t-etiqueta);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--s-md);
+  z-index: 2;
+}
+
+.grafico__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8) var(--e-16);
+  margin: var(--e-8) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--t-etiqueta);
+  color: var(--arena-600);
+}
+
+.grafico__leyenda li { display: inline-flex; align-items: center; gap: var(--e-6); }
+.grafico__muestra { width: 10px; height: 10px; border-radius: 2px; }
+.grafico__muestra--alta { background: var(--corral-500); }
+.grafico__muestra--baja { background: var(--arena-400); }
+
+/* Barras horizontales: etiqueta, pista y valor en una fila. */
+.grafico-barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-10);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.grafico-barras li {
+  display: grid;
+  grid-template-columns: minmax(80px, 30%) 1fr auto;
+  align-items: center;
+  gap: var(--e-12);
+  font-size: var(--t-etiqueta);
+  color: var(--arena-700);
+}
+
+.grafico-barras__etiqueta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.grafico-barras__pista {
+  position: relative;
+  height: 10px;
+  border-radius: var(--r-full);
+  background: var(--arena-100);
+}
+
+.grafico-barras__relleno {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--corral-500);
+  transition: width var(--t-med) var(--curva);
+}
+
+/* La capacidad del corral: una raya fina sobre la pista. */
+.grafico-barras__tope {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--arena-600);
+}
+
+.grafico-barras__valor { min-width: 48px; text-align: right; color: var(--arena-900); }
+
+/* --- Panel del rancho (HU-57 y HU-58) ------------------------------------ */
+
+.panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+  gap: var(--e-16);
+}
+
+.panel__cifra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--e-4) var(--e-12);
+  margin: 0 0 var(--e-16);
+}
+
+.panel__numero {
+  font-family: var(--f-titulo);
+  font-size: var(--t-h2);
+  line-height: var(--lh-h2);
+  font-weight: var(--peso-fuerte);
+  color: var(--arena-900);
+}
+
+.panel__nota { margin: var(--e-12) 0 0; }
+.panel__antes { margin: 0 0 var(--e-12); }
+.panel__subtitulo { margin: var(--e-20) 0 0; }
+.panel__insignias { display: flex; flex-wrap: wrap; gap: var(--e-8); margin-top: var(--e-12); }
+.panel__enlace { text-decoration: none; }
+.panel__enlace:hover .insignia { filter: brightness(.97); }
+
+.panel__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--e-12);
+  color: var(--arena-600);
+}
+
+.panel__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin: var(--e-16) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.panel__lista li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-4) var(--e-12);
+  font-size: var(--t-etiqueta);
+}
+
+.panel__lista .dato { min-width: 48px; }
+.panel__lista .flex1 { min-width: 120px; }
+
+.panel__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--e-8);
+  margin-top: var(--e-16);
+}
+
+/* --- Pesajes de la ficha (HU-54) ------------------------------------------ */
+
+.pesajes__ganancia.positiva { color: var(--exito-texto); }
+.pesajes__ganancia.negativa { color: var(--error-texto); }
+
+/* --- Comparativa (HU-56) --------------------------------------------------- */
+
+.comparativa__filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--e-12) var(--e-16);
+  align-items: end;
+}
+
+/* --- Calendario mensual (HU-59) -------------------------------------------- */
+
+.mes__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12);
+  margin-bottom: var(--e-16);
+}
+
+.mes__titulo { font-family: var(--f-titulo); font-size: var(--t-h3, 18px); font-weight: var(--peso-fuerte); }
+
+.mes__rejilla {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--e-4);
+}
+
+.mes__dia-semana {
+  padding: var(--e-4) 0;
+  text-align: center;
+  font-size: var(--t-etiqueta);
+  color: var(--arena-500);
+  text-transform: capitalize;
+}
+
+.mes__dia {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--e-4);
+  min-height: 72px;
+  padding: var(--e-6) var(--e-8);
+  border: var(--borde) solid var(--arena-200);
+  border-radius: var(--r-md);
+  background: var(--arena-0);
+  color: var(--arena-700);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--t-rapido) var(--curva), background var(--t-rapido) var(--curva);
+}
+
+.mes__dia:hover { border-color: var(--corral-300); }
+.mes__dia:disabled { cursor: default; background: transparent; border-color: var(--arena-100); }
+.mes__dia.hoy { border-color: var(--corral-500); }
+.mes__dia.elegido { background: var(--corral-50); border-color: var(--corral-500); box-shadow: inset 0 0 0 1px var(--corral-500); }
+.mes__dia.fuera { visibility: hidden; }
+
+.mes__numero { font-family: var(--f-dato); font-size: var(--t-etiqueta); }
+
+.mes__cuenta {
+  padding: 2px var(--e-6);
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+}
+
+.mes__cuenta.vencida { background: var(--error-bg); color: var(--error-texto); }
+.mes__cuenta.proxima { background: var(--adv-bg); color: var(--adv-texto); }
+.mes__cuenta.programada { background: var(--info-bg); color: var(--info-texto); }
+.mes__corto { display: none; }
+.mes__flecha-atras { transform: rotate(180deg); }
+
+@media (max-width: 560px) {
+  .mes__dia { min-height: 52px; padding: var(--e-4); }
+  .mes__cuenta { padding: 1px var(--e-4); font-size: 11px; }
+  .mes__palabra { display: none; }
+  .mes__corto { display: inline; }
+}

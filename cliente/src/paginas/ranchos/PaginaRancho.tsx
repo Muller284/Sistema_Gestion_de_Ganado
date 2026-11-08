@@ -19,6 +19,7 @@ import {
   Tarjeta,
 } from '../../componentes';
 import { AvisosSanidad } from '../sanidad/AvisosSanidad';
+import { PanelRancho } from '../panel/PanelRancho';
 import {
   api,
   type EstadoRancho,
@@ -299,6 +300,9 @@ export function PaginaRancho() {
                 }
               />
             </div>
+
+            {/* HU-57 y HU-58: el panel, recortado a los módulos de quien entra. */}
+            <PanelRancho />
 
             <div className="par">
               <Tarjeta
