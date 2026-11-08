@@ -100,6 +100,41 @@ export class ServicioVacunacion {
     };
   }
 
+  /**
+   * HU-59 · El mes del calendario: cuántas dosis vencen cada día. ?mes=AAAA-MM
+   * (sin mes, el de hoy en el rancho) y los mismos filtros de producto y corral.
+   */
+  async calendarioMes(consulta: any, quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'sanidad', 'ver');
+    const valores = consulta ?? {};
+    if (Object.values(valores).some((valor) => Array.isArray(valor))) {
+      throw new BadRequestException(t('servidor.sanidad.filtroRepetido'));
+    }
+    const pedido = texto(valores.mes);
+    let mes: string;
+    if (pedido === null) {
+      mes = (await this.repositorio.hoy(ranchoId)).slice(0, 7);
+    } else {
+      const partes = /^(\d{4})-(\d{2})$/.exec(pedido);
+      if (!partes || Number(partes[2]) < 1 || Number(partes[2]) > 12) {
+        throw new BadRequestException(t('servidor.sanidad.mesInvalido'));
+      }
+      mes = pedido;
+    }
+    const [anio, numero] = mes.split('-').map(Number);
+    const ultimo = new Date(Date.UTC(anio, numero, 0)).getUTCDate();
+    const desde = `${mes}-01`;
+    const hasta = `${mes}-${String(ultimo).padStart(2, '0')}`;
+    const { hoy, dias } = await this.repositorio.porDia(
+      ranchoId,
+      desde,
+      hasta,
+      texto(valores.producto),
+      texto(valores.corral),
+    );
+    return { mes, desde, hasta, hoy, dias, dias_proxima: DIAS_PROXIMA };
+  }
+
   async avisos(quien: UsuarioActual) {
     const ranchoId = await this.permisos.exigir(quien, 'sanidad', 'ver');
     return { ...(await this.repositorio.avisos(ranchoId)), dias_proxima: DIAS_PROXIMA };

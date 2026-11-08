@@ -1694,3 +1694,64 @@ sumar sin cambiar la base.
   cada ficha como estaba, así no hace falta volver a sembrar.
 - Cliente: `pruebas/pesajes.test.tsx` (15). `pruebas/ficha-animal.test.tsx`
   cambia la pestaña Pesajes: sin acceso a pesajes, lo explica.
+
+
+## 46. Paneles, comparativa de peso y calendario mensual (Sprint 4, Aaron)
+
+Estas historias son HU-54, HU-56, HU-57, HU-58 y HU-59. El número 46 sigue a los de Brian (43) y Romina (44 y 45).
+
+**Dónde está cada cosa**
+
+| Historia | Servidor | Pantalla |
+|---|---|---|
+| HU-54 Ganancia diaria y evolución del peso | no hace falta: la cuenta es directa | `servicios/pesos.ts`, `pesajes/EvolucionPeso.tsx` y una columna en `PestanaPesajes.tsx` (de Brian) |
+| HU-56 Comparativa por corral y categoría | `GET /indicadores/pesajes/comparativa` | `pesajes/PaginaComparativa.tsx`, en `/pesajes` |
+| HU-57 y HU-58 Panel | `GET /indicadores/panel` | `panel/PanelRancho.tsx`, en el inicio |
+| HU-59 Calendario mensual | `GET /sanidad/calendario/mes` | `sanidad/CalendarioMensual.tsx`, con `?vista=mes` |
+
+El módulo nuevo es `servidor/src/modulos/indicadores/` y solo lee. Los gráficos están en `componentes/Graficos.tsx` y están hechos en SVG a mano, sin librería. Se dibujan al ancho real de su caja, así que el texto no se achica en el celular.
+
+**Ganancia diaria (HU-54).** Es la diferencia de peso dividida por los días entre un pesaje y el anterior. El primer pesaje no tiene con qué compararse. Los días se cuentan en UTC sobre fechas sueltas, para que el cambio de horario no agregue ni quite uno. La función `gananciaDiaria` de `servicios/pesos.ts` también le sirve a Brian para el registro rápido (HU-55). Se muestra con dos decimales y en la unidad del país.
+
+**Comparativa (HU-56).**
+
+- Para cada animal activo pesado en el período se toman su primer y su último pesaje del período. La ganancia es la que hay entre esos dos; con uno solo, no tiene.
+- Cada grupo (corral o categoría) muestra su peso promedio, que es el del último pesaje de cada animal, y su ganancia promedio.
+- Un animal está "por debajo" si gana menos que el promedio de su grupo. La lista dice cuánto le falta en kilos por día y va ordenada de mayor a menor falta.
+- Sin fechas, el período son los últimos 90 días.
+- Quien no ve corrales (el veterinario, por ejemplo) compara solo por categoría, y el servidor no le manda ni el nombre ni el id de ningún corral.
+
+**Panel (HU-57 y HU-58).** Una sola llamada trae todo, y el servidor arma cada sección solo si quien pregunta ve ese módulo. Si no lo ve, la sección llega nula.
+
+| Sección | Módulo que la habilita | Qué cuenta |
+|---|---|---|
+| Existencias por categoría | animales | animales activos |
+| Existencias por corral | corrales | animales activos por corral, con su capacidad |
+| Evolución del rodeo | animales | doce meses de altas y bajas |
+| Vacunación | sanidad | cobertura, dosis vencidas y próximas, los cinco próximos vencimientos |
+| Peso promedio | pesajes | doce meses |
+
+- Las **altas** son los animales registrados cada mes. Las **bajas** son las ventas y muertes (HU-33). Una baja lógica (HU-34) corrige un error de carga, así que no cuenta como ninguna de las dos.
+- La **cobertura** usa la misma consulta del calendario (`DOSIS_PENDIENTES`). Un animal está al día si le corresponde algún esquema y no tiene dosis vencidas.
+- El **peso promedio** de cada mes es el de los pesajes de ese mes. Un mes sin pesajes corta la línea del gráfico; no se inventa un valor.
+- `editar` dice en qué módulos puede cargar quien entró. El socio recibe todo en falso y por eso ve el panel sin botones. Cuando falta un dato, cada sección dice qué cargar, y a quien edita le ofrece el botón para hacerlo.
+
+**Calendario mensual (HU-59).** El servidor cuenta las dosis de cada día por estado, con la misma cuenta que la lista. El color del día es el de su dosis más urgente. Al tocar un día se pide la lista con `desde` y `hasta` en esa fecha. La semana empieza el lunes.
+
+**Semilla 002.** Para que el panel y la comparativa tengan qué mostrar:
+
+- Dos potreros en El Cerrito, Las Lomas y del Río, con los animales repartidos.
+- Fechas de alta entre marzo y junio de 2026.
+- El novillo 0507, que se vendió en septiembre y tiene dos pesajes antes de la venta.
+
+Los nombres de los potreros no chocan con los corrales del Excel de demostración.
+
+**Para no chocar con lo de los demás.** Las llamadas nuevas del cliente están en `servicios/indicadores.ts` y no en `api.ts`; para eso se exportó `pedir()`. Las claves de idioma nuevas son secciones propias. El módulo y los estilos se registran lejos de las líneas que agregaron Brian y Romina.
+
+**Pruebas**
+
+| Dónde | Archivo | Cantidad |
+|---|---|---|
+| Servidor | `pruebas/paneles.test.js` | 22 |
+| Servidor | `pruebas/calendario-sanitario.test.js`, parte de HU-59 | 3 nuevas |
+| Cliente | `pruebas/paneles.test.tsx` | 20 |

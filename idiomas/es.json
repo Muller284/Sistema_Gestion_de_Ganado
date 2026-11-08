@@ -24,6 +24,12 @@
     }
   },
   "servidor": {
+    "indicadores": {
+      "filtroRepetido": "Cada filtro va una sola vez.",
+      "fechaInvalida": "Las fechas van con el formato AAAA-MM-DD.",
+      "fechasCruzadas": "La fecha «desde» no puede ser posterior a la fecha «hasta».",
+      "agruparInvalido": "Se agrupa por corral o por categoría."
+    },
     "masivo": {
       "estadoCambiado": "Listo, {n} animal(es) pasaron a {estado}.",
       "dadosDeBaja": "Listo, diste de baja {n} animal(es). Se pueden restaurar desde la ficha de cada uno.",
@@ -402,6 +408,7 @@
       }
     },
     "sanidad": {
+      "mesInvalido": "El mes va con el formato AAAA-MM.",
       "sinNombre": "Ponle un nombre al esquema.",
       "nombreLargo": "El nombre no puede pasar de {n} caracteres.",
       "nombreOcupado": "Ya tienes un esquema llamado «{nombre}».",
@@ -1277,6 +1284,154 @@
       "crearRancho": "Crear rancho"
     },
     "soloPropietario": "Solo el propietario puede crear o editar el rancho."
+  },
+  "panel": {
+    "titulo": "Cómo está el rancho",
+    "subtitulo": "Datos al {fecha}. Cada indicador muestra solo lo de los módulos que tienes habilitados.",
+    "sinModulos": {
+      "titulo": "Todavía no hay indicadores para ti",
+      "texto": "Tu rol no tiene acceso a animales, corrales, sanidad ni pesajes. Si necesitas ver alguno, pídeselo al propietario del rancho."
+    },
+    "existencias": {
+      "titulo": "Existencias por categoría",
+      "activos": {
+        "uno": "1 animal activo",
+        "otros": "{n} animales activos"
+      },
+      "sinCategoria": "Sin categoría",
+      "descripcion": "Animales activos por categoría",
+      "vacio": "Todavía no hay animales activos. Cuando registres o importes tu ganado, aquí verás cuántos hay de cada categoría.",
+      "registrar": "Registrar animales"
+    },
+    "corrales": {
+      "titulo": "Existencias por corral",
+      "ocupacion": "{n} de {capacidad}",
+      "sinTope": "{n}",
+      "ayuda": "{nombre}: {n} animales, capacidad {capacidad}",
+      "ayudaSinTope": "{nombre}: {n} animales, sin capacidad definida",
+      "sinCorral": {
+        "uno": "1 animal activo no está en ningún corral.",
+        "otros": "{n} animales activos no están en ningún corral."
+      },
+      "descripcion": "Animales activos por corral, con su capacidad",
+      "vacio": "No hay corrales con animales. Crea los corrales y asígnales el ganado para ver la ocupación.",
+      "crear": "Ir a corrales"
+    },
+    "movimientos": {
+      "titulo": "Evolución del rodeo",
+      "resumen": "{altas} altas y {bajas} bajas en los últimos 12 meses",
+      "altas": "Altas",
+      "bajas": "Bajas (ventas y muertes)",
+      "ayuda": "{mes}: {altas} altas, {bajas} bajas",
+      "descripcion": "Altas y bajas de animales por mes en los últimos 12 meses",
+      "vacio": "No hubo altas ni bajas en los últimos 12 meses. Las altas son los animales registrados; las bajas, las ventas y muertes."
+    },
+    "sanidad": {
+      "titulo": "Vacunación",
+      "cobertura": "{n} % al día",
+      "detalleCobertura": "{al_dia} de {total} animales con esquema no tienen dosis vencidas.",
+      "vencidas": {
+        "cero": "Sin dosis vencidas",
+        "uno": "1 dosis vencida",
+        "otros": "{n} dosis vencidas"
+      },
+      "proximas": {
+        "cero": "Nada vence en los próximos {dias} días",
+        "uno": "1 vence en los próximos {dias} días",
+        "otros": "{n} vencen en los próximos {dias} días"
+      },
+      "proximos": "Próximos vencimientos",
+      "sinEsquemas": "Todavía no hay esquemas de vacunación. Define uno para medir qué parte del rodeo está al día.",
+      "sinAnimales": "Ningún animal activo entra en los esquemas definidos, así que todavía no hay cobertura que medir.",
+      "nadaPendiente": "No hay dosis pendientes en el calendario.",
+      "definir": "Definir un esquema",
+      "verCalendario": "Ver el calendario",
+      "alDia": "Al día"
+    },
+    "pesos": {
+      "titulo": "Peso promedio",
+      "ultimo": "{peso} en {mes}",
+      "cambio": "{signo}{peso} respecto de {mes}",
+      "ayuda": "{mes}: {peso} de promedio, {n} animales pesados",
+      "descripcion": "Peso promedio de los animales pesados cada mes, en los últimos 12 meses",
+      "vacio": "Todavía no hay pesajes. Registra el peso de tus animales para ver cómo evoluciona.",
+      "unMes": "Hay pesajes de un solo mes. Hace falta pesar en al menos dos meses distintos para ver la evolución.",
+      "verComparativa": "Comparar por corral y categoría"
+    }
+  },
+  "comparativa": {
+    "titulo": "Comparativa de peso",
+    "rotulo": "Pesajes",
+    "intro": "Peso promedio y ganancia diaria de cada grupo en el período. La ganancia de cada animal se calcula entre su primer y su último pesaje del período.",
+    "desde": "Desde",
+    "hasta": "Hasta",
+    "agrupar": "Agrupar por",
+    "porCorral": "Corral",
+    "porCategoria": "Categoría",
+    "soloCategoria": "Se agrupa por categoría porque no tienes acceso a corrales.",
+    "grupos": "Grupos",
+    "columnas": {
+      "grupo": "Grupo",
+      "animales": "Animales",
+      "peso": "Peso promedio",
+      "ganancia": "Ganancia diaria"
+    },
+    "sinCorral": "Sin corral",
+    "sinCategoria": "Sin categoría",
+    "sinDato": "—",
+    "porDia": "{peso}/día",
+    "grafico": "Ganancia diaria promedio por grupo",
+    "resumen": {
+      "uno": "1 animal pesado en el período.",
+      "otros": "{n} animales pesados en el período."
+    },
+    "conGanancia": "{n} con dos pesajes o más (los que tienen ganancia diaria).",
+    "bajoPromedio": {
+      "titulo": "Por debajo del promedio de su grupo",
+      "intro": "Ordenados por cuánto les falta para llegar al promedio de su grupo.",
+      "ninguno": "Ningún animal está por debajo del promedio de su grupo.",
+      "gana": "gana {ganancia}",
+      "promedio": "el grupo, {ganancia}",
+      "falta": "le falta {falta}"
+    },
+    "vacio": {
+      "titulo": "No hay pesajes en el período",
+      "texto": "Elige un período más largo o registra pesajes desde la ficha de cada animal."
+    },
+    "sinGanancia": "Hay pesajes en el período, pero ningún animal tiene dos: hace falta otro pesaje para calcular la ganancia diaria."
+  },
+  "evolucionPeso": {
+    "titulo": "Evolución del peso",
+    "ganancia": "Ganancia diaria",
+    "porDia": "{peso}/día",
+    "dias": {
+      "uno": "en 1 día",
+      "otros": "en {n} días"
+    },
+    "total": "Ganancia promedio: {ganancia} entre el primer y el último pesaje.",
+    "unSolo": "Con un solo pesaje todavía no se puede calcular la ganancia diaria: hace falta otro para comparar.",
+    "ayuda": "{fecha}: {peso}",
+    "ayudaGanancia": "{fecha}: {peso} ({ganancia})",
+    "descripcion": "Peso del animal en cada pesaje"
+  },
+  "calendarioMensual": {
+    "vistas": {
+      "etiqueta": "Vista del calendario",
+      "lista": "Lista",
+      "mes": "Mes"
+    },
+    "anterior": "Mes anterior",
+    "siguiente": "Mes siguiente",
+    "hoy": "Hoy",
+    "dosis": {
+      "uno": "1 dosis",
+      "otros": "{n} dosis"
+    },
+    "dia": "{fecha}: {detalle}",
+    "sinDosisMes": "No hay dosis pendientes en este mes.",
+    "elegirDia": "Toca un día para ver sus dosis.",
+    "delDia": "Dosis del {fecha}",
+    "leyenda": "El color de cada día es el de su dosis más urgente: vencida, próxima o programada."
   },
   "perfil": {
     "titulo": "Mi perfil",

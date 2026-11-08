@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ModuloBaseDatos } from './comun/modulo-base-datos';
 import { ModuloCorreo } from './comun/servicio-correo';
 import { ModuloRancho } from './modulos/ranchos/modulo-rancho';
+import { ModuloIndicadores } from './modulos/indicadores/modulo-indicadores';
 import { ModuloPais } from './modulos/paises/modulo-pais';
 import { ModuloUsuario } from './modulos/usuarios/modulo-usuario';
 import { ModuloEquipo } from './modulos/equipo/modulo-equipo';
@@ -40,6 +41,7 @@ import { ModuloPesajes } from './modulos/pesajes/modulo-pesajes';
     ModuloBaseDatos,
     ModuloCorreo,
     ModuloRancho,
+    ModuloIndicadores, // HU-56, HU-57 y HU-58 (paneles y comparativa de pesajes)
     ModuloPais,
     ModuloUsuario,
     ModuloEquipo, // HU-17

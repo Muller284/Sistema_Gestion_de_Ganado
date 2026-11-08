@@ -1,7 +1,8 @@
 /**
  * ============================================================================
  * SISTEMA DE GESTION DE GANADO
- * Pruebas de HU-50 (Calendario sanitario en lista) y HU-51 (Avisos de vencimientos)
+ * Pruebas de HU-50 (Calendario sanitario en lista), HU-51 (Avisos de vencimientos)
+ * y HU-59 (Calendario en vista mensual)
  * Responsable: Aaron | Sprint 4
  * ============================================================================
  *
@@ -15,6 +16,8 @@
  *        4. Responde rapido con un rodeo grande (2000 animales en menos de 2 s).
  * HU-51  1. Los avisos cuentan las dosis vencidas y las proximas.
  *        2. Los ve quien tiene acceso a sanidad.
+ * HU-59  1. La vista mensual cuenta por dia lo mismo que la lista.
+ *        3. Se pasa de un mes a otro.
  *
  * Las fechas se arman alrededor de "hoy" en la zona horaria del rancho, asi la
  * prueba da lo mismo cualquier dia que se corra. Todo lo que crea usa un
@@ -343,6 +346,50 @@ async function ejecutarPruebas() {
       assert.strictEqual((await pedir('GET', '/sanidad/avisos', undefined, VETERINARIO_A)).estado, 200);
       assert.strictEqual((await pedir('GET', '/sanidad/avisos', undefined, SOCIO_A)).estado, 200);
       assert.strictEqual((await pedir('GET', '/sanidad/avisos', undefined, ALMACEN_A)).estado, 403);
+    });
+
+    // ------------------------------------------------------------- HU-59
+    console.log('\n  HU-59 · Calendario en vista mensual');
+
+    await prueba('Criterio 1: cada día cuenta lo mismo que la lista de ese día, por estado', async () => {
+      // El mes de la primera dosis pendiente: así hay algo que contar cualquier día que se corra.
+      const mes = (await calendario()).cuerpo.dosis[0].vence.slice(0, 7);
+      const { estado, cuerpo } = await pedir('GET', `/sanidad/calendario/mes?mes=${mes}&producto=${PRODUCTO}`);
+      assert.strictEqual(estado, 200, JSON.stringify(cuerpo));
+      assert.strictEqual(cuerpo.mes, mes);
+      assert.strictEqual(cuerpo.hoy, hoy);
+      assert.ok(cuerpo.dias.length > 0, `el mes ${mes} no tiene dosis`);
+      for (const dia of cuerpo.dias) {
+        const lista = await calendario(`&desde=${dia.fecha}&hasta=${dia.fecha}`);
+        const contar = (e) => lista.cuerpo.dosis.filter((d) => d.estado === e).length;
+        assert.deepStrictEqual(
+          { vencida: dia.vencida, proxima: dia.proxima, programada: dia.programada },
+          { vencida: contar('vencida'), proxima: contar('proxima'), programada: contar('programada') },
+          dia.fecha,
+        );
+      }
+    });
+
+    await prueba('Criterio 3: se pasa a otro mes; sin mes, es el de hoy', async () => {
+      const segunda = await dias(6);
+      const otro = await pedir('GET', `/sanidad/calendario/mes?mes=${segunda.slice(0, 7)}&producto=${PRODUCTO}`);
+      assert.ok(otro.cuerpo.dias.some((d) => d.fecha === segunda), 'falta la segunda dosis de la serie');
+      const anterior = await pedir('GET', '/sanidad/calendario/mes?mes=2019-01');
+      assert.deepStrictEqual(anterior.cuerpo.dias, []);
+      assert.strictEqual(anterior.cuerpo.hasta, '2019-01-31');
+      const febrero = await pedir('GET', '/sanidad/calendario/mes?mes=2028-02');
+      assert.strictEqual(febrero.cuerpo.hasta, '2028-02-29');
+      const sinMes = await pedir('GET', '/sanidad/calendario/mes');
+      assert.strictEqual(sinMes.cuerpo.mes, hoy.slice(0, 7));
+    });
+
+    await prueba('Valida el mes, y respeta permisos y aislamiento', async () => {
+      for (const consulta of ['?mes=2026-13', '?mes=noviembre', '?mes=2026-1', '?mes=2026-01&mes=2026-02']) {
+        assert.strictEqual((await pedir('GET', `/sanidad/calendario/mes${consulta}`)).estado, 400, consulta);
+      }
+      assert.strictEqual((await pedir('GET', '/sanidad/calendario/mes', undefined, ALMACEN_A)).estado, 403);
+      const deB = await pedir('GET', `/sanidad/calendario/mes?mes=${(await dias(6)).slice(0, 7)}&producto=${PRODUCTO}`, undefined, PROPIETARIO_B);
+      assert.deepStrictEqual(deB.cuerpo.dias, []);
     });
 
     // ------------------------------------------------------------- rendimiento

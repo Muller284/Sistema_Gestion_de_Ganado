@@ -149,7 +149,7 @@ export function guardarArchivo(contenido: Blob, nombre: string): void {
   URL.revokeObjectURL(enlace.href);
 }
 
-async function pedir<T>(
+export async function pedir<T>(
   ruta: string,
   opciones: RequestInit = {},
   esReintento = false,

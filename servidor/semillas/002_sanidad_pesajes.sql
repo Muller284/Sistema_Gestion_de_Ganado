@@ -124,4 +124,61 @@ INSERT INTO pesajes (id, rancho_id, animal_id, fecha, peso_kg, creado_por, modif
     ('f2000000-0000-4000-8000-100000000003', 'b0000000-0000-4000-8000-000000000002', 'd2000000-0000-4000-8000-000000000002', '2026-09-01', 494.00, 'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000001'),
     ('f2000000-0000-4000-8000-100000000004', 'b0000000-0000-4000-8000-000000000002', 'd2000000-0000-4000-8000-000000000002', '2026-10-25', 498.00, 'b1000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000001');
 
+-- ----------------------------------------------------------------------------
+--  Para los paneles y la comparativa (HU-56 y HU-57, Aaron)
+--  Dos potreros con los animales de El Cerrito, la fecha en que se dio de alta
+--  cada uno y un novillo vendido en septiembre: así el panel tiene existencias
+--  por corral, altas y bajas por mes, y la comparativa tiene dos grupos.
+--  Los nombres no chocan con los corrales del Excel de demostración.
+-- ----------------------------------------------------------------------------
+INSERT INTO corrales (id, rancho_id, nombre, capacidad, superficie_ha, creado_por, modificado_por) VALUES
+    ('cc000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001', 'Potrero Las Lomas', 20, 25.00,
+     'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001'),
+    ('cc000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000001', 'Potrero del Río', 10, 12.00,
+     'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001');
+
+-- Vacas, la ternera y el toro en Las Lomas; los dos novillos de engorde en el Río.
+UPDATE animales SET corral_id = 'cc000000-0000-4000-8000-000000000001'
+ WHERE id IN ('d1000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000002',
+              'd1000000-0000-4000-8000-000000000005', 'd1000000-0000-4000-8000-000000000006');
+UPDATE animales SET corral_id = 'cc000000-0000-4000-8000-000000000002'
+ WHERE id IN ('d1000000-0000-4000-8000-000000000003', 'd1000000-0000-4000-8000-000000000004');
+
+-- Cuándo se dio de alta cada animal (HU-57, altas por mes).
+UPDATE animales AS a SET creado_en = v.alta::timestamptz
+  FROM (VALUES
+    ('d1000000-0000-4000-8000-000000000001', '2026-03-02 10:00-04'),
+    ('d1000000-0000-4000-8000-000000000002', '2026-03-02 10:05-04'),
+    ('d1000000-0000-4000-8000-000000000006', '2026-03-02 10:10-04'),
+    ('d1000000-0000-4000-8000-000000000003', '2026-04-15 09:00-04'),
+    ('d1000000-0000-4000-8000-000000000004', '2026-05-03 09:00-04'),
+    ('d1000000-0000-4000-8000-000000000005', '2026-06-05 18:00-04'),
+    ('d2000000-0000-4000-8000-000000000001', '2026-05-20 08:00-04'),
+    ('d2000000-0000-4000-8000-000000000002', '2026-05-20 08:05-04')
+  ) AS v(id, alta)
+ WHERE a.id = v.id::uuid;
+
+-- Un novillo que entró en abril y se vendió en septiembre (HU-57, bajas por mes).
+INSERT INTO animales (
+    id, rancho_id, identificador, tipo_identificador, nombre, raza, sexo,
+    categoria_codigo, fecha_nacimiento, origen, peso_kg, estado, corral_id, creado_por, modificado_por, creado_en
+) VALUES
+    ('d1000000-0000-4000-8000-000000000007', 'a0000000-0000-4000-8000-000000000001', '0507', 'caravana', NULL, 'Nelore', 'macho',
+     'novillo', '2024-06-10', 'comprado', 430.00, 'vendido', NULL,
+     'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001', '2026-04-15 09:05-04');
+
+INSERT INTO cambios_estado_animal (
+    id, rancho_id, animal_id, estado_anterior, estado_nuevo, fecha, motivo, creado_por, modificado_por
+) VALUES
+    ('cc000000-0000-4000-8000-000000000101', 'a0000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000007',
+     'activo', 'vendido', '2026-09-20', 'Venta en la feria de Montero',
+     'a1000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-000000000001');
+
+-- Sus pesajes de antes de la venta: el último es su peso_kg, como en los demás.
+INSERT INTO pesajes (id, rancho_id, animal_id, fecha, peso_kg, creado_por, modificado_por) VALUES
+    ('cc000000-0000-4000-8000-000000000201', 'a0000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000007',
+     '2026-08-01', 404.00, 'a1000000-0000-4000-8000-000000000004', 'a1000000-0000-4000-8000-000000000004'),
+    ('cc000000-0000-4000-8000-000000000202', 'a0000000-0000-4000-8000-000000000001', 'd1000000-0000-4000-8000-000000000007',
+     '2026-09-15', 430.00, 'a1000000-0000-4000-8000-000000000004', 'a1000000-0000-4000-8000-000000000004');
+
 COMMIT;

@@ -3,6 +3,8 @@ import { Alerta, Boton, Cargando, CampoTexto, EstadoVacio, Tarjeta } from '../..
 import { api, type Animal, type Pesaje } from '../../servicios/api';
 import { t, tn } from '../../servicios/idioma';
 import { formatoFecha, formatoPeso, hoyEn, pesoAGuardar, type Regional } from '../../servicios/unidades';
+import { conGanancias, textoGanancia } from '../../servicios/pesos';
+import { EvolucionPeso } from './EvolucionPeso';
 
 /**
  * HU-53 · La pestaña Pesajes de la ficha del animal.
@@ -14,7 +16,11 @@ import { formatoFecha, formatoPeso, hoyEn, pesoAGuardar, type Regional } from '.
  *   4. La tabla dice quién registró cada pesaje.
  *
  * Solo se pesan animales activos y vigentes; los demás ven la tabla sin el
- * formulario. HU-54 (Aaron) suma acá la ganancia diaria y el gráfico.
+ * formulario.
+ *
+ * HU-54 (Aaron) · La columna de ganancia diaria (entre cada pesaje y el
+ * anterior) y el gráfico de la evolución (EvolucionPeso.tsx). Con un solo
+ * pesaje, el gráfico explica que hace falta otro.
  */
 
 interface Propiedades {
@@ -29,6 +35,8 @@ interface Propiedades {
 
 export function PestanaPesajes({ animal, pesajes, error, regional, puedeEditar, alRegistrar }: Propiedades) {
   const pesable = !animal.eliminado_en && animal.estado === 'activo';
+  // HU-54: la ganancia de cada pesaje desde el anterior, por id (la tabla va del más nuevo al más viejo).
+  const ganancias = new Map((pesajes ? conGanancias(pesajes) : []).map((fila) => [fila.pesaje.id, fila]));
 
   return (
     <div className="col g24">
@@ -36,6 +44,8 @@ export function PestanaPesajes({ animal, pesajes, error, regional, puedeEditar, 
         <FormularioPesaje animal={animal} regional={regional} alRegistrar={alRegistrar} />
       )}
       {puedeEditar && !pesable && <Alerta variante="info">{t('animales.ficha.pesajes.noSePesa')}</Alerta>}
+
+      {!error && pesajes && <EvolucionPeso pesajes={pesajes} regional={regional} />}
 
       <Tarjeta
         titulo={t('animales.ficha.pesajes.tabla.titulo')}
@@ -65,6 +75,7 @@ export function PestanaPesajes({ animal, pesajes, error, regional, puedeEditar, 
                 <tr>
                   <th scope="col">{t('animales.ficha.pesajes.tabla.fecha')}</th>
                   <th scope="col">{t('animales.ficha.pesajes.tabla.peso')}</th>
+                  <th scope="col">{t('evolucionPeso.ganancia')}</th>
                   <th scope="col">{t('animales.ficha.pesajes.tabla.quien')}</th>
                   <th scope="col">{t('animales.ficha.pesajes.tabla.observacion')}</th>
                 </tr>
@@ -74,6 +85,9 @@ export function PestanaPesajes({ animal, pesajes, error, regional, puedeEditar, 
                   <tr key={pesaje.id}>
                     <td>{formatoFecha(pesaje.fecha, regional)}</td>
                     <td className="dato">{formatoPeso(pesaje.peso_kg, regional)}</td>
+                    <td>
+                      <CeldaGanancia fila={ganancias.get(pesaje.id)} regional={regional} />
+                    </td>
                     <td>{pesaje.registrado_por ?? t('animales.ficha.autoria.sistema')}</td>
                     <td className="pesajes__observacion">{pesaje.observacion ?? '—'}</td>
                   </tr>
@@ -84,6 +98,24 @@ export function PestanaPesajes({ animal, pesajes, error, regional, puedeEditar, 
         )}
       </Tarjeta>
     </div>
+  );
+}
+
+/** HU-54: la ganancia desde el pesaje anterior y en cuántos días; el primero no tiene con qué compararse. */
+function CeldaGanancia({
+  fila,
+  regional,
+}: {
+  fila: { ganancia: number | null; dias: number | null } | undefined;
+  regional: Regional;
+}) {
+  if (!fila || fila.ganancia === null || fila.dias === null) return <span className="c-500">—</span>;
+  const clase = fila.ganancia > 0 ? 'positiva' : fila.ganancia < 0 ? 'negativa' : '';
+  return (
+    <span className={`pesajes__ganancia ${clase}`}>
+      <span className="dato">{textoGanancia(fila.ganancia, regional)}</span>{' '}
+      <span className="pie c-500">{tn('evolucionPeso.dias', fila.dias)}</span>
+    </span>
   );
 }
 

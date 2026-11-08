@@ -24,6 +24,12 @@
     }
   },
   "servidor": {
+    "indicadores": {
+      "filtroRepetido": "Each filter goes only once.",
+      "fechaInvalida": "Dates use the YYYY-MM-DD format.",
+      "fechasCruzadas": "The “from” date can't be after the “to” date.",
+      "agruparInvalido": "Group by pen or by category."
+    },
     "masivo": {
       "estadoCambiado": "Done, {n} animal(s) changed to {estado}.",
       "dadosDeBaja": "Done, you removed {n} animal(s). Each one can be restored from its record.",
@@ -402,6 +408,7 @@
       }
     },
     "sanidad": {
+      "mesInvalido": "The month uses the YYYY-MM format.",
       "sinNombre": "Give the schedule a name.",
       "nombreLargo": "The name can't be longer than {n} characters.",
       "nombreOcupado": "You already have a schedule called “{nombre}”.",
@@ -1277,6 +1284,154 @@
       "crearRancho": "Create ranch"
     },
     "soloPropietario": "Only the owner can create or edit the ranch."
+  },
+  "panel": {
+    "titulo": "How the ranch is doing",
+    "subtitulo": "Data as of {fecha}. Each indicator shows only what belongs to the modules you can access.",
+    "sinModulos": {
+      "titulo": "No indicators for you yet",
+      "texto": "Your role has no access to animals, pens, health or weighings. If you need any of them, ask the ranch owner."
+    },
+    "existencias": {
+      "titulo": "Head count by category",
+      "activos": {
+        "uno": "1 active animal",
+        "otros": "{n} active animals"
+      },
+      "sinCategoria": "No category",
+      "descripcion": "Active animals by category",
+      "vacio": "There are no active animals yet. Once you register or import your herd, you'll see how many there are in each category.",
+      "registrar": "Register animals"
+    },
+    "corrales": {
+      "titulo": "Head count by pen",
+      "ocupacion": "{n} of {capacidad}",
+      "sinTope": "{n}",
+      "ayuda": "{nombre}: {n} animals, capacity {capacidad}",
+      "ayudaSinTope": "{nombre}: {n} animals, no capacity set",
+      "sinCorral": {
+        "uno": "1 active animal isn't in any pen.",
+        "otros": "{n} active animals aren't in any pen."
+      },
+      "descripcion": "Active animals by pen, with its capacity",
+      "vacio": "No pens hold animals. Create the pens and assign the herd to see occupancy.",
+      "crear": "Go to pens"
+    },
+    "movimientos": {
+      "titulo": "Herd changes",
+      "resumen": "{altas} in and {bajas} out in the last 12 months",
+      "altas": "In",
+      "bajas": "Out (sales and deaths)",
+      "ayuda": "{mes}: {altas} in, {bajas} out",
+      "descripcion": "Animals in and out per month over the last 12 months",
+      "vacio": "No animals came in or went out in the last 12 months. In means registered animals; out means sales and deaths."
+    },
+    "sanidad": {
+      "titulo": "Vaccination",
+      "cobertura": "{n}% up to date",
+      "detalleCobertura": "{al_dia} of {total} animals with a schedule have no overdue doses.",
+      "vencidas": {
+        "cero": "No overdue doses",
+        "uno": "1 overdue dose",
+        "otros": "{n} overdue doses"
+      },
+      "proximas": {
+        "cero": "Nothing due in the next {dias} days",
+        "uno": "1 due in the next {dias} days",
+        "otros": "{n} due in the next {dias} days"
+      },
+      "proximos": "Coming up",
+      "sinEsquemas": "There are no vaccination schedules yet. Define one to measure how much of the herd is up to date.",
+      "sinAnimales": "No active animal fits the defined schedules, so there's no coverage to measure yet.",
+      "nadaPendiente": "No pending doses in the calendar.",
+      "definir": "Define a schedule",
+      "verCalendario": "See the calendar",
+      "alDia": "Up to date"
+    },
+    "pesos": {
+      "titulo": "Average weight",
+      "ultimo": "{peso} in {mes}",
+      "cambio": "{signo}{peso} compared with {mes}",
+      "ayuda": "{mes}: {peso} average, {n} animals weighed",
+      "descripcion": "Average weight of the animals weighed each month over the last 12 months",
+      "vacio": "There are no weighings yet. Record your animals' weight to see how it changes.",
+      "unMes": "There are weighings from a single month. You need weighings in at least two different months to see the trend.",
+      "verComparativa": "Compare by pen and category"
+    }
+  },
+  "comparativa": {
+    "titulo": "Weight comparison",
+    "rotulo": "Weighings",
+    "intro": "Average weight and daily gain of each group in the period. Each animal's gain is measured between its first and last weighing in the period.",
+    "desde": "From",
+    "hasta": "To",
+    "agrupar": "Group by",
+    "porCorral": "Pen",
+    "porCategoria": "Category",
+    "soloCategoria": "Grouped by category because you don't have access to pens.",
+    "grupos": "Groups",
+    "columnas": {
+      "grupo": "Group",
+      "animales": "Animals",
+      "peso": "Average weight",
+      "ganancia": "Daily gain"
+    },
+    "sinCorral": "No pen",
+    "sinCategoria": "No category",
+    "sinDato": "—",
+    "porDia": "{peso}/day",
+    "grafico": "Average daily gain by group",
+    "resumen": {
+      "uno": "1 animal weighed in the period.",
+      "otros": "{n} animals weighed in the period."
+    },
+    "conGanancia": "{n} with two or more weighings (the ones with a daily gain).",
+    "bajoPromedio": {
+      "titulo": "Below their group's average",
+      "intro": "Sorted by how far they are from their group's average.",
+      "ninguno": "No animal is below its group's average.",
+      "gana": "gains {ganancia}",
+      "promedio": "group, {ganancia}",
+      "falta": "{falta} short"
+    },
+    "vacio": {
+      "titulo": "No weighings in the period",
+      "texto": "Choose a longer period or record weighings from each animal's record."
+    },
+    "sinGanancia": "There are weighings in the period, but no animal has two: another weighing is needed to calculate the daily gain."
+  },
+  "evolucionPeso": {
+    "titulo": "Weight over time",
+    "ganancia": "Daily gain",
+    "porDia": "{peso}/day",
+    "dias": {
+      "uno": "in 1 day",
+      "otros": "in {n} days"
+    },
+    "total": "Average gain: {ganancia} between the first and the last weighing.",
+    "unSolo": "With a single weighing the daily gain can't be calculated yet: another one is needed to compare.",
+    "ayuda": "{fecha}: {peso}",
+    "ayudaGanancia": "{fecha}: {peso} ({ganancia})",
+    "descripcion": "The animal's weight at each weighing"
+  },
+  "calendarioMensual": {
+    "vistas": {
+      "etiqueta": "Calendar view",
+      "lista": "List",
+      "mes": "Month"
+    },
+    "anterior": "Previous month",
+    "siguiente": "Next month",
+    "hoy": "Today",
+    "dosis": {
+      "uno": "1 dose",
+      "otros": "{n} doses"
+    },
+    "dia": "{fecha}: {detalle}",
+    "sinDosisMes": "No pending doses this month.",
+    "elegirDia": "Tap a day to see its doses.",
+    "delDia": "Doses on {fecha}",
+    "leyenda": "Each day takes the color of its most urgent dose: overdue, upcoming or scheduled."
   },
   "perfil": {
     "titulo": "My profile",
