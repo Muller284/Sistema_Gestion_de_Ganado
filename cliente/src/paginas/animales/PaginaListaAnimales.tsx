@@ -133,9 +133,11 @@ export function PaginaListaAnimales() {
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
   // HU-53: quien edita pesajes también elige animales, para pesarlos de a muchos.
   const puedePesar = nivel(contexto, 'pesajes') === 'editar';
+  // HU-49: quien edita sanidad también elige animales, para aplicarles un producto de una vez.
+  const puedeAplicar = nivel(contexto, 'sanidad') === 'editar';
   // HU-31: se eligen los vigentes de cualquier estado; los dados de baja, no.
   const seleccionables = animales.filter((a) => !a.eliminado_en);
-  const seleccionando = (puedeEditar || puedePesar) && seleccionables.length > 0;
+  const seleccionando = (puedeEditar || puedePesar || puedeAplicar) && seleccionables.length > 0;
   const paginaElegida = seleccionables.length > 0 && seleccionables.every((a) => seleccion.includes(a.id));
   // Solo la búsqueda se escribe letra por letra; las listas y fechas van directo.
   const busqueda = useDemorado(filtros.busqueda ?? '', ESPERA_BUSQUEDA);
@@ -453,7 +455,9 @@ export function PaginaListaAnimales() {
                 corrales={corrales}
                 puedeEliminar={puedeEliminar(contexto)}
                 puedePesar={puedePesar}
+                puedeAplicar={puedeAplicar}
                 puedeEditarAnimales={puedeEditar}
+                quienId={contexto.rancho?.usuario.id ?? ''}
                 regional={contexto.regional}
                 alQuitar={() => setSeleccion([])}
                 alTerminar={alTerminarAccion}

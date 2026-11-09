@@ -22,6 +22,7 @@ import {
   type EstadoAnimal,
   type FichaAnimal,
   type Pesaje,
+  type AplicacionSanitaria,
 } from '../../servicios/api';
 import { t, tn } from '../../servicios/idioma';
 import { conTransicion } from '../../servicios/transicion';
@@ -36,6 +37,7 @@ import { nivel, puedeEliminar, useContextoGanado, usuarioDe } from '../ganado/co
 import { FormularioFicha } from './FormularioFicha';
 import { armarHistorial, edadEnMeses, type EventoHistorial } from './historial';
 import { PestanaPesajes } from '../pesajes/PestanaPesajes';
+import { PestanaSanidad } from '../sanidad/PestanaSanidad';
 
 /**
  * La ficha de un animal.
@@ -56,13 +58,18 @@ import { PestanaPesajes } from '../pesajes/PestanaPesajes';
  *          1. el encabezado muestra el identificador en grande, el estado y
  *             los datos principales (EncabezadoAnimal);
  *          2. pestañas de resumen, sanidad, pesajes e historial;
- *          3. sanidad es de la fase 3: la pestaña existe y explica por qué
- *             todavía está vacía;
- *          4. el historial junta alta, movimientos, cambios de estado, pesajes
- *             y baja, cada uno con quién lo registró y cuándo (historial.ts).
+ *          3. sanidad y pesajes muestran lo suyo a quien ve ese módulo; a
+ *             quien no lo ve, la pestaña le explica por qué está vacía;
+ *          4. el historial junta alta, movimientos, cambios de estado,
+ *             pesajes, aplicaciones sanitarias y baja, cada uno con quién lo
+ *             registró y cuándo (historial.ts).
  * HU-53  la pestaña Pesajes registra y lista los pesajes (PestanaPesajes.tsx).
  *        Se piden aparte, solo si quien entra ve el módulo pesajes; quien no
  *        lo ve encuentra la pestaña explicando por qué está vacía.
+ * HU-48  la pestaña Sanidad registra y lista las aplicaciones
+ *        (PestanaSanidad.tsx). Se piden aparte, solo si quien entra ve el
+ *        módulo sanidad; quien no lo ve encuentra la pestaña explicando por
+ *        qué está vacía.
  *        La pestaña elegida va en la dirección (?pestana=historial), así se
  *        puede compartir el enlace y el botón Atrás del navegador la respeta.
  */
@@ -93,6 +100,9 @@ export function PaginaFichaAnimal() {
   // HU-53: los pesajes del animal, si quien entra ve el módulo pesajes.
   const [pesajes, setPesajes] = useState<Pesaje[] | null>(null);
   const [errorPesajes, setErrorPesajes] = useState('');
+  // HU-48: las aplicaciones del animal, si quien entra ve el módulo sanidad.
+  const [aplicaciones, setAplicaciones] = useState<AplicacionSanitaria[] | null>(null);
+  const [errorAplicaciones, setErrorAplicaciones] = useState('');
 
   // Cambiar la versión vuelve a pedir la ficha.
   const [version, setVersion] = useState(0);
@@ -133,12 +143,34 @@ export function PaginaFichaAnimal() {
     };
   }, [id, version, veoPesajes]);
 
+  const veoSanidad = nivel(contexto, 'sanidad') !== 'ninguno';
+  const editoSanidad = nivel(contexto, 'sanidad') === 'editar';
+
+  useEffect(() => {
+    if (!veoSanidad) return;
+    let vigente = true;
+    api
+      .aplicacionesAnimal(id)
+      .then((respuesta) => {
+        if (!vigente) return;
+        setAplicaciones(respuesta.aplicaciones);
+        setErrorAplicaciones('');
+      })
+      .catch((err: Error) => vigente && setErrorAplicaciones(err.message));
+    return () => {
+      vigente = false;
+    };
+  }, [id, version, veoSanidad]);
+
   const puedeEditar = nivel(contexto, 'animales') === 'editar';
   // HU-18, criterio 3: dar de baja y restaurar, solo el propietario y el Admin.
   const eliminable = puedeEliminar(contexto);
   const animal = ficha?.animal;
   const vigente = Boolean(animal && !animal.eliminado_en);
-  const historial = useMemo(() => (ficha ? armarHistorial(ficha, pesajes ?? []) : []), [ficha, pesajes]);
+  const historial = useMemo(
+    () => (ficha ? armarHistorial(ficha, pesajes ?? [], aplicaciones ?? []) : []),
+    [ficha, pesajes, aplicaciones],
+  );
 
   function cambiarPestana(nueva: Pestana) {
     conTransicion(() =>
@@ -276,12 +308,28 @@ export function PaginaFichaAnimal() {
               </>
             )}
 
-            {pestana === 'sanidad' && (
+            {pestana === 'sanidad' && veoSanidad && (
+              <PestanaSanidad
+                animal={animal}
+                aplicaciones={aplicaciones}
+                error={errorAplicaciones}
+                regional={contexto.regional}
+                puedeEditar={editoSanidad}
+                quienId={contexto.rancho?.usuario.id ?? ''}
+                alRegistrar={(mensaje) => {
+                  setError('');
+                  setAviso(mensaje);
+                  recargar();
+                }}
+              />
+            )}
+
+            {pestana === 'sanidad' && !veoSanidad && (
               <Tarjeta titulo={t('animales.ficha.pestanas.sanidad')}>
                 <EstadoVacio
                   icono="sanidad"
-                  titulo={t('animales.ficha.sanidad.titulo')}
-                  texto={t('animales.ficha.sanidad.texto')}
+                  titulo={t('animales.ficha.sanidad.sinAcceso.titulo')}
+                  texto={t('animales.ficha.sanidad.sinAcceso.texto')}
                 />
               </Tarjeta>
             )}
@@ -389,6 +437,7 @@ const ICONO_EVENTO = {
   movimiento: 'corral',
   estado: 'regla',
   pesaje: 'balanza',
+  aplicacion: 'sanidad',
   baja: 'archivar',
 } as const;
 
@@ -441,6 +490,11 @@ function descripcion(evento: EventoHistorial, regional: Regional): string {
     case 'pesaje':
       return t('animales.ficha.historial.pesaje', {
         peso: formatoPeso(evento.peso_kg, regional),
+        fecha: formatoFecha(evento.fecha, regional),
+      });
+    case 'aplicacion':
+      return t('animales.ficha.historial.aplicacion', {
+        producto: evento.producto,
         fecha: formatoFecha(evento.fecha, regional),
       });
     case 'baja':

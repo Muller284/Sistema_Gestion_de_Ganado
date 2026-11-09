@@ -1,4 +1,4 @@
-import type { FichaAnimal, Pesaje } from '../../servicios/api';
+import type { AplicacionSanitaria, FichaAnimal, Pesaje } from '../../servicios/api';
 
 /**
  * HU-32 · El historial de un animal en una sola línea de tiempo.
@@ -14,6 +14,10 @@ import type { FichaAnimal, Pesaje } from '../../servicios/api';
  *   pesaje      pesajes: peso, fecha del pesaje y quién lo registró (HU-53,
  *               criterio 4). Llegan aparte (GET /pesajes/animales/:id) porque
  *               son del módulo pesajes: quien no lo ve, no los recibe.
+ *   aplicacion  aplicaciones_sanitarias: producto, fecha en que se aplicó y
+ *               quién la registró (HU-48, criterio 3). Llegan aparte (GET
+ *               /sanidad/animales/:id/aplicaciones) porque son del módulo
+ *               sanidad: quien no lo ve, no las recibe.
  *
  * Criterio 4: cada evento dice quién lo registró y cuándo. "Cuándo" es el
  * momento en que quedó guardado, no la fecha que eligió el usuario: en un
@@ -57,6 +61,14 @@ export type EventoHistorial =
       fecha: string;
       peso_kg: number;
       observacion: string | null;
+    }
+  | {
+      tipo: 'aplicacion';
+      clave: string;
+      momento: string;
+      quien: string | null;
+      producto: string;
+      fecha: string;
     };
 
 /** El orden entre eventos del mismo instante: el alta siempre es el primero. */
@@ -64,11 +76,16 @@ const ORDEN_EN_EMPATE: Record<EventoHistorial['tipo'], number> = {
   baja: 0,
   estado: 1,
   pesaje: 2,
-  movimiento: 3,
-  alta: 4,
+  aplicacion: 3,
+  movimiento: 4,
+  alta: 5,
 };
 
-export function armarHistorial(ficha: FichaAnimal, pesajes: Pesaje[] = []): EventoHistorial[] {
+export function armarHistorial(
+  ficha: FichaAnimal,
+  pesajes: Pesaje[] = [],
+  aplicaciones: AplicacionSanitaria[] = [],
+): EventoHistorial[] {
   const { animal } = ficha;
   const eventos: EventoHistorial[] = [
     {
@@ -112,6 +129,17 @@ export function armarHistorial(ficha: FichaAnimal, pesajes: Pesaje[] = []): Even
       fecha: pesaje.fecha,
       peso_kg: pesaje.peso_kg,
       observacion: pesaje.observacion,
+    });
+  }
+
+  for (const aplicacion of aplicaciones) {
+    eventos.push({
+      tipo: 'aplicacion',
+      clave: `aplicacion-${aplicacion.id}`,
+      momento: aplicacion.creado_en,
+      quien: aplicacion.registrado_por,
+      producto: aplicacion.producto_nombre,
+      fecha: aplicacion.fecha,
     });
   }
 

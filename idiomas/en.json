@@ -431,7 +431,48 @@
       "estadoInvalido": "The status must be overdue, upcoming or scheduled.",
       "paginaInvalida": "The page must be a whole number from 1.",
       "porPaginaInvalida": "From 1 to {n} doses are shown per page.",
-      "filtroRepetido": "Each filter goes only once."
+      "filtroRepetido": "Each filter goes only once.",
+      "productos": {
+        "creado": "Product “{nombre}” added to the catalog.",
+        "guardado": "Product “{nombre}” saved.",
+        "dadoDeBaja": "Product “{nombre}” removed. The applications that used it still show it.",
+        "noExiste": "That product doesn't exist on your ranch.",
+        "sinNombre": "Enter the product name.",
+        "nombreLargo": "The name can be up to {n} characters.",
+        "nombreOcupado": "You already have a product called “{nombre}”.",
+        "tipoInvalido": "Choose the type: vaccine, antiparasitic, vitamin, antibiotic or other.",
+        "laboratorioLargo": "The laboratory can be up to {n} characters.",
+        "dosisInvalida": "The dose must be a number greater than zero, with at most two decimals.",
+        "unidadInvalida": "Choose the unit: ml, g, mg or doses.",
+        "dosisSinUnidad": "The dose and its unit go together: fill in both or leave both empty.",
+        "usadoEnEsquemas": "“{nombre}” is used in {n} vaccination schedule(s). Remove those schedules or change their product first."
+      },
+      "aplicaciones": {
+        "registrada": "{producto} recorded for animal {identificador}.",
+        "animalNoExiste": "That animal doesn't exist on your ranch.",
+        "animalDadoDeBaja": "Animal {identificador} has been removed: restore it to record an application.",
+        "sinProducto": "Choose the product that was applied.",
+        "productoNoExiste": "That product isn't in your ranch's catalog.",
+        "fechaInvalida": "Choose a valid date.",
+        "fechaFutura": "The date can't be in the future.",
+        "antesDeNacer": "The date can't be before the animal was born.",
+        "dosisInvalida": "The dose must be a number greater than zero, with at most two decimals.",
+        "esquemaNoExiste": "That schedule doesn't exist on your ranch.",
+        "esquemaDeOtroProducto": "The schedule “{esquema}” is not for {producto}.",
+        "numeroDosisInvalido": "The dose number goes from 1 to {n}.",
+        "numeroSinEsquema": "The dose number is only set with a schedule.",
+        "aplicadorNoExiste": "Whoever applied it must be someone on your ranch.",
+        "observacionLarga": "The note can be up to {n} characters."
+      },
+      "masiva": {
+        "ninguno": "None of the selected animals is active on your ranch.",
+        "antesDeNacer": "The date is before the birth of {n} animal(s) ({caravanas}). No application was recorded.",
+        "registradas": "{producto} recorded for {n} animal(s)."
+      },
+      "rapido": {
+        "sinIdentificador": "Enter the animal's tag.",
+        "noEncontrado": "There is no active animal with tag {identificador} on your ranch."
+      }
     },
     "pesajes": {
       "sinAnimal": "Choose the animal you weighed.",
@@ -1888,6 +1929,7 @@
         "corral": "Assign to a pen",
         "estado": "Change status",
         "baja": "Remove",
+        "aplicar": "Apply product",
         "pesaje": "Record weighing"
       },
       "aplicar": "Apply to {n}",
@@ -1997,8 +2039,10 @@
         "aniosYMeses": "{anios} and {meses}"
       },
       "sanidad": {
-        "titulo": "Health arrives in phase 3",
-        "texto": "This is where this animal's vaccines, treatments and check-ups will appear. The health module isn't available yet."
+        "sinAcceso": {
+          "titulo": "You don't have access to health",
+          "texto": "This animal's vaccines and treatments are visible to whoever has permission in the health module."
+        }
       },
       "pesajes": {
         "sinAcceso": {
@@ -2039,6 +2083,7 @@
         "estado": "Changed from {anterior} to {nuevo} on {fecha}",
         "baja": "Removed from records",
         "quienCuando": "{nombre} · {momento}",
+        "aplicacion": "{producto} applied on {fecha}",
         "pesaje": "Weighed: {peso} on {fecha}"
       },
       "rotulo": "Animal record",
@@ -2140,7 +2185,9 @@
     "pestanas": {
       "etiqueta": "Health sections",
       "calendario": "Calendar",
-      "esquemas": "Vaccination schedules"
+      "esquemas": "Vaccination schedules",
+      "productos": "Products",
+      "rapido": "From your phone"
     },
     "estados": {
       "vencida": "Overdue",
@@ -2254,6 +2301,135 @@
       },
       "verVencidas": "See overdue",
       "verProximas": "See upcoming"
+    },
+    "productos": {
+      "nuevo": "New product",
+      "editar": "Edit",
+      "darDeBaja": "Remove",
+      "confirmarBaja": "Remove “{nombre}”? It leaves the catalog; the applications that used it still show it.",
+      "enUso": "In use by a schedule",
+      "sinDosis": "No fixed dose",
+      "esquemas": {
+        "cero": "No schedule uses it",
+        "uno": "Used by 1 schedule",
+        "otros": "Used by {n} schedules"
+      },
+      "tipos": {
+        "vacuna": "Vaccine",
+        "antiparasitario": "Antiparasitic",
+        "vitamina": "Vitamin",
+        "antibiotico": "Antibiotic",
+        "otro": "Other"
+      },
+      "unidades": {
+        "ml": "{n} ml",
+        "g": "{n} g",
+        "mg": "{n} mg",
+        "dosis": "{n} doses"
+      },
+      "unidadesNombre": {
+        "ml": "milliliters (ml)",
+        "g": "grams (g)",
+        "mg": "milligrams (mg)",
+        "dosis": "doses"
+      },
+      "vacio": {
+        "titulo": "No products yet",
+        "texto": "Add the vaccines, antiparasitics and other products you use, so you can pick them from a list when recording each application.",
+        "textoConsulta": "When whoever manages health adds the ranch's products, they will show up here."
+      },
+      "formulario": {
+        "nuevo": "New product",
+        "editar": "Edit “{nombre}”",
+        "nombre": "Name",
+        "nombreEjemplo": "Foot-and-mouth vaccine",
+        "tipo": "Type",
+        "elegirTipo": "Choose…",
+        "laboratorio": "Laboratory (optional)",
+        "dosis": "Dose per animal (optional)",
+        "dosisAyuda": "It is suggested when recording an application.",
+        "dosisInvalida": "It must be a number greater than zero, with at most two decimals.",
+        "unidad": "Unit",
+        "sinUnidad": "No unit",
+        "dosisSinUnidad": "The dose and its unit go together: fill in both or leave both empty."
+      }
+    },
+    "aplicaciones": {
+      "registrar": "Record application",
+      "dadoDeBaja": "This animal has been removed: restore it first to record an application.",
+      "productoDeBaja": "Product removed",
+      "aplicadaPor": "Applied by {nombre}",
+      "dosisDelEsquema": "dose {n} of {esquema}",
+      "refuerzoDelEsquema": "booster of {esquema}",
+      "vacio": {
+        "titulo": "No applications recorded",
+        "texto": "The vaccines and treatments given to this animal will show up here and in its history."
+      },
+      "formulario": {
+        "titulo": "Record application for {identificador}",
+        "guardar": "Record",
+        "sinProductos": "The ranch's catalog has no products. Add them first in Health › Products.",
+        "producto": "Product",
+        "fecha": "Application date",
+        "fechaFutura": "The date can't be in the future.",
+        "antesDeNacer": "The date can't be before the animal was born.",
+        "dosis": "Dose",
+        "dosisCon": "Dose in {unidad}",
+        "dosisAyuda": "It comes from the catalog; change it if a different one was given.",
+        "aplicadoPor": "Who applied it",
+        "yo": "Me",
+        "yoConNombre": "{nombre} (me)",
+        "esquema": "Vaccination schedule (optional)",
+        "esquemaAyuda": "If it is part of a schedule, it counts for its calendar.",
+        "sinEsquema": "Not part of a schedule",
+        "numeroDosis": "Which dose",
+        "dosisNumero": "Dose {n} of {total}",
+        "refuerzo": "Booster",
+        "observacion": "Note (optional)",
+        "observacionEjemplo": "November campaign"
+      }
+    },
+    "masiva": {
+      "aplicar": {
+        "uno": "Apply to 1 animal",
+        "otros": "Apply to {n} animals"
+      },
+      "confirmar": {
+        "uno": "Record {producto} for 1 animal? Everything is saved together or nothing is.",
+        "otros": "Record {producto} for {n} animals? Everything is saved together or nothing is."
+      },
+      "siAplicar": "Yes, record",
+      "noContados": {
+        "uno": "1 of the selected was not counted (removed or from another ranch).",
+        "otros": "{n} of the selected were not counted (removed or from another ranch)."
+      }
+    },
+    "rapido": {
+      "rotulo": "Health · at the chute",
+      "titulo": "Record vaccine",
+      "intro": "Type the tag, choose the product and record it. Then go on with the next animal.",
+      "caravana": "Tag",
+      "buscar": "Find animal",
+      "buscando": "Searching…",
+      "producto": "Product",
+      "dosis": "Dose: {dosis} · today's date",
+      "registrar": "Record vaccine",
+      "terminar": "Finish",
+      "siguiente": "Type the next tag.",
+      "faltaCaravana": "Type the tag to find the animal.",
+      "faltaProducto": "Choose the product you applied.",
+      "sesion": {
+        "titulo": "Recorded now",
+        "cuantas": {
+          "uno": "1 application",
+          "otros": "{n} applications"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "You can't record vaccines",
+        "texto": "Recording vaccines from your phone is for whoever can edit health."
+      },
+      "sinAnimal": "The animal shows up here when you find it."
     }
   },
   "permisosSocio": {

@@ -30,6 +30,8 @@ import { PaginaPermisosSocio } from './paginas/equipo/PaginaPermisosSocio';
 import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
 import { PaginaCalendario } from './paginas/sanidad/PaginaCalendario';
 import { PaginaEsquemas } from './paginas/sanidad/PaginaEsquemas';
+import { PaginaProductos } from './paginas/sanidad/PaginaProductos';
+import { PaginaVacunaRapida } from './paginas/sanidad/PaginaVacunaRapida';
 import { api, hayAlguienDentro, soporteActual, type EstadoCuenta } from './servicios/api';
 import { cambiarIdioma } from './servicios/idioma';
 
@@ -194,6 +196,8 @@ function Sistema() {
         <Route path="/animales/:id" element={adentro(<PaginaFichaAnimal />)} />
         <Route path="/sanidad" element={adentro(<PaginaCalendario />)} />
         <Route path="/sanidad/esquemas" element={adentro(<PaginaEsquemas />)} />
+        <Route path="/sanidad/productos" element={adentro(<PaginaProductos />)} />
+        <Route path="/sanidad/registro-rapido" element={adentro(<PaginaVacunaRapida />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}

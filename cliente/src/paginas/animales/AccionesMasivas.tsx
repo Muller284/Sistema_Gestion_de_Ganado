@@ -4,6 +4,7 @@ import { api, type Corral, type EstadoAnimal } from '../../servicios/api';
 import { t, tn } from '../../servicios/idioma';
 import { hoyEn, type Regional } from '../../servicios/unidades';
 import { PesajeMasivo } from '../pesajes/PesajeMasivo';
+import { AplicacionMasiva } from '../sanidad/AplicacionMasiva';
 
 /**
  * HU-31 · La barra de acciones masivas del listado de animales.
@@ -23,12 +24,15 @@ import { PesajeMasivo } from '../pesajes/PesajeMasivo';
  *   pesaje  HU-53: un peso por animal, con la misma fecha (PesajeMasivo.tsx).
  *           Solo para quien edita pesajes; tiene su propia confirmación.
  *           Quien edita pesajes pero no animales (el veterinario) solo ve esta.
+ *   aplicar HU-49: el mismo producto a todos (AplicacionMasiva.tsx). Solo
+ *           para quien edita sanidad; tiene su propia confirmación. Quien
+ *           edita sanidad pero no animales (el veterinario) solo ve esta.
  *
  * Elegir de a uno, la página o todo el filtro (criterio 1) lo hace el
  * listado: acá llegan los ids ya elegidos.
  */
 
-export type Accion = 'corral' | 'estado' | 'baja' | 'pesaje';
+export type Accion = 'corral' | 'estado' | 'baja' | 'pesaje' | 'aplicar';
 export type Ambito = 'sueltos' | 'pagina' | 'filtro';
 
 const ESTADOS: EstadoAnimal[] = ['activo', 'vendido', 'muerto', 'archivado'];
@@ -41,8 +45,12 @@ interface Propiedades {
   puedeEliminar: boolean;
   /** HU-53: edita pesajes. */
   puedePesar?: boolean;
+  /** HU-49: edita sanidad. */
+  puedeAplicar?: boolean;
   /** Edita animales: corral y estado. Por defecto sí (antes era la única forma de elegir). */
   puedeEditarAnimales?: boolean;
+  /** HU-49: quien registra; es quien aplicó si no se elige otra persona. */
+  quienId?: string;
   regional: Regional;
   alQuitar: () => void;
   alTerminar: (mensaje: string, aviso?: string | null) => void;
@@ -54,7 +62,9 @@ export function AccionesMasivas({
   corrales,
   puedeEliminar,
   puedePesar = false,
+  puedeAplicar = false,
   puedeEditarAnimales = true,
+  quienId = '',
   regional,
   alQuitar,
   alTerminar,
@@ -62,9 +72,12 @@ export function AccionesMasivas({
   const acciones: Accion[] = [
     ...(puedeEditarAnimales ? (['corral', 'estado'] as Accion[]) : []),
     ...(puedePesar ? (['pesaje'] as Accion[]) : []),
+    ...(puedeAplicar ? (['aplicar'] as Accion[]) : []),
     ...(puedeEliminar && puedeEditarAnimales ? (['baja'] as Accion[]) : []),
   ];
   const [accion, setAccion] = useState<Accion>(acciones[0] ?? 'corral');
+  // Pesar (HU-53) y aplicar (HU-49) traen su propio formulario y su propia confirmación.
+  const formularioPropio = accion === 'pesaje' || accion === 'aplicar';
   const [corral, setCorral] = useState('');
   const [estado, setEstado] = useState<EstadoAnimal | ''>('');
   const [fecha, setFecha] = useState(hoyEn(regional));
@@ -151,10 +164,13 @@ export function AccionesMasivas({
       />
 
       {accion === 'pesaje' && <PesajeMasivo seleccion={seleccion} regional={regional} alTerminar={alTerminar} />}
+      {accion === 'aplicar' && (
+        <AplicacionMasiva seleccion={seleccion} quienId={quienId} alTerminar={(mensaje) => alTerminar(mensaje)} />
+      )}
 
-      {accion !== 'pesaje' && error && <Alerta variante="error">{error}</Alerta>}
+      {!formularioPropio && error && <Alerta variante="error">{error}</Alerta>}
 
-      {accion !== 'pesaje' && (
+      {!formularioPropio && (
         <div className="acciones-masivas__campos">
           {accion === 'corral' && (
             <CampoLista
@@ -213,7 +229,7 @@ export function AccionesMasivas({
         </div>
       )}
 
-      {accion === 'pesaje' ? null : confirmando ? (
+      {formularioPropio ? null : confirmando ? (
         <div className="col g12">
           <Alerta variante="adv">{pregunta()}</Alerta>
           <div className="fila g8">
