@@ -18,6 +18,9 @@ import { AnimalNoPesable, RepositorioPesajes, type AnimalPesable, type DatosPesa
  *   4. Cada pesaje aparece en la pestaña Pesajes y en el historial, con quién
  *      lo registró (GET /pesajes/animales/:id trae registrado_por).
  *
+ * HU-55 · Registro rápido desde el celular (POST /pesajes/rapido): con la
+ *   caravana y el peso alcanza; las reglas son las mismas que en la ficha.
+ *
  * Reglas que se suman, las mismas que en el resto del sistema:
  *   - Todo vive en el módulo «pesajes»: el encargado de campo y el
  *     veterinario lo editan, el socio lo ve, almacén no entra (HU-21, HU-22).
@@ -29,6 +32,8 @@ import { AnimalNoPesable, RepositorioPesajes, type AnimalPesable, type DatosPesa
  */
 
 const LARGO_OBSERVACION = 500;
+/** El mismo largo que acepta animales.identificador. */
+const LARGO_IDENTIFICADOR = 50;
 /** Ningún bovino llega a 3 toneladas: más que eso es un error de tipeo (o de unidad). */
 export const MAXIMO_KG = 3000;
 /** Cada animal lleva su campo en la pantalla: más que esto no se carga a mano. */
@@ -67,6 +72,44 @@ export class ServicioPesajes {
 
     const animal = await this.repositorio.animal(animalId, ranchoId);
     if (!animal) throw new NotFoundException(t('servidor.pesajes.animalNoExiste'));
+    return this.registrarA(animal, cuerpo, ranchoId, quien);
+  }
+
+  /**
+   * HU-55 · Registro rápido desde el celular: la caravana y el peso, con un
+   * solo toque. Sin fecha es hoy. Además del pesaje, devuelve el animal y su
+   * pesaje anterior, así la pantalla muestra a quién pesó y su ganancia
+   * diaria (HU-54) sin pedir nada más.
+   */
+  async registrarRapido(cuerpo: any, quien: UsuarioActual) {
+    const ranchoId = await this.permisos.exigir(quien, 'pesajes', 'editar');
+    const identificador = typeof cuerpo?.identificador === 'string' ? cuerpo.identificador.trim() : '';
+    if (!identificador) throw new BadRequestException(t('servidor.pesajes.rapido.sinIdentificador'));
+    if (identificador.length > LARGO_IDENTIFICADOR) {
+      throw new BadRequestException(t('servidor.pesajes.rapido.noEncontrado', { identificador: identificador.slice(0, 20) }));
+    }
+
+    const animal = await this.repositorio.porIdentificador(identificador, ranchoId);
+    if (!animal) throw new NotFoundException(t('servidor.pesajes.rapido.noEncontrado', { identificador }));
+
+    const registrado = await this.registrarA(animal, cuerpo, ranchoId, quien);
+    const fecha = registrado.pesaje?.fecha ?? (await this.repositorio.hoy(ranchoId));
+    const anterior = await this.repositorio.anteriorA(animal.id, fecha, ranchoId);
+    return {
+      ...registrado,
+      animal: {
+        id: animal.id,
+        identificador: animal.identificador,
+        nombre: animal.nombre,
+        categoria_codigo: animal.categoria_codigo,
+        corral_nombre: animal.corral_nombre,
+      },
+      anterior: anterior ? { fecha: anterior.fecha, peso_kg: anterior.peso_kg } : null,
+    };
+  }
+
+  /** Lo común al pesaje desde la ficha y al rápido: las reglas de HU-53 y guardar. */
+  private async registrarA(animal: AnimalPesable, cuerpo: any, ranchoId: string, quien: UsuarioActual) {
     this.exigirPesable(animal);
 
     const peso = pesoValido(cuerpo?.peso_kg);

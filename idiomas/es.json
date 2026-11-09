@@ -494,7 +494,11 @@
       "animalRepetido": "Un mismo animal aparece dos veces en el pesaje.",
       "noPesables": "{n} de los animales no se pueden pesar: no son de tu rancho, están dados de baja o no están activos. No se guardó ninguno.",
       "registrado": "Listo, registraste el pesaje de {identificador}.",
-      "registradosMasivo": "Listo, registraste {n} pesaje(s)."
+      "registradosMasivo": "Listo, registraste {n} pesaje(s).",
+      "rapido": {
+        "sinIdentificador": "Escribe la caravana del animal.",
+        "noEncontrado": "No hay ningún animal con la caravana «{identificador}» en tu rancho."
+      }
     }
   },
   "acceso": {
@@ -2439,5 +2443,35 @@
     "modulos": "Módulos en los que puede editar",
     "explicacion": "Como socio ve toda la información del rancho. Marca los módulos en los que además puede cargar y modificar datos.",
     "soloPropietario": "Solo el propietario puede cambiar estos permisos."
+  },
+  "pesajes": {
+    "rapido": {
+      "miga": "Registro rápido",
+      "rotulo": "Pesajes · celular",
+      "titulo": "Registro rápido de pesajes",
+      "abrir": "Registro rápido",
+      "intro": "Escribe la caravana y el peso, y guarda. Después de cada animal el cursor vuelve a la caravana para seguir con el siguiente.",
+      "caravana": "Caravana",
+      "peso": "Peso ({unidad})",
+      "guardar": "Guardar pesaje",
+      "terminar": "Terminar",
+      "faltaCaravana": "Escribe la caravana del animal.",
+      "faltaPeso": "Escribe el peso que marca la balanza.",
+      "hoy": "Se registra con la fecha de hoy.",
+      "sinPesados": "Acá vas a ver el último animal pesado y su ganancia diaria.",
+      "ganancia": "Ganancia diaria: {ganancia}",
+      "primerPesaje": "Es su primer pesaje: con el próximo se calcula la ganancia diaria.",
+      "sesion": {
+        "titulo": "Pesados en esta sesión",
+        "cuantos": {
+          "uno": "{n} animal",
+          "otros": "{n} animales"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "No puedes registrar pesajes",
+        "texto": "Para pesar desde el celular necesitas permiso para editar el módulo de pesajes. Pídeselo al propietario."
+      }
+    }
   }
 }

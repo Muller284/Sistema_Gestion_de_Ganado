@@ -9,6 +9,8 @@ import { ServicioPesajes } from './servicio-pesajes';
  *   POST /pesajes                     { animal_id, peso_kg, fecha?, observacion? }  (editar)
  *   POST /pesajes/masivo/animales     { animal_ids } -> los que se pueden pesar     (editar)
  *   POST /pesajes/masivo              { fecha?, observacion?, pesajes: [{ animal_id, peso_kg }] }
+ *   POST /pesajes/rapido              { identificador, peso_kg, fecha? } -> también el animal y   (editar)
+ *                                     su pesaje anterior, para la ganancia diaria (HU-55)
  *
  * El peso llega siempre en kilos (HU-26). Sin fecha es hoy en el país del rancho.
  * HU-54 (ganancia diaria) y HU-55 (registro rápido desde el celular) se
@@ -27,6 +29,11 @@ export class ControladorPesajes {
   @Post()
   async registrar(@Body() cuerpo: any, @Req() peticion: any) {
     return this.servicio.registrar(cuerpo, peticion.usuarioActual);
+  }
+
+  @Post('rapido')
+  async registrarRapido(@Body() cuerpo: any, @Req() peticion: any) {
+    return this.servicio.registrarRapido(cuerpo, peticion.usuarioActual);
   }
 
   @Post('masivo/animales')

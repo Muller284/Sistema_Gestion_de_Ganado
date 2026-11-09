@@ -494,7 +494,11 @@
       "animalRepetido": "The same animal appears twice in the weighing.",
       "noPesables": "{n} of the animals can't be weighed: they're not on your ranch, they were removed or they're not active. Nothing was saved.",
       "registrado": "Done, you recorded the weighing of {identificador}.",
-      "registradosMasivo": "Done, you recorded {n} weighing(s)."
+      "registradosMasivo": "Done, you recorded {n} weighing(s).",
+      "rapido": {
+        "sinIdentificador": "Enter the animal's tag.",
+        "noEncontrado": "There's no animal with the tag «{identificador}» on your ranch."
+      }
     }
   },
   "acceso": {
@@ -2439,5 +2443,35 @@
     "modulos": "Modules they can edit",
     "explicacion": "As a partner they see all the ranch information. Check the modules where they can also enter and change data.",
     "soloPropietario": "Only the owner can change these permissions."
+  },
+  "pesajes": {
+    "rapido": {
+      "miga": "Quick entry",
+      "rotulo": "Weighings · phone",
+      "titulo": "Quick weighing entry",
+      "abrir": "Quick entry",
+      "intro": "Enter the tag and the weight, then save. After each animal the cursor goes back to the tag so you can go on with the next one.",
+      "caravana": "Tag",
+      "peso": "Weight ({unidad})",
+      "guardar": "Save weighing",
+      "terminar": "Finish",
+      "faltaCaravana": "Enter the animal's tag.",
+      "faltaPeso": "Enter the weight shown on the scale.",
+      "hoy": "It's recorded with today's date.",
+      "sinPesados": "The last animal weighed and its daily gain will show up here.",
+      "ganancia": "Daily gain: {ganancia}",
+      "primerPesaje": "It's its first weighing: the daily gain is calculated with the next one.",
+      "sesion": {
+        "titulo": "Weighed in this session",
+        "cuantos": {
+          "uno": "{n} animal",
+          "otros": "{n} animals"
+        }
+      },
+      "sinPermiso": {
+        "titulo": "You can't record weighings",
+        "texto": "To weigh from your phone you need permission to edit the weighings module. Ask the owner."
+      }
+    }
   }
 }

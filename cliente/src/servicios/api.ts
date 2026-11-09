@@ -1010,6 +1010,9 @@ export const api = {
     }),
   registrarPesajeMasivo: (datos: DatosPesajeMasivo) =>
     pedir<RespuestaPesajeMasivo>('/pesajes/masivo', { method: 'POST', body: JSON.stringify(datos) }),
+  // HU-55 · Registro rápido desde el celular: caravana y peso (en kilos).
+  registrarPesajeRapido: (datos: DatosPesajeRapido) =>
+    pedir<RespuestaPesajeRapido>('/pesajes/rapido', { method: 'POST', body: JSON.stringify(datos) }),
 
   // HU-45 · Exportación
   exportar: (pedido: PedidoExportacion) => descargar(`/exportacion?${parametrosExportacion(pedido)}`, 'ganado.xlsx'),
@@ -1346,4 +1349,29 @@ export interface AnimalSanidad {
   categoria_codigo: string | null;
   fecha_nacimiento: string | null;
   eliminado_en: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// HU-55 · Registro rápido de pesaje desde el celular
+// ---------------------------------------------------------------------------
+
+export interface DatosPesajeRapido {
+  /** La caravana (o el identificador que tenga), sin mirar mayúsculas. */
+  identificador: string;
+  /** Siempre en kilos (HU-26). */
+  peso_kg: number;
+  /** AAAA-MM-DD; sin fecha es hoy en el país del rancho. */
+  fecha?: string;
+}
+
+export interface RespuestaPesajeRapido extends RespuestaPesaje {
+  animal: {
+    id: string;
+    identificador: string;
+    nombre: string | null;
+    categoria_codigo: string | null;
+    corral_nombre: string | null;
+  };
+  /** El pesaje anterior al recién guardado, para la ganancia diaria (HU-54). Nulo si es el primero. */
+  anterior: { fecha: string; peso_kg: number } | null;
 }

@@ -6,6 +6,7 @@ import {
   CampoTexto,
   DisenoApp,
   EstadoVacio,
+  Icono,
   Segmentos,
   Tarjeta,
 } from '../../componentes';
@@ -14,7 +15,7 @@ import { indicadores, type ComparativaPesos, type GrupoPeso } from '../../servic
 import { t, tn } from '../../servicios/idioma';
 import { textoGanancia } from '../../servicios/pesos';
 import { formatoPeso, type Regional } from '../../servicios/unidades';
-import { useContextoGanado, usuarioDe } from '../ganado/contexto';
+import { nivel, useContextoGanado, usuarioDe } from '../ganado/contexto';
 
 /**
  * HU-56 · Comparativa por corral y categoría.
@@ -73,6 +74,15 @@ export function PaginaComparativa() {
       rancho={contexto.rancho?.rancho?.nombre ?? null}
       rotulo={t('comparativa.rotulo')}
       titulo={t('comparativa.titulo')}
+      acciones={
+        // HU-55: el registro rápido desde el celular, para quien edita pesajes.
+        nivel(contexto, 'pesajes') === 'editar' ? (
+          <Link className="btn btn-primario" to="/pesajes/registro-rapido">
+            <Icono nombre="balanza" tamano={18} />
+            {t('pesajes.rapido.abrir')}
+          </Link>
+        ) : undefined
+      }
     >
       <div className="col g24">
         <p className="cuerpo c-600">{t('comparativa.intro')}</p>
