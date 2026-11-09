@@ -23,6 +23,7 @@ import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestable
 import { PaginaImportacion } from './paginas/importacion/PaginaImportacion';
 import { PaginaCorrales } from './paginas/corrales/PaginaCorrales';
 import { PaginaComparativa } from './paginas/pesajes/PaginaComparativa';
+import { PaginaPesajeRapido } from './paginas/pesajes/PaginaPesajeRapido';
 import { PaginaListaAnimales } from './paginas/animales/PaginaListaAnimales';
 import { PaginaFichaAnimal } from './paginas/animales/PaginaFichaAnimal';
 import { PaginaAltaRapida } from './paginas/animales/PaginaAltaRapida';
@@ -190,6 +191,7 @@ function Sistema() {
         <Route path="/corrales" element={adentro(<PaginaCorrales />)} />
         {/* HU-56: el módulo Pesajes abre en la comparativa por corral y categoría. */}
         <Route path="/pesajes" element={adentro(<PaginaComparativa />)} />
+        <Route path="/pesajes/registro-rapido" element={adentro(<PaginaPesajeRapido />)} />
         <Route path="/animales" element={adentro(<PaginaListaAnimales />)} />
         {/* HU-35. Va antes de /animales/:id para que "alta-rapida" no se lea como un id. */}
         <Route path="/animales/alta-rapida" element={adentro(<PaginaAltaRapida />)} />

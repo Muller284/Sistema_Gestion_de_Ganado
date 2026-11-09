@@ -86,6 +86,38 @@ export class RepositorioPesajes {
   }
 
   /**
+   * HU-55 · El animal del rancho con esa caravana, sin mirar mayúsculas. Si
+   * hay uno vigente y otro dado de baja con el mismo identificador, gana el
+   * vigente; si solo queda el dado de baja, viene igual para poder decir por
+   * qué no se pesa.
+   */
+  async porIdentificador(identificador: string, ranchoId: string): Promise<AnimalPesable | null> {
+    const resultado = await this.bd.query(
+      `SELECT ${COLUMNAS_ANIMAL}
+         FROM animales a LEFT JOIN corrales c ON c.id = a.corral_id
+        WHERE a.rancho_id = $1 AND LOWER(a.identificador) = LOWER($2)
+        ORDER BY (a.eliminado_en IS NULL) DESC, a.creado_en DESC
+        LIMIT 1`,
+      [ranchoId, identificador],
+    );
+    return resultado.rows[0] ?? null;
+  }
+
+  /** HU-55 · El pesaje vigente más nuevo de antes de esa fecha, para la ganancia diaria. */
+  async anteriorA(animalId: string, fecha: string, ranchoId: string): Promise<Pesaje | null> {
+    const resultado = await this.bd.query(
+      `SELECT ${COLUMNAS_PESAJE}
+         FROM pesajes p LEFT JOIN usuarios u ON u.id = p.creado_por
+        WHERE p.animal_id::text = $1 AND p.rancho_id = $2 AND p.eliminado_en IS NULL
+          AND p.fecha < $3::date
+        ORDER BY p.fecha DESC, p.creado_en DESC
+        LIMIT 1`,
+      [animalId, ranchoId, fecha],
+    );
+    return resultado.rows[0] ?? null;
+  }
+
+  /**
    * Masivo: de los ids elegidos, los que se pueden pesar (vigentes y activos
    * del rancho), en el orden del identificador. Los de otro rancho, los dados
    * de baja y los que no están activos no vienen.

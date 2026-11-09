@@ -1880,3 +1880,62 @@ Los nombres de los potreros no chocan con los corrales del Excel de demostració
 | Servidor | `pruebas/paneles.test.js` | 22 |
 | Servidor | `pruebas/calendario-sanitario.test.js`, parte de HU-59 | 3 nuevas |
 | Cliente | `pruebas/paneles.test.tsx` | 20 |
+
+
+## 47. Registro rápido de pesaje desde el celular (Sprint 4, Brian)
+
+**HU-55.** Sirve para pesar un lote entero en la balanza, animal tras animal,
+desde el celular y sin volver al listado. La pantalla está en
+`/pesajes/registro-rapido` y se abre con el botón «Registro rápido» de la
+pantalla Pesajes. Ese botón solo aparece para quien edita pesajes.
+
+**Un solo toque (criterio 1).** No hay que buscar el animal antes de pesarlo,
+como en la vacuna desde el celular (HU-52): se escribe la caravana y el peso, y
+el botón «Guardar pesaje» hace todo. Para eso hay una ruta nueva,
+`POST /pesajes/rapido { identificador, peso_kg, fecha? }`, que encuentra el
+animal por su caravana (sin mirar mayúsculas) y lo pesa con las mismas reglas
+de HU-53. Sin fecha, el pesaje es de hoy en el país del rancho.
+
+En la balanza se trabaja con el teclado del celular:
+
+- Enter en la caravana pasa al peso.
+- Enter en el peso guarda.
+
+Para no pesar al que no es, el animal recién guardado queda a la vista con su
+caravana y su peso.
+
+**48 px y el cursor (criterio 2).** La pantalla usa los mismos estilos que el
+alta rápida (HU-35) y la vacuna desde el celular (HU-52):
+
+- campos y botones de 52 px;
+- las acciones en la barra pegada al borde inferior;
+- los avisos con su lugar fijo, para que nada se mueva bajo el dedo.
+
+Después de guardar, la caravana y el peso se vacían y el cursor vuelve a la
+caravana. Si hay un error (por ejemplo, una caravana mal escrita), lo escrito
+se queda para corregirlo y el cursor también vuelve a la caravana.
+
+**Ganancia diaria (criterio 3).** La respuesta trae, además del pesaje, el
+pesaje vigente anterior del animal. La pantalla calcula la ganancia con
+`gananciaDiaria` de `servicios/pesos.ts` (HU-54), la misma cuenta que la
+pestaña Pesajes de la ficha. Si es su primer pesaje, explica que hace falta
+otro. Abajo queda la lista de los animales pesados en la sesión, cada uno con
+su peso y su ganancia.
+
+**Reglas de siempre.** Todo lo que vale en HU-53 vale acá:
+
+- el peso va en la unidad del país y se guarda en kilos (HU-26);
+- la fecha no puede ser futura;
+- solo se pesan animales activos;
+- hay un pesaje por animal y por día;
+- editan pesajes el encargado de campo y el veterinario;
+- cada rancho encuentra solo sus caravanas (HU-03).
+
+Si un rancho tiene un animal vigente y otro dado de baja con la misma
+caravana, se pesa el vigente.
+
+**Pruebas.**
+
+- Servidor: `pruebas/pesaje-rapido.test.js` (7). Borra lo que crea y deja el
+  peso de cada ficha como estaba.
+- Cliente: `pruebas/pesaje-rapido.test.tsx` (9).

@@ -54,3 +54,16 @@
   background: var(--arena-100);
   color: var(--arena-500);
 }
+
+/* HU-55 · Registro rápido desde el celular. El resto es de la alta rápida
+ * (animal.css): campos y botones de 52 px y la barra de acciones abajo. */
+.pesaje-rapido__ultimo .cuerpo-m { font-weight: var(--peso-fuerte); }
+
+/* Cada animal pesado en la sesión: caravana, peso y ganancia en una línea. */
+.pesaje-rapido__fila {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: var(--alto-control-movil);
+}
