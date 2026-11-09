@@ -13,18 +13,18 @@ falta, pedidos HTTP a mano contra el servidor levantado.
 
 ## Resumen
 
-| Historia | Responsable | Veredicto |
-| :-- | :-- | :-- |
-| HU-20 Tipos de colaborador | Aaron | **Aprobada** |
-| HU-24 Acceso total del Admin | Aaron | **Aprobada** |
-| HU-25 Español e inglés | Aaron | **Aprobada** |
-| HU-09 Recuperación de contraseña | Brian | No aprobada |
-| HU-14 Selección de país e idioma | Brian | No aprobada |
-| HU-18 Permisos iniciales de solo consulta | Brian | No aprobada |
-| HU-19 Permisos por módulo | Brian | No aprobada |
-| HU-23 Registro de autoría | Brian | No aprobada |
-| HU-27 Registro de animal | Brian | No aprobada |
-| HU-29 Listado de animales con filtros | Brian | No aprobada |
+| Historia | Responsable | Veredicto inicial (13/10) | Estado final (Re-verificación 21/10) |
+| :-- | :-- | :-- | :-- |
+| HU-20 Tipos de colaborador | Aaron | **Aprobada** | **Aprobada** |
+| HU-24 Acceso total del Admin | Aaron | **Aprobada** | **Aprobada** |
+| HU-25 Español e inglés | Aaron | **Aprobada** | **Aprobada** |
+| HU-09 Recuperación de contraseña | Brian | No aprobada | **Aprobada** (PR #18) |
+| HU-14 Selección de país e idioma | Brian | No aprobada | **Aprobada** (PR #18) |
+| HU-18 Permisos iniciales de solo consulta | Brian | No aprobada | **Aprobada** (PR #18) |
+| HU-19 Permisos por módulo | Brian | No aprobada | **Aprobada** (PR #18) |
+| HU-23 Registro de autoría | Brian | No aprobada | **Aprobada** (PR #18) |
+| HU-27 Registro de animal | Brian | No aprobada | **Aprobada** (PR #18) |
+| HU-29 Listado de animales con filtros | Brian | No aprobada | **Aprobada** (PR #18) |
 
 ## Aaron
 

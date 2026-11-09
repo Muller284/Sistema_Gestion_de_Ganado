@@ -1696,6 +1696,131 @@ sumar sin cambiar la base.
   cambia la pestaña Pesajes: sin acceso a pesajes, lo explica.
 
 
+
+
+## 44. Catálogo de productos sanitarios y aplicación individual (Sprint 4, Romina)
+
+HU-46 y HU-48. El módulo es `servidor/src/modulos/sanidad/` y atiende bajo el
+mismo prefijo `/sanidad` que los esquemas de Aaron (§42), sin tocar su módulo.
+Las pantallas son `cliente/src/paginas/sanidad/PaginaProductos.tsx` (una
+pestaña más en `PestanasSanidad.tsx`) y `PestanaSanidad.tsx`, que usa la ficha
+del animal.
+
+**Rutas.**
+
+| Ruta | Qué hace | Permiso |
+|---|---|---|
+| `GET /sanidad/productos` | productos vigentes del rancho | sanidad · ver |
+| `POST /sanidad/productos` | crea | sanidad · editar |
+| `PATCH /sanidad/productos/:id` | cambia | sanidad · editar |
+| `DELETE /sanidad/productos/:id` | baja lógica | sanidad · editar |
+| `GET /sanidad/aplicaciones/opciones` | productos, esquemas, personas del rancho y la fecha de hoy, para el formulario | sanidad · editar |
+| `GET /sanidad/animales/:id/aplicaciones` | aplicaciones del animal, la más nueva primero | sanidad · ver |
+| `POST /sanidad/animales/:id/aplicaciones` | registra una | sanidad · editar |
+
+**Productos (HU-46).**
+
+- El nombre no se repite entre los vigentes del rancho sin importar
+  mayúsculas, acentos ni espacios: se compara la columna `clave`, calculada con
+  `claveDeRaza` (`servidor/src/comun/razas.ts`), la misma regla de las razas.
+  Si dos guardan el mismo nombre a la vez, el índice único frena al segundo y
+  se responde 409 igual.
+- Otro rancho puede tener un producto con el mismo nombre (HU-03).
+- La dosis y su unidad van juntas o ninguna; la dosis acepta coma decimal y
+  hasta dos decimales.
+- **Mientras un esquema vigente use el producto, no se puede dar de baja**
+  (409). Si se pudiera, el calendario (HU-50) seguiría pidiendo un producto que
+  ya no está en el catálogo. La pantalla no ofrece el botón y dice por qué.
+- Darlo de baja no borra nada: las aplicaciones que lo usaron lo siguen
+  mostrando con la marca «Producto dado de baja», y el nombre se libera.
+
+**Aplicaciones (HU-48).**
+
+- La fecha no puede ser futura: «hoy» es la fecha en la zona horaria del país
+  del rancho, como en el calendario. Tampoco puede ser anterior al nacimiento
+  del animal.
+- Sin dosis escrita se guarda la del producto; la pantalla además la sugiere
+  al elegir el producto.
+- El esquema es opcional y tiene que ser del mismo producto. El número de
+  dosis va de 1 a las que tiene el esquema; vacío es un refuerzo. Una
+  aplicación con esquema cuenta para el calendario al instante, porque el
+  calendario se calcula en cada consulta.
+- `aplicado_por` es quien la registra, salvo que se elija otra persona activa
+  del rancho; `creado_por` siempre es quien la registró.
+- No se registra en un animal dado de baja (400) y un animal de otro rancho
+  da 404.
+- La ficha pide las aplicaciones aparte, solo si quien entra ve sanidad, y el
+  historial las suma a su línea de tiempo (`historial.ts`). Quien no ve sanidad
+  encuentra la pestaña explicando por qué está vacía. Es el mismo patrón que
+  usa Brian para los pesajes (§43), así las dos partes encajan al unirse.
+
+**Pruebas.**
+
+- Servidor: `pruebas/productos-sanitarios.test.js` (10) y
+  `pruebas/aplicaciones-sanitarias.test.js` (11).
+- Cliente: `pruebas/productos-aplicaciones.test.tsx` (23).
+
+**Para correr las pruebas en una máquina local.** Si el `.env` tiene
+`USUARIO_DEMO_ID` (viene así en `.env.ejemplo`), un pedido sin sesión entra
+como ese usuario y las pruebas «sin sesión no…» de acciones masivas y
+exportación dan 200 en vez de 401. En la integración continua no pasa porque
+esa variable no existe. Para correr todo igual que allá:
+`USUARIO_DEMO_ID= node dist/main.js`.
+
+
+## 45. Aplicación masiva y vacuna desde el celular (Sprint 4, Romina)
+
+HU-49 y HU-52, en el mismo módulo `servidor/src/modulos/sanidad/` que §44.
+
+| Ruta | Qué hace | Permiso |
+|---|---|---|
+| `POST /sanidad/aplicaciones/masiva` | `{ animal_ids, ... }` con los mismos datos que una aplicación de a uno | sanidad · editar |
+| `GET /sanidad/animales/buscar?identificador=` | el animal vigente con esa caravana | sanidad · editar |
+
+**Aplicación masiva (HU-49).**
+
+- Es una acción más de la barra de HU-31, «Aplicar producto»
+  (`cliente/src/paginas/sanidad/AplicacionMasiva.tsx`). Aparece para quien
+  edita sanidad; quien edita sanidad pero no animales (el veterinario) elige
+  animales en el listado y solo ve esta acción. Es la misma forma que usa
+  Brian para el pesaje masivo (§43), así las dos barras se unen sin rehacer
+  nada.
+- Los campos son los mismos que en la ficha (`CamposAplicacion.tsx`, que usan
+  las dos pantallas).
+- Antes de guardar se confirma cuántos animales se van a registrar.
+- **O todas o ninguna.** Se guardan con una sola sentencia `INSERT ... SELECT
+  FROM UNNEST`, que la base aplica entera o no aplica. Todas comparten
+  `lote_id`. Si la fecha es anterior al nacimiento de alguno, no se guarda
+  ninguna y el mensaje nombra hasta cinco caravanas.
+- Los dados de baja, los de otro rancho, los que no existen y los repetidos no
+  se cuentan; la respuesta dice cuántos fueron (`no_contados`). Si no queda
+  ninguno, es un 400.
+- Tope de 5000 animales por pedido, el mismo de las acciones masivas.
+
+**Vacuna desde el celular (HU-52).**
+
+- `/sanidad/registro-rapido`, una pestaña más de Sanidad («Desde el
+  celular»). Usa los estilos del alta rápida de Aaron (HU-35): controles de
+  52 px y las acciones en la barra pegada abajo.
+- Un solo botón principal: primero «Buscar animal» (la búsqueda no mira
+  mayúsculas ni espacios, y solo encuentra animales vigentes); con el animal a
+  la vista, «Registrar vacuna». Cambiar la caravana obliga a buscar de nuevo,
+  para no vacunar al que no es.
+- Registra con la ruta de HU-48: la fecha de hoy del rancho, la dosis del
+  catálogo y aplicada por quien la registra.
+- Para encadenar, la caravana se vacía y recupera el foco, y el producto queda
+  elegido. Lo registrado en la tanda se ve abajo.
+- **Nada se mueve bajo el dedo.** El lugar del animal encontrado, la línea de
+  la dosis y la pista de qué falta están siempre, aunque estén vacíos
+  (`.alta-rapida__pista`). Medido en 390 × 844 px: los productos y el botón
+  principal no cambian de lugar en todo el recorrido.
+
+**Pruebas.**
+
+- Servidor: `pruebas/aplicacion-masiva.test.js` (8).
+- Cliente: `pruebas/sanidad-celular.test.tsx` (11).
+
+
 ## 46. Paneles, comparativa de peso y calendario mensual (Sprint 4, Aaron)
 
 Estas historias son HU-54, HU-56, HU-57, HU-58 y HU-59. El número 46 sigue a los de Brian (43) y Romina (44 y 45).
