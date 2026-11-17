@@ -1,0 +1,8 @@
+# Lo que no viaja al construir la imagen del cliente (el contexto es la raíz).
+**/node_modules
+**/dist
+**/.env
+**/*.log
+.git
+servidor
+documentos

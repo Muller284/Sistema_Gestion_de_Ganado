@@ -48,5 +48,21 @@ services:
       - ./idiomas:/idiomas:ro
     command: npm run start:dev
 
+  # El cliente compilado y servido con nginx. Abrir http://localhost:8080.
+  # VITE_API es a donde llama el navegador: el servidor publicado en el
+  # puerto PUERTO_SERVIDOR de esta misma maquina.
+  cliente:
+    build:
+      context: .
+      dockerfile: cliente/Dockerfile
+      args:
+        VITE_API: http://localhost:${PUERTO_SERVIDOR:-3000}
+    container_name: ganado_cliente
+    restart: unless-stopped
+    ports:
+      - "${PUERTO_CLIENTE:-8080}:80"
+    depends_on:
+      - servidor
+
 volumes:
   postgres_data:
