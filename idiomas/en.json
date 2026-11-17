@@ -499,6 +499,20 @@
         "sinIdentificador": "Enter the animal's tag.",
         "noEncontrado": "There's no animal with the tag «{identificador}» on your ranch."
       }
+    },
+    "asistente": {
+      "sinPregunta": "Type your question.",
+      "preguntaLarga": "The question can be up to {n} characters long.",
+      "historialInvalido": "The previous conversation arrived malformed. Start a new conversation.",
+      "sinConfigurar": "The assistant is not set up on this server: the provider key (ASISTENTE_CLAVE) is missing.",
+      "cuotaAgotada": "You have used your {n} assistant questions for this month. You will get them back next month.",
+      "limiteProveedor": "The assistant reached the provider's free limit for now. Try again in a few minutes.",
+      "claveInvalida": "The provider rejected the assistant key. Check ASISTENTE_CLAVE on the server.",
+      "sinRespuesta": "The assistant could not answer right now. Try again in a moment.",
+      "sinVoz": "The assistant's voice is not available: it needs Gemini with ASISTENTE_CLAVE in the server's .env.",
+      "audioInvalido": "The audio did not arrive correctly. Record the question again.",
+      "audioLargo": "The recording is too long. Ask the question in under 30 seconds.",
+      "consultaNoEncontrada": "That assistant answer was not found."
     }
   },
   "acceso": {
@@ -645,7 +659,8 @@
       "sanidad": "Health",
       "pesajes": "Weighings",
       "equipo": "Team",
-      "importacion": "Import cattle"
+      "importacion": "Import cattle",
+      "asistente": "Assistant"
     },
     "cuenta": {
       "titulo": "Account",
@@ -1477,6 +1492,55 @@
     "elegirDia": "Tap a day to see its doses.",
     "delDia": "Doses on {fecha}",
     "leyenda": "Each day takes the color of its most urgent dose: overdue, upcoming or scheduled."
+  },
+  "asistente": {
+    "rotulo": "Artificial intelligence",
+    "titulo": "Assistant",
+    "intro": "Ask about your ranch data in your own words. It only reads: it does not record or change anything.",
+    "cuota": "{usadas} of {limite} questions used this month",
+    "sugerencias": "You can start with one of these:",
+    "ejemplos": {
+      "resumen": "How is the ranch doing today?",
+      "animales": "How many cows do I have and which is the heaviest?",
+      "corrales": "Is any paddock overcrowded?",
+      "sanidad": "Which vaccines are overdue or due this week?",
+      "pesajes": "Which animals are gaining less weight than their group?"
+    },
+    "campo": "Your question",
+    "ejemplo": "Type your question…",
+    "enviar": "Ask",
+    "pensando": "Looking through the ranch data…",
+    "nueva": "New conversation",
+    "tu": "You",
+    "asistente": "Assistant",
+    "consulto": "Looked at: {lista}",
+    "herramientas": {
+      "resumen_rancho": "ranch summary",
+      "buscar_animales": "animals",
+      "ficha_animal": "animal record",
+      "corrales": "pens",
+      "calendario_sanitario": "health calendar",
+      "esquemas_y_productos": "schedules and products",
+      "comparativa_peso": "weight comparison"
+    },
+    "sinConfigurar": "The assistant is not set up on this server yet. The provider key is missing from the .env file; the steps are in the technical manual.",
+    "sinCuota": "You have used your {n} questions for this month.",
+    "aviso": "Answers are written by an artificial intelligence model from the ranch data. Before an important decision, check the figure on its screen.",
+    "largo": "{n} of {max}",
+    "voz": {
+      "hablar": "Speak",
+      "detener": "Stop · {tiempo}",
+      "ayuda": "Ask by voice, up to {n} seconds. Gemini turns your voice into text and reads the answer to you.",
+      "grabando": "Listening… tap Stop when you finish.",
+      "transcribiendo": "Turning your voice into text…",
+      "noSeEscucho": "No question was heard. Try again, closer to the microphone.",
+      "sinPermiso": "The browser did not allow the microphone. Turn it on from the padlock in the address bar and try again.",
+      "sinMicrofono": "No microphone was found on this device.",
+      "escuchar": "Listen",
+      "callar": "Stop",
+      "cargando": "Preparing the voice…",
+      "respaldo": "Gemini's voice did not respond right now; the answer was read with the browser's voice."
+    }
   },
   "perfil": {
     "titulo": "My profile",

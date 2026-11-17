@@ -41,6 +41,11 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://ganado_usuario:clave_de_prueba@localhost:5432/gestion_ganado
+      # Fase 5: el asistente le pregunta a un proveedor simulado que levanta
+      # pruebas/asistente.test.js en el puerto 4599. Nunca a uno real.
+      ASISTENTE_URL: http://localhost:4599/v1
+      ASISTENTE_VOZ_URL: http://localhost:4599/v1beta
+      ASISTENTE_CLAVE: prueba
 
     steps:
       - uses: actions/checkout@v4

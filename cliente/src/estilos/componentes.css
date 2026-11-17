@@ -31,24 +31,27 @@
   white-space: nowrap;
 }
 
+/* Los hover repiten el color del texto: un enlace con forma de botón (Link con
+ * .btn) recibiría si no el color de a:hover, verde sobre verde. */
 .btn-primario { background: var(--corral-600); color: var(--arena-0); }
-.btn-primario:hover { background: var(--corral-700); }
+.btn-primario:hover { background: var(--corral-700); color: var(--arena-0); }
 
 .btn-secundario {
   background: var(--arena-0);
   color: var(--arena-800);
   border-color: var(--arena-300);
 }
-.btn-secundario:hover { background: var(--arena-50); }
+.btn-secundario:hover { background: var(--arena-50); color: var(--arena-800); }
 
 .btn-fantasma { background: transparent; color: var(--corral-600); }
 .btn-fantasma:hover { background: var(--corral-50); }
 
 .btn-destructivo { background: var(--error-base); color: var(--arena-0); }
+.btn-destructivo:hover { color: var(--arena-0); }
 
 /* Unico boton que usa el dorado: planes y suscripcion. */
 .btn-plan { background: var(--caravana-500); color: var(--arena-900); }
-.btn-plan:hover { background: var(--caravana-600); }
+.btn-plan:hover { background: var(--caravana-600); color: var(--arena-900); }
 
 .btn:focus-visible { outline: 2px solid var(--corral-400); outline-offset: 2px; }
 .btn[disabled], .btn.desactivado { opacity: .4; pointer-events: none; }

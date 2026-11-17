@@ -499,6 +499,20 @@
         "sinIdentificador": "Escribe la caravana del animal.",
         "noEncontrado": "No hay ningún animal con la caravana «{identificador}» en tu rancho."
       }
+    },
+    "asistente": {
+      "sinPregunta": "Escribe tu pregunta.",
+      "preguntaLarga": "La pregunta puede tener hasta {n} caracteres.",
+      "historialInvalido": "La conversación anterior llegó mal formada. Empieza una conversación nueva.",
+      "sinConfigurar": "El asistente no está configurado en este servidor: falta la clave del proveedor (ASISTENTE_CLAVE).",
+      "cuotaAgotada": "Ya usaste las {n} consultas al asistente de este mes. El mes que viene vuelves a tenerlas.",
+      "limiteProveedor": "El asistente llegó al límite gratuito del proveedor por ahora. Intenta de nuevo en unos minutos.",
+      "claveInvalida": "El proveedor rechazó la clave del asistente. Revisa ASISTENTE_CLAVE en el servidor.",
+      "sinRespuesta": "El asistente no pudo responder ahora. Intenta de nuevo en un momento.",
+      "sinVoz": "La voz del asistente no está disponible: necesita Gemini con ASISTENTE_CLAVE en el .env del servidor.",
+      "audioInvalido": "El audio no llegó bien. Vuelve a grabar la pregunta.",
+      "audioLargo": "La grabación es demasiado larga. Haz la pregunta en menos de 30 segundos.",
+      "consultaNoEncontrada": "No se encontró esa respuesta del asistente."
     }
   },
   "acceso": {
@@ -645,7 +659,8 @@
       "sanidad": "Sanidad",
       "pesajes": "Pesajes",
       "equipo": "Equipo",
-      "importacion": "Importar ganado"
+      "importacion": "Importar ganado",
+      "asistente": "Asistente"
     },
     "cuenta": {
       "titulo": "Cuenta",
@@ -1477,6 +1492,55 @@
     "elegirDia": "Toca un día para ver sus dosis.",
     "delDia": "Dosis del {fecha}",
     "leyenda": "El color de cada día es el de su dosis más urgente: vencida, próxima o programada."
+  },
+  "asistente": {
+    "rotulo": "Inteligencia artificial",
+    "titulo": "Asistente",
+    "intro": "Pregúntale por los datos de tu rancho con tus palabras. Solo lee: no registra ni cambia nada.",
+    "cuota": "{usadas} de {limite} consultas usadas este mes",
+    "sugerencias": "Puedes empezar con una de estas:",
+    "ejemplos": {
+      "resumen": "¿Cómo está el rancho hoy?",
+      "animales": "¿Cuántas vacas tengo y cuál es la más pesada?",
+      "corrales": "¿Algún potrero está sobrepoblado?",
+      "sanidad": "¿Qué vacunas están vencidas o vencen esta semana?",
+      "pesajes": "¿Qué animales ganan menos peso que su grupo?"
+    },
+    "campo": "Tu pregunta",
+    "ejemplo": "Escribe tu pregunta…",
+    "enviar": "Preguntar",
+    "pensando": "Buscando en los datos del rancho…",
+    "nueva": "Nueva conversación",
+    "tu": "Tú",
+    "asistente": "Asistente",
+    "consulto": "Consultó: {lista}",
+    "herramientas": {
+      "resumen_rancho": "resumen del rancho",
+      "buscar_animales": "animales",
+      "ficha_animal": "ficha del animal",
+      "corrales": "corrales",
+      "calendario_sanitario": "calendario sanitario",
+      "esquemas_y_productos": "esquemas y productos",
+      "comparativa_peso": "comparativa de peso"
+    },
+    "sinConfigurar": "El asistente todavía no está configurado en este servidor. Falta la clave del proveedor en el archivo .env; los pasos están en el manual técnico.",
+    "sinCuota": "Ya usaste las {n} consultas de este mes.",
+    "aviso": "Las respuestas las arma un modelo de inteligencia artificial con los datos del rancho. Antes de decidir algo importante, revisa el dato en su pantalla.",
+    "largo": "{n} de {max}",
+    "voz": {
+      "hablar": "Hablar",
+      "detener": "Detener · {tiempo}",
+      "ayuda": "Pregunta hablando, hasta {n} segundos. Gemini pasa tu voz a texto y te lee la respuesta.",
+      "grabando": "Te escucho… cuando termines, toca Detener.",
+      "transcribiendo": "Pasando tu voz a texto…",
+      "noSeEscucho": "No se escuchó ninguna pregunta. Intenta de nuevo, más cerca del micrófono.",
+      "sinPermiso": "El navegador no dio permiso para usar el micrófono. Actívalo desde el candado de la barra de direcciones y vuelve a intentar.",
+      "sinMicrofono": "No se encontró ningún micrófono en este equipo.",
+      "escuchar": "Escuchar",
+      "callar": "Detener",
+      "cargando": "Preparando la voz…",
+      "respaldo": "La voz de Gemini no respondió ahora; la respuesta se leyó con la voz del navegador."
+    }
   },
   "perfil": {
     "titulo": "Mi perfil",

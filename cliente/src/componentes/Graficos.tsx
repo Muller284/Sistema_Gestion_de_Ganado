@@ -113,7 +113,8 @@ export function ColumnasAltasBajas({
   const [ayuda, setAyuda] = useState<Ayuda | null>(null);
   const alto = 180;
   const arriba = 16;
-  const abajo = 22;
+  // Debajo del eje van el rótulo de las bajas y, más abajo, el mes: así no se pisan.
+  const abajo = 34;
   const maxAltas = Math.max(1, ...meses.map((m) => m.altas));
   const maxBajas = Math.max(0, ...meses.map((m) => m.bajas));
   // El espacio vertical se reparte en proporción a lo más alto de cada lado.
