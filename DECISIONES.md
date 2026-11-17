@@ -1939,3 +1939,166 @@ caravana, se pesa el vigente.
 - Servidor: `pruebas/pesaje-rapido.test.js` (7). Borra lo que crea y deja el
   peso de cada ficha como estaba.
 - Cliente: `pruebas/pesaje-rapido.test.tsx` (9).
+
+## 48. Asistente con inteligencia artificial (fase 5, Aaron)
+
+**RF-38 a RF-42.** Responde en lenguaje natural preguntas sobre los datos del
+propio rancho: «¿cuántas vacas tengo?», «¿qué vacunas vencen esta semana?»,
+«¿qué novillos ganan menos que su grupo?». Pantalla `/asistente`, entrada
+«Asistente» en el menú, y dos rutas: `GET /asistente` (si está configurado, la
+cuota y los módulos) y `POST /asistente/preguntas { pregunta, historial? }`.
+
+**No se entrena ni se ajusta ningún modelo.** Se usa uno ya hecho por API y se
+le dan *herramientas*: siete funciones de solo lectura del servidor que el
+modelo pide por nombre y con filtros (`resumen_rancho`, `buscar_animales`,
+`ficha_animal`, `corrales`, `calendario_sanitario`, `esquemas_y_productos` y
+`comparativa_peso`). El servidor las ejecuta, le devuelve los datos y el
+modelo redacta la respuesta. Como mucho cinco idas y vueltas; en la última se
+le pide texto (`tool_choice: none`).
+
+**Herramientas en vez de SQL.** La propuesta decía que el modelo traduce la
+pregunta a una consulta SQL que se valida y se corre con un usuario de solo
+lectura. Se cambió porque cada herramienta llama al mismo servicio que usan
+las pantallas, así que el aislamiento por rancho (HU-03) y
+`permisos.exigir()` (HU-21, HU-22) se aplican sin código nuevo de seguridad:
+
+- solo lee (RF-39): ninguna herramienta crea, edita ni borra;
+- respeta el rol (RF-40): solo se ofrecen las herramientas de los módulos que
+  quien pregunta puede ver, y si el modelo pidiera otra, recibe un error;
+- no sale del rancho (RF-41): el rancho sale de la sesión dentro de cada
+  servicio; ningún parámetro lo nombra.
+
+Las respuestas de las herramientas van sin identificadores internos ni datos
+de auditoría. Las preguntas abiertas se cubren porque las herramientas
+reciben filtros (corral por nombre sin tildes, categoría, sexo, raza, edad,
+peso, fechas) y el modelo las combina.
+
+**Proveedor intercambiable.** `ProveedorAsistente` habla el formato de chat de
+OpenAI (`/chat/completions` con `tools`), que aceptan Gemini y Groq. Se
+cambia desde `.env` (`ASISTENTE_URL`, `ASISTENTE_MODELO`, `ASISTENTE_CLAVE`),
+sin dependencias nuevas. La clave nunca llega al navegador.
+
+**Por qué Gemini 3.5 Flash-Lite.** El proyecto no puede gastar dinero, así que
+se comparó la capa gratis de Gemini con la de Groq (noviembre de 2026):
+
+- Gemini 3.5 Flash-Lite: gratis con una clave de Google AI Studio, sin
+  tarjeta. Google no publica los límites (se ven en AI Studio); los reportes
+  hablan de unas 500 consultas por día. Buen español y buen uso de
+  herramientas.
+- Groq (gpt-oss-120b, qwen): gratis, 30 por minuto y 1.000 por día, pero con
+  8.000 tokens por minuto y 200.000 por día. Cada pregunta manda las
+  definiciones de las herramientas y los datos, unos 3.000 a 8.000 tokens, así
+  que alcanza para una pregunta por minuto y unas 30 por día.
+- En la capa gratis de Gemini, Google puede usar lo que se manda para mejorar
+  sus productos. Como el sistema trabaja con datos de prueba, no es un
+  problema; con datos reales habría que pasar a la capa paga.
+
+Gemini 3 exige que el mensaje con las llamadas a herramientas vuelva igual,
+con su firma de pensamiento (`extra_content`) y sin texto agregado. El
+servicio reenvía `tool_calls` tal cual llegaron; la prueba lo verifica.
+
+**Clave gratis de Gemini.** Entrar con una cuenta de Google (mayor de 18) a
+https://aistudio.google.com/apikey, «Create API key», y copiarla en `.env`
+como `ASISTENTE_CLAVE`. Reiniciar el servidor.
+
+**Cuota (RF-42).** `ASISTENTE_CONSULTAS_MES` por usuario y por mes (30 por
+defecto). Cada pregunta respondida se guarda en `consultas_asistente`
+(migración 012), que es a la vez el historial y el contador. Si el proveedor
+llegó a su límite, la pregunta no se cobra y la pantalla lo explica.
+
+**Charla.** La pantalla reenvía los últimos seis turnos para que entienda «¿y
+el otro?». La respuesta se dibuja sin interpretar HTML: solo párrafos, listas
+y negritas.
+
+**Prueba con Gemini real (16/11/2026).** Con la clave del equipo respondió bien
+sobre existencias, corrales, vacunas vencidas, ganancia de peso, la ficha de un
+animal, preguntas de seguimiento y en inglés; negó lo que el rol no ve,
+no encontró los animales de otro rancho y no registró nada cuando se lo
+pidieron. Lo que se ajustó:
+
+- Una clave recién creada devuelve a ratos 403 «Gemini API has not been used
+  in project … before or it is disabled» mientras Google termina de activar
+  la API (unos minutos). Ahora un 403, un 5xx o una caída de conexión se
+  reintentan una vez; si sigue, la pantalla dice que se revise la clave y la
+  consola del servidor muestra el detalle de Google.
+- Con «¿cuál es la vaca más pesada?» el modelo pidió el orden por peso de
+  menor a mayor y contestó con la más liviana. La herramienta ahora explica
+  el orden por defecto y devuelve qué orden aplicó.
+- `ASISTENTE_ESFUERZO` (low por defecto) para que piense poco. La espera
+  depende sobre todo de Google: la misma pregunta tardó entre 1 y 25 segundos.
+- El mensaje de sistema le pide hablarle al usuario de tú y no en tercera
+  persona.
+
+**Pruebas.**
+
+- Servidor: `pruebas/asistente.test.js` (15; 21 con la voz del punto 49). Levanta un proveedor simulado en
+  el puerto 4599; el servidor tiene que arrancar con
+  `ASISTENTE_URL=http://localhost:4599/v1` y `ASISTENTE_CLAVE=prueba` (la
+  integración continua ya lo hace). Si apunta a un proveedor real, las
+  pruebas con el modelo se omiten para no gastar la cuota.
+- Cliente: `pruebas/asistente.test.tsx` (7; 15 con la voz del punto 49).
+
+## 49. Hablarle al asistente y escucharlo (fase 5, Aaron)
+
+**Qué hace.** En la pantalla del asistente aparece el botón **Hablar**. Se
+graba la pregunta (hasta 30 segundos), Gemini la pasa a texto, se pregunta
+como siempre y la respuesta, además de escribirse, se escucha. Cada respuesta
+tiene también un botón **Escuchar**, aunque se haya preguntado escribiendo.
+
+**Con qué.** Con la misma clave de Gemini del punto 48, sin otra cuenta ni
+otra dependencia:
+
+- Pasar la voz a texto: el mismo modelo del asistente
+  (`gemini-3.5-flash-lite`), que entiende audio. Pensando lo mínimo tarda
+  alrededor de un segundo.
+- Leer la respuesta: un modelo de voz de Gemini (`ASISTENTE_VOZ_MODELO`, por
+  defecto `gemini-3.8-flash-lite-tts`, el más rápido de los que probamos:
+  unos 2,5 s) con una de sus voces (`ASISTENTE_VOZ_NOMBRE`, por defecto Kore).
+
+La API compatible con OpenAI del punto 48 no tiene voz, así que estas dos
+llamadas van a la API propia de Gemini (`generateContent`). La dirección sale
+de `ASISTENTE_URL` sin el `/openai` del final. Con Groq la voz queda apagada y
+el botón no aparece.
+
+**Descartado.** La Live API de Gemini (conversación de voz en tiempo real) es
+más vistosa, pero va por una conexión continua que habría que pasar por
+nuestro servidor para mantener las herramientas y los permisos: varios días
+de trabajo y más cosas que pueden fallar en la defensa. La voz del navegador
+(Web Speech API) no usa Gemini y Firefox no reconoce voz; queda solo como
+respaldo para leer, si Gemini no responde.
+
+**Cómo funciona.**
+
+- El navegador graba en lo que sabe (webm en Chrome, mp4 en Safari) y la
+  pantalla lo pasa a WAV de 16 kHz y un canal antes de mandarlo: Gemini lo
+  entiende siempre y pesa unos 32 kB por segundo. Si la grabación es puro
+  silencio, ni se manda.
+- `POST /asistente/transcripciones` `{ audio }` → `{ texto }`. Se le pide la
+  respuesta con un esquema `{ hay_voz, texto }`: en la prueba real, con un
+  audio en silencio y sin esquema, Gemini inventó una frase en francés. Con el
+  esquema contesta «no hay voz» y la pantalla pide repetir.
+- `GET /asistente/consultas/:id/voz` → `{ tipo, audio }`, el WAV en base64.
+  Solo lee respuestas guardadas del propio usuario en su rancho: la voz no
+  sirve para hacerle leer a Gemini cualquier texto. Antes de leer se quitan
+  los guiones de las listas y los ** de las negritas.
+- Ninguna de las dos cuenta como consulta del mes (RF-42); la que cuenta es la
+  pregunta. Con la cuota agotada tampoco se transcribe.
+- Cada respuesta se le pide a Gemini una sola vez: escucharla de nuevo sale de
+  la memoria de la pantalla.
+- Si Gemini no puede leer (por ejemplo, llegó al límite gratuito del día de
+  los modelos de voz, que es bajo), la pantalla la lee con la voz del
+  navegador y lo avisa.
+
+**Prueba con Gemini real (17/11/2026).** Una pregunta grabada («¿Cuál es la
+vaca más pesada del rancho y cuánto pesa?») se transcribió bien en unos 4 s;
+la respuesta («la 0501, Lucera, 468 kg») se leyó en 2,5 s (8 s de audio) y al
+volver a transcribir ese audio salió el mismo texto. Ruido sin voz devolvió
+texto vacío. Otro usuario que pidió la voz de esa respuesta recibió 404.
+
+**Pruebas.**
+
+- Servidor: 6 más en `pruebas/asistente.test.js`, con la API propia de Gemini
+  simulada en el mismo puerto 4599 (`ASISTENTE_VOZ_URL=http://localhost:4599/v1beta`).
+- Cliente: 8 más en `pruebas/asistente.test.tsx` (el WAV, el silencio, grabar,
+  transcribir, preguntar y escuchar, el permiso del micrófono y que no se pida
+  dos veces la misma voz).

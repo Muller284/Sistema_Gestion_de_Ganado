@@ -66,7 +66,10 @@ export type NombreIcono =
   | 'persona-mas'
   | 'persona'
   | 'ojo'
-  | 'ojo-cerrado';
+  | 'ojo-cerrado'
+  | 'microfono'
+  | 'altavoz'
+  | 'detener';
 
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   // tag · la caravana que lleva cada animal, y la marca del sistema
@@ -363,6 +366,27 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="m9 12 2 2 4-4" />
     </>
   ),
+
+  // mic (fase 5: preguntarle al asistente hablando)
+  microfono: (
+    <>
+      <path d="M12 19v3" />
+      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <rect x="9" y="2" width="6" height="13" rx="3" />
+    </>
+  ),
+
+  // volume-2 (fase 5: escuchar la respuesta)
+  altavoz: (
+    <>
+      <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" />
+      <path d="M16 9a5 5 0 0 1 0 6" />
+      <path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
+    </>
+  ),
+
+  // square (detener la grabación o la lectura)
+  detener: <rect width="18" height="18" x="3" y="3" rx="2" />,
 
   // send
   enviar: (

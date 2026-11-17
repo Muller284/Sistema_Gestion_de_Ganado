@@ -42,6 +42,8 @@ const MODULOS: Modulo[] = [
   // HU-17. Llegó antes que su fase: el alta del equipo es del Sprint 2.
   { clave: 'equipo', nombre: 'app.modulos.equipo', icono: 'equipo', ruta: '/equipo' },
   { clave: 'importacion', nombre: 'app.modulos.importacion', icono: 'planilla', ruta: '/importacion' },
+  // Fase 5. Lo ve todo el que tiene rancho: responde solo sobre sus módulos.
+  { clave: 'asistente', nombre: 'app.modulos.asistente', icono: 'asistente', ruta: '/asistente' },
 ];
 
 interface Propiedades {
@@ -76,6 +78,8 @@ let permisosRecordados: { usuario: string; permisos: MisPermisos } | null = null
 
 function visible(modulo: Modulo, rol: string, permisos: MisPermisos | null): boolean {
   if (modulo.clave === 'inicio') return true;
+  // El asistente responde sobre el rancho: sin rancho (todo en «ninguno») no aparece.
+  if (modulo.clave === 'asistente') return Boolean(permisos) && Object.values(permisos ?? {}).some((n) => n !== 'ninguno');
   if (modulo.clave === 'equipo') return rol !== 'colaborador';
   if (!permisos) return false;
   return (permisos[modulo.clave] ?? 'ninguno') !== 'ninguno';

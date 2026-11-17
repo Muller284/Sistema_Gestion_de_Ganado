@@ -20,6 +20,7 @@ import { ModuloExportacion } from './modulos/exportacion/modulo-exportacion';
 import { ModuloVacunacion } from './modulos/vacunacion/modulo-vacunacion';
 import { ModuloPesajes } from './modulos/pesajes/modulo-pesajes';
 import { ModuloSanidad } from './modulos/sanidad/modulo-sanidad';
+import { ModuloAsistente } from './modulos/asistente/modulo-asistente';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { ModuloSanidad } from './modulos/sanidad/modulo-sanidad';
     ModuloVacunacion, // HU-47, HU-50 y HU-51
     ModuloPesajes, // HU-53 (Brian)
     ModuloSanidad, // HU-46, HU-48, HU-49 y HU-52
+    ModuloAsistente, // Fase 5: asistente con IA (RF-38 a RF-42)
   ],
 })
 export class AppModule {}

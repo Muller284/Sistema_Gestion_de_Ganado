@@ -23,6 +23,7 @@ import { PaginaRestablecerContrasena } from './paginas/contrasena/PaginaRestable
 import { PaginaImportacion } from './paginas/importacion/PaginaImportacion';
 import { PaginaCorrales } from './paginas/corrales/PaginaCorrales';
 import { PaginaComparativa } from './paginas/pesajes/PaginaComparativa';
+import { PaginaAsistente } from './paginas/asistente/PaginaAsistente';
 import { PaginaPesajeRapido } from './paginas/pesajes/PaginaPesajeRapido';
 import { PaginaListaAnimales } from './paginas/animales/PaginaListaAnimales';
 import { PaginaFichaAnimal } from './paginas/animales/PaginaFichaAnimal';
@@ -200,6 +201,7 @@ function Sistema() {
         <Route path="/sanidad/esquemas" element={adentro(<PaginaEsquemas />)} />
         <Route path="/sanidad/productos" element={adentro(<PaginaProductos />)} />
         <Route path="/sanidad/registro-rapido" element={adentro(<PaginaVacunaRapida />)} />
+        <Route path="/asistente" element={adentro(<PaginaAsistente />)} />
         <Route path="/perfil" element={adentro(<PaginaPerfil />)} />
 
         {/* Cualquier otra direccion vuelve al principio. */}
