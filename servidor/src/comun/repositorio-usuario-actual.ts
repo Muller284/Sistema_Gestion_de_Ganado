@@ -35,6 +35,16 @@ export interface UsuarioActual {
   soporte: { accesoId: string; motivo: string } | null;
 }
 
+/**
+ * Entrar con el id del usuario, sin contraseña (x-usuario-id o USUARIO_DEMO_ID),
+ * es la barra de demostración y lo usan las pruebas. En el servidor publicado
+ * se apaga con PERMITIR_DEMOSTRACION=no: ahí solo vale el token de la sesión,
+ * si no cualquiera que sepa un id entraría como esa persona (DECISIONES §52).
+ */
+export function demostracionPermitida(): boolean {
+  return process.env.PERMITIR_DEMOSTRACION !== 'no';
+}
+
 /** HU-24. Cuanto dura abierto un acceso de soporte si el Admin no sale. */
 export const HORAS_DE_SOPORTE = 8;
 
@@ -58,10 +68,10 @@ export class RepositorioUsuarioActual {
           throw new UnauthorizedException(t('servidor.sesion.tokenInvalido'));
         }
         id = payload.sub;
-      } else {
+      } else if (demostracionPermitida()) {
         id = valor;
       }
-    } else {
+    } else if (demostracionPermitida()) {
       id = process.env.USUARIO_DEMO_ID;
     }
 

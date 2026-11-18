@@ -152,6 +152,22 @@ CREATE TABLE public.categorias_animal (
 
 
 --
+-- Name: configuracion_plataforma; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.configuracion_plataforma (
+    clave character varying(60) NOT NULL,
+    valor integer,
+    creado_en timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modificado_en timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    creado_por uuid,
+    modificado_por uuid,
+    eliminado_en timestamp with time zone,
+    CONSTRAINT configuracion_plataforma_valor_check CHECK (((valor IS NULL) OR (valor > 0)))
+);
+
+
+--
 -- Name: consultas_asistente; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -242,6 +258,13 @@ CREATE TABLE public.franjas_precio (
 
 
 --
+-- Name: TABLE franjas_precio; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE public.franjas_precio IS 'Franjas de precio regionales. El codigo es la clave natural (DECISIONES.md, decision 2).';
+
+
+--
 -- Name: migraciones_aplicadas; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -311,6 +334,20 @@ CREATE TABLE public.paises (
     CONSTRAINT paises_unidad_peso_check CHECK (((unidad_peso)::text = ANY ((ARRAY['kg'::character varying, 'lb'::character varying])::text[]))),
     CONSTRAINT paises_unidad_superficie_check CHECK (((unidad_superficie)::text = ANY ((ARRAY['ha'::character varying, 'acre'::character varying])::text[])))
 );
+
+
+--
+-- Name: COLUMN paises.idioma; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.paises.idioma IS 'Define el idioma del pais segun HU-14';
+
+
+--
+-- Name: COLUMN paises.moneda; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.paises.moneda IS 'Define la moneda del pais segun HU-14';
 
 
 --
@@ -495,6 +532,27 @@ CREATE TABLE public.razas (
 
 
 --
+-- Name: registro_auditoria; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.registro_auditoria (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    admin_id uuid NOT NULL,
+    accion character varying(40) NOT NULL,
+    rancho_id uuid,
+    usuario_id uuid,
+    objeto character varying(150),
+    detalle jsonb DEFAULT '{}'::jsonb NOT NULL,
+    creado_en timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    modificado_en timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    creado_por uuid,
+    modificado_por uuid,
+    eliminado_en timestamp with time zone,
+    CONSTRAINT ck_auditoria_accion CHECK (((accion)::text = ANY ((ARRAY['soporte_entrada'::character varying, 'soporte_salida'::character varying, 'cuenta_suspendida'::character varying, 'cuenta_reactivada'::character varying, 'contrasena_enlace'::character varying, 'raza_creada'::character varying, 'raza_editada'::character varying, 'raza_desactivada'::character varying, 'raza_reactivada'::character varying, 'configuracion'::character varying])::text[])))
+);
+
+
+--
 -- Name: sesiones; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -584,6 +642,13 @@ CREATE TABLE public.usuarios (
 
 
 --
+-- Name: COLUMN usuarios.pais_codigo; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.usuarios.pais_codigo IS 'Pais elegido al registrarse (HU-06). Define idioma, moneda y unidades (HU-14).';
+
+
+--
 -- Name: accesos_admin accesos_admin_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -621,6 +686,14 @@ ALTER TABLE ONLY public.cambios_estado_animal
 
 ALTER TABLE ONLY public.categorias_animal
     ADD CONSTRAINT categorias_animal_pkey PRIMARY KEY (codigo);
+
+
+--
+-- Name: configuracion_plataforma configuracion_plataforma_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.configuracion_plataforma
+    ADD CONSTRAINT configuracion_plataforma_pkey PRIMARY KEY (clave);
 
 
 --
@@ -741,6 +814,14 @@ ALTER TABLE ONLY public.ranchos
 
 ALTER TABLE ONLY public.razas
     ADD CONSTRAINT razas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: registro_auditoria registro_auditoria_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.registro_auditoria
+    ADD CONSTRAINT registro_auditoria_pkey PRIMARY KEY (id);
 
 
 --
@@ -884,10 +965,31 @@ CREATE INDEX ix_aplicaciones_rancho_fecha ON public.aplicaciones_sanitarias USIN
 
 
 --
+-- Name: ix_auditoria_fecha; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_auditoria_fecha ON public.registro_auditoria USING btree (creado_en DESC);
+
+
+--
+-- Name: ix_auditoria_rancho; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_auditoria_rancho ON public.registro_auditoria USING btree (rancho_id, creado_en DESC);
+
+
+--
 -- Name: ix_cambios_estado_animal; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX ix_cambios_estado_animal ON public.cambios_estado_animal USING btree (animal_id, creado_en);
+
+
+--
+-- Name: ix_consultas_asistente_fecha; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX ix_consultas_asistente_fecha ON public.consultas_asistente USING btree (creado_en);
 
 
 --
@@ -1108,6 +1210,13 @@ CREATE TRIGGER tg_cambios_estado_animal_modificado_en BEFORE UPDATE ON public.ca
 
 
 --
+-- Name: configuracion_plataforma tg_configuracion_plataforma_modificado_en; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tg_configuracion_plataforma_modificado_en BEFORE UPDATE ON public.configuracion_plataforma FOR EACH ROW EXECUTE FUNCTION public.fn_tocar_modificado_en();
+
+
+--
 -- Name: consultas_asistente tg_consultas_asistente_modificado_en; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1203,6 +1312,13 @@ CREATE TRIGGER tg_ranchos_modificado_en BEFORE UPDATE ON public.ranchos FOR EACH
 --
 
 CREATE TRIGGER tg_razas_modificado_en BEFORE UPDATE ON public.razas FOR EACH ROW EXECUTE FUNCTION public.fn_tocar_modificado_en();
+
+
+--
+-- Name: registro_auditoria tg_registro_auditoria_modificado_en; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER tg_registro_auditoria_modificado_en BEFORE UPDATE ON public.registro_auditoria FOR EACH ROW EXECUTE FUNCTION public.fn_tocar_modificado_en();
 
 
 --
@@ -1303,6 +1419,30 @@ ALTER TABLE ONLY public.aplicaciones_sanitarias
 
 ALTER TABLE ONLY public.aplicaciones_sanitarias
     ADD CONSTRAINT fk_aplicaciones_rancho FOREIGN KEY (rancho_id) REFERENCES public.ranchos(id) ON DELETE CASCADE;
+
+
+--
+-- Name: registro_auditoria fk_auditoria_admin; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.registro_auditoria
+    ADD CONSTRAINT fk_auditoria_admin FOREIGN KEY (admin_id) REFERENCES public.usuarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: registro_auditoria fk_auditoria_rancho; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.registro_auditoria
+    ADD CONSTRAINT fk_auditoria_rancho FOREIGN KEY (rancho_id) REFERENCES public.ranchos(id) ON DELETE SET NULL;
+
+
+--
+-- Name: registro_auditoria fk_auditoria_usuario; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.registro_auditoria
+    ADD CONSTRAINT fk_auditoria_usuario FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id) ON DELETE SET NULL;
 
 
 --

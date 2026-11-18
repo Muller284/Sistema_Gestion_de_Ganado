@@ -2200,3 +2200,47 @@ dar soporte (HU-24). Tiene un panel con cinco pantallas:
   desactivación; validación de la configuración; la cuota rige en el
   asistente; el tope corta con 429; cada acción queda en la auditoría.
 - Cliente: `pruebas/panel-admin.test.tsx` (8).
+
+## 52. Dónde se publica: Render y Neon, en lugar de Firebase (Aaron, 18/11/2026)
+
+**Qué se decidió.** El sistema se publica en Render (el cliente como sitio
+estático y el servidor como servicio web, los dos en el plan gratuito) con la
+base PostgreSQL en Neon (plan gratuito). Todo se describe en `render.yaml`, en
+la raíz: Render crea los dos servicios desde ese archivo y los vuelve a
+publicar solo con cada push a `main`. `firebase.json` se quitó.
+
+**Por qué no Firebase.** Firebase Hosting sirve solo el cliente. El servidor
+NestJS necesitaría Cloud Functions o Cloud Run, que piden el plan Blaze con
+tarjeta, así que igual hacía falta otro servicio para la API y otro para la
+base: tres cuentas y dos formas de publicar. Con Render son dos cuentas
+(Render y Neon), un solo archivo y ningún comando para publicar.
+
+**Por qué Neon y no la base de Render.** La PostgreSQL gratuita de Render
+vence a los 30 días y después se borra. La de Neon no vence: 1 GB por
+proyecto (la base de demostración usa unos pocos MB) y se suspende a los 5
+minutos sin uso, con un arranque de menos de un segundo.
+
+**Lo que hay que saber del plan gratuito.**
+
+- El servidor se duerme a los 15 minutos sin visitas y la primera petición
+  después tarda cerca de un minuto. `.github/workflows/despierto.yml` lo
+  consulta cada 10 minutos de 8:00 a 20:00 de Bolivia (unas 370 horas al mes
+  de las 750 gratuitas). Antes de una presentación conviene abrir la página
+  un par de minutos antes por si acaso.
+- Render incluye 5 GB de transferencia al mes para todo el espacio de
+  trabajo. La primera visita baja unos 300 kB comprimidos, así que alcanza
+  para miles de visitas.
+- Las migraciones corren solas al arrancar el servidor
+  (`node migrar.js && node dist/main.js`): aplican solo las que falten.
+
+**Sin barra de demostración en lo publicado.** En local, la barra de
+demostración entra como cualquier cuenta mandando su id en `x-usuario-id`,
+sin contraseña. Publicado, eso dejaría a cualquiera entrar como otra persona
+sabiendo un id. Por eso hay dos interruptores, apagados en `render.yaml`:
+
+- `PERMITIR_DEMOSTRACION=no` en el servidor: solo vale el token de la sesión.
+  Sin la variable (en local y en las pruebas) todo sigue como antes.
+- `VITE_DEMOSTRACION=no` al compilar el cliente: la barra no aparece.
+
+En lo publicado se entra con correo y contraseña. Las cuentas de los datos de
+ejemplo usan Ganado2026 (ver el manual técnico).
