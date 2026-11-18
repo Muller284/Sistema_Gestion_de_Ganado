@@ -45,6 +45,32 @@ export class RepositorioAsistente {
     return resultado.rows[0] ?? null;
   }
 
+  /**
+   * Las cuotas que fijó el Admin (fase 4, migración 013). Si la tabla todavía
+   * no existe (falta migrar), valen las de fábrica.
+   */
+  async configuracion(): Promise<Record<string, number | null>> {
+    try {
+      const resultado = await this.bd.query(
+        `SELECT clave, valor FROM configuracion_plataforma
+          WHERE eliminado_en IS NULL AND clave LIKE 'asistente_%'`,
+      );
+      return Object.fromEntries(resultado.rows.map((fila) => [fila.clave, fila.valor]));
+    } catch (error) {
+      if ((error as { code?: string }).code === '42P01') return {};
+      throw error;
+    }
+  }
+
+  /** RNF-11 · Consultas de toda la plataforma en el mes en curso. */
+  async usadasEnElMesPlataforma(): Promise<number> {
+    const resultado = await this.bd.query(
+      `SELECT COUNT(*)::int AS n FROM consultas_asistente
+        WHERE eliminado_en IS NULL AND creado_en >= date_trunc('month', CURRENT_TIMESTAMP)`,
+    );
+    return resultado.rows[0].n;
+  }
+
   /** RF-42 · Consultas respondidas a este usuario en el mes en curso. */
   async usadasEnElMes(usuarioId: string): Promise<number> {
     const resultado = await this.bd.query(

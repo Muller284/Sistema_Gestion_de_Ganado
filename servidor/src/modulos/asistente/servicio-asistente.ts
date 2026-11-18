@@ -45,7 +45,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MODULOS_CONSULTABLES = ['animales', 'corrales', 'sanidad', 'pesajes'];
 const NOMBRE_IDIOMA: Record<string, string> = { es: 'español', en: 'inglés' };
 
-export function cuotaMensual(): number {
+/** La cuota por usuario del .env (ASISTENTE_CONSULTAS_MES), o 30. */
+export function cuotaPorDefecto(): number {
   const valor = Number(process.env.ASISTENTE_CONSULTAS_MES);
   return Number.isInteger(valor) && valor > 0 ? valor : CUOTA_POR_DEFECTO;
 }
@@ -68,16 +69,17 @@ export class ServicioAsistente {
   /** Lo que la pantalla necesita antes de preguntar. */
   async estado(quien: UsuarioActual) {
     if (!quien.ranchoId) throw new NotFoundException(t('servidor.permisos.sinRancho'));
-    const [niveles, usadas] = await Promise.all([
+    const [niveles, usadas, cuotas] = await Promise.all([
       this.permisos.todos(quien),
       this.repositorio.usadasEnElMes(quien.id),
+      this.cuotas(),
     ]);
     return {
       configurado: this.proveedor.configurado(),
       voz: this.voz.disponible(),
       proveedor: this.proveedor.servidor(),
       usadas,
-      limite: cuotaMensual(),
+      limite: cuotas.porUsuario,
       modulos: MODULOS_CONSULTABLES.filter((m) => (niveles[m] ?? 'ninguno') !== 'ninguno'),
     };
   }
@@ -209,12 +211,31 @@ export class ServicioAsistente {
     }
   }
 
+  /**
+   * RF-42 y RNF-11 · Las cuotas las cambia el Admin desde su panel (fase 4);
+   * sin valor, vale la del .env y no hay tope de plataforma.
+   */
+  private async cuotas() {
+    const configuracion = await this.repositorio.configuracion();
+    return {
+      porUsuario: configuracion.asistente_consultas_mes ?? cuotaPorDefecto(),
+      tope: configuracion.asistente_tope_mensual ?? null,
+    };
+  }
+
   private async cuotaDisponible(usuarioId: string) {
-    const limite = cuotaMensual();
+    const { porUsuario: limite, tope } = await this.cuotas();
     const usadas = await this.repositorio.usadasEnElMes(usuarioId);
     if (usadas >= limite) {
       throw new HttpException(
         { motivo: 'cuota', usadas, limite, message: t('servidor.asistente.cuotaAgotada', { n: limite }) },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+    // El tope de toda la plataforma: el gasto del proveedor no pasa de ahí.
+    if (tope !== null && (await this.repositorio.usadasEnElMesPlataforma()) >= tope) {
+      throw new HttpException(
+        { motivo: 'tope', usadas, limite, message: t('servidor.asistente.topePlataforma') },
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }

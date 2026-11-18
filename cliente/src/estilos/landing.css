@@ -786,6 +786,22 @@
   box-shadow: var(--s-lg);
 }
 
+/* DECISIONES §50: la versión de hoy (gratis) y lo que llega con los planes. */
+.lp-planes--version {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 880px;
+  margin: 0 auto;
+}
+.lp-plan--destacado.lp-plan { border-color: var(--corral-500); }
+.lp-plan--proxima {
+  border-style: dashed;
+  border-color: var(--arena-300);
+  background: transparent;
+}
+.lp-plan--proxima:hover { transform: none; box-shadow: none; }
+.lp-plan--proxima li .ico { color: var(--arena-500); }
+.lp-plan--destacado.lp-plan li .ico { color: var(--exito-base); }
+
 .lp-plan__cinta {
   position: absolute;
   top: 0;
@@ -1016,6 +1032,7 @@
 
 @media (max-width: 1080px) {
   .lp-planes { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--e-32); }
+  .lp-planes--version { grid-template-columns: minmax(0, 1fr); }
   .lp-rejilla-funciones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 

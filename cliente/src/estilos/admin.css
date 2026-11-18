@@ -1,0 +1,119 @@
+/* ============================================================================
+ * FASE 4 · Panel del Admin de plataforma (Aaron)
+ * ----------------------------------------------------------------------------
+ * Tablero, cuentas, ficha, catálogo, configuración y auditoría. Lo común de
+ * las filas y del motivo ya está en equipo.css (HU-24); acá va lo nuevo.
+ * Solo tokens.
+ * ==========================================================================*/
+
+/* El rótulo que separa los módulos del rancho cuando el Admin está adentro. */
+.lateral__seccion {
+  display: block;
+  margin: var(--e-12) var(--e-12) var(--e-4);
+  font-size: var(--t-pie);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: var(--ls-rotulo);
+  text-transform: uppercase;
+  color: var(--corral-300);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Lo que llega en una versión futura: apagado, sin parecer un error. */
+.admin__futuro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-6);
+  padding: var(--e-16) var(--e-20);
+  border: var(--borde) dashed var(--arena-300);
+  border-radius: var(--r-lg);
+}
+.admin__futuro p { margin: 0; }
+
+/* ── Cuentas ──────────────────────────────────────────────────────────────── */
+
+.admin__fila--cuenta {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, 1.2fr) auto auto auto;
+}
+
+.admin__nombre {
+  font-weight: var(--peso-medio);
+  color: var(--arena-900);
+  text-decoration: none;
+}
+.admin__nombre:hover { color: var(--corral-700); text-decoration: underline; }
+
+.admin__uso { display: flex; flex-direction: column; min-width: 0; }
+
+/* El motivo para entrar a dar soporte se abre en toda la fila. */
+.admin__entrar:has(form) { grid-column: 1 / -1; }
+.admin__entrar-ficha { margin-top: var(--e-12); }
+
+/* ── Ficha ────────────────────────────────────────────────────────────────── */
+
+.admin__fila--miembro {
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr) minmax(0, 1fr) auto;
+}
+
+.admin__volver { transform: rotate(180deg); }
+
+.admin__eventos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.admin__eventos li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--e-12);
+  padding: var(--e-8) 0;
+}
+.admin__eventos li + li { border-top: var(--borde) solid var(--arena-100); }
+.admin__eventos .pie { white-space: nowrap; }
+
+/* ── Catálogo ─────────────────────────────────────────────────────────────── */
+
+.admin__propuestas {
+  margin: var(--e-12) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.admin__propuestas li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-6) 0;
+}
+.admin__propuestas li + li { border-top: var(--borde) solid var(--arena-100); }
+.admin__propuestas strong { font-weight: var(--peso-medio); color: var(--arena-900); }
+
+.admin__tabla td { vertical-align: middle; }
+.admin__tabla .numero { text-align: right; font-variant-numeric: tabular-nums; }
+.admin__celda-accion { text-align: right; }
+
+.admin__select {
+  height: var(--e-32);
+  padding: 0 var(--e-8);
+  border: var(--borde) solid var(--arena-300);
+  border-radius: var(--r-sm);
+  background: var(--arena-0);
+  font-family: var(--f-cuerpo);
+  font-size: var(--t-etiqueta);
+  color: var(--arena-800);
+}
+.admin__select:focus-visible { outline: 2px solid var(--corral-600); outline-offset: 1px; }
+
+/* ── Configuración ────────────────────────────────────────────────────────── */
+
+.admin__formulario { max-width: 520px; }
+
+@media (max-width: 860px) {
+  .admin__fila--cuenta,
+  .admin__fila--miembro { grid-template-columns: minmax(0, 1fr) auto; }
+  .admin__uso { grid-column: 1 / 2; }
+  .admin__entrar { grid-column: 1 / -1; }
+  .admin__fila--miembro .admin__acciones { grid-column: 1 / -1; grid-row: auto; justify-content: flex-start; flex-wrap: wrap; }
+  .admin__eventos li { flex-direction: column; gap: 0; }
+}

@@ -44,7 +44,7 @@
 .btn-secundario:hover { background: var(--arena-50); color: var(--arena-800); }
 
 .btn-fantasma { background: transparent; color: var(--corral-600); }
-.btn-fantasma:hover { background: var(--corral-50); }
+.btn-fantasma:hover { background: var(--corral-50); color: var(--corral-700); }
 
 .btn-destructivo { background: var(--error-base); color: var(--arena-0); }
 .btn-destructivo:hover { color: var(--arena-0); }
@@ -531,7 +531,12 @@
   font-weight: var(--peso-fuerte);
   color: var(--arena-0);
   text-decoration: none;
+  transition: color var(--t-rapido) var(--curva);
 }
+
+/* Es un enlace sobre el panel verde oscuro: sin esto toma el verde de
+ * a:hover y la marca desaparece al pasar el mouse. */
+.acceso__marca:hover { color: var(--corral-100); }
 
 .acceso__titular {
   font-family: var(--f-titulo);
@@ -735,8 +740,8 @@
   color: var(--arena-0);
 }
 
-/* La corona es lo unico dorado del menu: el dorado es de los planes. */
-.lateral .bloque-cuenta .plan .ico { color: var(--caravana-400); }
+/* DECISIONES §50: sin planes, la versión gratuita lleva el verde de éxito. */
+.lateral .bloque-cuenta .plan .ico { color: var(--corral-300); }
 
 .lateral .medidor {
   height: var(--e-4);

@@ -83,7 +83,25 @@
       "saliste": "Saliste del rancho. El acceso quedó cerrado en el registro.",
       "yaSaliste": "Ese acceso ya estaba cerrado.",
       "soloAdmin": "Esta parte es solo para el Admin de la plataforma.",
-      "soloPropietarioVeAccesos": "El registro de accesos de soporte lo ve el propietario del rancho."
+      "soloPropietarioVeAccesos": "El registro de accesos de soporte lo ve el propietario del rancho.",
+      "cuentaSuspendida": "Se suspendió la cuenta de {nombre}. Sus sesiones abiertas se cerraron.",
+      "cuentaReactivada": "{nombre} puede volver a entrar.",
+      "enlaceEnviado": "Se mandó a {correo} un enlace para crear una contraseña nueva. Vence en una hora.",
+      "usuarioNoExiste": "Esa persona no existe en la plataforma.",
+      "noOtroAdmin": "Las cuentas de Admin no se manejan desde el panel.",
+      "razaNombre": "Escribe el nombre de la raza (de 2 a 100 letras).",
+      "razaGrupo": "Elige el grupo: carne, leche o doble propósito.",
+      "razaRepetida": "«{nombre}» ya está en el catálogo.",
+      "razaDesactivada": "«{nombre}» ya está en el catálogo, desactivada. Vuelve a activarla en lugar de crearla de nuevo.",
+      "razaCreada": "«{nombre}» se agregó al catálogo. Ya la ven todos los ranchos.",
+      "razaNoExiste": "Esa raza no está en el catálogo.",
+      "razaSinCambios": "No hay nada que cambiar en la raza.",
+      "razaEditada": "Se cambió el grupo de «{nombre}».",
+      "razaApagada": "«{nombre}» ya no se ofrece al registrar animales. Los animales que la tienen la conservan.",
+      "razaReactivada": "«{nombre}» se vuelve a ofrecer al registrar animales.",
+      "valorInvalido": "Escribe un número entero entre 1 y {max}, o déjalo vacío para usar el valor de fábrica.",
+      "sinCambios": "No había nada que guardar.",
+      "configuracionGuardada": "Se guardó la configuración. Rige desde ahora."
     },
     "perfil": {
       "terminaDeActivar": "Termina de activar tu cuenta antes de editar tu perfil.",
@@ -512,7 +530,8 @@
       "sinVoz": "La voz del asistente no está disponible: necesita Gemini con ASISTENTE_CLAVE en el .env del servidor.",
       "audioInvalido": "El audio no llegó bien. Vuelve a grabar la pregunta.",
       "audioLargo": "La grabación es demasiado larga. Haz la pregunta en menos de 30 segundos.",
-      "consultaNoEncontrada": "No se encontró esa respuesta del asistente."
+      "consultaNoEncontrada": "No se encontró esa respuesta del asistente.",
+      "topePlataforma": "El asistente llegó al tope de consultas de la plataforma para este mes. El Admin puede subirlo desde su panel."
     }
   },
   "acceso": {
@@ -546,7 +565,7 @@
     "ingreso": {
       "titulo": "Bienvenido de vuelta",
       "subtitulo": "Ingresa tus credenciales para acceder a la gestión de tu rancho.",
-      "sinCuenta": "¿No tienes cuenta todavía? <enlace>Crea una, son 10 días gratis</enlace>",
+      "sinCuenta": "¿No tienes cuenta todavía? <enlace>Crea una gratis</enlace>",
       "faltanDatos": "Por favor ingresa tu correo y contraseña.",
       "incorrectos": "Correo o contraseña incorrectos.",
       "contrasenaEjemplo": "Tu contraseña",
@@ -556,8 +575,8 @@
     },
     "registro": {
       "titulo": "Crea tu cuenta",
-      "subtitulo": "10 días con todas las funciones. Sin tarjeta.",
-      "nota": "Cuando terminen los 10 días tu cuenta pasa al plan Gratis. No se bloquea y no pierdes nada.",
+      "subtitulo": "Gratis y con todas las funciones. Sin tarjeta.",
+      "nota": "En esta versión todo es gratuito. Los planes pagos llegan más adelante y nunca borran lo que cargaste.",
       "nombre": "Nombre y apellido",
       "nombreEjemplo": "Ej. Aaron Vargas",
       "pais": "País",
@@ -664,9 +683,8 @@
     },
     "cuenta": {
       "titulo": "Cuenta",
-      "plan": "Plan Profesional",
-      "medidor": "Animales usados del plan",
-      "usados": "{porcentaje} % de animales usados"
+      "plan": "Versión gratuita",
+      "detalle": "Los planes llegan en una próxima versión."
     },
     "menuUsuario": {
       "cuentaDe": "Cuenta de {nombre}",
@@ -1008,7 +1026,7 @@
       "preguntas": "Preguntas",
       "irAMiRancho": "Ir a mi rancho",
       "ingresar": "Ingresar",
-      "probarGratis": "Probar gratis",
+      "probarGratis": "Crear cuenta gratis",
       "abrir": "Abrir el menú",
       "cerrar": "Cerrar el menú"
     },
@@ -1016,10 +1034,10 @@
       "pastilla": "Para productores de cualquier país",
       "titulo": "Tu rancho entero, <resaltado>en el bolsillo</resaltado>",
       "bajada": "Animales, corrales, vacunas y pesajes en un solo lugar. Trabaja con tu equipo, registra desde el corral aunque no haya señal y pregunta lo que necesites saber con tus propias palabras.",
-      "probar": "Probar 10 días gratis",
+      "probar": "Crear mi cuenta gratis",
       "yaTengoCuenta": "Ya tengo cuenta",
       "sinTarjeta": "Sin tarjeta",
-      "sigueGratis": "Después sigues gratis",
+      "sigueGratis": "Todo incluido en esta versión",
       "exportas": "Tus datos se exportan cuando quieras"
     },
     "vitrina": {
@@ -1151,19 +1169,9 @@
     },
     "planes": {
       "rotulo": "Planes",
-      "titulo": "Pagas por el tamaño de tu equipo, no por anotar",
-      "bajada": "Empiezas con 10 días del plan Profesional, sin tarjeta. Si no eliges nada, pasas al plan Gratis: la cuenta no se bloquea y no pierdes ningún dato.",
-      "formaDePago": "Forma de pago",
-      "mensual": "Mensual",
-      "anual": "Anual <ahorro>−20 %</ahorro>",
-      "preciosPara": "Precios para",
-      "cinta": "Tus primeros 10 días",
-      "paraSiempre": "para siempre",
-      "porMes": "/ mes",
-      "porAnio": "/ año",
-      "probar": "Probar 10 días gratis",
-      "empezar": "Empezar",
-      "nota": "Precios en dólares estadounidenses. Cada cuenta maneja un rancho. Donde dice «sin límite» se aplica una política de uso razonable.",
+      "titulo": "Hoy es gratis, con todo incluido",
+      "bajada": "En esta versión todas las funciones son gratuitas para todos los ranchos. Los planes pagos llegan en una próxima versión, y lo que ya hayas cargado se queda contigo.",
+      "nota": "Cada cuenta maneja un rancho. Cuando lleguen los planes, se avisa con tiempo y nadie pierde su información.",
       "detalleGratis": "Sin vencimiento y sin tarjeta.",
       "detalleMensual": "O USD {monto} pagando el año entero.",
       "detalleAnual": "Equivale a USD {monto} por mes.",
@@ -1221,15 +1229,42 @@
             "soporte": "Canal de soporte propio"
           }
         }
+      },
+      "hoy": {
+        "rotulo": "Versión actual",
+        "nombre": "Gratis",
+        "para": "Para todos los ranchos, sin límite de tiempo.",
+        "precio": "USD 0",
+        "periodo": "sin tarjeta",
+        "incluye": {
+          "equipo": "Tu equipo: socios y colaboradores con sus permisos",
+          "registros": "Animales, corrales, sanidad y pesajes",
+          "excel": "Importa tu planilla y exporta todo a Excel",
+          "asistente": "Asistente con IA, con una cuota de preguntas al mes",
+          "celular": "Registro rápido desde el celular"
+        },
+        "boton": "Crear mi cuenta"
+      },
+      "proxima": {
+        "rotulo": "Próxima versión",
+        "nombre": "Planes Productor, Profesional y Empresa",
+        "para": "Para cuando el rancho y el equipo crecen.",
+        "incluye": {
+          "planes": "Planes según el tamaño del equipo, no por lo que anotas",
+          "limites": "Más integrantes, animales y preguntas al asistente",
+          "region": "Precios ajustados a la región de cada país",
+          "pago": "Pago en línea, mensual o anual",
+          "datos": "Cambiar de plan nunca borra lo que cargaste"
+        }
       }
     },
     "preguntas": {
       "rotulo": "Preguntas",
       "titulo": "Lo que todos preguntan antes de empezar",
       "lista": {
-        "finPrueba": {
-          "p": "¿Qué pasa cuando terminan los 10 días de prueba?",
-          "r": "Tu cuenta pasa sola al plan Gratis. No se bloquea, no pierdes ningún dato y puedes mejorar el plan cuando quieras."
+        "costo": {
+          "p": "¿Cuánto cuesta?",
+          "r": "En esta versión, nada: todas las funciones son gratuitas. Cuando lleguen los planes pagos, tu rancho sigue con todo lo que ya cargaste y nada se borra."
         },
         "internet": {
           "p": "¿Necesito internet para usarlo?",
@@ -1245,13 +1280,13 @@
         },
         "irme": {
           "p": "¿Y si quiero irme?",
-          "r": "Exporta todo a Excel en cualquier momento. Si cancelas, la cuenta queda en solo lectura al menos 12 meses para que sigas consultando y exportando tu información."
+          "r": "Exporta todo a Excel en cualquier momento: tus datos son tuyos y te los llevas cuando quieras."
         }
       }
     },
     "cierre": {
       "titulo": "Empieza hoy con tu rodeo",
-      "bajada": "10 días con todas las funciones. Sin tarjeta y sin compromiso.",
+      "bajada": "Gratis y con todas las funciones. Sin tarjeta y sin compromiso.",
       "crearCuenta": "Crear mi cuenta",
       "ingresar": "Ingresar"
     },
@@ -1676,17 +1711,19 @@
         "socio": "socio",
         "colaborador": "colaborador"
       }
+    },
+    "recuperacionAdmin": {
+      "asunto": "Crea una contraseña nueva — Sistema de Gestión de Ganado",
+      "cuerpo": "Hola {nombre},\n\nEl equipo de soporte de la plataforma te manda este enlace para que crees una contraseña nueva. Nadie más la va a ver.\n\nEl enlace caduca en 1 hora. Si no lo esperabas, escríbenos antes de usarlo."
     }
   },
   "admin": {
-    "menu": "Soporte",
+    "menu": "Administración",
     "rotulo": "Admin de plataforma",
-    "titulo": "Soporte a los ranchos",
     "noEsTuRol": {
       "titulo": "Esta parte es del Admin de plataforma",
       "texto": "Desde acá el soporte de la plataforma entra a los ranchos. Tu cuenta no tiene ese rol."
     },
-    "intro": "Desde acá entras a cualquier rancho para dar soporte. Para entrar escribes por qué: cada entrada queda en el registro y el propietario la ve en su panel. Adentro puedes lo mismo que el propietario, hasta que salgas o pasen ocho horas.",
     "sigueAdentro": "Sigues dentro de {rancho}. Cuando termines, sal desde la banda de arriba.",
     "vistas": "Qué ver",
     "ranchos": {
@@ -1733,6 +1770,289 @@
       "titulo": "Soporte de la plataforma",
       "intro": "Cada vez que alguien del soporte entra a tu rancho queda registrado: quién, cuándo y por qué.",
       "nadie": "Nadie del soporte de la plataforma entró a tu rancho."
+    },
+    "navegacion": {
+      "tablero": "Tablero",
+      "cuentas": "Cuentas",
+      "catalogo": "Catálogo",
+      "configuracion": "Configuración",
+      "auditoria": "Auditoría",
+      "rancho": "Dentro de {rancho}"
+    },
+    "motivo": {
+      "ayuda": "Al menos {n} caracteres. Queda en la auditoría.",
+      "enviando": "Guardando…"
+    },
+    "soporte": {
+      "volver": "Volver a entrar"
+    },
+    "tiempo": {
+      "nunca": "sin actividad",
+      "recien": "recién",
+      "minutos": {
+        "uno": "hace {n} minuto",
+        "otros": "hace {n} minutos"
+      },
+      "horas": {
+        "uno": "hace {n} hora",
+        "otros": "hace {n} horas"
+      },
+      "dias": {
+        "uno": "hace {n} día",
+        "otros": "hace {n} días"
+      }
+    },
+    "roles": {
+      "propietario": "Propietarios",
+      "socio": "Socios",
+      "colaborador": "Colaboradores"
+    },
+    "tablero": {
+      "titulo": "Tablero de la plataforma",
+      "intro": "Cómo está la plataforma hoy: cuántos ranchos y personas hay, cuántos la usan, cuánto se pregunta al asistente y qué pide atención.",
+      "ranchos": "Ranchos",
+      "ranchosNuevos": {
+        "uno": "{n} nuevo en los últimos 30 días",
+        "otros": "{n} nuevos en los últimos 30 días"
+      },
+      "personas": "Personas",
+      "activos": {
+        "uno": "{n} la usó en los últimos 30 días",
+        "otros": "{n} la usaron en los últimos 30 días"
+      },
+      "animales": "Animales activos",
+      "corrales": {
+        "uno": "en {n} corral",
+        "otros": "en {n} corrales"
+      },
+      "consultas": "Consultas al asistente este mes",
+      "sinTope": "Sin tope de plataforma",
+      "deTope": "Tope de la plataforma: {tope}",
+      "altas": {
+        "titulo": "Personas nuevas por semana",
+        "resumen": "{personas} personas y {ranchos} ranchos nuevos en las últimas 12 semanas.",
+        "descripcion": "Línea con las personas que se registraron o fueron dadas de alta cada semana, en las últimas 12 semanas.",
+        "ayuda": "Semana del {semana}: {personas} personas, {ranchos} ranchos"
+      },
+      "porRol": {
+        "titulo": "Personas por rol",
+        "descripcion": "Barras con cuántas personas hay de cada rol en toda la plataforma."
+      },
+      "porPais": {
+        "titulo": "Ranchos por país",
+        "descripcion": "Barras con cuántos ranchos hay en cada país."
+      },
+      "asistente": {
+        "titulo": "Asistente este mes",
+        "cambiar": "Cambiar cuotas",
+        "resumen": {
+          "uno": "{n} persona le preguntó este mes. Cuota por persona: {cuota} al mes.",
+          "otros": "{n} personas le preguntaron este mes. Cuota por persona: {cuota} al mes."
+        },
+        "vacio": "Nadie le preguntó al asistente este mes.",
+        "descripcion": "Línea con las consultas al asistente de cada día del mes.",
+        "ayuda": {
+          "uno": "Día {dia}: {n} consulta",
+          "otros": "Día {dia}: {n} consultas"
+        }
+      },
+      "atencion": {
+        "titulo": "Pide atención",
+        "verCuentas": "Ver cuentas",
+        "suspendidas": "Personas suspendidas",
+        "sinVerificar": "Correos sin verificar",
+        "soporteAbierto": "Accesos de soporte abiertos",
+        "soporte30": "Accesos de soporte en 30 días"
+      },
+      "campo": {
+        "titulo": "Actividad del campo (30 días)",
+        "aplicaciones": "Aplicaciones sanitarias",
+        "pesajes": "Pesajes",
+        "nuevos": "Personas nuevas"
+      },
+      "futuro": {
+        "titulo": "Próxima versión: planes y cobro",
+        "texto": "Los planes, las suscripciones y los ingresos se van a ver acá cuando lleguen. En esta versión el sistema es gratuito para todos; la decisión está en DECISIONES.md, punto 50."
+      }
+    },
+    "cuentas": {
+      "titulo": "Cuentas",
+      "intro": "Cada rancho de la plataforma con su propietario, cuánto lo usan y cuándo fue la última vez. Desde acá abres su ficha o entras a dar soporte.",
+      "cuantas": {
+        "uno": "{n} cuenta",
+        "otros": "{n} cuentas"
+      },
+      "animales": {
+        "uno": "{n} animal",
+        "otros": "{n} animales"
+      },
+      "consultas": {
+        "uno": "{n} consulta este mes",
+        "otros": "{n} consultas este mes"
+      },
+      "ultima": "Última actividad: {cuando}",
+      "suspendida": "Propietario suspendido",
+      "verFicha": "Ver ficha"
+    },
+    "ficha": {
+      "titulo": "Ficha de la cuenta",
+      "volver": "Volver a cuentas",
+      "rancho": "El rancho",
+      "ubicacion": "Ubicación",
+      "superficie": "Superficie",
+      "hectareas": "{n} ha",
+      "produccion": "Producción",
+      "propietario": "Propietario",
+      "desde": "En la plataforma desde",
+      "soporte": "Dar soporte",
+      "soporteTexto": "Para ver o corregir algo adentro del rancho, entra escribiendo por qué. El propietario lo ve en su panel.",
+      "animales": "Animales activos",
+      "historicos": {
+        "uno": "{n} en total, con las bajas",
+        "otros": "{n} en total, con las bajas"
+      },
+      "corrales": "Corrales",
+      "sanidadPesajes": "Registros de campo",
+      "sanidadDetalle": "{aplicaciones} aplicaciones y {pesajes} pesajes",
+      "consultas": "Consultas este mes",
+      "consultasTotal": {
+        "uno": "{n} en total",
+        "otros": "{n} en total"
+      },
+      "equipo": {
+        "uno": "Equipo · {n} persona",
+        "otros": "Equipo · {n} personas"
+      },
+      "suspendido": "Suspendido",
+      "sinVerificar": "Correo sin verificar",
+      "claveTemporal": "Clave temporal",
+      "enlace": "Enlace de contraseña",
+      "suspender": "Suspender",
+      "reactivar": "Reactivar",
+      "motivoSuspender": "¿Por qué la suspendes?",
+      "ejemploSuspender": "Ej. El propietario pidió bloquear el acceso",
+      "motivoReactivar": "¿Por qué la reactivas?",
+      "ejemploReactivar": "Ej. Se resolvió el pedido del propietario",
+      "motivoEnlace": "¿Por qué le mandas el enlace?",
+      "ejemploEnlace": "Ej. Llamó porque no puede entrar y no le llega la recuperación",
+      "ayudaEnlace": "El enlace llega a {correo} y vence en una hora. La contraseña la elige esa persona: no la ves. Escribe al menos 10 caracteres.",
+      "mandarEnlace": "Mandar enlace",
+      "actividad": "Lo último que se registró",
+      "sinActividad": "Todavía no se registró nada en este rancho.",
+      "alguien": "Alguien",
+      "eventos": {
+        "animal": "{quien} registró el animal {animal}",
+        "pesaje": "{quien} pesó al {animal}",
+        "aplicacion": "{quien} registró una aplicación al {animal}",
+        "movimiento": "{quien} movió de corral al {animal}",
+        "consulta": "{quien} le preguntó al asistente"
+      },
+      "accesos": "Accesos de soporte",
+      "verAuditoria": "Ver en la auditoría",
+      "sinAccesos": "Nadie del soporte entró a este rancho."
+    },
+    "catalogo": {
+      "titulo": "Catálogo de razas",
+      "intro": "Las razas que ven todos los ranchos al registrar un animal. Desactivar una no cambia a los animales que ya la tienen: solo deja de ofrecerse.",
+      "nueva": "Agregar una raza",
+      "nombre": "Raza",
+      "nombreEjemplo": "Ej. Senepol",
+      "grupo": "Grupo",
+      "grupos": {
+        "carne": "Carne",
+        "leche": "Leche",
+        "doble": "Doble propósito"
+      },
+      "agregar": "Agregar al catálogo",
+      "deRanchos": {
+        "titulo": "Escritas por los ranchos",
+        "intro": "Razas que algún rancho escribió en «Otra» y no están en el catálogo. Al agregarlas, la de cada rancho pasa a ser la del catálogo.",
+        "ninguna": "Ningún rancho escribió razas propias.",
+        "ranchos": {
+          "uno": "{n} rancho",
+          "otros": "{n} ranchos"
+        },
+        "proponer": "Agregar"
+      },
+      "lista": "Razas del catálogo",
+      "activas": "Activas",
+      "desactivadas": "Desactivadas",
+      "ningunaDesactivada": "No hay razas en esta vista.",
+      "animales": "Animales",
+      "acciones": "Acciones",
+      "desactivada": "Desactivada",
+      "grupoDe": "Grupo de {nombre}",
+      "desactivar": "Desactivar",
+      "activar": "Activar"
+    },
+    "configuracion": {
+      "titulo": "Configuración",
+      "intro": "Lo que cambia seguido se cambia acá, sin tocar el código ni el archivo .env. Rige desde que guardas y queda en la auditoría.",
+      "asistente": "Cuotas del asistente",
+      "porUsuario": "Consultas por persona al mes",
+      "deFabrica": "{n} (de fábrica)",
+      "porUsuarioAyuda": "Vacío usa el valor del .env: {n}. Cada persona ve su cuota en la pantalla del asistente.",
+      "tope": "Tope de la plataforma al mes",
+      "sinTope": "Sin tope",
+      "topeAyuda": "Cuando toda la plataforma llega a este número, nadie más pregunta hasta el mes siguiente. Con la capa gratis de Gemini conviene ponerlo.",
+      "guardar": "Guardar",
+      "guardado": "Se guardó la configuración.",
+      "futuro": {
+        "titulo": "Próxima versión: planes y franjas de precio",
+        "texto": "Los límites de cada plan y los precios por región se van a configurar acá cuando lleguen los planes (DECISIONES.md, punto 50)."
+      }
+    },
+    "auditoria": {
+      "titulo": "Auditoría",
+      "intro": "Todo lo que hizo cada Admin: entrar a un rancho, suspender o reactivar cuentas, mandar enlaces de contraseña y cambiar el catálogo o la configuración. No se edita ni se borra.",
+      "registro": "Registro",
+      "nada": "No hay nada anotado en esta vista.",
+      "deRancho": "Solo lo que pasó en {rancho}.",
+      "verTodo": "Ver todo",
+      "tipos": {
+        "todo": "Todo",
+        "soporte": "Soporte",
+        "cuentas": "Cuentas",
+        "contrasenas": "Contraseñas",
+        "razas": "Razas",
+        "configuracion": "Configuración"
+      },
+      "acciones": {
+        "soporte_entrada": "Entró a {rancho}",
+        "soporte_salida": "Salió de {rancho}",
+        "cuenta_suspendida": "Suspendió a {sobre}",
+        "cuenta_reactivada": "Reactivó a {sobre}",
+        "contrasena_enlace": "Mandó un enlace de contraseña a {sobre}",
+        "raza_creada": "Agregó la raza {sobre}",
+        "raza_editada": "Cambió el grupo de {sobre}",
+        "raza_desactivada": "Desactivó la raza {sobre}",
+        "raza_reactivada": "Reactivó la raza {sobre}",
+        "configuracion": "Cambió «{sobre}»"
+      },
+      "etiquetas": {
+        "soporte_entrada": "Soporte",
+        "soporte_salida": "Soporte",
+        "cuenta_suspendida": "Suspensión",
+        "cuenta_reactivada": "Reactivación",
+        "contrasena_enlace": "Contraseña",
+        "raza_creada": "Catálogo",
+        "raza_editada": "Catálogo",
+        "raza_desactivada": "Catálogo",
+        "raza_reactivada": "Catálogo",
+        "configuracion": "Configuración"
+      },
+      "claves": {
+        "asistente_consultas_mes": "consultas por persona al mes",
+        "asistente_tope_mensual": "tope de la plataforma al mes"
+      },
+      "cambio": "Antes: {antes} · ahora: {despues}",
+      "deFabrica": "de fábrica",
+      "grupo": "Antes: {antes} · ahora: {despues}"
+    },
+    "rol": {
+      "propietario": "Propietario",
+      "socio": "Socio",
+      "colaborador": "Colaborador"
     }
   },
   "importacion": {

@@ -1,3 +1,8 @@
+/*
+ * DECISIONES §50 · Los planes y precios de la Propuesta v4, guardados para la
+ * versión que traiga el cobro. En esta versión la landing no los muestra: el
+ * sistema es gratis y con todo incluido.
+ */
 /**
  * Los planes, los precios y las franjas regionales que muestra la landing.
  *

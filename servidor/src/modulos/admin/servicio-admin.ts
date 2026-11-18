@@ -9,6 +9,7 @@ import { t } from '../../comun/idioma';
 import { actuaComoPropietario } from '../../comun/permisos-rol';
 import type { UsuarioActual } from '../../comun/repositorio-usuario-actual';
 import { RepositorioAdmin } from './repositorio-admin';
+import { RepositorioAuditoria } from './repositorio-panel-admin';
 
 /**
  * HU-24 · Acceso total del Admin de plataforma.
@@ -47,7 +48,10 @@ const LARGO_MAXIMO_MOTIVO = 300;
 
 @Injectable()
 export class ServicioAdmin {
-  constructor(private readonly admin: RepositorioAdmin) {}
+  constructor(
+    private readonly admin: RepositorioAdmin,
+    private readonly auditoria: RepositorioAuditoria,
+  ) {}
 
   async ranchos(quien: UsuarioActual) {
     this.soloAdmin(quien);
@@ -75,6 +79,14 @@ export class ServicioAdmin {
       ranchoId: rancho.id,
       motivo,
     });
+    // Fase 4 · RF-62: la entrada también va al registro de auditoría.
+    await this.auditoria.anotar({
+      adminId: quien.id,
+      accion: 'soporte_entrada',
+      ranchoId: rancho.id,
+      objeto: rancho.nombre,
+      detalle: { motivo, acceso_id: acceso.id },
+    });
     return { acceso, mensaje: t('servidor.admin.entraste', { rancho: rancho.nombre }) };
   }
 
@@ -85,10 +97,17 @@ export class ServicioAdmin {
       // Ya estaba cerrado o vencido: para el cliente da igual, ya salio.
       return { mensaje: t('servidor.admin.yaSaliste') };
     }
-    return {
-      acceso: await this.admin.acceso(accesoId),
-      mensaje: t('servidor.admin.saliste'),
-    };
+    const acceso = await this.admin.acceso(accesoId);
+    if (acceso) {
+      await this.auditoria.anotar({
+        adminId: quien.id,
+        accion: 'soporte_salida',
+        ranchoId: acceso.rancho_id,
+        objeto: acceso.rancho,
+        detalle: { acceso_id: acceso.id },
+      });
+    }
+    return { acceso, mensaje: t('servidor.admin.saliste') };
   }
 
   async accesos(quien: UsuarioActual) {

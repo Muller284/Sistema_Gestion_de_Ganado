@@ -83,7 +83,25 @@
       "saliste": "You left the ranch. The access was closed in the log.",
       "yaSaliste": "That access was already closed.",
       "soloAdmin": "This section is only for the platform Admin.",
-      "soloPropietarioVeAccesos": "Only the ranch owner can see the support access log."
+      "soloPropietarioVeAccesos": "Only the ranch owner can see the support access log.",
+      "cuentaSuspendida": "{nombre}'s account was suspended. Their open sessions were closed.",
+      "cuentaReactivada": "{nombre} can sign in again.",
+      "enlaceEnviado": "A link to create a new password was sent to {correo}. It expires in one hour.",
+      "usuarioNoExiste": "That person does not exist on the platform.",
+      "noOtroAdmin": "Admin accounts are not managed from the panel.",
+      "razaNombre": "Write the breed name (2 to 100 letters).",
+      "razaGrupo": "Choose the group: beef, dairy or dual purpose.",
+      "razaRepetida": "“{nombre}” is already in the catalog.",
+      "razaDesactivada": "“{nombre}” is already in the catalog, deactivated. Turn it back on instead of creating it again.",
+      "razaCreada": "“{nombre}” was added to the catalog. Every ranch can see it now.",
+      "razaNoExiste": "That breed is not in the catalog.",
+      "razaSinCambios": "There is nothing to change in the breed.",
+      "razaEditada": "The group of “{nombre}” was changed.",
+      "razaApagada": "“{nombre}” is no longer offered when registering animals. Animals that have it keep it.",
+      "razaReactivada": "“{nombre}” is offered again when registering animals.",
+      "valorInvalido": "Write a whole number between 1 and {max}, or leave it empty to use the default.",
+      "sinCambios": "There was nothing to save.",
+      "configuracionGuardada": "The settings were saved. They apply from now on."
     },
     "perfil": {
       "terminaDeActivar": "Finish activating your account before editing your profile.",
@@ -512,7 +530,8 @@
       "sinVoz": "The assistant's voice is not available: it needs Gemini with ASISTENTE_CLAVE in the server's .env.",
       "audioInvalido": "The audio did not arrive correctly. Record the question again.",
       "audioLargo": "The recording is too long. Ask the question in under 30 seconds.",
-      "consultaNoEncontrada": "That assistant answer was not found."
+      "consultaNoEncontrada": "That assistant answer was not found.",
+      "topePlataforma": "The assistant reached the platform's question limit for this month. The Admin can raise it from their panel."
     }
   },
   "acceso": {
@@ -546,7 +565,7 @@
     "ingreso": {
       "titulo": "Welcome back",
       "subtitulo": "Enter your credentials to start managing your ranch.",
-      "sinCuenta": "Don't have an account yet? <enlace>Create one, it's free for 10 days</enlace>",
+      "sinCuenta": "Don't have an account yet? <enlace>Create one for free</enlace>",
       "faltanDatos": "Please enter your email and password.",
       "incorrectos": "Incorrect email or password.",
       "contrasenaEjemplo": "Your password",
@@ -556,8 +575,8 @@
     },
     "registro": {
       "titulo": "Create your account",
-      "subtitulo": "10 days with every feature. No card needed.",
-      "nota": "When the 10 days are up, your account moves to the Free plan. Nothing gets locked and you don't lose anything.",
+      "subtitulo": "Free and with every feature. No card.",
+      "nota": "In this version everything is free. Paid plans come later and never delete what you loaded.",
       "nombre": "Full name",
       "nombreEjemplo": "e.g. Aaron Vargas",
       "pais": "Country",
@@ -664,9 +683,8 @@
     },
     "cuenta": {
       "titulo": "Account",
-      "plan": "Professional plan",
-      "medidor": "Animals used in your plan",
-      "usados": "{porcentaje}% of animals used"
+      "plan": "Free version",
+      "detalle": "Plans arrive in a coming version."
     },
     "menuUsuario": {
       "cuentaDe": "{nombre}'s account",
@@ -1008,7 +1026,7 @@
       "preguntas": "FAQ",
       "irAMiRancho": "Go to my ranch",
       "ingresar": "Log in",
-      "probarGratis": "Try it free",
+      "probarGratis": "Create free account",
       "abrir": "Open menu",
       "cerrar": "Close menu"
     },
@@ -1016,10 +1034,10 @@
       "pastilla": "For producers in any country",
       "titulo": "Your whole ranch, <resaltado>in your pocket</resaltado>",
       "bajada": "Animals, pens, vaccines and weighings in one place. Work with your team, record from the pen even without signal, and ask whatever you need to know in your own words.",
-      "probar": "Try it free for 10 days",
+      "probar": "Create my free account",
       "yaTengoCuenta": "I already have an account",
       "sinTarjeta": "No card needed",
-      "sigueGratis": "Stay free afterwards",
+      "sigueGratis": "Everything included in this version",
       "exportas": "Export your data whenever you want"
     },
     "vitrina": {
@@ -1151,19 +1169,9 @@
     },
     "planes": {
       "rotulo": "Plans",
-      "titulo": "Pay for the size of your team, not for record-keeping",
-      "bajada": "You start with 10 days of the Professional plan, no card needed. If you don't choose anything, you move to the Free plan: your account isn't locked and you don't lose any data.",
-      "formaDePago": "Billing period",
-      "mensual": "Monthly",
-      "anual": "Yearly <ahorro>−20%</ahorro>",
-      "preciosPara": "Prices for",
-      "cinta": "Your first 10 days",
-      "paraSiempre": "forever",
-      "porMes": "/ month",
-      "porAnio": "/ year",
-      "probar": "Try it free for 10 days",
-      "empezar": "Get started",
-      "nota": "Prices in US dollars. Each account manages one ranch. Where it says “unlimited”, a fair use policy applies.",
+      "titulo": "Free today, with everything included",
+      "bajada": "In this version every feature is free for every ranch. Paid plans arrive in a coming version, and whatever you have already loaded stays with you.",
+      "nota": "Each account manages one ranch. When plans arrive, there will be advance notice and nobody loses their information.",
       "detalleGratis": "No expiration and no card needed.",
       "detalleMensual": "Or USD {monto} if you pay for the whole year.",
       "detalleAnual": "That's USD {monto} per month.",
@@ -1221,15 +1229,42 @@
             "soporte": "Dedicated support channel"
           }
         }
+      },
+      "hoy": {
+        "rotulo": "Current version",
+        "nombre": "Free",
+        "para": "For every ranch, with no time limit.",
+        "precio": "USD 0",
+        "periodo": "no card",
+        "incluye": {
+          "equipo": "Your team: partners and collaborators with their permissions",
+          "registros": "Animals, pens, health and weighings",
+          "excel": "Import your spreadsheet and export everything to Excel",
+          "asistente": "AI assistant, with a monthly question limit",
+          "celular": "Quick recording from your phone"
+        },
+        "boton": "Create my account"
+      },
+      "proxima": {
+        "rotulo": "Next version",
+        "nombre": "Producer, Professional and Business plans",
+        "para": "For when the ranch and the team grow.",
+        "incluye": {
+          "planes": "Plans by team size, not by what you record",
+          "limites": "More members, animals and assistant questions",
+          "region": "Prices adjusted to each country's region",
+          "pago": "Online payment, monthly or yearly",
+          "datos": "Changing plans never deletes what you loaded"
+        }
       }
     },
     "preguntas": {
       "rotulo": "FAQ",
       "titulo": "What everyone asks before getting started",
       "lista": {
-        "finPrueba": {
-          "p": "What happens when the 10-day trial ends?",
-          "r": "Your account moves to the Free plan on its own. It isn't locked, you don't lose any data and you can upgrade whenever you want."
+        "costo": {
+          "p": "How much does it cost?",
+          "r": "In this version, nothing: every feature is free. When paid plans arrive, your ranch keeps everything you already loaded and nothing is deleted."
         },
         "internet": {
           "p": "Do I need internet to use it?",
@@ -1245,13 +1280,13 @@
         },
         "irme": {
           "p": "What if I want to leave?",
-          "r": "Export everything to Excel at any time. If you cancel, your account stays read-only for at least 12 months so you can keep looking up and exporting your information."
+          "r": "Export everything to Excel at any time: your data is yours and you take it with you whenever you want."
         }
       }
     },
     "cierre": {
       "titulo": "Start today with your herd",
-      "bajada": "10 days with every feature. No card, no commitment.",
+      "bajada": "Free and with every feature. No card and no commitment.",
       "crearCuenta": "Create my account",
       "ingresar": "Log in"
     },
@@ -1676,17 +1711,19 @@
         "socio": "partner",
         "colaborador": "collaborator"
       }
+    },
+    "recuperacionAdmin": {
+      "asunto": "Create a new password — Sistema de Gestión de Ganado",
+      "cuerpo": "Hi {nombre},\n\nThe platform support team sent you this link so you can create a new password. Nobody else will see it.\n\nThe link expires in 1 hour. If you were not expecting it, write to us before using it."
     }
   },
   "admin": {
-    "menu": "Support",
+    "menu": "Administration",
     "rotulo": "Platform admin",
-    "titulo": "Ranch support",
     "noEsTuRol": {
       "titulo": "This section is for the platform admin",
       "texto": "This is where platform support enters the ranches. Your account doesn't have that role."
     },
-    "intro": "From here you can enter any ranch to give support. To enter, you write why: every entry is kept in the log and the owner sees it on their dashboard. Inside, you can do the same as the owner until you leave or eight hours pass.",
     "sigueAdentro": "You are still inside {rancho}. When you're done, leave from the bar at the top.",
     "vistas": "What to show",
     "ranchos": {
@@ -1733,6 +1770,289 @@
       "titulo": "Platform support",
       "intro": "Every time someone from support enters your ranch it is logged: who, when and why.",
       "nadie": "Nobody from platform support has entered your ranch."
+    },
+    "navegacion": {
+      "tablero": "Dashboard",
+      "cuentas": "Accounts",
+      "catalogo": "Catalog",
+      "configuracion": "Settings",
+      "auditoria": "Audit log",
+      "rancho": "Inside {rancho}"
+    },
+    "motivo": {
+      "ayuda": "At least {n} characters. It goes to the audit log.",
+      "enviando": "Saving…"
+    },
+    "soporte": {
+      "volver": "Enter again"
+    },
+    "tiempo": {
+      "nunca": "no activity",
+      "recien": "just now",
+      "minutos": {
+        "uno": "{n} minute ago",
+        "otros": "{n} minutes ago"
+      },
+      "horas": {
+        "uno": "{n} hour ago",
+        "otros": "{n} hours ago"
+      },
+      "dias": {
+        "uno": "{n} day ago",
+        "otros": "{n} days ago"
+      }
+    },
+    "roles": {
+      "propietario": "Owners",
+      "socio": "Partners",
+      "colaborador": "Collaborators"
+    },
+    "tablero": {
+      "titulo": "Platform dashboard",
+      "intro": "How the platform is doing today: how many ranches and people there are, how many use it, how much the assistant is asked and what needs attention.",
+      "ranchos": "Ranches",
+      "ranchosNuevos": {
+        "uno": "{n} new in the last 30 days",
+        "otros": "{n} new in the last 30 days"
+      },
+      "personas": "People",
+      "activos": {
+        "uno": "{n} used it in the last 30 days",
+        "otros": "{n} used it in the last 30 days"
+      },
+      "animales": "Active animals",
+      "corrales": {
+        "uno": "in {n} pen",
+        "otros": "in {n} pens"
+      },
+      "consultas": "Assistant questions this month",
+      "sinTope": "No platform limit",
+      "deTope": "Platform limit: {tope}",
+      "altas": {
+        "titulo": "New people per week",
+        "resumen": "{personas} people and {ranchos} new ranches in the last 12 weeks.",
+        "descripcion": "Line with the people who signed up or were added each week, over the last 12 weeks.",
+        "ayuda": "Week of {semana}: {personas} people, {ranchos} ranches"
+      },
+      "porRol": {
+        "titulo": "People by role",
+        "descripcion": "Bars with how many people of each role there are on the platform."
+      },
+      "porPais": {
+        "titulo": "Ranches by country",
+        "descripcion": "Bars with how many ranches there are in each country."
+      },
+      "asistente": {
+        "titulo": "Assistant this month",
+        "cambiar": "Change limits",
+        "resumen": {
+          "uno": "{n} person asked this month. Limit per person: {cuota} a month.",
+          "otros": "{n} people asked this month. Limit per person: {cuota} a month."
+        },
+        "vacio": "Nobody asked the assistant this month.",
+        "descripcion": "Line with the assistant questions of each day of the month.",
+        "ayuda": {
+          "uno": "Day {dia}: {n} question",
+          "otros": "Day {dia}: {n} questions"
+        }
+      },
+      "atencion": {
+        "titulo": "Needs attention",
+        "verCuentas": "See accounts",
+        "suspendidas": "Suspended people",
+        "sinVerificar": "Unverified emails",
+        "soporteAbierto": "Open support accesses",
+        "soporte30": "Support accesses in 30 days"
+      },
+      "campo": {
+        "titulo": "Field activity (30 days)",
+        "aplicaciones": "Health applications",
+        "pesajes": "Weighings",
+        "nuevos": "New people"
+      },
+      "futuro": {
+        "titulo": "Next version: plans and billing",
+        "texto": "Plans, subscriptions and revenue will show here when they arrive. In this version the system is free for everyone; the decision is in DECISIONES.md, item 50."
+      }
+    },
+    "cuentas": {
+      "titulo": "Accounts",
+      "intro": "Every ranch on the platform with its owner, how much they use it and when they last did. From here you open its record or enter to give support.",
+      "cuantas": {
+        "uno": "{n} account",
+        "otros": "{n} accounts"
+      },
+      "animales": {
+        "uno": "{n} animal",
+        "otros": "{n} animals"
+      },
+      "consultas": {
+        "uno": "{n} question this month",
+        "otros": "{n} questions this month"
+      },
+      "ultima": "Last activity: {cuando}",
+      "suspendida": "Owner suspended",
+      "verFicha": "See record"
+    },
+    "ficha": {
+      "titulo": "Account record",
+      "volver": "Back to accounts",
+      "rancho": "The ranch",
+      "ubicacion": "Location",
+      "superficie": "Area",
+      "hectareas": "{n} ha",
+      "produccion": "Production",
+      "propietario": "Owner",
+      "desde": "On the platform since",
+      "soporte": "Give support",
+      "soporteTexto": "To see or fix something inside the ranch, enter writing why. The owner sees it on their dashboard.",
+      "animales": "Active animals",
+      "historicos": {
+        "uno": "{n} in total, with removals",
+        "otros": "{n} in total, with removals"
+      },
+      "corrales": "Pens",
+      "sanidadPesajes": "Field records",
+      "sanidadDetalle": "{aplicaciones} applications and {pesajes} weighings",
+      "consultas": "Questions this month",
+      "consultasTotal": {
+        "uno": "{n} in total",
+        "otros": "{n} in total"
+      },
+      "equipo": {
+        "uno": "Team · {n} person",
+        "otros": "Team · {n} people"
+      },
+      "suspendido": "Suspended",
+      "sinVerificar": "Unverified email",
+      "claveTemporal": "Temporary password",
+      "enlace": "Password link",
+      "suspender": "Suspend",
+      "reactivar": "Reactivate",
+      "motivoSuspender": "Why are you suspending them?",
+      "ejemploSuspender": "E.g. The owner asked to block access",
+      "motivoReactivar": "Why are you reactivating them?",
+      "ejemploReactivar": "E.g. The owner's request was solved",
+      "motivoEnlace": "Why are you sending the link?",
+      "ejemploEnlace": "E.g. They called because they cannot sign in and recovery does not arrive",
+      "ayudaEnlace": "The link goes to {correo} and expires in one hour. That person chooses the password: you never see it. Write at least 10 characters.",
+      "mandarEnlace": "Send link",
+      "actividad": "Latest records",
+      "sinActividad": "Nothing was recorded in this ranch yet.",
+      "alguien": "Someone",
+      "eventos": {
+        "animal": "{quien} registered animal {animal}",
+        "pesaje": "{quien} weighed {animal}",
+        "aplicacion": "{quien} recorded an application to {animal}",
+        "movimiento": "{quien} moved {animal} to another pen",
+        "consulta": "{quien} asked the assistant"
+      },
+      "accesos": "Support accesses",
+      "verAuditoria": "See in the audit log",
+      "sinAccesos": "Nobody from support entered this ranch."
+    },
+    "catalogo": {
+      "titulo": "Breed catalog",
+      "intro": "The breeds every ranch sees when registering an animal. Deactivating one does not change the animals that already have it: it is just no longer offered.",
+      "nueva": "Add a breed",
+      "nombre": "Breed",
+      "nombreEjemplo": "E.g. Senepol",
+      "grupo": "Group",
+      "grupos": {
+        "carne": "Beef",
+        "leche": "Dairy",
+        "doble": "Dual purpose"
+      },
+      "agregar": "Add to catalog",
+      "deRanchos": {
+        "titulo": "Written by ranches",
+        "intro": "Breeds some ranch wrote under “Other” that are not in the catalog. When you add them, each ranch's own becomes the catalog one.",
+        "ninguna": "No ranch wrote its own breeds.",
+        "ranchos": {
+          "uno": "{n} ranch",
+          "otros": "{n} ranches"
+        },
+        "proponer": "Add"
+      },
+      "lista": "Catalog breeds",
+      "activas": "Active",
+      "desactivadas": "Deactivated",
+      "ningunaDesactivada": "There are no breeds in this view.",
+      "animales": "Animals",
+      "acciones": "Actions",
+      "desactivada": "Deactivated",
+      "grupoDe": "Group of {nombre}",
+      "desactivar": "Deactivate",
+      "activar": "Activate"
+    },
+    "configuracion": {
+      "titulo": "Settings",
+      "intro": "What changes often is changed here, without touching the code or the .env file. It applies from the moment you save and goes to the audit log.",
+      "asistente": "Assistant limits",
+      "porUsuario": "Questions per person a month",
+      "deFabrica": "{n} (default)",
+      "porUsuarioAyuda": "Empty uses the .env value: {n}. Each person sees their limit on the assistant screen.",
+      "tope": "Platform limit a month",
+      "sinTope": "No limit",
+      "topeAyuda": "When the whole platform reaches this number, nobody else can ask until next month. With Gemini's free tier it is worth setting.",
+      "guardar": "Save",
+      "guardado": "The settings were saved.",
+      "futuro": {
+        "titulo": "Next version: plans and price tiers",
+        "texto": "Each plan's limits and the regional prices will be set here when plans arrive (DECISIONES.md, item 50)."
+      }
+    },
+    "auditoria": {
+      "titulo": "Audit log",
+      "intro": "Everything each Admin did: entering a ranch, suspending or reactivating accounts, sending password links and changing the catalog or the settings. It cannot be edited or deleted.",
+      "registro": "Log",
+      "nada": "Nothing recorded in this view.",
+      "deRancho": "Only what happened in {rancho}.",
+      "verTodo": "See all",
+      "tipos": {
+        "todo": "All",
+        "soporte": "Support",
+        "cuentas": "Accounts",
+        "contrasenas": "Passwords",
+        "razas": "Breeds",
+        "configuracion": "Settings"
+      },
+      "acciones": {
+        "soporte_entrada": "Entered {rancho}",
+        "soporte_salida": "Left {rancho}",
+        "cuenta_suspendida": "Suspended {sobre}",
+        "cuenta_reactivada": "Reactivated {sobre}",
+        "contrasena_enlace": "Sent a password link to {sobre}",
+        "raza_creada": "Added the breed {sobre}",
+        "raza_editada": "Changed the group of {sobre}",
+        "raza_desactivada": "Deactivated the breed {sobre}",
+        "raza_reactivada": "Reactivated the breed {sobre}",
+        "configuracion": "Changed “{sobre}”"
+      },
+      "etiquetas": {
+        "soporte_entrada": "Support",
+        "soporte_salida": "Support",
+        "cuenta_suspendida": "Suspension",
+        "cuenta_reactivada": "Reactivation",
+        "contrasena_enlace": "Password",
+        "raza_creada": "Catalog",
+        "raza_editada": "Catalog",
+        "raza_desactivada": "Catalog",
+        "raza_reactivada": "Catalog",
+        "configuracion": "Settings"
+      },
+      "claves": {
+        "asistente_consultas_mes": "questions per person a month",
+        "asistente_tope_mensual": "platform limit a month"
+      },
+      "cambio": "Before: {antes} · now: {despues}",
+      "deFabrica": "default",
+      "grupo": "Before: {antes} · now: {despues}"
+    },
+    "rol": {
+      "propietario": "Owner",
+      "socio": "Partner",
+      "colaborador": "Collaborator"
     }
   },
   "importacion": {

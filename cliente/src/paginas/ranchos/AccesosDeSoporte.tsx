@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Alerta, Tarjeta } from '../../componentes';
 import { api, type AccesoAdmin } from '../../servicios/api';
 import { t } from '../../servicios/idioma';
-import { ListaDeAccesos } from '../admin/PaginaAdmin';
+import { ListaDeAccesos } from '../admin/comun';
 
 /**
  * HU-24 · Quién del soporte de la plataforma entró a este rancho, cuándo y

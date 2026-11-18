@@ -69,7 +69,11 @@ export type NombreIcono =
   | 'ojo-cerrado'
   | 'microfono'
   | 'altavoz'
-  | 'detener';
+  | 'detener'
+  | 'tablero'
+  | 'libro'
+  | 'ajustes'
+  | 'historial';
 
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   // tag · la caravana que lleva cada animal, y la marca del sistema
@@ -382,6 +386,48 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" />
       <path d="M16 9a5 5 0 0 1 0 6" />
       <path d="M19.364 18.364a9 9 0 0 0 0-12.728" />
+    </>
+  ),
+
+  // layout-dashboard (fase 4: el tablero del Admin)
+  tablero: (
+    <>
+      <rect width="7" height="9" x="3" y="3" rx="1" />
+      <rect width="7" height="5" x="14" y="3" rx="1" />
+      <rect width="7" height="9" x="14" y="12" rx="1" />
+      <rect width="7" height="5" x="3" y="16" rx="1" />
+    </>
+  ),
+
+  // book-open (fase 4: el catálogo general)
+  libro: (
+    <>
+      <path d="M12 7v14" />
+      <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+    </>
+  ),
+
+  // sliders-horizontal (fase 4: la configuración de la plataforma)
+  ajustes: (
+    <>
+      <path d="M10 5H3" />
+      <path d="M12 19H3" />
+      <path d="M14 3v4" />
+      <path d="M16 17v4" />
+      <path d="M21 12h-9" />
+      <path d="M21 19h-5" />
+      <path d="M21 5h-7" />
+      <path d="M8 10v4" />
+      <path d="M8 12H3" />
+    </>
+  ),
+
+  // history (fase 4: la auditoría)
+  historial: (
+    <>
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+      <path d="M12 7v5l4 2" />
     </>
   ),
 
