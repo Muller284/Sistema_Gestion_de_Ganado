@@ -1,0 +1,100 @@
+# ============================================================================
+#  SISTEMA DE GESTION DE GANADO
+#  Publicación en Render (DECISIONES.md, punto 52)
+# ============================================================================
+#
+#  Dos servicios gratuitos que Render crea desde este archivo (Blueprint) y
+#  vuelve a publicar solos con cada push a la rama main:
+#
+#    ganado-univalle-api   el servidor NestJS. Se duerme a los 15 minutos sin
+#                          uso y tarda cerca de un minuto en despertar.
+#    ganado-univalle       el cliente compilado (sitio estático, no se duerme).
+#
+#  La base de datos es PostgreSQL en Neon (gratis y sin vencimiento); su
+#  cadena de conexión se pega en DATABASE_URL al crear el Blueprint.
+#
+#  Si Render no deja usar alguno de los dos nombres (ya existe), le agrega
+#  letras al final. En ese caso hay que corregir VITE_API y URL_CLIENTE en el
+#  panel de Render con las direcciones reales y volver a publicar el cliente.
+# ============================================================================
+
+services:
+  - type: web
+    name: ganado-univalle-api
+    runtime: node
+    plan: free
+    region: virginia
+    branch: main
+    autoDeployTrigger: commit
+    # Sin rootDir: el servidor necesita la carpeta idiomas/ de la raíz.
+    buildCommand: cd servidor && npm ci && npm run construir
+    # Las migraciones van al arrancar: aplican solo las que falten.
+    startCommand: cd servidor && node migrar.js && node dist/main.js
+    healthCheckPath: /paises
+    buildFilter:
+      paths:
+        - servidor/**
+        - idiomas/**
+        - render.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRETO
+        generateValue: true
+      # Solo se entra con correo y contraseña: sin barra de demostración.
+      - key: PERMITIR_DEMOSTRACION
+        value: "no"
+      - key: URL_CLIENTE
+        value: https://ganado-univalle.onrender.com
+      # Correo real con Brevo (DECISIONES.md, puntos 18 y 30).
+      - key: CORREO_TRANSPORTE
+        value: brevo
+      - key: BREVO_API_KEY
+        sync: false
+      - key: CORREO_REMITENTE
+        sync: false
+      - key: CORREO_REMITENTE_NOMBRE
+        value: Sistema de Gestión de Ganado
+      # Asistente (DECISIONES.md, puntos 48 y 49).
+      - key: ASISTENTE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai
+      - key: ASISTENTE_MODELO
+        value: gemini-3.5-flash-lite
+      - key: ASISTENTE_CLAVE
+        sync: false
+      - key: ASISTENTE_ESFUERZO
+        value: low
+      - key: ASISTENTE_VOZ_MODELO
+        value: gemini-3.8-flash-lite-tts
+      - key: ASISTENTE_VOZ_NOMBRE
+        value: Kore
+
+  - type: web
+    name: ganado-univalle
+    runtime: static
+    branch: main
+    autoDeployTrigger: commit
+    buildCommand: cd cliente && npm ci && npm run build
+    staticPublishPath: cliente/dist
+    buildFilter:
+      paths:
+        - cliente/**
+        - idiomas/**
+        - render.yaml
+    headers:
+      # Los archivos de assets llevan un hash en el nombre: se guardan un año.
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: VITE_API
+        value: https://ganado-univalle-api.onrender.com
+      - key: VITE_DEMOSTRACION
+        value: "no"

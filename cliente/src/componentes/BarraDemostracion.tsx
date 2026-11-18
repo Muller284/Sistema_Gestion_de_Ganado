@@ -44,6 +44,13 @@ const CUENTAS = [
 const ADMIN = 'f0000000-0000-4000-8000-000000000001';
 
 export function BarraDemostracion() {
+  // En el sistema publicado no hay barra: se entra con correo y contraseña
+  // (VITE_DEMOSTRACION=no, DECISIONES §52).
+  if (import.meta.env.VITE_DEMOSTRACION === 'no') return null;
+  return <Barra />;
+}
+
+function Barra() {
   // Se lee en cada renderizado y no se guarda en el estado: si se guardara,
   // al registrarse una cuenta nueva la barra seguiria mostrando la anterior.
   const id = usuarioActual();
