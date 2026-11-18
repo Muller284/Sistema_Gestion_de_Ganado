@@ -6,7 +6,7 @@ punto 7.
 
 | Archivo | Qué hace |
 | --- | --- |
-| `01_esquema.sql` | Crea las 24 tablas, la vista `permisos_tipo_vigentes`, las funciones, los disparadores y los índices. |
+| `01_esquema.sql` | Crea las 26 tablas, la vista `permisos_tipo_vigentes`, las funciones, los disparadores y los índices. |
 | `02_datos_ejemplo.sql` | Carga los datos de prueba: dos ranchos, 14 usuarios de todos los roles, animales, corrales, productos, esquemas, aplicaciones y pesajes. |
 | `03_script_simple.sql` | Versión resumida del modelo (rancho, corrales, animales y pesajes) en un esquema aparte, con datos y dos consultas de ejemplo. Es el script que va copiado en el manual. |
 
