@@ -2102,3 +2102,101 @@ texto vacío. Otro usuario que pidió la voz de esa respuesta recibió 404.
 - Cliente: 8 más en `pruebas/asistente.test.tsx` (el WAV, el silencio, grabar,
   transcribir, preguntar y escuchar, el permiso del micrófono y que no se pida
   dos veces la misma voz).
+
+## 50. Los planes y el cobro quedan para una versión futura (decisión del equipo, 18/11/2026)
+
+**Qué se decidió.** Esta versión del sistema no tiene planes pagos, prueba de
+10 días, suscripción ni cobro. Es gratuita y con todas las funciones para
+todos los ranchos. Los planes de la propuesta (Gratis, Productor, Profesional
+y Empresa, con precios por región) se mantienen como promesa para la versión
+siguiente, y así se muestran en la landing.
+
+**Por qué.**
+
+- El cobro real necesita una cuenta de comercio en la pasarela a nombre del
+  cliente, con sus datos fiscales. La propuesta lo puso como supuesto
+  (sección 18) y dijo que, si no se cumplía, se revisaba el alcance. No se
+  cumplió, así que se revisa.
+- Los planes prometen cuotas del asistente («600 preguntas al mes», «sin
+  límite»). El asistente usa la capa gratis de Gemini (punto 48), cuyo límite
+  diario es de toda la plataforma. Vender cuotas que no se pueden sostener
+  sería prometer algo falso.
+- Sin cobro, los límites por plan no tienen sentido: limitarían sin ofrecer
+  nada a cambio.
+
+**Qué cambió en la pantalla.**
+
+- Landing: la sección Planes dice «Hoy es gratis, con todo incluido» y
+  muestra, aparte, lo que llega en la próxima versión, sin precios. Los
+  textos que hablaban de «10 días de prueba» ahora dicen que es gratis. Los
+  planes y precios de la propuesta quedan guardados en
+  `cliente/src/paginas/landing/planes.ts` para cuando lleguen.
+- Registro e ingreso: sin la prueba de 10 días.
+- Menú lateral: decía «Plan Profesional» con un medidor fijo de 76 % que no
+  medía nada. Ahora dice «Versión gratuita» y que los planes llegan después.
+- Panel del Admin: una tarjeta en el tablero y otra en Configuración dicen
+  qué va a aparecer ahí cuando lleguen los planes.
+
+**Requerimientos que pasan a la versión futura.** RF-43 a RF-52 (prueba,
+planes, cobro, gracia, degradación, avisos de mejora y estado de la
+suscripción), RF-58 y RF-59 (planes y franjas en el panel), RF-63 a RF-65
+(cancelación y baja definitiva), los correos de prueba y pagos de RF-67 y lo
+de pagos e ingresos de RF-56 y RF-60. RF-42 se cumple con una cuota por
+persona que el Admin cambia desde su panel (punto 51), en lugar de una por
+plan.
+
+**Qué no se pierde.** El modelo de datos sigue preparado: la tabla de franjas
+de precio y la franja de cada país ya existen, y los límites, cuando lleguen,
+serán datos configurables desde el panel (RNF-04), como ya lo son las cuotas
+del asistente.
+
+## 51. Panel de administración de la plataforma (fase 4, Aaron)
+
+**Qué hace.** El Admin de plataforma ya no tiene solo la lista de ranchos para
+dar soporte (HU-24). Tiene un panel con cinco pantallas:
+
+| Pantalla | Qué tiene | Requerimientos |
+| --- | --- | --- |
+| Tablero | Ranchos, personas, cuántas usaron el sistema en 30 días, altas por semana, personas por rol, ranchos por país, uso del asistente en el mes, lo que pide atención y la actividad del campo | RF-56 |
+| Cuentas | Búsqueda (sin mayúsculas ni tildes) y la ficha de cada rancho: datos, equipo, consumo, lo último que se registró y los accesos de soporte. Suspender, reactivar y mandar un enlace de contraseña | RF-57, RF-61 |
+| Catálogo | Razas del catálogo general: agregar, cambiar el grupo, desactivar y reactivar; y las que escribieron los ranchos, para agregarlas con un clic | RF-60 |
+| Configuración | Consultas al asistente por persona al mes y tope de la plataforma al mes | RNF-04, RNF-11 |
+| Auditoría | Todo lo que hizo cada Admin, con el motivo o el valor de antes y el de después, filtrable por tipo y por rancho | RF-62 |
+
+**Decisiones.**
+
+- **Cada acción pide un motivo y queda en `registro_auditoria`** (migración
+  013): entrar y salir de un rancho, suspender, reactivar, mandar un enlace,
+  y los cambios del catálogo y la configuración. Los accesos de soporte que
+  ya había se copiaron a la auditoría. Las filas no se editan ni se borran.
+- **El Admin nunca ve una contraseña** (RF-14). «Enlace de contraseña» manda
+  el mismo enlace de «Olvidé mi contraseña» (HU-09), que vence en una hora;
+  la persona elige su clave. La respuesta al Admin no trae ni el enlace.
+- **Suspender cierra en el acto todas las sesiones**, igual que en Equipo
+  (HU-17). Se puede suspender al propietario; a otro Admin, no.
+- **La actividad cuenta lo que se hizo, no solo los ingresos.** «Última
+  actividad» y «usaron el sistema en 30 días» miran las sesiones y también
+  los registros (animales, pesajes, aplicaciones, movimientos, consultas al
+  asistente). En la demostración se entra sin sesión y, si no, todos
+  aparecerían inactivos.
+- **Del interior de un rancho, el panel solo muestra cantidades y la
+  actividad reciente** (qué se registró, quién y cuándo). Las preguntas al
+  asistente no se muestran, solo cuántas hubo. Para ver más, el Admin entra a
+  dar soporte, y eso queda registrado.
+- **Agregar una raza al catálogo absorbe las iguales de los ranchos**: la que
+  un rancho había escrito en «Otra» con el mismo nombre se da de baja, para
+  que no aparezca dos veces. Los animales guardan la raza como texto, así que
+  no cambian.
+- **Las cuotas del asistente son datos** (`configuracion_plataforma`). Vacío
+  significa «la del .env» (por persona) o «sin tope» (plataforma). El tope de
+  plataforma devuelve 429 con motivo `tope` y no llama al modelo. Con la capa
+  gratis de Gemini conviene ponerlo.
+
+**Pruebas.**
+
+- Servidor: `pruebas/panel-admin.test.js` (16). Solo el Admin llega a las
+  rutas; búsqueda; ficha; suspender cierra sesiones y deja afuera; reactivar;
+  el enlace no se devuelve; catálogo con absorción, repetidas y
+  desactivación; validación de la configuración; la cuota rige en el
+  asistente; el tope corta con 429; cada acción queda en la auditoría.
+- Cliente: `pruebas/panel-admin.test.tsx` (8).

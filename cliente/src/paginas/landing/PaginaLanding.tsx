@@ -3,18 +3,6 @@ import { Link } from 'react-router-dom';
 import { Icono, IconoMarca, SelectorIdioma, type NombreIcono } from '../../componentes';
 import { hayAlguienDentro } from '../../servicios/api';
 import { t, tJsx } from '../../servicios/idioma';
-import {
-  FRANJAS,
-  PLANES,
-  franjaDelNavegador,
-  loQueIncluye,
-  nombreDeFranja,
-  nombreDelPlan,
-  paraQuienEs,
-  precioDelPlan,
-  type ClaveFranja,
-  type Periodo,
-} from './planes';
 
 /**
  * La landing: lo primero que ve quien llega sin cuenta.
@@ -23,14 +11,13 @@ import {
  * Del marco "Web / Landing / Página completa / Con datos" de Figma, que es de
  * Aaron según el inventario de pantallas. Se tomó de ahí la estructura y el
  * sistema de diseño, y se le sumaron cosas que en un dibujo no se pueden
- * mostrar: los precios cambian según la región, el asistente responde las
- * preguntas de ejemplo y todo lo que se puede tocar lleva a una pantalla que
+ * mostrar: el asistente responde las preguntas de ejemplo y todo lo que se puede tocar lleva a una pantalla que
  * ya existe (registro e ingreso).
  *
  * TODO EL CONTENIDO VIENE DE LA PROPUESTA
- * Los tres diferenciales, los planes con sus límites, los precios, las
- * franjas regionales y las preguntas del asistente son los de la Propuesta
- * v4. Si allá cambia un número, se cambia en planes.ts y en ningún otro lado.
+ * Los tres diferenciales y las preguntas del asistente son los de la
+ * Propuesta v4. Los planes y precios de la propuesta quedan para una versión
+ * futura (DECISIONES §50): están en planes.ts, que hoy no se muestra.
  *
  * LOS TEXTOS ESTÁN EN EL ARCHIVO DE IDIOMA (HU-25)
  * Todo lo que se lee está bajo landing.* en idiomas/<idioma>.json. Las listas
@@ -561,12 +548,17 @@ function ComoEmpieza() {
 
 /* ==========================================================================
  * Planes
+ * ----------------------------------------------------------------------------
+ * DECISIONES §50. En esta versión no hay planes pagos ni cobro: el sistema es
+ * gratis y con todo incluido. Los planes de la Propuesta v4 (planes.ts) se
+ * muestran como lo que llega en la próxima versión, sin precios, para no
+ * prometer un cobro que todavía no existe.
  * ======================================================================== */
 
-function Planes() {
-  const [periodo, setPeriodo] = useState<Periodo>('mes');
-  const [franja, setFranja] = useState<ClaveFranja>(franjaDelNavegador);
+const INCLUYE_HOY = ['equipo', 'registros', 'excel', 'asistente', 'celular'];
+const INCLUYE_PROXIMA = ['planes', 'limites', 'region', 'pago', 'datos'];
 
+function Planes() {
   return (
     <section className="lp-seccion" id="planes">
       <div className="lp-ancho">
@@ -576,90 +568,41 @@ function Planes() {
           bajada={t('landing.planes.bajada')}
         />
 
-        <div className="lp-planes__controles" data-aparece>
-          <div className="lp-segmentos" role="group" aria-label={t('landing.planes.formaDePago')}>
-            <button
-              type="button"
-              aria-pressed={periodo === 'mes'}
-              className={periodo === 'mes' ? 'activo' : undefined}
-              onClick={() => setPeriodo('mes')}
-            >
-              {t('landing.planes.mensual')}
-            </button>
-            <button
-              type="button"
-              aria-pressed={periodo === 'anio'}
-              className={periodo === 'anio' ? 'activo' : undefined}
-              onClick={() => setPeriodo('anio')}
-            >
-              {tJsx('landing.planes.anual', {
-                ahorro: (s) => <span className="lp-ahorro">{s}</span>,
-              })}
-            </button>
-          </div>
-
-          <label className="lp-region">
-            <span>{t('landing.planes.preciosPara')}</span>
-            <select value={franja} onChange={(e) => setFranja(e.target.value as ClaveFranja)}>
-              {FRANJAS.map((f) => (
-                <option key={f.clave} value={f.clave}>
-                  {nombreDeFranja(f)}
-                </option>
+        <div className="lp-planes lp-planes--version">
+          <article className="lp-plan lp-plan--destacado" data-aparece>
+            <span className="insignia ins-exito lp-plan__cinta">{t('landing.planes.hoy.rotulo')}</span>
+            <h3>{t('landing.planes.hoy.nombre')}</h3>
+            <p className="lp-plan__para">{t('landing.planes.hoy.para')}</p>
+            <p className="lp-plan__precio">
+              <strong>{t('landing.planes.hoy.precio')}</strong>
+              <span className="lp-plan__periodo">{t('landing.planes.hoy.periodo')}</span>
+            </p>
+            <ul>
+              {INCLUYE_HOY.map((clave) => (
+                <li key={clave}>
+                  <Icono nombre="exito" tamano={16} />
+                  {t(`landing.planes.hoy.incluye.${clave}`)}
+                </li>
               ))}
-            </select>
-            <Icono nombre="desplegar" tamano={16} />
-          </label>
-        </div>
+            </ul>
+            <Link className="btn btn-primario btn-bloque" to="/registro">
+              {t('landing.planes.hoy.boton')}
+            </Link>
+          </article>
 
-        <div className="lp-planes">
-          {PLANES.map((plan) => {
-            const precio = precioDelPlan(plan, periodo, franja);
-            return (
-              <article
-                key={plan.clave}
-                className={plan.destacado ? 'lp-plan lp-plan--destacado' : 'lp-plan'}
-                data-aparece
-              >
-                {plan.destacado && (
-                  <span className="insignia ins-plan lp-plan__cinta">
-                    {t('landing.planes.cinta')}
-                  </span>
-                )}
-                <h3>{nombreDelPlan(plan)}</h3>
-                <p className="lp-plan__para">{paraQuienEs(plan)}</p>
-                <p className="lp-plan__precio">
-                  <span className="lp-plan__moneda">USD</span>
-                  <strong>{precio.monto}</strong>
-                  <span className="lp-plan__periodo">
-                    {precio.gratis
-                      ? t('landing.planes.paraSiempre')
-                      : periodo === 'mes'
-                        ? t('landing.planes.porMes')
-                        : t('landing.planes.porAnio')}
-                  </span>
-                </p>
-                <p className="lp-plan__detalle">{precio.detalle}</p>
-
-                <ul>
-                  {loQueIncluye(plan).map((linea) => (
-                    <li key={linea.clave}>
-                      <Icono nombre="exito" tamano={16} />
-                      {linea.texto}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  className={
-                    plan.destacado ? 'btn btn-plan btn-bloque' : 'btn btn-secundario btn-bloque'
-                  }
-                  to="/registro"
-                >
-                  {plan.destacado ? t('landing.planes.probar') : t('landing.planes.empezar')}
-                </Link>
-              </article>
-            );
-          })}
+          <article className="lp-plan lp-plan--proxima" data-aparece>
+            <span className="insignia ins-neutro lp-plan__cinta">{t('landing.planes.proxima.rotulo')}</span>
+            <h3>{t('landing.planes.proxima.nombre')}</h3>
+            <p className="lp-plan__para">{t('landing.planes.proxima.para')}</p>
+            <ul>
+              {INCLUYE_PROXIMA.map((clave) => (
+                <li key={clave}>
+                  <Icono nombre="pendiente" tamano={16} />
+                  {t(`landing.planes.proxima.incluye.${clave}`)}
+                </li>
+              ))}
+            </ul>
+          </article>
         </div>
 
         <p className="lp-planes__nota" data-aparece>
@@ -675,7 +618,7 @@ function Planes() {
  * ======================================================================== */
 
 /** Textos en landing.preguntas.lista.<clave>.{p,r}. */
-const PREGUNTAS = ['finPrueba', 'internet', 'excel', 'privacidad', 'irme'];
+const PREGUNTAS = ['costo', 'internet', 'excel', 'privacidad', 'irme'];
 
 function Preguntas() {
   return (

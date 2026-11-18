@@ -46,6 +46,15 @@ const MODULOS: Modulo[] = [
   { clave: 'asistente', nombre: 'app.modulos.asistente', icono: 'asistente', ruta: '/asistente' },
 ];
 
+/** Fase 4 · El panel del Admin de plataforma. Cuentas sigue marcada dentro de la ficha. */
+const MODULOS_ADMIN: { clave: string; nombre: string; icono: NombreIcono; ruta: string; exacta?: boolean }[] = [
+  { clave: 'admin', nombre: 'admin.navegacion.tablero', icono: 'tablero', ruta: '/admin', exacta: true },
+  { clave: 'admin-cuentas', nombre: 'admin.navegacion.cuentas', icono: 'equipo', ruta: '/admin/cuentas' },
+  { clave: 'admin-catalogo', nombre: 'admin.navegacion.catalogo', icono: 'libro', ruta: '/admin/catalogo' },
+  { clave: 'admin-configuracion', nombre: 'admin.navegacion.configuracion', icono: 'ajustes', ruta: '/admin/configuracion' },
+  { clave: 'admin-auditoria', nombre: 'admin.navegacion.auditoria', icono: 'historial', ruta: '/admin/auditoria' },
+];
+
 interface Propiedades {
   /** Qué módulo está abierto. */
   activo?: string;
@@ -87,7 +96,8 @@ function visible(modulo: Modulo, rol: string, permisos: MisPermisos | null): boo
 
 function iconoDelModulo(clave: string): NombreIcono {
   if (clave === 'perfil') return 'persona';
-  if (clave === 'admin') return 'escudo';
+  const deAdmin = MODULOS_ADMIN.find((modulo) => modulo.clave === clave);
+  if (deAdmin) return deAdmin.icono;
   return MODULOS.find((modulo) => modulo.clave === clave)?.icono ?? 'casa';
 }
 
@@ -144,17 +154,24 @@ export function DisenoApp({
           </span>
         </div>
 
-        {esAdmin && (
-          <NavLink
-            to="/admin"
-            end
-            className={({ isActive }) => (isActive ? 'item activo' : 'item')}
-          >
-            <span className="casilla-icono" aria-hidden="true">
-              <Icono nombre="escudo" />
-            </span>
-            <span className="flex1">{t('admin.menu')}</span>
-          </NavLink>
+        {esAdmin &&
+          MODULOS_ADMIN.map((modulo) => (
+            <NavLink
+              key={modulo.clave}
+              to={modulo.ruta}
+              end={modulo.exacta}
+              className={({ isActive }) => (isActive ? 'item activo' : 'item')}
+            >
+              <span className="casilla-icono" aria-hidden="true">
+                <Icono nombre={modulo.icono} />
+              </span>
+              <span className="flex1">{t(modulo.nombre)}</span>
+            </NavLink>
+          ))}
+
+        {/* Dentro de un rancho, el Admin ve también sus módulos, debajo de los suyos. */}
+        {esAdmin && soporte && modulos.length > 0 && (
+          <span className="lateral__seccion">{t('admin.navegacion.rancho', { rancho: soporte.rancho })}</span>
         )}
 
         {modulos.map((modulo) => {
@@ -197,25 +214,17 @@ export function DisenoApp({
 
         <div className="espaciador" />
 
+        {/* DECISIONES §50: en esta versión no hay planes. Se dice tal cual, sin
+            un medidor de un límite que no existe. */}
         {!esAdmin && (
-        <div className="bloque-cuenta">
-          <span className="titulo">{t('app.cuenta.titulo')}</span>
-          <span className="plan">
-            <Icono nombre="plan" tamano={16} />
-            {t('app.cuenta.plan')}
-          </span>
-          <div
-            className="medidor"
-            role="progressbar"
-            aria-valuenow={76}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={t('app.cuenta.medidor')}
-          >
-            <span style={{ width: '76%' }} />
+          <div className="bloque-cuenta">
+            <span className="titulo">{t('app.cuenta.titulo')}</span>
+            <span className="plan">
+              <Icono nombre="exito" tamano={16} />
+              {t('app.cuenta.plan')}
+            </span>
+            <span className="detalle">{t('app.cuenta.detalle')}</span>
           </div>
-          <span className="detalle">{t('app.cuenta.usados', { porcentaje: 76 })}</span>
-        </div>
         )}
 
         {/* Abre "Mi perfil". Es un enlace de verdad, como los modulos: se
@@ -286,7 +295,7 @@ function BandaSoporte({ soporte }: { soporte: NonNullable<ReturnType<typeof sopo
     // Aunque el servidor no conteste, aca se sale igual: el acceso vence solo.
     await api.salirDeRancho(soporte.accesoId).catch(() => undefined);
     guardarSoporte(null);
-    navegar('/admin');
+    navegar('/admin/cuentas');
   }
 
   return (

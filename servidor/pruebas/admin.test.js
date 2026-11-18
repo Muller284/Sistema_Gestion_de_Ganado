@@ -280,6 +280,11 @@ async function ejecutarPruebas() {
     await pool.query('DELETE FROM tokens WHERE usuario_id = ANY($1::uuid[])', [usuariosCreados]);
     await pool.query('DELETE FROM usuarios WHERE id = ANY($1::uuid[])', [usuariosCreados]);
   }
+  // Fase 4: cada entrada y salida también quedó en el registro de auditoría.
+  await pool.query(
+    "DELETE FROM registro_auditoria WHERE detalle->>'acceso_id' = ANY($1::text[])",
+    [accesosCreados],
+  ).catch(() => {});
   await pool.query('DELETE FROM accesos_admin WHERE id = ANY($1::uuid[])', [accesosCreados]);
 
   console.log('\n----------------------------------------------------------------');

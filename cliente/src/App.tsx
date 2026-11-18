@@ -30,6 +30,11 @@ import { PaginaFichaAnimal } from './paginas/animales/PaginaFichaAnimal';
 import { PaginaAltaRapida } from './paginas/animales/PaginaAltaRapida';
 import { PaginaPermisosSocio } from './paginas/equipo/PaginaPermisosSocio';
 import { PaginaAdmin } from './paginas/admin/PaginaAdmin';
+import { PaginaAdminAuditoria } from './paginas/admin/PaginaAdminAuditoria';
+import { PaginaAdminCatalogo } from './paginas/admin/PaginaAdminCatalogo';
+import { PaginaAdminConfiguracion } from './paginas/admin/PaginaAdminConfiguracion';
+import { PaginaAdminCuenta } from './paginas/admin/PaginaAdminCuenta';
+import { PaginaAdminCuentas } from './paginas/admin/PaginaAdminCuentas';
 import { PaginaCalendario } from './paginas/sanidad/PaginaCalendario';
 import { PaginaEsquemas } from './paginas/sanidad/PaginaEsquemas';
 import { PaginaProductos } from './paginas/sanidad/PaginaProductos';
@@ -71,7 +76,8 @@ import { cambiarIdioma } from './servicios/idioma';
  *   /rancho                  el panel del rancho (HU-15), detras del portero
  *   /equipo                  el equipo del rancho (HU-17), detras del portero
  *   /perfil                  mis datos (nombre, idioma y contraseña), detras del portero
- *   /admin                   el Admin de plataforma: ranchos y registro de accesos (HU-24)
+ *   /admin                   el Admin de plataforma: tablero, cuentas, catálogo, configuración
+ *                            y auditoría (HU-24 y fase 4)
  *   /ingreso                 entrar con correo y contraseña (HU-08)
  *   /registro                crear cuenta de propietario (HU-06)
  *   /verificar               confirmar el correo (HU-07)
@@ -184,7 +190,13 @@ function Sistema() {
           path="/rancho"
           element={adentro(esAdminSinRancho() ? <Navigate to="/admin" replace /> : <PaginaRancho />)}
         />
+        {/* Fase 4: el panel del Admin de plataforma (RF-56 a RF-62). */}
         <Route path="/admin" element={adentro(<PaginaAdmin />)} />
+        <Route path="/admin/cuentas" element={adentro(<PaginaAdminCuentas />)} />
+        <Route path="/admin/cuentas/:id" element={adentro(<PaginaAdminCuenta />)} />
+        <Route path="/admin/catalogo" element={adentro(<PaginaAdminCatalogo />)} />
+        <Route path="/admin/configuracion" element={adentro(<PaginaAdminConfiguracion />)} />
+        <Route path="/admin/auditoria" element={adentro(<PaginaAdminAuditoria />)} />
         <Route path="/equipo" element={adentro(<PaginaEquipo />)} />
         <Route path="/equipo/tipos" element={adentro(<PaginaTipos />)} />
         <Route path="/equipo/socios/:id/permisos" element={adentro(<PaginaPermisosSocio />)} />
