@@ -84,9 +84,9 @@ Quedan para una versión posterior los planes, la prueba de 10 días, la suscrip
 
 ## 4. Link al Video ilustrativo en YouTube
 
-Video de 2 a 5 minutos que muestra el sistema funcionando.
+Video de 4 minutos y medio que recorre el sistema funcionando: página de inicio, registro, panel del rancho, animales, corrales e importación, sanidad, pesajes, equipo y permisos, asistente con IA, pantallas del celular y panel del Admin de plataforma.
 
-> **Pendiente.** Enlace: [completar con el enlace de YouTube].
+**Enlace:** https://youtu.be/s861QdieOOw
 
 ## 5. Listado de los Requisitos Funcionales del Sistema
 
