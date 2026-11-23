@@ -11,6 +11,8 @@ Este README es el **manual técnico** del proyecto, con la estructura de la
 plantilla de la materia. La versión en Word y el manual de usuario están en
 [`documentos/manuales/`](documentos/manuales/).
 
+**Publicado en** https://ganado-univalle.onrender.com (punto 11). Se entra con las cuentas del punto 8.
+
 **Arranque rápido** (detalle en el punto 10):
 
 ```bash
@@ -68,16 +70,17 @@ Es una plataforma web, que también se usa desde el celular, para que un product
 
 **Objetivo general.** Desarrollar una plataforma web y móvil que permita a los productores ganaderos registrar y controlar la actividad diaria de su rancho, trabajando en equipo con roles diferenciados y con un asistente de inteligencia artificial que responde preguntas sobre los datos del propio rancho.
 
-**Alcance de esta entrega.** Las 59 historias de usuario de los cuatro sprints, que cubren las fases 1 a 3, más el asistente con IA de la fase 5:
+**Alcance de esta entrega.** Las 59 historias de usuario de los cuatro sprints, que cubren las fases 1 a 3, más el panel del Admin de la fase 4 y el asistente con IA de la fase 5:
 
 | Fase | Contenido |
 | --- | --- |
 | Fase 1 | Cuentas, registro y verificación de correo, ingreso, ranchos, países, guía de configuración, equipo, tipos de colaborador, permisos, acceso de soporte del Admin e idiomas. |
 | Fase 2 | Animales con ficha e historial, corrales, alta rápida desde el celular, acciones masivas, importación desde Excel y exportación. |
 | Fase 3 | Sanidad (productos, esquemas, calendario, aplicaciones individuales y masivas, vacuna desde el celular), pesajes (individual, masivo, rápido, evolución y comparativa) y panel de indicadores. |
-| Fase 5 (parte) | Asistente con IA que responde en lenguaje natural sobre los datos del rancho. |
+| Fase 4 (parte) | Panel de administración de la plataforma: tablero, cuentas, catálogo de razas, configuración y auditoría (DECISIONES §51). |
+| Fase 5 (parte) | Asistente con IA que responde en lenguaje natural sobre los datos del rancho, por texto o hablándole (DECISIONES §48 y §49). |
 
-Quedan para una versión posterior la fase 4 (planes, prueba de 10 días, cobro y panel de administración completo) y el trabajo sin conexión de la fase 5. El modelo de datos ya está preparado para ambas: identificadores generados en el cliente, autoría y baja lógica en todas las tablas.
+Quedan para una versión posterior los planes, la prueba de 10 días, la suscripción y el cobro, por decisión del equipo (DECISIONES §50): en esta versión el sistema es gratuito y con todo incluido. También el trabajo sin conexión de la fase 5. El modelo de datos ya está preparado para ambos: identificadores generados en el cliente, autoría y baja lógica en todas las tablas, y las franjas de precio por país.
 
 ## 4. Link al Video ilustrativo en YouTube
 
@@ -87,7 +90,7 @@ Video de 2 a 5 minutos que muestra el sistema funcionando.
 
 ## 5. Listado de los Requisitos Funcionales del Sistema
 
-Son los 71 requisitos funcionales de la propuesta (versión 4.0), con su estado en esta entrega: 44 implementados, 6 en parte, 18 de la fase 4 y 3 de la fase 5, que quedan para después.
+Son los 71 requisitos funcionales de la propuesta (versión 4.0), con su estado en esta entrega: 47 implementados, 5 en parte, 15 que pasan a una versión futura junto con los planes (DECISIONES §50), 1 pendiente y 3 del trabajo sin conexión (fase 5).
 
 **Cuenta y puesta en marcha**
 
@@ -174,22 +177,22 @@ Son los 71 requisitos funcionales de la propuesta (versión 4.0), con su estado 
 | RF-39 | Solo lee: no crea, modifica ni borra. | **Implementado** |
 | RF-40 | Responde solo sobre los módulos del rol. | **Implementado** |
 | RF-41 | No consulta internet ni otros ranchos. | **Implementado** |
-| RF-42 | Cuota de consultas por usuario y por mes, a la vista. | **Parcial**. La cuota es una sola para todos (configurable); por plan llega con la fase 4. |
+| RF-42 | Cuota de consultas por usuario y por mes, a la vista. | **Implementado**. Cuota por persona y tope de la plataforma, que el Admin cambia desde su panel. Por plan, con los planes. |
 
 **Suscripción y cobro**
 
 | Código | Requisito | Estado |
 | --- | --- | --- |
-| RF-43 | Prueba de 10 días del plan Profesional. | **Fase 4** |
-| RF-44 | Al terminar la prueba pasa al plan Gratis sin perder datos. | **Fase 4** |
-| RF-45 | Cuatro planes con límites. | **Fase 4** |
-| RF-46 | Cobro real con pasarela de pago. | **Fase 4** |
-| RF-47 | Precio según la franja del país. | **Fase 4**. El catálogo de franjas ya existe. |
-| RF-48 | Siete días de gracia al vencer un plan pago. | **Fase 4** |
-| RF-49 | Al bajar de plan no se elimina nada. | **Fase 4** |
-| RF-50 | Al subir de plan se restaura todo. | **Fase 4** |
-| RF-51 | Cinco momentos para ofrecer mejorar el plan. | **Fase 4** |
-| RF-52 | Estado de la suscripción y consumo de cada límite. | **Fase 4** |
+| RF-43 | Prueba de 10 días del plan Profesional. | **Versión futura** (DECISIONES §50) |
+| RF-44 | Al terminar la prueba pasa al plan Gratis sin perder datos. | **Versión futura** (DECISIONES §50) |
+| RF-45 | Cuatro planes con límites. | **Versión futura** (DECISIONES §50) |
+| RF-46 | Cobro real con pasarela de pago. | **Versión futura** (DECISIONES §50) |
+| RF-47 | Precio según la franja del país. | **Versión futura**. El catálogo de franjas ya existe. |
+| RF-48 | Siete días de gracia al vencer un plan pago. | **Versión futura** (DECISIONES §50) |
+| RF-49 | Al bajar de plan no se elimina nada. | **Versión futura** (DECISIONES §50) |
+| RF-50 | Al subir de plan se restaura todo. | **Versión futura** (DECISIONES §50) |
+| RF-51 | Cinco momentos para ofrecer mejorar el plan. | **Versión futura** (DECISIONES §50) |
+| RF-52 | Estado de la suscripción y consumo de cada límite. | **Versión futura** (DECISIONES §50) |
 
 **Trabajo sin conexión**
 
@@ -203,30 +206,30 @@ Son los 71 requisitos funcionales de la propuesta (versión 4.0), con su estado 
 
 | Código | Requisito | Estado |
 | --- | --- | --- |
-| RF-56 | Tablero del Admin con cuentas, ingresos y consumo. | **Fase 4** |
-| RF-57 | Búsqueda de cuentas con su ficha. | **Parcial**. Lista y búsqueda de ranchos para dar soporte. |
-| RF-58 | Administración de planes y límites. | **Fase 4** |
-| RF-59 | Administración de franjas de precio. | **Fase 4** |
-| RF-60 | Suscripciones, pagos y catálogos generales. | **Fase 4** |
+| RF-56 | Tablero del Admin con cuentas, ingresos y consumo. | **Parcial**. Tablero con cuentas, actividad y consumo del asistente; los ingresos, con los planes. |
+| RF-57 | Búsqueda de cuentas con su ficha. | **Implementado**. Búsqueda y ficha de cada cuenta, con suspender, reactivar y enlace de contraseña. |
+| RF-58 | Administración de planes y límites. | **Versión futura** (DECISIONES §50) |
+| RF-59 | Administración de franjas de precio. | **Versión futura** (DECISIONES §50) |
+| RF-60 | Suscripciones, pagos y catálogos generales. | **Parcial**. Catálogo general de razas; suscripciones y pagos, con los planes. |
 | RF-61 | Acceso de soporte a un rancho, registrado. | **Implementado** |
-| RF-62 | Registro de auditoría de lo que hace cada Admin. | **Parcial**. Quedan registradas las entradas y salidas con su motivo. |
+| RF-62 | Registro de auditoría de lo que hace cada Admin. | **Implementado**. Registro de auditoría con todo lo que hace cada Admin, con su motivo. |
 
 **Cancelación y conservación**
 
 | Código | Requisito | Estado |
 | --- | --- | --- |
-| RF-63 | Cancelar la suscripción. | **Fase 4** |
-| RF-64 | Cuenta cancelada en solo lectura 12 meses. | **Fase 4** |
-| RF-65 | Aviso 30 días antes de la baja definitiva. | **Fase 4** |
-| RF-66 | Exportar los datos en cualquier momento. | **Parcial**. La exportación existe; falta el estado de cuenta cancelada. |
+| RF-63 | Cancelar la suscripción. | **Versión futura** (DECISIONES §50) |
+| RF-64 | Cuenta cancelada en solo lectura 12 meses. | **Versión futura** (DECISIONES §50) |
+| RF-65 | Aviso 30 días antes de la baja definitiva. | **Versión futura** (DECISIONES §50) |
+| RF-66 | Exportar los datos en cualquier momento. | **Parcial**. La exportación existe; el estado de cuenta cancelada llega con los planes. |
 
 **Avisos**
 
 | Código | Requisito | Estado |
 | --- | --- | --- |
-| RF-67 | Correos de verificación, alta, recuperación, prueba y pagos. | **Parcial**. Verificación, alta de usuario y recuperación; los de prueba y pagos, con la fase 4. |
+| RF-67 | Correos de verificación, alta, recuperación, prueba y pagos. | **Parcial**. Verificación, alta de usuario y recuperación; los de prueba y pagos, con los planes. |
 | RF-68 | Avisos en la aplicación: vencimientos, prueba, límites y sincronización. | **Parcial**. Vencimientos sanitarios y corrales sobrepoblados. |
-| RF-69 | Activar o desactivar los correos no esenciales. | **Fase 4** |
+| RF-69 | Activar o desactivar los correos no esenciales. | **Pendiente** |
 
 **Seguridad de acceso**
 
@@ -254,8 +257,8 @@ Es una aplicación web de tres capas. El cliente es una aplicación de una sola 
 | Módulos del servidor | 18 módulos en servidor/src/modulos/, cada uno con controlador, servicio y repositorio. |
 | Permisos | PermisosModulo: nivel de cada usuario en cada módulo (ninguno, ver, editar) y exigir() en cada servicio. |
 | Asistente | Módulo que habla con el modelo de lenguaje y le da siete herramientas de solo lectura sobre los servicios de los demás módulos. |
-| Base de datos | 24 tablas y una vista, creadas por 12 migraciones SQL. |
-| Servicios externos | Brevo para correos y Gemini o Groq para el asistente; ambos opcionales. |
+| Base de datos | 26 tablas y una vista, creadas por 13 migraciones SQL. |
+| Servicios externos | Brevo para correos y Gemini (o Groq) para el asistente; Gemini también para la voz. Render y Neon para publicarlo. |
 
 ### Módulos del servidor
 
@@ -264,12 +267,12 @@ Es una aplicación web de tres capas. El cliente es una aplicación de una sola 
 | usuarios | Registro, verificación, ingreso, sesiones, perfil, contraseñas, alta de colaboradores. |
 | ranchos · paises · guia | Rancho, catálogo de países y guía de configuración. |
 | equipo · tipos · permisos | Socios y colaboradores, tipos de colaborador y permisos por módulo. |
-| admin | Acceso de soporte del Admin de plataforma, con motivo y registro. |
+| admin | Acceso de soporte y panel de la plataforma: tablero, cuentas, catálogo de razas, configuración y auditoría. |
 | animales · corrales · masivo | Animales, corrales y acciones sobre varios animales. |
 | importacion · exportacion | Carga desde Excel o CSV y descarga en xlsx o csv. |
 | sanidad · vacunacion | Productos, aplicaciones, esquemas, calendario y avisos. |
 | pesajes · indicadores | Pesajes, panel de inicio y comparativa de peso. |
-| asistente | Preguntas en lenguaje natural sobre el rancho. |
+| asistente | Preguntas en lenguaje natural sobre el rancho, por texto o por voz. |
 
 ### Interacción entre componentes
 
@@ -280,6 +283,10 @@ Es una aplicación web de tres capas. El cliente es una aplicación de una sola 
 1. La respuesta vuelve en JSON; los errores, con código HTTP y mensaje traducido.
 
 **El asistente.** Recibe la pregunta, arma el contexto (rancho, fecha, rol y módulos visibles) y se la manda al modelo con las herramientas que el usuario puede usar. El modelo pide herramientas por nombre y con filtros; el servidor las ejecuta con los mismos servicios de las pantallas y le devuelve los datos; el modelo redacta la respuesta. Como mucho cinco idas y vueltas (DECISIONES §48).
+
+**La voz.** Con Gemini también se le puede hablar: la pantalla graba la pregunta y la pasa a WAV, el servidor la convierte en texto con el mismo modelo y la respuesta se escucha leída por un modelo de voz de Gemini. Las dos llamadas usan la API propia de Gemini (`generateContent`), con la misma clave (DECISIONES §49).
+
+**El panel del Admin.** Lee la plataforma entera sin filtrar por rancho, por eso cada ruta exige el rol `admin_plataforma`. Del interior de un rancho solo muestra cantidades y la actividad reciente; para ver más, el Admin entra a dar soporte y eso queda registrado. Suspender, reactivar, mandar un enlace de contraseña y cambiar el catálogo o la configuración piden un motivo y quedan en `registro_auditoria` (DECISIONES §51).
 
 ### Patrones de diseño utilizados
 
@@ -300,7 +307,7 @@ Se siguen los principios SOLID sobre todo en las tres piezas que la propuesta ma
 
 ### a. Diagrama completo y actual
 
-PostgreSQL 18 con 24 tablas y la vista permisos_tipo_vigentes. Los dos diagramas muestran todas las tablas y sus relaciones; las columnas se resumen en la tabla de abajo.
+PostgreSQL 18 con 26 tablas y la vista `permisos_tipo_vigentes`. Los dos diagramas muestran las tablas del rancho y sus relaciones; las dos de la fase 4 (`registro_auditoria` y `configuracion_plataforma`) son del Admin y se describen en la tabla de abajo, donde se resumen las columnas.
 
 ![Figura 2. Cuentas, ranchos, equipo, permisos y consultas al asistente.](documentos/manuales/img/er1.png)
 
@@ -324,6 +331,7 @@ PostgreSQL 18 con 24 tablas y la vista permisos_tipo_vigentes. Los dos diagramas
 | productos_sanitarios, esquemas_vacunacion, aplicaciones_sanitarias | Sanidad. |
 | pesajes | Pesajes por animal y fecha. |
 | consultas_asistente | Preguntas y respuestas del asistente; también cuenta la cuota del mes. |
+| registro_auditoria, configuracion_plataforma | Lo que hace cada Admin, con su motivo, y las cuotas del asistente que cambia desde su panel (fase 4). |
 | migraciones_aplicadas | Control del corredor de migraciones. |
 
 ### b. Carpeta con la base de datos en el GIT
@@ -337,7 +345,7 @@ La carpeta `base-de-datos/` tiene los scripts para crear la base y cargar los da
 | `03_script_simple.sql` | El script resumido de la sección c. |
 | `README.md` | Cómo cargarlos y cómo volver a generarlos. |
 
-Esos archivos salen de las migraciones (`servidor/migraciones/`, 001 a 012) y las semillas (`servidor/semillas/`), que son la fuente: el servidor las aplica con `npm run migrar` y `npm run sembrar`.
+Esos archivos salen de las migraciones (`servidor/migraciones/`, 001 a 013) y las semillas (`servidor/semillas/`), que son la fuente: el servidor las aplica con `npm run migrar` y `npm run sembrar`.
 
 ```bash
 docker exec -i ganado_postgres psql -U ganado_usuario -d gestion_ganado < base-de-datos/01_esquema.sql
@@ -470,7 +478,8 @@ Son las cuentas de los datos de ejemplo. La contraseña de todas es **Ganado2026
 | Valeria Mercado | Colaboradora · Administrativa | valeria.mercado@elcerrito.bo | Ganado2026 |
 | Fernando Torrico | Propietario (Hacienda La Floresta) | fernando.torrico@lafloresta.bo | Ganado2026 |
 | Patricia Villarroel | Socia (La Floresta) | patricia.villarroel@lafloresta.bo | Ganado2026 |
-| Dra. Lucía Morales | Colaboradora (La Floresta) | lucia.morales@lafloresta.bo | Ganado2026 |
+| Dra. Lucía Morales | Colaboradora · Veterinaria (La Floresta) | lucia.morales@lafloresta.bo | Ganado2026 |
+| Walter Fernández | Colaborador · Encargado de campo (La Floresta) | walter.fernandez@lafloresta.bo | Ganado2026 |
 | Ariel Camacho | Propietario sin rancho | ariel.camacho@correo.bo | Ganado2026 |
 | Lucía Méndez | Propietaria sin verificar el correo | lucia.mendez@correo.bo | Ganado2026 |
 | Rubén Quispe | Colaborador con clave temporal | ruben.quispe@elcerrito.bo | Temporal2026 |
@@ -479,12 +488,14 @@ Qué puede cada rol:
 
 | Rol | Alcance |
 | --- | --- |
-| Admin de plataforma | Lista los ranchos y entra a uno solo con un acceso registrado y un motivo, que el propietario ve. Adentro puede lo mismo que el propietario, hasta salir o por 8 horas. |
+| Admin de plataforma | Su panel: tablero, cuentas (suspender, reactivar y enlace de contraseña), catálogo de razas, configuración y auditoría. Entra a un rancho solo con un acceso registrado y un motivo, que el propietario ve; adentro puede lo mismo que el propietario, hasta salir o por 8 horas. |
 | Propietario | Todo su rancho: datos, equipo, permisos, importación, exportación y bajas. |
 | Socio | Ve todo el rancho; modifica solo los módulos que el propietario le habilite. |
 | Colaborador | Entra a los módulos de su tipo: veterinario (sanidad y pesajes, ve animales), encargado de campo (animales, corrales y pesajes), encargado de almacén (almacén) y administrativo (consulta e importación). |
 
 **Base de datos.** El usuario y la contraseña de PostgreSQL son los que se ponen en `.env` (`DB_USUARIO` y `DB_CONTRASENA`). En el ejemplo del repositorio: `ganado_usuario` / `cambiar_esta_clave`; conviene cambiarla en cada máquina.
+
+**En el sistema publicado** no hay barra de demostración: se entra con el correo y la contraseña de estas cuentas (DECISIONES §52).
 
 ## 9. Requisitos del sistema
 
@@ -517,6 +528,7 @@ Qué puede cada rol:
 | Git | Cualquier versión reciente |
 | Sistema operativo | Windows 10/11, macOS o Linux |
 | Opcional | Cuenta de Brevo (correos reales) y clave de Gemini o Groq (asistente) |
+| Para publicarlo | Cuentas gratuitas de Render y Neon (punto 11). |
 
 ## 10. Instalación y configuración
 
@@ -566,14 +578,16 @@ npm run dev           # sistema en http://localhost:5173
 | URL_CLIENTE | Dirección del cliente, para los enlaces de los correos. |
 | CORREO_TRANSPORTE, BREVO_API_KEY, CORREO_REMITENTE | consola (el correo se imprime en la terminal) o brevo (se envía de verdad). |
 | ASISTENTE_URL, ASISTENTE_MODELO, ASISTENTE_CLAVE | Proveedor del asistente. Sin clave, el sistema funciona y el asistente avisa que no está configurado. |
-| ASISTENTE_CONSULTAS_MES | Consultas al asistente por usuario y por mes (30). |
-| USUARIO_DEMO_ID | Usuario de demostración sin token. Se quita en producción. |
+| ASISTENTE_CONSULTAS_MES | Consultas al asistente por usuario y por mes (30). El Admin la puede cambiar desde su panel, y poner un tope para toda la plataforma. |
+| ASISTENTE_ESFUERZO, ASISTENTE_VOZ_MODELO, ASISTENTE_VOZ_NOMBRE | Cuánto piensa el modelo (low) y la voz de Gemini con la que se leen las respuestas (`gemini-3.8-flash-lite-tts`, Kore). `ninguno` apaga la voz. |
+| USUARIO_DEMO_ID, PERMITIR_DEMOSTRACION | Entrar sin contraseña con el id de la cuenta (la barra de demostración). En lo publicado, `PERMITIR_DEMOSTRACION=no`: solo vale el token de la sesión. |
+| VITE_API, VITE_DEMOSTRACION (cliente) | Dirección de la API y, con `no`, el cliente se compila sin la barra de demostración. |
 
 ### Conexión con otros sistemas
 
 **Asistente (Gemini, gratis).** Con una cuenta de Google, entrar a aistudio.google.com/apikey, crear una clave y ponerla en `ASISTENTE_CLAVE`. La URL y el modelo ya vienen en el ejemplo. Para usar Groq se cambian las tres variables (están comentadas en `.env.ejemplo`). Reiniciar el servidor.
 
-**Correo (Brevo).** Crear la cuenta, verificar un remitente, generar una clave de API, completar las tres variables y probar con `npm run probar:correo -- tu.correo@gmail.com` (DECISIONES §18 y §30).
+**Correo (Brevo).** Crear la cuenta, verificar un remitente, generar una clave de API, poner `CORREO_TRANSPORTE=brevo` y las otras dos variables, y probar con `npm run probar:correo -- tu.correo@gmail.com` (DECISIONES §18 y §30). Si la cuenta tiene activado el bloqueo de IPs desconocidas (Security → Authorised IPs), hay que desactivarlo: si no, Brevo rechaza los envíos con «unrecognised IP address», y Render usa IPs que cambian.
 
 ### Problemas frecuentes
 
@@ -582,69 +596,64 @@ npm run dev           # sistema en http://localhost:5173
 | ECONNREFUSED al migrar o al arrancar | La base no está levantada: `docker compose up -d postgres`. |
 | Puerto 5432 o 3000 ocupado | Cambiar `DB_PUERTO` o `PUERTO_SERVIDOR` en `.env` y ajustar DATABASE_URL. |
 | postgres:18 no arranca con datos viejos | El volumen es de otra versión: `docker compose down -v`. |
-| Los correos no llegan | Con CORREO_TRANSPORTE=consola se imprimen en la terminal del servidor. |
+| Los correos no llegan | Con `CORREO_TRANSPORTE=consola` se imprimen en la terminal del servidor; para enviarlos va `brevo`. Si la consola muestra «unrecognised IP address», desactivar el bloqueo de IPs en Brevo. |
 | El asistente dice que no está configurado | Falta ASISTENTE_CLAVE en .env o no se reinició el servidor. |
 | El asistente dice que llegó al límite gratuito | Se agotó la cuota gratuita del proveedor por ese día o minuto; esperar o cambiar de proveedor. |
+| La página publicada tarda un minuto en cargar | El servidor gratuito de Render estaba dormido (15 minutos sin visitas). Se despierta solo; antes de presentar, abrirla un par de minutos antes. |
 
 ## 11. PROCEDIMIENTO DE HOSTEADO / HOSTING (configuración)
 
-> **Pendiente.** El sistema todavía no está publicado. Este es el procedimiento previsto; al publicarlo se completan las direcciones reales y se confirma cada paso.
+> **Direcciones.** Sistema: https://ganado-univalle.onrender.com · API: https://ganado-univalle-api.onrender.com. Si Render cambia algún nombre al crearlo (porque ya existe), se corrigen aquí y en las variables `VITE_API` y `URL_CLIENTE`.
 
-El plan es publicar con Firebase. Firebase Hosting sirve el cliente gratis, pero para correr un servidor Node (Cloud Functions o Cloud Run) Firebase exige el plan Blaze, que pide una tarjeta. Como el proyecto no puede gastar, el servidor y la base van en servicios con capa gratuita que no la piden:
+Se publica en **Render**, el cliente como sitio estático y el servidor como servicio web, con la base PostgreSQL en **Neon**; las tres partes, en planes gratuitos y sin tarjeta. Todo está descrito en `render.yaml`, en la raíz: Render crea los dos servicios desde ese archivo y los vuelve a publicar solo con cada push a `main`. Firebase se descartó porque solo sirve el cliente: para el servidor pide el plan Blaze, con tarjeta (DECISIONES §52).
 
 | Parte | Dónde | Capa gratuita |
 | --- | --- | --- |
-| Sitio web | Firebase Hosting | Plan Spark, sin tarjeta. |
-| API | Render (servicio web) | 750 horas al mes; se duerme a los 15 minutos sin tráfico y tarda cerca de un minuto en despertar. |
-| Base de datos | Neon (PostgreSQL) | 1 GB por proyecto; se suspende a los 5 minutos sin uso y vuelve sola. |
+| Sitio web | Render (sitio estático) | No se duerme. 5 GB de transferencia al mes, compartidos con la API. |
+| API | Render (servicio web) | 750 horas al mes; se duerme a los 15 minutos sin visitas y tarda cerca de un minuto en despertar. |
+| Base de datos | Neon (PostgreSQL) | 1 GB por proyecto y no vence; se suspende a los 5 minutos sin uso y vuelve en menos de un segundo. |
 | Otros | Gemini API y Brevo | Capa gratis de Gemini; Brevo gratis con límite diario de correos. |
 
-Se publica en este orden, porque cada parte necesita la dirección de la anterior: base de datos, API y sitio web.
+Se publica en este orden: primero la base de datos con sus datos, después Render, que crea la API y el sitio a la vez.
 
 ### B.D.
 
-1. Crear una cuenta en neon.com y un proyecto con PostgreSQL 17 o 18, en la región más cercana.
-1. Copiar la cadena de conexión que da Neon (termina en `?sslmode=require`).
-1. Desde la computadora, con esa cadena como DATABASE_URL, aplicar las migraciones y cargar los datos de ejemplo:
+1. Crear una cuenta en neon.com (se puede entrar con GitHub) y un proyecto en la región **AWS US East (N. Virginia)**, la misma de Render.
+1. Copiar la cadena de conexión con **Connection pooling** desactivado (termina en `?sslmode=require`).
+1. Desde la computadora, con esa cadena como `DATABASE_URL`, aplicar las migraciones y cargar los datos de ejemplo (en PowerShell):
 
-```bash
+```powershell
 cd servidor
-DATABASE_URL="postgresql://usuario:clave@servidor.neon.tech/neondb?sslmode=require" npm run migrar
-DATABASE_URL="postgresql://usuario:clave@servidor.neon.tech/neondb?sslmode=require" npm run sembrar
+$env:DATABASE_URL="postgresql://usuario:clave@servidor.neon.tech/neondb?sslmode=require"
+npm run migrar
+npm run sembrar
+Remove-Item Env:DATABASE_URL
 ```
 
-En PowerShell: `$env:DATABASE_URL="…"; npm run migrar`. Credenciales: las que muestra Neon en el panel del proyecto (usuario dueño de la base).
+En Git Bash, macOS o Linux: `DATABASE_URL="…" npm run migrar`. Después, el servidor publicado aplica solo las migraciones que falten cada vez que arranca. Credenciales: las que muestra Neon en el panel del proyecto.
 
 ### API / servicios Web
 
-1. Crear una cuenta en render.com y un «New Web Service» conectado al repositorio de GitHub, rama main.
-1. Runtime Node. Build command: `cd servidor && npm ci && npm run construir`. Start command: `cd servidor && node dist/main.js`.
-1. Variables de entorno: `DATABASE_URL` (la de Neon), `JWT_SECRETO`, `URL_CLIENTE` (la de Firebase), `CORREO_TRANSPORTE`, `ASISTENTE_CLAVE` y, si se usa, las de Brevo. El puerto lo pone Render en PORT y el servidor lo toma solo.
-1. Desplegar y probar `https://<servicio>.onrender.com/paises`.
+1. Crear una cuenta en render.com con la cuenta de GitHub y darle acceso al repositorio.
+1. **New → Blueprint**, elegir el repositorio y la rama `main`. Render lee `render.yaml` y crea `ganado-univalle-api` (servidor) y `ganado-univalle` (sitio).
+1. Completar las cuatro variables que pide: `DATABASE_URL` (la de Neon), `BREVO_API_KEY`, `CORREO_REMITENTE` y `ASISTENTE_CLAVE`. Las demás vienen en `render.yaml`: `JWT_SECRETO` se genera solo, `PERMITIR_DEMOSTRACION=no`, `URL_CLIENTE`, `CORREO_TRANSPORTE=brevo`, y el modelo y la voz del asistente.
+1. **Apply.** El servidor se compila con `cd servidor && npm ci && npm run construir` y arranca con `node migrar.js && node dist/main.js`. Probar https://ganado-univalle-api.onrender.com/paises.
 
 ### Sitio Web.
 
-1. Crear un proyecto en console.firebase.google.com (plan Spark).
-1. Instalar la herramienta y entrar: `npm install -g firebase-tools` y `firebase login`.
-1. Vincular el repositorio con el proyecto: `firebase use --add`. El archivo `firebase.json` ya está en la raíz: publica `cliente/dist` y manda toda ruta a index.html.
-1. Compilar el cliente apuntando a la API publicada y desplegar:
+1. El mismo Blueprint crea el sitio estático: compila con `cd cliente && npm ci && npm run build` y publica `cliente/dist`.
+1. `VITE_API` apunta a la API publicada y `VITE_DEMOSTRACION=no` quita la barra de demostración.
+1. Si Render agregó letras a algún nombre porque ya existía, corregir `VITE_API` (en el sitio) y `URL_CLIENTE` (en la API) con las direcciones reales, y volver a publicar el sitio (Manual Deploy).
+1. Abrir https://ganado-univalle.onrender.com e ingresar con una cuenta del punto 8.
 
-```bash
-cd cliente
-VITE_API=https://<servicio>.onrender.com npm run build
-cd ..
-firebase deploy --only hosting
-```
-
-En PowerShell la variable se pone antes: `$env:VITE_API="https://<servicio>.onrender.com"; npm run build`.
-
-El sitio queda en `https://<proyecto>.web.app`. Esa dirección va en `URL_CLIENTE` de Render.
+Cada push a `main` vuelve a publicar lo que cambió: el servidor si cambió `servidor/` o `idiomas/`, el sitio si cambió `cliente/` o `idiomas/`.
 
 ### Otros
 
-- **Gemini:** la clave se crea en aistudio.google.com/apikey y va solo en las variables de Render, nunca en el cliente.
-- **Brevo:** remitente verificado y clave de API en las variables de Render.
-- **Credenciales de acceso:** las cuentas de Firebase, Render y Neon son de quien publica; las cuentas del sistema son las del punto 8.
+- **Gemini:** la clave se crea en aistudio.google.com/apikey y va solo en las variables de Render, nunca en el repositorio.
+- **Brevo:** remitente verificado y clave de API en las variables de Render. En Security → Authorised IPs hay que desactivar el bloqueo de IPs desconocidas: Render usa IPs que cambian y, con el bloqueo, Brevo rechaza todos los envíos.
+- **Despierto:** `.github/workflows/despierto.yml` consulta la API cada 10 minutos de 8:00 a 20:00 de Bolivia para que no se duerma (unas 370 de las 750 horas gratuitas al mes). Antes de una presentación, abrir el sistema un par de minutos antes.
+- **Credenciales de acceso:** las cuentas de Render, Neon, Brevo y Google son de quien publica; las del sistema son las del punto 8, y en lo publicado se entra solo con correo y contraseña.
 
 ## 12. GIT
 
@@ -677,7 +686,7 @@ Cada integrante trabaja en su propia rama y abre un pull request hacia main (DEC
 
 | Rama | Integrante | Último trabajo integrado |
 | --- | --- | --- |
-| Taborga | Rafael Taborga (Aaron) | Paneles, comparativa de peso, calendario mensual y asistente con IA. |
+| Taborga | Rafael Taborga (Aaron) | Asistente con voz, panel del Admin, planes para una versión futura, publicación en Render y manuales. |
 | Aranibar | Brian Aranibar | Pesajes individual, masivo y registro rápido (HU-53 y HU-55). |
 | Poma | Romina Poma | Productos sanitarios, aplicaciones y vacuna desde el celular (HU-46, 48, 49 y 52). |
 | Müller | Favio Müller | Inicio de sesión y manejo de sesión (Sprint 1). |
@@ -732,8 +741,8 @@ Las cuentas del punto 8: Admin de plataforma (soporte@plataforma.bo), propietari
 | Idioma de la interfaz | Cada usuario lo elige en Mi perfil o en el menú de su cuenta. Se agregan idiomas copiando idiomas/es.json con otro código y traduciendo los valores (DECISIONES §34). |
 | País, unidades y formato de fecha | El país del rancho define kilos o libras, hectáreas o acres, el formato de fecha y la zona horaria. El catálogo está en la tabla paises. |
 | Tipos de colaborador y permisos | El propietario, desde Equipo · Tipos y permisos: ajusta los predefinidos, crea los suyos y habilita módulos a cada socio. |
-| Razas, productos y esquemas | Cada rancho agrega sus razas al registrar un animal, y sus productos y esquemas en Sanidad. |
-| Asistente | Proveedor y modelo con ASISTENTE_URL y ASISTENTE_MODELO; cuota mensual con ASISTENTE_CONSULTAS_MES. |
+| Razas, productos y esquemas | Cada rancho agrega sus razas al registrar un animal, y sus productos y esquemas en Sanidad. El catálogo general de razas lo maneja el Admin desde su panel (Catálogo). |
+| Asistente | Proveedor y modelo con `ASISTENTE_URL` y `ASISTENTE_MODELO`; voz con `ASISTENTE_VOZ_MODELO`. Las cuotas por persona y el tope de la plataforma, el Admin desde su panel (Configuración). |
 | Correo | CORREO_TRANSPORTE=consola o brevo, y el nombre del remitente con CORREO_REMITENTE_NOMBRE. |
 | Apariencia | Colores, espacios y tipografía en cliente/src/estilos/tokens.css; la página /sistema-diseno muestra todos los componentes. |
 
@@ -754,6 +763,7 @@ Las cuentas del punto 8: Admin de plataforma (soporte@plataforma.bo), propietari
 - Permisos por módulo con dos niveles (ver y editar), decididos en el servidor en cada petición; la pantalla solo oculta botones por comodidad.
 - Dar de baja registros es solo del propietario y del Admin en soporte.
 - El Admin entra a un rancho con un acceso registrado, con motivo y vencimiento, que el propietario puede ver.
+- Lo que el Admin hace desde su panel (suspender, reactivar, mandar un enlace de contraseña, cambiar el catálogo o la configuración) pide un motivo y queda en la auditoría. El enlace de contraseña es el de «Olvidé mi contraseña»: el Admin nunca ve ni la clave ni el enlace.
 
 ### Protección de los datos
 
@@ -763,7 +773,7 @@ Las cuentas del punto 8: Admin de plataforma (soporte@plataforma.bo), propietari
 
 ### Prácticas recomendadas antes de producción
 
-1. Quitar el modo de demostración: la cabecera `x-usuario-id`, `USUARIO_DEMO_ID` y la barra de demostración del cliente.
+1. Modo de demostración: ya apagado en lo publicado (`PERMITIR_DEMOSTRACION=no` y `VITE_DEMOSTRACION=no`). Sin eso, cualquiera que sepa el id de una cuenta entraría como esa persona. En local sigue encendido para probar.
 1. Usar un `JWT_SECRETO` largo y propio, y no subir nunca `.env` al repositorio.
 1. Restringir CORS al dominio del cliente (hoy `origin: true`) y servir todo por HTTPS.
 1. Pasar el asistente a la capa paga del proveedor si se usan datos reales: en la capa gratis de Gemini, Google puede usar lo enviado para mejorar sus productos.
@@ -774,7 +784,9 @@ Las cuentas del punto 8: Admin de plataforma (soporte@plataforma.bo), propietari
 | Término | Significado |
 | --- | --- |
 | API REST | Interfaz del servidor a la que el cliente le pide y le manda datos en JSON por HTTP. |
+| Auditoría | Registro de lo que hace cada Admin de plataforma, con su motivo; no se edita ni se borra. |
 | Baja lógica | Marcar un registro como eliminado sin borrarlo, para poder restaurarlo. |
+| Blueprint | Archivo de Render (render.yaml) que describe los servicios a publicar; Render los crea y actualiza desde ahí. |
 | Caravana | Arete con el número que identifica al animal. |
 | Categoría | Ternero, ternera, torito, vaquilla, novillo, vaca, toro o buey; depende del sexo y la edad. |
 | CORS | Regla del navegador que decide qué sitios pueden llamar a la API. |
@@ -793,7 +805,7 @@ Las cuentas del punto 8: Admin de plataforma (soporte@plataforma.bo), propietari
 ### Del propio proyecto
 
 - `README.md`: este manual, en el repositorio.
-- `DECISIONES.md`: las 48 decisiones técnicas con su motivo.
+- `DECISIONES.md`: las 52 decisiones técnicas con su motivo.
 - `documentos/PLAN_DE_PRUEBAS.md` y los informes de QA de cada sprint.
 - `documentos/manuales/`: manual de usuario y este manual en Word.
 
@@ -809,9 +821,10 @@ Las cuentas del punto 8: Admin de plataforma (soporte@plataforma.bo), propietari
 | Docker Compose | https://docs.docker.com/compose/ |
 | Gemini API (compatibilidad con OpenAI) | https://ai.google.dev/gemini-api/docs/openai |
 | Groq | https://console.groq.com/docs |
-| Firebase Hosting | https://firebase.google.com/docs/hosting |
+| Gemini API (voz) | https://ai.google.dev/gemini-api/docs/speech-generation |
 | Render | https://render.com/docs |
 | Neon | https://neon.com/docs |
+| Render Blueprint (render.yaml) | https://render.com/docs/blueprint-spec |
 | Brevo API | https://developers.brevo.com |
 
 ## 18. Herramientas de Implementación
@@ -839,8 +852,9 @@ Las cuentas del punto 8: Admin de plataforma (soporte@plataforma.bo), propietari
 
 | Servicio | Uso |
 | --- | --- |
-| Gemini API (Google) o Groq | Modelo de lenguaje del asistente, por el formato de chat de OpenAI con herramientas. |
+| Gemini API (Google) o Groq | Modelo de lenguaje del asistente, por el formato de chat de OpenAI. Con Gemini, también pasa la voz a texto y lee las respuestas en voz alta. |
 | Brevo | Envío de correos de verificación, alta y recuperación. |
+| Render y Neon | Publicación del cliente y del servidor, y PostgreSQL publicada. |
 | OpenStreetMap | Mapas de la ubicación del rancho. |
 | GitHub Actions | Integración continua: pruebas en cada pull request y en main. |
 | Docker Hub | Imágenes base postgres:18, node:24-alpine y nginx:1.27-alpine. |
@@ -854,9 +868,7 @@ Fowler, M. (2002). Patterns of enterprise application architecture. Addison-Wesl
 
 Gamma, E., Helm, R., Johnson, R. y Vlissides, J. (1994). Design patterns: Elements of reusable object-oriented software. Addison-Wesley.
 
-Google. (2026). Gemini API: OpenAI compatibility y Function calling. https://ai.google.dev/gemini-api/docs
-
-Google. (2026). Firebase Hosting documentation. https://firebase.google.com/docs/hosting
+Google. (2026). Gemini API: OpenAI compatibility, Function calling y Speech generation. https://ai.google.dev/gemini-api/docs
 
 Martin, R. C. (2017). Clean architecture: A craftsman's guide to software structure and design. Prentice Hall.
 
@@ -864,20 +876,24 @@ Meta Platforms. (2026). React documentation. https://react.dev
 
 NestJS. (2026). NestJS documentation. https://docs.nestjs.com
 
+Neon. (2026). Neon documentation. https://neon.com/docs
+
 OWASP Foundation. (2021). OWASP Top 10. https://owasp.org/Top10/
 
 PostgreSQL Global Development Group. (2026). PostgreSQL 18 documentation. https://www.postgresql.org/docs/18/
+
+Render. (2026). Render documentation y Blueprint YAML reference. https://render.com/docs
 
 Schwaber, K. y Sutherland, J. (2020). The Scrum guide. https://scrumguides.org
 
 ## Anexo A. Rutas de la API
 
-- Base: `http://localhost:3000`. Todo es JSON.
+- Base: `http://localhost:3000` en local y `https://ganado-univalle-api.onrender.com` publicada. Todo es JSON.
 - `Authorization: Bearer <token>` en las rutas privadas y `Accept-Language: es | en` para el idioma de los mensajes.
 - Errores: 400 datos inválidos, 401 sin sesión, 403 sin permiso, 404 no existe, 409 conflicto, 429 cuota agotada, 503 servicio externo no disponible.
 - Públicas: GET /paises y las rutas de registro, ingreso, verificación y recuperación.
 
-93 rutas en total:
+106 rutas en total:
 
 #### Usuarios, sesión y contraseñas
 
@@ -962,6 +978,17 @@ Schwaber, K. y Sutherland, J. (2020). The Scrum guide. https://scrumguides.org
 | POST | `/admin/accesos/:id/salida` | Cierra el acceso de soporte. |
 | GET | `/admin/accesos/de-mi-rancho` | El propietario ve qué accesos de soporte hubo a su rancho. |
 | GET | `/admin/accesos` | Historial de accesos del admin. |
+| GET | `/admin/tablero` | Cifras de la plataforma: cuentas, actividad, asistente y soporte (solo admin). |
+| GET | `/admin/cuentas?q=` | Ranchos con su propietario y uso, con búsqueda sin mayúsculas ni tildes. |
+| GET | `/admin/cuentas/:id` | Ficha de un rancho: equipo, consumo, actividad reciente y accesos de soporte. |
+| PATCH | `/admin/usuarios/:id/estado` | Suspende o reactiva a una persona, con motivo; suspender cierra sus sesiones. |
+| POST | `/admin/usuarios/:id/enlace-contrasena` | Le manda el enlace para crear una contraseña nueva, con motivo. |
+| GET | `/admin/razas` | Catálogo general de razas y las que escribieron los ranchos. |
+| POST | `/admin/razas` | Agrega una raza al catálogo, con su grupo. |
+| PATCH | `/admin/razas/:id` | Cambia el grupo, la desactiva o la vuelve a activar. |
+| GET | `/admin/configuracion` | Cuotas del asistente: por persona y tope de la plataforma. |
+| PUT | `/admin/configuracion` | Cambia las cuotas; vacío vuelve al valor de fábrica. |
+| GET | `/admin/auditoria?tipo=&rancho=` | Lo que hizo cada Admin, filtrable por tipo y por rancho. |
 
 #### Animales
 
@@ -1061,10 +1088,12 @@ Schwaber, K. y Sutherland, J. (2020). The Scrum guide. https://scrumguides.org
 | --- | --- | --- |
 | GET | `/asistente` | Si el asistente está configurado, la cuota del mes y los módulos que puede consultar. |
 | POST | `/asistente/preguntas` | Pregunta en lenguaje natural; responde con los datos del rancho. |
+| POST | `/asistente/transcripciones` | La pregunta hablada (WAV en base64) → el texto. No cuenta como consulta. |
+| GET | `/asistente/consultas/:id/voz` | Una respuesta propia leída por Gemini, en WAV. |
 
 ## Anexo B. Pruebas e integración continua
 
-Servidor: 43 archivos y 487 pruebas que hablan con la base real y el servidor levantado. Cliente: 19 archivos y 202 pruebas con Vitest. La integración continua (.github/workflows/pruebas.yml) las corre en cada pull request y en main, junto con el lint y la compilación.
+Servidor: 44 archivos y 495 pruebas que hablan con la base real y el servidor levantado. Cliente: 20 archivos y 218 pruebas con Vitest. La integración continua (`.github/workflows/pruebas.yml`) las corre en cada pull request y en `main`, junto con el lint y la compilación.
 
 ```bash
 cd servidor
@@ -1076,4 +1105,4 @@ npm test
 npm run build
 ```
 
-Las pruebas del asistente usan un proveedor simulado en el puerto 4599: el servidor tiene que arrancar con `ASISTENTE_URL=http://localhost:4599/v1` y `ASISTENTE_CLAVE=prueba`. Si apunta a un proveedor real, esas pruebas se omiten para no gastar la cuota gratis.
+Las pruebas del asistente usan un proveedor simulado en el puerto 4599: el servidor tiene que arrancar con `ASISTENTE_URL=http://localhost:4599/v1`, `ASISTENTE_VOZ_URL=http://localhost:4599/v1beta` y `ASISTENTE_CLAVE=prueba`. Si apunta a un proveedor real, esas pruebas se omiten para no gastar la cuota gratis.
