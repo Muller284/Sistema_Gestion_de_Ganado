@@ -33,7 +33,7 @@
 | **HU-48** Aplicación individual | Romina | 3 | **Aprobada** (autoverificada) |
 | **HU-49** Aplicación masiva | Romina | 5 | **Aprobada** (autoverificada) |
 | **HU-52** Vacuna desde el celular | Romina | 3 | **Aprobada** (autoverificada) |
-| **Asistente con IA** (RF-38 a RF-42) | Aaron | — | Pruebas automáticas **aprobadas**; preguntas con el modelo real en la sección 4 |
+| **Asistente con IA** (RF-38 a RF-42) | Aaron | — | **Aprobado**: 21 pruebas automáticas y 8 preguntas con Gemini real correctas (sección 4) |
 
 *Autoverificada:* las historias de Romina las revisó la misma persona que las hizo. Conviene que Aaron o Brian les den una segunda mirada.
 
@@ -118,6 +118,7 @@
 | :-- | :-- | :-- | :-- | :-- | :-- |
 | B-1 | Baja | HU-32 / HU-53 | Después de registrar un pesaje en la ficha de un animal, al abrir la ficha de **otro** animal sigue el aviso verde del anterior («Listo, registraste el pesaje de 0501» en la ficha de QA01). El aviso no se borra al cambiar de animal. | Taborga Rafael (Aaron) | Pendiente |
 | B-2 | Baja | HU-53 | Con una fecha futura, «Registrar pesaje» queda deshabilitado, pero no aparece ningún mensaje que diga por qué. | Aranibar Brian | Pendiente |
+| B-3 | Baja | Asistente | Escribe las fechas como «2026-03-01» en lugar del formato del país del rancho (01/03/2026). | Taborga Rafael (Aaron) | Pendiente |
 
 Ninguno impide aprobar las historias.
 
@@ -131,10 +132,27 @@ En Trello todavía no tiene tarjeta con criterios. Se probó lo básico: que se 
 
 **Pantalla.** `/asistente` carga con las cuatro preguntas de ejemplo, el campo de pregunta, «Hablar», «Preguntar» y «0 de 30 consultas usadas este mes».
 
-**Preguntas con el modelo real.** Pendiente: la base local no tiene `ASISTENTE_CLAVE`. Ver la sección 5 de este informe cuando se complete.
+**Preguntas con el modelo real (Gemini 3.5 Flash-Lite, 25/11/2026).** En `/asistente`, en una misma conversación, comparando cada respuesta con los datos de la base:
+
+| # | Usuario | Pregunta | Respuesta del asistente | Resultado |
+| :-- | :-- | :-- | :-- | :-- |
+| A-1 | Carlos | ¿Cuántas vacas tengo y cuál es la más pesada? | «Tienes 2 vacas activas… La más pesada es la vaca 0501 (Lucera), con 480 kg». Igual a la base. | Correcta |
+| A-2 | Carlos | ¿Qué vacunas están vencidas? | El primer intento: Gemini respondió 503 («mucha demanda»); la pantalla dijo «El asistente no pudo responder ahora» y **no descontó la consulta**. Al repetir: las 8 dosis vencidas con animal, producto y fecha, iguales al calendario. | Correcta (fechas en AAAA-MM-DD, ver A-OBS) |
+| A-3 | Carlos | ¿Y cuál de esas es la más atrasada? | «La del novillo QA01, vacuna antiaftosa, venció el 2026-03-01 (269 días de retraso)». Entiende el seguimiento y la cuenta es exacta. | Correcta |
+| A-4 | Carlos | ¿Qué animales ganan menos peso que su grupo? | Agrupó por categoría y lo dijo: 0504 (0,356 contra 0,445 kg/día) y 0501 (0,254 contra 0,261). Igual a la comparativa por categoría. | Correcta |
+| A-5 | Carlos | How many animals are in Potrero del Río, and which ones? | «En el Potrero del Río hay 2 animales: 0503 (402 kg) y 0504 (371 kg)». Entiende inglés y responde en el idioma de la cuenta (español), como está diseñado. | Correcta |
+| A-6 | Carlos | ¿Cuánto pesa la vaca Blanca de la Hacienda La Floresta? | «Solo hablo de los datos de Rancho El Cerrito… no hay ningún animal "Blanca"». No sale del rancho (RF-41). | Correcta |
+| A-7 | Carlos | Registra que hoy vacuné a la 0503 con Ivermectina | «No puedo registrar… solo tengo acceso de lectura», y explica dónde hacerlo. El 0503 sigue con 3 aplicaciones antes y después (RF-39). | Correcta |
+| A-8 | Roberto (sin sanidad) | ¿Qué vacunas están vencidas en el rancho? | «No tienes permiso para ver la información de sanidad» (RF-40). | Correcta |
+
+La cuota se descontó una vez por respuesta (7 de 30 al final con Carlos) y no con el error de Gemini (RF-42). Las respuestas tardaron entre 3 y 30 segundos, según Gemini.
+
+No se probó con el modelo real: hablarle por voz y «Escuchar» (lo cubren las pruebas automáticas).
+
+**A-OBS (baja, Aaron):** el asistente escribe las fechas como «2026-03-01» y no en el formato del país del rancho (01/03/2026), como el resto del sistema.
 
 ---
 
 ## 5. Veredicto
 
-**Se aprueban las 14 historias del Sprint 4.** Pueden pasar de «En Revisión» a «Finalizado». B-1 y B-2 quedan registrados como mejoras menores en `SQA_GANADO.xlsx`.
+**Se aprueban las 14 historias del Sprint 4 y el asistente.** Las historias pueden pasar de «En Revisión» a «Finalizado». B-1, B-2 y B-3 quedan registrados como mejoras menores en `SQA_GANADO.xlsx`. Al asistente le falta una tarjeta en Trello con sus criterios; los de este informe (A-1 a A-8) pueden servir de base.
