@@ -84,9 +84,9 @@ Quedan para una versión posterior los planes, la prueba de 10 días, la suscrip
 
 ## 4. Link al Video ilustrativo en YouTube
 
-Video de 2 a 5 minutos que muestra el sistema funcionando.
+Video de 4 minutos y medio que recorre el sistema funcionando: página de inicio, registro, panel del rancho, animales, corrales e importación, sanidad, pesajes, equipo y permisos, asistente con IA, pantallas del celular y panel del Admin de plataforma.
 
-> **Pendiente.** Enlace: [completar con el enlace de YouTube].
+**Enlace:** https://youtu.be/s861QdieOOw
 
 ## 5. Listado de los Requisitos Funcionales del Sistema
 
@@ -603,7 +603,7 @@ npm run dev           # sistema en http://localhost:5173
 
 ## 11. PROCEDIMIENTO DE HOSTEADO / HOSTING (configuración)
 
-> **Direcciones.** Sistema: https://ganado-univalle.onrender.com · API: https://ganado-univalle-api.onrender.com. Si Render cambia algún nombre al crearlo (porque ya existe), se corrigen aquí y en las variables `VITE_API` y `URL_CLIENTE`.
+> **Publicado y probado el 23/11/2026.** Sistema: https://ganado-univalle.onrender.com · API: https://ganado-univalle-api.onrender.com (por ejemplo https://ganado-univalle-api.onrender.com/paises). Base de datos en Neon, región AWS US East 1 (N. Virginia). Se probaron el ingreso, el asistente por texto y por voz, el correo de confirmación con Brevo y el panel del Admin.
 
 Se publica en **Render**, el cliente como sitio estático y el servidor como servicio web, con la base PostgreSQL en **Neon**; las tres partes, en planes gratuitos y sin tarjeta. Todo está descrito en `render.yaml`, en la raíz: Render crea los dos servicios desde ese archivo y los vuelve a publicar solo con cada push a `main`. Firebase se descartó porque solo sirve el cliente: para el servidor pide el plan Blaze, con tarjeta (DECISIONES §52).
 
@@ -643,7 +643,7 @@ En Git Bash, macOS o Linux: `DATABASE_URL="…" npm run migrar`. Después, el se
 
 1. El mismo Blueprint crea el sitio estático: compila con `cd cliente && npm ci && npm run build` y publica `cliente/dist`.
 1. `VITE_API` apunta a la API publicada y `VITE_DEMOSTRACION=no` quita la barra de demostración.
-1. Si Render agregó letras a algún nombre porque ya existía, corregir `VITE_API` (en el sitio) y `URL_CLIENTE` (en la API) con las direcciones reales, y volver a publicar el sitio (Manual Deploy).
+1. Si al volver a crearlo Render agrega letras a algún nombre porque ya existe, se corrigen `VITE_API` (en el sitio) y `URL_CLIENTE` (en la API) con las direcciones reales, y se vuelve a publicar el sitio (Manual Deploy).
 1. Abrir https://ganado-univalle.onrender.com e ingresar con una cuenta del punto 8.
 
 Cada push a `main` vuelve a publicar lo que cambió: el servidor si cambió `servidor/` o `idiomas/`, el sitio si cambió `cliente/` o `idiomas/`.
@@ -663,7 +663,7 @@ Repositorio: `https://github.com/Muller284/Sistema_Gestion_de_Ganado`.
 
 Todo el trabajo se integra a main por pull request, con la integración continua en verde (pruebas del servidor y del cliente, lint y compilación).
 
-> **Pendiente.** Commit de la versión final en main: [completar con el identificador del commit o la etiqueta, por ejemplo v1.0].
+La versión final es la etiqueta **v1.0** de `main`: https://github.com/Muller284/Sistema_Gestion_de_Ganado/releases/tag/v1.0. Es la misma que está publicada en Render.
 
 ### Entrega compilados ejecutables
 
@@ -678,7 +678,12 @@ cd ..
 docker compose build     # imágenes ganado_servidor y ganado_cliente
 ```
 
-> **Pendiente.** Enlace a los compilados: [completar, por ejemplo una versión (Release) de GitHub con cliente-dist.zip y servidor-dist.zip].
+Los compilados están en la misma versión de GitHub (Release v1.0), en https://github.com/Muller284/Sistema_Gestion_de_Ganado/releases/tag/v1.0:
+
+| Archivo | Qué trae | Cómo se usa |
+| --- | --- | --- |
+| `cliente-dist.zip` | El cliente compilado para la API publicada, sin barra de demostración. | Se sirve tal cual con cualquier servidor web de archivos estáticos. |
+| `servidor-dist.zip` | `servidor/dist`, los scripts de migración y semillas, `idiomas/` y `package.json`. | `npm ci --omit=dev`, después `node migrar.js` y `node dist/main.js`, con las variables del punto 10. Los pasos van en `LEEME.txt`. |
 
 ### Ramas Actualizada por cada Developer
 
